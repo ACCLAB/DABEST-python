@@ -241,14 +241,14 @@ def plot(data, idx,
             idv = ['index']
         else:
             idv = ['index',color_col]
-        melted_data_in = pd.melt(data_in.reset_index(),
+        data_in = pd.melt(data_in.reset_index(),
                           id_vars=idv,
                           value_vars=all_plot_groups,
                           value_name=y,
                           var_name=x)
         idv.append(x)
         idv.append(y)
-        melted_data_in.columns = [idv]
+        data_in.columns = [idv]
 
     # CALCULATE CI.
     if ci < 0 or ci > 100:
@@ -258,17 +258,17 @@ def plot(data, idx,
     # CALCULATE RAW SWARM YLIMS.
     if swarm_ylim is None:
         # To ensure points at the limits are clearly seen.
-        pad = np.abs(melted_data_in[y].diff().min()) / 2 #
-        swarm_ylim = (melted_data_in[y].min() - pad,
-                      melted_data_in[y].max() + pad)
+        pad = np.abs(data_in[y].diff().min()) / 2 #
+        swarm_ylim = (data_in[y].min() - pad,
+                      data_in[y].max() + pad)
 
     # Set default kwargs first, then merge with user-dictated ones.
     # Swarmplot.
     default_swarmplot_kwargs={'size':6}
     if swarmplot_kwargs is None:
-        swarmplot_kwargs=default_swarmplot_kwargs
+        swarmplot_kwargs = default_swarmplot_kwargs
     else:
-        swarmplot_kwargs=merge_two_dicts(default_swarmplot_kwargs,
+        swarmplot_kwargs = merge_two_dicts(default_swarmplot_kwargs,
             swarmplot_kwargs)
 
     # Violinplot.
@@ -279,7 +279,7 @@ def plot(data, idx,
     if violinplot_kwargs is None:
         violinplot_kwargs = default_violinplot_kwargs
     else:
-        violinplot_kwargs=merge_two_dicts(default_violinplot_kwargs,
+        violinplot_kwargs = merge_two_dicts(default_violinplot_kwargs,
             violinplot_kwargs)
 
     # Reference lines.
@@ -287,17 +287,17 @@ def plot(data, idx,
                          'linewidth':0.75,
                          'color':'k'}
     if reflines_kwargs is None:
-        reflines_kwargs=default_reflines_kwargs
+        reflines_kwargs = default_reflines_kwargs
     else:
         reflines_kwargs = merge_two_dicts(default_reflines_kwargs,
             reflines_kwargs)
 
     # Legend.
-    default_legend_kwargs={'loc': 'upper left',
+    default_legend_kwargs = {'loc': 'upper left',
         'bbox_to_anchor': (0.95, 1.),
         'markerscale': 1.1}
     if legend_kwargs is None:
-        legend_kwargs=default_legend_kwargs
+        legend_kwargs = default_legend_kwargs
     else:
         legend_kwargs = merge_two_dicts(default_legend_kwargs,legend_kwargs)
 
