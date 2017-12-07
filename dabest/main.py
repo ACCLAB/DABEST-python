@@ -437,11 +437,10 @@ def plot(data, idx,
 
     # FOR EACH TUPLE IN IDX, CREATE PLOT.
     for j, current_tuple in enumerate(idx):
-        plotdat=data_in[data_in[x].isin(current_tuple)].copy()
-        plotdat.loc[:,x] = plotdat[x].astype("category")
-        plotdat[x].cat.set_categories(current_tuple,
-                                      ordered=True,
-                                      inplace=True)
+        plotdat = data_in[data_in[x].isin(current_tuple)].copy()
+        plotdat.loc[:,x] = pd.Categorical(plotdat[x],
+                            categories=current_tuple,
+                            ordered=True)
         plotdat.sort_values(by=[x])
         summaries = plotdat.groupby(x)[y].apply(stat_func)
         # Compute Ns per group.
