@@ -365,14 +365,32 @@ def plot(data, idx,
         contrast_ax_ylim_high = list()
         contrast_ax_ylim_tickintervals = list()
 
+ ######  #     #  #####
+ #     # #     # #     #
+ #     # #     # #
+ ######  #     # #  ####
+ #     # #     # #     #
+ #     # #     # #     #
+ ######   #####   #####
+ ####### #     # ####### ######
+ #     # #     # #       #     #
+ #     # #     # #       #     #
+ #     # #     # #####   ######
+ #     #  #   #  #       #   #
+ #     #   # #   #       #    #
+ #######    #    ####### #     #
+ #     # ####### ######  #######
+ #     # #       #     # #
+ #     # #       #     # #
+ ####### #####   ######  #####
+ #     # #       #   #   #
+ #     # #       #    #  #
+ #     # ####### #     # #######
+
     # CREATE COLOR PALETTE TO NORMALIZE PALETTE ACROSS AXES.
     if color_col is None:
-        if isinstance(data_in[x], pd.Series) is False:
-            raise AttributeError(data_in[x].dtype)
         color_groups = data_in[x].unique()
     else:
-        if isinstance(data_in[color_col], pd.Series) is False:
-            raise AttributeError(data_in[color_col].dtype)
         color_groups = data_in[color_col].unique()
 
     if custom_palette is None:
