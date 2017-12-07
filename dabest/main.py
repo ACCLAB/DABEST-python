@@ -237,18 +237,31 @@ def plot(data, idx,
             y = 'value'
         else:
             y = str(swarm_label)
+
         if color_col is None:
             idv = ['index']
+            turn_to_cat = [x]
         else:
-            idv = ['index',color_col]
+            idv = ['index', color_col]
+            turn_to_cat = [x, color_col]
+
         data_in = pd.melt(data_in.reset_index(),
                           id_vars=idv,
                           value_vars=all_plot_groups,
                           value_name=y,
                           var_name=x)
-        idv.append(x)
-        idv.append(y)
-        data_in.columns = [idv]
+
+        for c in turn_to_cat:
+            data_in.loc[:,c] = pd.Categorical(data_in[c],
+                                              categories=data_in[c].unique(),
+                                              ordered=True)
+        # if color_col is not None:
+        #     data_in.loc[:,color_col] = pd.Categorical(data_in[color_col],
+        #                                 categories=data_in[color_col]unique(),
+        #                                 ordered=False)
+        # idv.append(x)
+        # idv.append(y)
+        # data_in.columns = [idv]
 
     # CALCULATE CI.
     if ci < 0 or ci > 100:
@@ -365,15 +378,33 @@ def plot(data, idx,
         contrast_ax_ylim_high = list()
         contrast_ax_ylim_tickintervals = list()
 
+ ######  #     #  #####
+ #     # #     # #     #
+ #     # #     # #
+ ######  #     # #  ####
+ #     # #     # #     #
+ #     # #     # #     #
+ ######   #####   #####
+ ####### #     # ####### ######
+ #     # #     # #       #     #
+ #     # #     # #       #     #
+ #     # #     # #####   ######
+ #     #  #   #  #       #   #
+ #     #   # #   #       #    #
+ #######    #    ####### #     #
+ #     # ####### ######  #######
+ #     # #       #     # #
+ #     # #       #     # #
+ ####### #####   ######  #####
+ #     # #       #   #   #
+ #     # #       #    #  #
+ #     # ####### #     # #######
+
     # CREATE COLOR PALETTE TO NORMALIZE PALETTE ACROSS AXES.
     if color_col is None:
-        if isinstance(melted_data_in[x], pd.Series) is False:
-            raise AttributeError(melted_data_in[x].dtype)
-        color_groups = melted_data_in[x].unique()
+        color_groups = data_in[x].unique()
     else:
-        if isinstance(melted_data_in[color_col], pd.Series) is False:
-            raise AttributeError(melted_data_in[color_col].dtype)
-        color_groups = melted_data_in[color_col].unique()
+        color_groups = data_in[color_col].unique()
 
     if custom_palette is None:
         plotPal=dict( zip( color_groups,
@@ -406,11 +437,10 @@ def plot(data, idx,
 
     # FOR EACH TUPLE IN IDX, CREATE PLOT.
     for j, current_tuple in enumerate(idx):
-        plotdat=data_in[data_in[x].isin(current_tuple)].copy()
-        plotdat.loc[:,x] = plotdat[x].astype("category")
-        plotdat[x].cat.set_categories(current_tuple,
-                                      ordered=True,
-                                      inplace=True)
+        plotdat = data_in[data_in[x].isin(current_tuple)].copy()
+        plotdat.loc[:,x] = pd.Categorical(plotdat[x],
+                            categories=current_tuple,
+                            ordered=True)
         plotdat.sort_values(by=[x])
         summaries = plotdat.groupby(x)[y].apply(stat_func)
         # Compute Ns per group.

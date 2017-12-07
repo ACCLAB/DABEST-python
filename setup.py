@@ -29,10 +29,10 @@ def check_dependencies():
         to_install.append('matplotlib==2.0.2')
     try:
         import pandas
-        if int(pandas.__version__.split('.')[1])<20:
-            to_install.append('pandas==0.20.3')
+        if int(pandas.__version__.split('.')[1])<21:
+            to_install.append('pandas>=0.21.0')
     except ImportError:
-        to_install.append('pandas==0.20.3')
+        to_install.append('pandas>=0.21.0')
     try:
         import seaborn
     except ImportError:
@@ -46,8 +46,8 @@ if __name__=="__main__":
     setup(name='dabest',
     author='Joses Ho',
     author_email='joseshowh@gmail.com',
-    version='0.0.1',
-    description='Calculation and Visualization of Confidence Intervals and Effect Sizes for Python.',
+    version='0.0.2',
+    description='Data Analysis and Visualization using Bootstrapped Estimation.',
     packages=find_packages(),
     install_requires=installs,
     url='http://github.com/josesho/bootstrap_contrast',

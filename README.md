@@ -15,8 +15,8 @@ In addition, the following packages are also required:
 - matplotlib (2.0.2)
 - seaborn (0.8)
 - numpy (1.13.1)
-- scipy (0.19.1)
-- pandas (0.20.3).
+- scipy (1.0.0)
+- pandas (0.21.0).
 
 To obtain these package dependencies easily, it is highly recommended to download the Anaconda distribution of Python from [https://www.continuum.io/downloads](https://www.continuum.io/downloads).
 
