@@ -237,18 +237,31 @@ def plot(data, idx,
             y = 'value'
         else:
             y = str(swarm_label)
+
         if color_col is None:
             idv = ['index']
+            turn_to_cat = [x]
         else:
-            idv = ['index',color_col]
+            idv = ['index', color_col]
+            turn_to_cat = [x, color_col]
+
         data_in = pd.melt(data_in.reset_index(),
                           id_vars=idv,
                           value_vars=all_plot_groups,
                           value_name=y,
                           var_name=x)
-        idv.append(x)
-        idv.append(y)
-        data_in.columns = [idv]
+
+        for c in turn_to_cat:
+            data_in.loc[:,c] = pd.Categorical(data_in[c],
+                                              categories=data_in[c].unique(),
+                                              ordered=True)
+        # if color_col is not None:
+        #     data_in.loc[:,color_col] = pd.Categorical(data_in[color_col],
+        #                                 categories=data_in[color_col]unique(),
+        #                                 ordered=False)
+        # idv.append(x)
+        # idv.append(y)
+        # data_in.columns = [idv]
 
     # CALCULATE CI.
     if ci < 0 or ci > 100:
