@@ -232,35 +232,35 @@ def plot(data, idx,
             if g not in data_in.columns:
                 raise IndexError('{0} is not a column in `data`.'.format(g))
         ## Melt it so it is easier to use.
-        x='group'
+        x = 'group'
         if swarm_label is None:
-            y='value'
+            y = 'value'
         else:
             y = str(swarm_label)
         if color_col is None:
-            idv=['index']
+            idv = ['index']
         else:
-            idv=['index',color_col]
-        data_in=pd.melt(data_in.reset_index(),
-                        id_vars=idv,
-                        value_vars=all_plot_groups,
-                        value_name=y,
-                        var_name=x)
+            idv = ['index',color_col]
+        melted_data_in = pd.melt(data_in.reset_index(),
+                          id_vars=idv,
+                          value_vars=all_plot_groups,
+                          value_name=y,
+                          var_name=x)
         idv.append(x)
         idv.append(y)
-        data_in.columns=[idv]
-        # data_in=data_in[data_in[x].isin(all_plot_groups)]
+        melted_data_in.columns = [idv]
 
     # CALCULATE CI.
-    if ci<0 or ci>100:
+    if ci < 0 or ci > 100:
         raise ValueError('`ci` should be between 0 and 100.')
     alpha_level = (100.-int(ci))/100.
 
     # CALCULATE RAW SWARM YLIMS.
     if swarm_ylim is None:
-        pad = np.abs(data_in[y].diff().min())/2 # To ensure points at the limits are clearly seen.
-        swarm_ylim = (data_in[y].min()-pad,
-                      data_in[y].max()+pad)
+        # To ensure points at the limits are clearly seen.
+        pad = np.abs(melted_data_in[y].diff().min()) / 2 #
+        swarm_ylim = (melted_data_in[y].min() - pad,
+                      melted_data_in[y].max() + pad)
 
     # Set default kwargs first, then merge with user-dictated ones.
     # Swarmplot.
@@ -329,7 +329,8 @@ def plot(data, idx,
                                                group_summary_kwargs)
 
 
-    # Small check to ensure that line summaries for means will not be shown if `float_contrast` is True.
+    # Small check to ensure that line summaries for means will not be shown if `
+    # float_contrast` is True.
     if float_contrast is True and group_summaries != 'None':
         group_summaries = 'None'
 
@@ -337,10 +338,11 @@ def plot(data, idx,
         stat_func = np.mean
 
 
-    ### INITIALISE FIGURE.
+    # INITIALISE FIGURE.
     # Set clean style.
     sns.set(**aesthetic_kwargs)
-    # Set appropriate horizontal spacing between subplots, based on whether the contrast is floating.
+    # Set appropriate horizontal spacing between subplots, based on whether the
+    # contrast is floating.
     if float_contrast:
         ws = 0.75
     else:
@@ -354,7 +356,8 @@ def plot(data, idx,
     # Create subplots.
     fig,axx=plt.subplots(ncols = ncols,
                          figsize=fig_size,
-                         gridspec_kw={'wspace':ws,'width_ratios':widthratio})
+                         gridspec_kw={'wspace':ws,
+                                       'width_ratios':widthratio})
     # If the contrast axes are NOT floating, create lists to store raw ylims
     # and raw tick intervals, so that I can normalize their ylims later.
     if float_contrast is False:
@@ -362,20 +365,23 @@ def plot(data, idx,
         contrast_ax_ylim_high = list()
         contrast_ax_ylim_tickintervals = list()
 
-    ### CREATE COLOR PALETTE TO NORMALIZE PALETTE ACROSS AXES.
+    # CREATE COLOR PALETTE TO NORMALIZE PALETTE ACROSS AXES.
     if color_col is None:
-        col_grp=x
+        if isinstance(melted_data_in[x], pd.Series) is False:
+            raise AttributeError(melted_data_in[x].dtype)
+        color_groups = melted_data_in[x].unique()
     else:
-        col_grp = color_col
-    color_groups = data_in[col_grp].unique()
+        if isinstance(melted_data_in[color_col], pd.Series) is False:
+            raise AttributeError(melted_data_in[color_col].dtype)
+        color_groups = melted_data_in[color_col].unique()
 
     if custom_palette is None:
         plotPal=dict( zip( color_groups,
                       sns.color_palette(n_colors = len(color_groups))) )
     else:
         if isinstance(custom_palette, dict):
-            # check that all the keys in custom_palette are found in the color column.
-            # idx_grps={k for k in all_plot_groups}
+            # check that all the keys in custom_palette are found in the
+            # color column.
             col_grps = {k for k in color_groups}
             pal_grps = {k for k in custom_palette.keys()}
             not_in_pal = pal_grps.difference(col_grps)
@@ -395,12 +401,12 @@ def plot(data, idx,
     legend_handles = []
     legend_labels = []
 
-    ### LIST TO STORE BOOTSTRAPPED RESULTS.
+    # LIST TO STORE BOOTSTRAPPED RESULTS.
     bootlist = list()
 
-    ### FOR EACH TUPLE IN IDX, CREATE PLOT.
+    # FOR EACH TUPLE IN IDX, CREATE PLOT.
     for j, current_tuple in enumerate(idx):
-        plotdat=data_in[data_in[x].isin(current_tuple)].copy()
+        plotdat=melted_data_in[melted_data_in[x].isin(current_tuple)].copy()
         plotdat.loc[:,x] = plotdat[x].astype("category")
         plotdat[x].cat.set_categories(current_tuple,
                                       ordered=True,
@@ -422,7 +428,7 @@ def plot(data, idx,
             ax_contrast = divider.append_axes("bottom", size="100%",
                                             pad=0.5, sharex=ax_raw)
 
-        ### PLOT RAW DATA.
+        # PLOT RAW DATA.
         ax_raw.set_ylim(swarm_ylim)
 
         if (paired is True and show_pairs is True):
@@ -531,7 +537,7 @@ def plot(data, idx,
         if j+1 == ncols:
             last_swarm = ax_raw
 
-        ### PLOT CONTRAST DATA.
+        # PLOT CONTRAST DATA.
         # Calculate bootstrapped stats.
         # Plot the CIs on the bottom axes.
         for ix, grp in enumerate( current_tuple[1::] ) :
@@ -575,7 +581,7 @@ def plot(data, idx,
                 ticklocs = ax_contrast.yaxis.get_majorticklocs()
                 contrast_ax_ylim_tickintervals.append(ticklocs[1]-ticklocs[0])
 
-        ### NORMALISE Y LIMS AND DESPINE FLOATING CONTRAST AXES.
+        # NORMALISE Y LIMS AND DESPINE FLOATING CONTRAST AXES.
         if float_contrast:
             ## Align 0 of ax_contrast to reference group mean of ax_raw.
             ylimlow, ylimhigh = ax_contrast.get_xlim()
@@ -646,7 +652,7 @@ def plot(data, idx,
                 # ...but not the right spine.
                 right=False)
 
-        ### SET Y AXIS LABELS .
+        # SET Y AXIS LABELS .
         if j > 0:
             ax_raw.set_ylabel('')
         else:
@@ -664,10 +670,10 @@ def plot(data, idx,
                 else:
                     ax_contrast.set_ylabel(str(contrast_label))
 
-        ### ROTATE X-TICKS OF ax_contrast
+        # ROTATE X-TICKS OF ax_contrast
         rotate_ticks(ax_contrast, angle=45, alignment='right')
 
-    ### NORMALIZE Y LIMS AND DESPINE NON-FLOATING CONTRAST AXES.
+    # NORMALIZE Y LIMS AND DESPINE NON-FLOATING CONTRAST AXES.
     if float_contrast is False:
         ## Sort and convert to numpy arrays.
         contrast_ax_ylim_low = np.sort(contrast_ax_ylim_low)
@@ -695,7 +701,7 @@ def plot(data, idx,
                 # Despine.
                 sns.despine(ax=axx, trim=True)
 
-    ### Add Figure Legend.
+    # Add Figure Legend.
     legend_labels_unique = np.unique(legend_labels)
     unique_idx = np.unique(legend_labels,
                             return_index=True)[1]
@@ -704,7 +710,7 @@ def plot(data, idx,
                      legend_labels_unique,
                      **legend_kwargs)
 
-    ### PREPARE OUTPUT
+    # PREPARE OUTPUT
     # Turn `bootlist` into a pandas DataFrame
     bootlist_df = pd.DataFrame(bootlist)
     # Order the columns properly.
