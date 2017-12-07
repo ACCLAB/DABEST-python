@@ -1,30 +1,34 @@
-#! /usr/bin/env python
-
 # #! /usr/bin/env python
-# import numpy as np
-#
-# import tests
-#
-# # Load Libraries
-# import matplotlib as mpl
-# import matplotlib.pyplot as plt
-#
+
+# Check that pytest itself is working.
+def func(x):
+    return x + 1
+
+def test_answer():
+    assert func(3) == 4
+
+# Load Libraries
+
+import numpy as np
+import numpy.testing as npt
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 # from matplotlib.testing.decorators import image_comparison
-#
-# # Use SVG renderer.
-# # mpl.use('SVG')
+
+# Use SVG renderer.
+mpl.use('SVG')
 # mpl.use('TkAgg')
-# # Ensure that text is rendered as text and not as paths.
-# plt.rcParams['svg.fonttype'] = 'none'
-#
+
+# Ensure that text is rendered as text and not as paths.
+plt.rcParams['svg.fonttype'] = 'none'
+
 # import seaborn as sns
 # sns.set(style='ticks',context='talk')
 #
-# savefig_kwargs = {'transparent': True,
-#                  'frameon': False,
-#                  'bbox_inches': 'tight',
-#                  'format': 'svg'}
-#
+savefig_kwargs = {'transparent': True,
+                 'frameon': False,
+                 'bbox_inches': 'tight',
+                 'format': 'svg'}
 #
 # # f.savefig('testfig.svg', **savefig_kwargs)
 
@@ -53,13 +57,13 @@ def create_dummy_dataset(n=50):
 
     return df
 
+test_data = create_dummy_dataset()
+
 def Gardner_Altman_unpaired(df):
     from .. import api
 
     return api.plot(data=df,
                        idx=('Control','Group1'))
-
-Gardner_Altman_unpaired(create_dummy_dataset())
 
 def Gardner_Altman_paired(df):
     from .. import api
@@ -80,7 +84,7 @@ def Cumming_two_group_paired(df):
 
     return api.plot(data=df,
                        idx=('Control','Group1'),
-                       paired=True
+                       paired=True,
                        float_contrast=True)
 
 def custom_swarm_label(df):
