@@ -406,7 +406,7 @@ def plot(data, idx,
 
     # FOR EACH TUPLE IN IDX, CREATE PLOT.
     for j, current_tuple in enumerate(idx):
-        plotdat=melted_data_in[melted_data_in[x].isin(current_tuple)].copy()
+        plotdat=data_in[data_in[x].isin(current_tuple)].copy()
         plotdat.loc[:,x] = plotdat[x].astype("category")
         plotdat[x].cat.set_categories(current_tuple,
                                       ordered=True,
