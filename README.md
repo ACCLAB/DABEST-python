@@ -11,7 +11,14 @@ DABEST is a package for **D**ata **A**nalysis using **B**ootstrapped **EST**imat
 
 Python 3.6 is strongly recommended, although this has been tested with Python 2.7 and Python 3.5.
 
-In addition, the following packages are also required: matplotlib (2.0.2), seaborn (0.8), numpy (1.13.1), scipy (0.19.1), and pandas (0.20.3). To obtain these package dependencies easily, it is highly recommended to download the Anaconda distribution of Python from [https://www.continuum.io/downloads](https://www.continuum.io/downloads).
+In addition, the following packages are also required:
+- matplotlib (2.0.2)
+- seaborn (0.8)
+- numpy (1.13.1)
+- scipy (0.19.1)
+- pandas (0.20.3).
+
+To obtain these package dependencies easily, it is highly recommended to download the Anaconda distribution of Python from [https://www.continuum.io/downloads](https://www.continuum.io/downloads).
 
 
 ## Installation
