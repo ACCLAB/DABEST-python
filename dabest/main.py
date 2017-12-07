@@ -367,13 +367,13 @@ def plot(data, idx,
 
     # CREATE COLOR PALETTE TO NORMALIZE PALETTE ACROSS AXES.
     if color_col is None:
-        if isinstance(melted_data_in[x], pd.Series) is False:
-            raise AttributeError(melted_data_in[x].dtype)
-        color_groups = melted_data_in[x].unique()
+        if isinstance(data_in[x], pd.Series) is False:
+            raise AttributeError(data_in[x].dtype)
+        color_groups = data_in[x].unique()
     else:
-        if isinstance(melted_data_in[color_col], pd.Series) is False:
-            raise AttributeError(melted_data_in[color_col].dtype)
-        color_groups = melted_data_in[color_col].unique()
+        if isinstance(data_in[color_col], pd.Series) is False:
+            raise AttributeError(data_in[color_col].dtype)
+        color_groups = data_in[color_col].unique()
 
     if custom_palette is None:
         plotPal=dict( zip( color_groups,
