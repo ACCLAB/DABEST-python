@@ -30,9 +30,9 @@ def check_dependencies():
     try:
         import pandas
         if int(pandas.__version__.split('.')[1])<20:
-            to_install.append('pandas==0.20.1')
+            to_install.append('pandas==0.20.3')
     except ImportError:
-        to_install.append('pandas==0.20.1')
+        to_install.append('pandas==0.20.3')
     try:
         import seaborn
     except ImportError:
