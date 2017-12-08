@@ -1,69 +1,56 @@
 # #! /usr/bin/env python
 
-# Check that pytest itself is working.
-def func(x):
-    return x + 1
-
-def test_answer():
-    assert func(3) == 4
+# # Check that pytest itself is working.
+# def func(x):
+#     return x + 1
+#
+# def test_answer():
+#     assert func(3) == 4
 
 # Load Libraries
-
-import numpy as np
-import numpy.testing as npt
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-# from matplotlib.testing.decorators import image_comparison
+import pytest
 
 # Use SVG renderer.
 mpl.use('SVG')
 # mpl.use('TkAgg')
-
 # Ensure that text is rendered as text and not as paths.
 plt.rcParams['svg.fonttype'] = 'none'
 
-# import seaborn as sns
-# sns.set(style='ticks',context='talk')
-#
 savefig_kwargs = {'transparent': True,
                  'frameon': False,
                  'bbox_inches': 'tight',
                  'format': 'svg'}
-#
-# # f.savefig('testfig.svg', **savefig_kwargs)
 
-def create_dummy_dataset(n=50):
+@pytest.fixture
+def create_dummy_dataset(n=50, expt_groups=6):
     import pandas as pd
     import numpy as np
-
     # Dummy dataset
     Ns = n
     dataset = list()
-    for seed in [10,11,12,13,14,15]:
-        # fix the seed so we get the same numbers each time.
+    for seed in np.random.randint(low=100, high=1000, size=expt_groups):
         np.random.seed(seed)
         dataset.append(np.random.randn(Ns))
     df = pd.DataFrame(dataset).T
-    cols = ['Control','Group1','Group2','Group3','Group4','Group5']
-    df.columns = cols
     # Create some upwards/downwards shifts.
-    df['Group2'] = df['Group2'] - 0.1
-    df['Group3'] = df['Group3'] + 0.2
-    df['Group4'] = (df['Group4']*1.1) + 4
-    df['Group5'] = (df['Group5']*1.1) - 1
+    for c in df.columns:
+        df.loc[:,c] =( df[c] * np.random.random()) + np.random.random()
     # Add gender column for color.
     df['Gender'] = np.concatenate([np.repeat('Male', Ns/2),
-                                  np.repeat('Female', Ns/2)])
+                                   np.repeat('Female', Ns/2)])
 
     return df
+#
 
-test_data = create_dummy_dataset()
-
-def Gardner_Altman_unpaired(df):
+#
+# # f.savefig('testfig.svg', **savefig_kwargs)
+def test_Gardner_Altman_unpaired(df):
     from .. import api
+    df = create_dummy_dataset()
 
     return api.plot(data=df,
-                       idx=('Control','Group1'))
+                    idx=('Control','Group1'))
+
 
 def Gardner_Altman_paired(df):
     from .. import api
