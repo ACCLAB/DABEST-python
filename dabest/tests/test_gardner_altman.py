@@ -24,36 +24,63 @@ def create_dummy_dataset(n=50, expt_groups=6):
     # Create some upwards/downwards shifts.
     for c in df.columns:
         df.loc[:,c] =( df[c] * np.random.random()) + np.random.random()
+    # Turn columns into strings
+    df.columns = [str(c) for c in df.columns]
     # Add gender column for color.
     df['Gender'] = np.concatenate([np.repeat('Male', Ns/2),
                                    np.repeat('Female', Ns/2)])
 
     return df
 
+@pytest.fixture
+def get_swarm_yspans(coll, round_result=False, decimals=12):
+    """
+    Given a matplotlib Collection, will obtain the y spans
+    for the collection. Will return None if this fails.
 
-def custom_contrast_label(df):
+    Modified from `get_swarm_spans` in plot_tools.py.
+    """
+    import numpy as np
+    _, y = np.array(coll.get_offsets()).T
+    try:
+        if round_result:
+            return np.around(y.min(), decimals), np.around(y.max(),decimals)
+        else:
+            return y.min(), y.max()
+    except ValueError:
+        return None
+
+# savefig_kwargs = {'transparent': True,
+#                  'frameon': False,
+#                  'bbox_inches': 'tight',
+#                  'format': 'svg'}
+
+def test_Gardner_Altman_unpaired():
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import pytest
     from .. import api
 
-    return api.plot(data=df,
-                       idx=('Control','Group1'),
-                       contrast_label='contrast')
+    df = create_dummy_dataset()
+    for c in df.columns[1:-1]:
+        f1, swarmplt = plt.subplots(figsize=(10, 10))
+        sns.swarmplot(data=df[[df.columns[0], c]],
+                      ax=swarmplt)
+        sns_yspans = []
+        for coll in swarmplt.collections:
+            sns_yspans.append(get_swarm_yspans(coll))
 
-def with_color_col(df):
-    from .. import api
+        f2, b = api.plot(data=df,
+                           fig_size=(12.5, 11),
+                           idx=(df.columns[0], c))
+        dabest_yspans = []
+        for coll in f2.axes[0].collections:
+            dabest_yspans.append(get_swarm_yspans(coll))
 
-    return api.plot(data=df,
-                       idx=('Control','Group1'),
-                       color_col='Gender')
+        for j, span in enumerate(sns_yspans):
+            assert span == pytest.approx(dabest_yspans[j])
 
-def with_custom_palette(df):
-    import dabest
 
-    return dabest.plot(data=df,
-                       idx=('Control','Group1'),
-                       color_col='Gender',
-                       custom_palette={'Male':'blue',
-                                       'Female':'red'}
-                        )
 # def Gardner_Altman_paired(df):
 #     from .. import api
 #
