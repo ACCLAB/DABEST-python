@@ -17,8 +17,7 @@ before_install:
 install:
   - conda update conda --yes
   - conda create -n testenv --yes pip python=$PYTHON
-  - conda update conda --yes
   - source activate testenv
-  - conda install --yes numpy scipy matplotlib pandas=0.20.1 seaborn
+  - pip install .
 
-script: python test_run.py
+script: python tests.py

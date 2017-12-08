@@ -1,11 +1,5 @@
 from __future__ import division
 
-# # Keep python 2/3 compatibility, without using six. At some point,
-# # we may need to add six as a requirement, but right now we can avoid it.
-# try:
-#     xrange
-# except NameError:
-#     xrange = range
 
 class bootstrap:
     '''Computes the summary statistic and a bootstrapped confidence interval.

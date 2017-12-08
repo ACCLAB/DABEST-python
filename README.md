@@ -23,7 +23,7 @@ To obtain these package dependencies easily, it is highly recommended to downloa
 
 ## Installation
 
-To install this pre-release version, please clone this repo locally (see intstructions [here]()).
+To install this pre-release version, please clone this repo locally (see intstructions [here](https://help.github.com/articles/cloning-a-repository/)).
 
 Then, navigate to the cloned repo in the command line and run
 
