@@ -72,7 +72,7 @@ def paired(df, control, expt):
 
 @pytest.fixture
 def make_test_tuples(df):
-    # Now, create all pairs of control-expt tuples.
+    # Create all pairs of control-expt tuples.
     con = np.repeat(df.columns[0], len(df.columns)-1)
     expt = [c for c in df.columns[1:]]
     zipped = zip(con, expt)
@@ -104,3 +104,19 @@ def test_unpaired(expt_groups_count=5):
     for t in test_tuples:
         print(t)
         unpaired(df=test_data, control=t[0], expt=t[1])
+
+def test_single_sample(mean=100, sd=10, n=20, abs_tol=1.25):
+    samples = np.random.normal(loc=mean, scale=sd, size=n)
+    results = bst.bootstrap(samples)
+
+    obs_mean = np.mean(samples)
+    # Get the t-statistic, and use it to compute a 95% CI.
+    ci = sp.stats.t.ppf(1-0.025, n-1) * (sd/np.sqrt(n-1))
+
+    assert results.summary == pytest.approx(obs_mean, abs=abs_tol)
+
+    assert results.bca_ci_low == pytest.approx(obs_mean - ci, abs=abs_tol)
+    assert results.bca_ci_high == pytest.approx(obs_mean + ci, abs=abs_tol)
+
+    assert results.pct_ci_low == pytest.approx(obs_mean - ci, abs=abs_tol)
+    assert results.pct_ci_high == pytest.approx(obs_mean + ci, abs=abs_tol)
