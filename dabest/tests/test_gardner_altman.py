@@ -94,3 +94,56 @@ def with_custom_palette(df):
                        custom_palette={'Male':'blue',
                                        'Female':'red'}
                         )
+# def Gardner_Altman_paired(df):
+#     from .. import api
+#
+#     return api.plot(data=df,
+#                        idx=('Control','Group1'),
+#                        paired=True)
+#
+# def Cumming_two_group_unpaired(df):
+#     from .. import api
+#
+#     return api.plot(data=df,
+#                       idx=('Control','Group1'),
+#                       float_contrast=True)
+#
+# def Cumming_two_group_paired(df):
+#     from .. import api
+#
+#     return api.plot(data=df,
+#                        idx=('Control','Group1'),
+#                        paired=True,
+#                        float_contrast=True)
+#
+# def custom_swarm_label(df):
+#     from .. import api
+#
+#     return api.plot(data=df,
+#                        idx=('Control','Group1'),
+#                        swarm_label='my swarm',
+#                        contrast_label='contrast')
+#
+# def custom_contrast_label(df):
+#     from .. import api
+#
+#     return api.plot(data=df,
+#                        idx=('Control','Group1'),
+#                        contrast_label='contrast')
+#
+# def with_color_col(df):
+#     from .. import api
+#
+#     return api.plot(data=df,
+#                        idx=('Control','Group1'),
+#                        color_col='Gender')
+#
+# def with_custom_palette(df):
+#     import dabest
+#
+#     return dabest.plot(data=df,
+#                        idx=('Control','Group1'),
+#                        color_col='Gender',
+#                        custom_palette={'Male':'blue',
+#                                        'Female':'red'}
+#                         )
