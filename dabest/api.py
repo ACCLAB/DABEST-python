@@ -593,7 +593,7 @@ def plot(data, idx,
             res['pvalue_2samp_ind_ttest'] = boots.pvalue_2samp_ind_ttest
             res['pvalue_2samp_paired_ttest'] = boots.pvalue_2samp_paired_ttest
             res['pvalue_wilcoxon'] = boots.pvalue_wilcoxon
-            res['pvalue_mannWhitney'] =  boots.pvalue_mannWhitney
+            res['pvalue_mann_whitney'] =  boots.pvalue_mann_whitney
             bootlist.append(res)
             # Plot the halfviolin and mean+CIs on contrast axes.
             v = ax_contrast.violinplot(boots.stat_array,
@@ -748,7 +748,7 @@ def plot(data, idx,
     'stat_summary','bca_ci_low', 'bca_ci_high', 'ci',
     'is_difference', 'is_paired', 'pvalue_1samp_ttest',
     'pvalue_2samp_ind_ttest', 'pvalue_2samp_paired_ttest',
-    'pvalue_mannWhitney', 'pvalue_wilcoxon',]]
+    'pvalue_mann_whitney', 'pvalue_wilcoxon']]
     # Remove unused columns.
     bootlist_df = bootlist_df.replace(to_replace='NIL',
         value=np.nan).dropna(axis=1)
