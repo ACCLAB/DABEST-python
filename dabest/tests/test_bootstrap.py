@@ -2,11 +2,14 @@
 
 
 import pytest
+import numpy as np
+import scipy as sp
+import pandas as pd
+from .. import bootstrap_tools as bst
+
 
 @pytest.fixture
 def create_dummy_dataset(n=50, expt_groups=6):
-    import pandas as pd
-    import numpy as np
     # Dummy dataset
     Ns = n
     dataset = list()
@@ -23,10 +26,6 @@ def create_dummy_dataset(n=50, expt_groups=6):
 # Unpaired tests.
 @pytest.fixture
 def unpaired(df, control, expt):
-    # Load Libraries
-    from .. import bootstrap_tools as bst
-    import scipy as sp
-
     result = bst.bootstrap(df[control], df[expt])
 
     assert(result.is_difference == True)
@@ -51,11 +50,6 @@ def unpaired(df, control, expt):
 # Paired tests.
 @pytest.fixture
 def paired(df, control, expt):
-    # Load Libraries
-    from .. import bootstrap_tools as bst
-    import scipy as sp
-    import numpy as np
-
     result = bst.bootstrap(df[control], df[expt], paired=True)
 
     assert(result.is_difference == True)
@@ -78,7 +72,6 @@ def paired(df, control, expt):
 
 @pytest.fixture
 def make_test_tuples(df):
-    import numpy as np
     # Now, create all pairs of control-expt tuples.
     con = np.repeat(df.columns[0], len(df.columns)-1)
     expt = [c for c in df.columns[1:]]
