@@ -80,7 +80,7 @@ def paired(df, control, expt):
 def make_test_tuples(df):
     import numpy as np
     # Now, create all pairs of control-expt tuples.
-    con = np.repeat(df.columns[0], len(df.columns-1))
+    con = np.repeat(df.columns[0], len(df.columns)-1)
     expt = [c for c in df.columns[1:]]
     zipped = zip(con, expt)
     test_tuples = list(zipped)
