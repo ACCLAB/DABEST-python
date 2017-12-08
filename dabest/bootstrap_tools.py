@@ -102,7 +102,7 @@ class bootstrap:
             See https://docs.scipy.org/doc/scipy-0.19.0/reference/
                 generated/scipy.stats.wilcoxon.html
 
-        pvalue_mannWhitney: float
+        pvalue_mann_whitney: float
             Two-sided p-value obtained from scipy.stats.mannwhitneyu.
             If a single array was given (x1 only), returns 'NIL'.
             The Mann-Whitney U-test is a nonparametric unpaired test of the null
@@ -246,7 +246,7 @@ class bootstrap:
         self.pvalue_2samp_ind_ttest = ttest_2_ind
         self.pvalue_2samp_paired_ttest = ttest_2_paired
         self.pvalue_wilcoxon = wilcoxonresult
-        self.pvalue_mannWhitney = mannwhitneyresult
+        self.pvalue_mann_whitney = mannwhitneyresult
 
         self.results = {'stat_summary': self.summary,
             'is_difference': diff,
