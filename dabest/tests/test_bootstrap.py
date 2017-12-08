@@ -1,10 +1,5 @@
 # #! /usr/bin/env python
 
-# # Check that pytest itself is working.
-# def func(x):
-#     return x + 1
-# def test_answer():
-#     assert func(3) == 4
 
 import pytest
 
@@ -15,8 +10,6 @@ def create_dummy_dataset(n=50, expt_groups=6):
     # Dummy dataset
     Ns = n
     dataset = list()
-    # fix the seed so we get the same numbers each time.
-#     for seed in [10,11,12,13,14,15]:
     for seed in np.random.randint(low=100, high=1000, size=expt_groups):
         np.random.seed(seed)
         dataset.append(np.random.randn(Ns))
@@ -24,13 +17,6 @@ def create_dummy_dataset(n=50, expt_groups=6):
     # Create some upwards/downwards shifts.
     for c in df.columns:
         df.loc[:,c] =( df[c] * np.random.random()) + np.random.random()
-#     df['Group2'] = df['Group2'] - 0.1
-#     df['Group3'] = df['Group3'] + 0.2
-#     df['Group4'] = (df['Group4']*1.1) + 4
-#     df['Group5'] = (df['Group5']*1.1) - 1
-    # # Add gender column for color.
-    # df['Gender'] = np.concatenate([np.repeat('Male', Ns/2),
-    #                               np.repeat('Female', Ns/2)])
 
     return df
 
@@ -100,6 +86,8 @@ def make_test_tuples(df):
     test_tuples = list(zipped)
 
     return test_tuples
+
+# Start tests below.
 
 
 def test_paired(expt_groups_count=5):
