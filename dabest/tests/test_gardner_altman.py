@@ -29,47 +29,7 @@ def create_dummy_dataset(n=50, expt_groups=6):
                                    np.repeat('Female', Ns/2)])
 
     return df
-#
 
-#
-# # f.savefig('testfig.svg', **savefig_kwargs)
-def test_Gardner_Altman_unpaired(df):
-    from .. import api
-    df = create_dummy_dataset()
-
-    return api.plot(data=df,
-                    idx=('Control','Group1'))
-
-
-def Gardner_Altman_paired(df):
-    from .. import api
-
-    return api.plot(data=df,
-                       idx=('Control','Group1'),
-                       paired=True)
-
-def Cumming_two_group_unpaired(df):
-    from .. import api
-
-    return api.plot(data=df,
-                      idx=('Control','Group1'),
-                      float_contrast=True)
-
-def Cumming_two_group_paired(df):
-    from .. import api
-
-    return api.plot(data=df,
-                       idx=('Control','Group1'),
-                       paired=True,
-                       float_contrast=True)
-
-def custom_swarm_label(df):
-    from .. import api
-
-    return api.plot(data=df,
-                       idx=('Control','Group1'),
-                       swarm_label='my swarm',
-                       contrast_label='contrast')
 
 def custom_contrast_label(df):
     from .. import api
