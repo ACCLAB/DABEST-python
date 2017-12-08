@@ -10,17 +10,6 @@
 # Load Libraries
 import pytest
 
-# Use SVG renderer.
-mpl.use('SVG')
-# mpl.use('TkAgg')
-# Ensure that text is rendered as text and not as paths.
-plt.rcParams['svg.fonttype'] = 'none'
-
-savefig_kwargs = {'transparent': True,
-                 'frameon': False,
-                 'bbox_inches': 'tight',
-                 'format': 'svg'}
-
 @pytest.fixture
 def create_dummy_dataset(n=50, expt_groups=6):
     import pandas as pd
