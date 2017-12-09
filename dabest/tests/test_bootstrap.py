@@ -82,18 +82,6 @@ def make_test_tuples(df):
 
 # Start tests below.
 
-
-def test_paired(expt_groups_count=5):
-    # Create dummy data for testing.
-    test_data = create_dummy_dataset(expt_groups=expt_groups_count)
-    # Now, create all pairs of control-expt tuples.
-    test_tuples = make_test_tuples(test_data)
-    # Run tests.
-    print('testing paired')
-    for t in test_tuples:
-        print(t)
-        paired(df=test_data, control=t[0], expt=t[1])
-
 def test_unpaired(expt_groups_count=5):
     # Create dummy data for testing.
     test_data = create_dummy_dataset(expt_groups=expt_groups_count)
@@ -104,6 +92,17 @@ def test_unpaired(expt_groups_count=5):
     for t in test_tuples:
         print(t)
         unpaired(df=test_data, control=t[0], expt=t[1])
+        
+def test_paired(expt_groups_count=5):
+    # Create dummy data for testing.
+    test_data = create_dummy_dataset(expt_groups=expt_groups_count)
+    # Now, create all pairs of control-expt tuples.
+    test_tuples = make_test_tuples(test_data)
+    # Run tests.
+    print('testing paired')
+    for t in test_tuples:
+        print(t)
+        paired(df=test_data, control=t[0], expt=t[1])
 
 def test_single_sample(mean=100, sd=10, n=20, abs_tol=1.25):
     samples = np.random.normal(loc=mean, scale=sd, size=n)
