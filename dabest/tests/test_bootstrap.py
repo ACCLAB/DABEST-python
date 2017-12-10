@@ -145,7 +145,7 @@ def difference_bootstrap(is_paired, abs_tol, mean=100, sd=10, n=20, alpha=0.05):
 @pytest.fixture
 def bootstrap_difference_bootstrap(is_paired=False,
     abstol=1.75,
-    alpha=0.05, nreps=500):
+    alpha=0.05, nreps=200):
     error_count = 0
     for i in range(1, nreps):
         try:
@@ -183,7 +183,7 @@ def test_paired(expt_groups_count=5):
         print(t)
         paired(df=test_data, control=t[0], expt=t[1])
 
-def test_single_sample_bootstrap(abstol=1.25, alpha=0.05, nreps=1000):
+def test_single_sample_bootstrap(abstol=1.25, alpha=0.05, nreps=200):
     error_count = 0
     for i in range(1, nreps):
         try:
@@ -198,7 +198,7 @@ def test_single_sample_bootstrap(abstol=1.25, alpha=0.05, nreps=1000):
 
 def test_bootstrap_difference_bootstrap_paired(is_paired=True,
     abstol=1.75,
-    alpha=0.05, nreps=500):
+    alpha=0.05, nreps=200):
 
     bootstrap_difference_bootstrap(is_paired=is_paired,
         abstol=abstol,
@@ -207,7 +207,7 @@ def test_bootstrap_difference_bootstrap_paired(is_paired=True,
 
 def test_bootstrap_difference_bootstrap_unpaired(is_paired=False,
     abstol=1.75,
-    alpha=0.05, nreps=500):
+    alpha=0.05, nreps=200):
 
     bootstrap_difference_bootstrap(is_paired=is_paired,
         abstol=abstol,
