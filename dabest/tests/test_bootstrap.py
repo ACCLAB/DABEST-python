@@ -31,7 +31,6 @@ def unpaired(df, control, expt):
 
     assert(result.is_difference == True)
     assert(result.pvalue_1samp_ttest =='NIL')
-
     assert(result.is_paired == False)
     assert(result.pvalue_2samp_paired_ttest =='NIL')
     assert(result.pvalue_wilcoxon == 'NIL')
@@ -55,7 +54,6 @@ def paired(df, control, expt):
 
     assert(result.is_difference == True)
     assert(result.pvalue_1samp_ttest =='NIL')
-
     assert(result.is_paired == True)
     assert(result.pvalue_2samp_ind_ttest =='NIL')
     assert(result.pvalue_mann_whitney == 'NIL')
@@ -88,9 +86,10 @@ def test_unpaired(expt_groups_count=5):
     # Now, create all pairs of control-expt tuples.
     test_tuples = make_test_tuples(test_data)
     # Run tests.
-    print('testing unpaired')
+    print('testing unpaired with dataframe.')
     for t in test_tuples:
-        print(t)
+        sys.stdout.write('\r{}'.format(t)
+        sys.stdout.flush()
         unpaired(df=test_data, control=t[0], expt=t[1])
 
 def test_paired(expt_groups_count=5):
@@ -99,9 +98,10 @@ def test_paired(expt_groups_count=5):
     # Now, create all pairs of control-expt tuples.
     test_tuples = make_test_tuples(test_data)
     # Run tests.
-    print('testing paired')
+    print('testing paired with dataframe.')
     for t in test_tuples:
-        print(t)
+        sys.stdout.write('\r{}'.format(t)
+        sys.stdout.flush()
         paired(df=test_data, control=t[0], expt=t[1])
 
 def test_single_sample_bootstrap(mean=100, sd=10, n=25,
