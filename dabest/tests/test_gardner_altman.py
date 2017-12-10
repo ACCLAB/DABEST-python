@@ -1,15 +1,13 @@
 # #! /usr/bin/env python
 
-# # Check that pytest itself is working.
-# def func(x):
-#     return x + 1
-#
-# def test_answer():
-#     assert func(3) == 4
 
 # Load Libraries
+import matplotlib.pyplot as plt
+import seaborn as sns
 import pytest
+from .. import api
 
+# Fixtures.
 @pytest.fixture
 def create_dummy_dataset(n=50, expt_groups=6):
     import pandas as pd
@@ -50,17 +48,10 @@ def get_swarm_yspans(coll, round_result=False, decimals=12):
     except ValueError:
         return None
 
-# savefig_kwargs = {'transparent': True,
-#                  'frameon': False,
-#                  'bbox_inches': 'tight',
-#                  'format': 'svg'}
 
+# Start tests.
 def test_Gardner_Altman_unpaired():
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-    import pytest
-    from .. import api
-
+    print('Testing unpaired Gardner Altman')
     df = create_dummy_dataset()
     for c in df.columns[1:-1]:
         f1, swarmplt = plt.subplots(figsize=(10, 10))
