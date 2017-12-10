@@ -88,7 +88,7 @@ def test_unpaired(expt_groups_count=5):
     # Run tests.
     print('testing unpaired with dataframe.')
     for t in test_tuples:
-        sys.stdout.write('\r{}'.format(t)
+        sys.stdout.write('\r{}'.format(t))
         sys.stdout.flush()
         unpaired(df=test_data, control=t[0], expt=t[1])
 
@@ -100,7 +100,7 @@ def test_paired(expt_groups_count=5):
     # Run tests.
     print('testing paired with dataframe.')
     for t in test_tuples:
-        sys.stdout.write('\r{}'.format(t)
+        sys.stdout.write('\r{}'.format(t))
         sys.stdout.flush()
         paired(df=test_data, control=t[0], expt=t[1])
 
