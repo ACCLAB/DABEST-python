@@ -18,6 +18,7 @@ install:
   - conda update conda --yes
   - conda create -n testenv --yes pip python=$PYTHON
   - source activate testenv
+  - pip install pytest==3.3
   - pip install .
 
-script: python tests.py
+script: pytest -s
