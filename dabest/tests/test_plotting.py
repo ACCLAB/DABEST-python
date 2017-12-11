@@ -49,8 +49,8 @@ def get_swarm_yspans(coll, round_result=False, decimals=12):
 
 
 # Start tests.
-def test_Gardner_Altman_unpaired():
-    print('Testing unpaired Gardner Altman')
+def test_swarmspan():
+    print('Testing swarmspan')
     df = create_dummy_dataset()
     for c in df.columns[1:-1]:
         f1, swarmplt = plt.subplots(figsize=(10, 10))
@@ -74,7 +74,16 @@ def test_ylims():
     print('Testing assignment of ylims')
     df = create_dummy_dataset()
 
-    print('ylims for Cummings')
+    print('Testing assignment for Gardner-Altman plot')
+    rand_swarm_ylim2 = (np.random.randint(-7, 0), np.random.randint(0, 7))
+    f2, b2 = api.plot(data=df,
+                   idx=(('0','1'),('2','3')),
+                   float_contrast=True,
+                   swarm_ylim=rand_swarm_ylim2)
+    for i in range(0, int(len(f2.axes)/2)):
+        assert f2.axes[i].get_ylim() == pytest.approx(rand_swarm_ylim2)
+
+    print('Testing assignment of ylims for Cummings plot')
     rand_swarm_ylim1 = (np.random.randint(-7, 0), np.random.randint(0, 7))
     rand_contrast_ylim1 = (np.random.randint(-1, 0), np.random.randint(0, 1))
     f1, b1 = api.plot(data=df,
@@ -87,20 +96,26 @@ def test_ylims():
     for i in range(int(len(f1.axes)/2), len(f1.axes)):
         assert f1.axes[i].get_ylim() == pytest.approx(rand_contrast_ylim1)
 
-    print('ylims for Gardner-Altman')
-    rand_swarm_ylim2 = (np.random.randint(-7, 0), np.random.randint(0, 7))
-    f2, b2 = api.plot(data=df,
-                   idx=(('0','1'),('2','3')),
-                   float_contrast=True,
-                   swarm_ylim=rand_swarm_ylim2)
-    for i in range(0, int(len(f2.axes)/2)):
-        assert f2.axes[i].get_ylim() == pytest.approx(rand_swarm_ylim2)
 
+def test_ylabels():
+    print('Testing assignment of ylabels')
+    df = create_dummy_dataset()
 
-# def test_ylabels():
-#     print('Testing assignment of ylabels')
-#     df = create_dummy_dataset()
-#     for c in df.columns[1:-1]:
-#         f1, swarmplt = plt.subplots(figsize=(10, 10))
-#         sns.swarmplot(data=df[[df.columns[0], c]],
-#             ax=swarmplt)
+    print('Testing ylabel assignment for Gardner-Altman plot')
+    f1, _ = api.plot(data=df,
+                     idx=(('0','1'),('2','3')),
+                     float_contrast=True,
+                     swarm_label="Hello",
+                     contrast_label="World"
+                    )
+    assert f1.axes[0].get_ylabel() == 'Hello'
+
+    print('Testing ylabel assignment for Cummings plot')
+    f2, _ = api.plot(data=df,
+                         idx=(('0','1'),('2','3')),
+                         float_contrast=False,
+                         swarm_label="Hello Again",
+                         contrast_label="World\nFolks"
+                        )
+    assert f2.axes[0].get_ylabel() == "Hello Again"
+    assert f2.axes[2].get_ylabel() == "World\nFolks"
