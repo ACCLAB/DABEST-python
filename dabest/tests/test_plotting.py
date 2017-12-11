@@ -119,3 +119,13 @@ def test_ylabels():
                         )
     assert f2.axes[0].get_ylabel() == "Hello Again"
     assert f2.axes[2].get_ylabel() == "World\nFolks"
+
+def test_paired():
+    print('Testing Gardner-Altman paired plotting')
+    df = create_dummy_dataset()
+    f, b = api.plot(data=df,
+                   idx=('0','1'),
+                   paired=True)
+    axx = f.axes[0]
+    assert df['0'].tolist() == [l.get_ydata()[0] for l in axx.lines]
+    assert df['1'].tolist() == [l.get_ydata()[1] for l in axx.lines]
