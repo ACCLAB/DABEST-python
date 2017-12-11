@@ -2,7 +2,9 @@
 
 
 # Load Libraries
+import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
 import pytest
 from .. import api
@@ -10,8 +12,6 @@ from .. import api
 # Fixtures.
 @pytest.fixture
 def create_dummy_dataset(n=50, expt_groups=6):
-    import pandas as pd
-    import numpy as np
     # Dummy dataset
     Ns = n
     dataset = list()
@@ -21,7 +21,7 @@ def create_dummy_dataset(n=50, expt_groups=6):
     df = pd.DataFrame(dataset).T
     # Create some upwards/downwards shifts.
     for c in df.columns:
-        df.loc[:,c] =( df[c] * np.random.random()) + np.random.random()
+        df.loc[:,c] =(df[c] * np.random.random()) + np.random.random()
     # Turn columns into strings
     df.columns = [str(c) for c in df.columns]
     # Add gender column for color.
@@ -38,7 +38,6 @@ def get_swarm_yspans(coll, round_result=False, decimals=12):
 
     Modified from `get_swarm_spans` in plot_tools.py.
     """
-    import numpy as np
     _, y = np.array(coll.get_offsets()).T
     try:
         if round_result:
@@ -56,14 +55,14 @@ def test_Gardner_Altman_unpaired():
     for c in df.columns[1:-1]:
         f1, swarmplt = plt.subplots(figsize=(10, 10))
         sns.swarmplot(data=df[[df.columns[0], c]],
-                      ax=swarmplt)
+            ax=swarmplt)
         sns_yspans = []
         for coll in swarmplt.collections:
             sns_yspans.append(get_swarm_yspans(coll))
 
         f2, b = api.plot(data=df,
-                           fig_size=(12.5, 11),
-                           idx=(df.columns[0], c))
+            fig_size=(12.5, 11),
+            idx=(df.columns[0], c))
         dabest_yspans = []
         for coll in f2.axes[0].collections:
             dabest_yspans.append(get_swarm_yspans(coll))
@@ -71,7 +70,37 @@ def test_Gardner_Altman_unpaired():
         for j, span in enumerate(sns_yspans):
             assert span == pytest.approx(dabest_yspans[j])
 
-# savefig_kwargs = {'transparent': True,
-#                  'frameon': False,
-#                  'bbox_inches': 'tight',
-#                  'format': 'svg'}
+def test_ylims():
+    print('Testing assignment of ylims')
+    df = create_dummy_dataset()
+
+    print('ylims for Cummings')
+    rand_swarm_ylim1 = (np.random.randint(-7, 0), np.random.randint(0, 7))
+    rand_contrast_ylim1 = (np.random.randint(-1, 0), np.random.randint(0, 1))
+    f1, b1 = api.plot(data=df,
+                   idx=(('0','1'),('2','3')),
+                   float_contrast=False,
+                   swarm_ylim=rand_swarm_ylim1,
+                   contrast_ylim=rand_contrast_ylim1)
+    for i in range(0, int(len(f1.axes)/2)):
+        assert f1.axes[i].get_ylim() == pytest.approx(rand_swarm_ylim1)
+    for i in range(int(len(f1.axes)/2), len(f1.axes)):
+        assert f1.axes[i].get_ylim() == pytest.approx(rand_contrast_ylim1)
+
+    print('ylims for Gardner-Altman')
+    rand_swarm_ylim2 = (np.random.randint(-7, 0), np.random.randint(0, 7))
+    f2, b2 = api.plot(data=df,
+                   idx=(('0','1'),('2','3')),
+                   float_contrast=True,
+                   swarm_ylim=rand_swarm_ylim2)
+    for i in range(0, int(len(f2.axes)/2)):
+        assert f2.axes[i].get_ylim() == pytest.approx(rand_swarm_ylim2)
+
+
+# def test_ylabels():
+#     print('Testing assignment of ylabels')
+#     df = create_dummy_dataset()
+#     for c in df.columns[1:-1]:
+#         f1, swarmplt = plt.subplots(figsize=(10, 10))
+#         sns.swarmplot(data=df[[df.columns[0], c]],
+#             ax=swarmplt)
