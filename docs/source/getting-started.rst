@@ -36,12 +36,12 @@ Then, navigate to the cloned repo in the command line and run
 2. Using ``conda``
 ^^^^^^^^^^^^^^^^^^
 
-*This section will be updated cnce this is uploaded to conda.*
+*This section will be updated once this is uploaded to conda.*
 
-2. Using ``pip``
+3. Using ``pip``
 ^^^^^^^^^^^^^^^^
 
-*This section will be updated cnce this is uploaded to PyPi.*
+*This section will be updated once this is uploaded to PyPi.*
 
 -------
 Testing
@@ -59,10 +59,4 @@ Please report any bugs on the `Github issue tracker <https://github.com/ACCLAB/D
 ------------
 Contributing
 ------------
-All contributions are welcome. Please fork the `repo    <https://github.com/ACCLAB/DABEST-python/>`_ and open a pull request.
-
--------
-License
--------
-
-The `dabest` package in Python is written by `Joses W. Ho <https://twitter.com/jacuzzijo>`_ (with design and input from `Adam Claridge-Chang <https://twitter.com/adamcchang>`_ and `his lab members <https://www.claridgechang.net>`_), and is licenced under the `MIT License <https://spdx.org/licenses/MIT>`_.
+All contributions are welcome. Please fork the `Github repo    <https://github.com/ACCLAB/DABEST-python/>`_ and open a pull request.

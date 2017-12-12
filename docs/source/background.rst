@@ -21,7 +21,7 @@ For each of the most routine significance tests, there is an estimation replacem
 * Repeated measures ANOVA → Multi-paired comparison
 * Ordered groups ANOVA → Shared-control comparison
 
-*image of all five types of plot*
+.. *image of all five types of plot*
 
 All of these plots enable you to graphically inspect the mean difference and its confidence interval. When there are multiple groups, the side-by-side plotting allows the visual comparison of effect sizes.
 

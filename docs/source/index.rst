@@ -11,11 +11,19 @@ Data Analysis with Bootstrap ESTimation
 ---------------------------------------
 .. image:: _images/f1.png
 
+News
+----
+
+December 2017: We have made a `webapp <https://www.estimationstats.com>`_ that produces Gardner-Altman and Cumming plots!
+
+Contents
+----
+
 .. toctree::
    :maxdepth: 2
-   :caption: Welcome to the DABEST documentation!
 
    background
    getting-started
    tutorial
    api
+   about

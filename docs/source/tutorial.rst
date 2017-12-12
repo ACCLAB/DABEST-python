@@ -2,8 +2,7 @@
 ========
 Tutorial
 ========
-
-`Download <https://github.com/ACCLAB/DABEST-python/raw/master/dabest_tutorial.ipynb>`_ this tutorial as a Jupyter notebook.
+.. `Download <https://raw.githubusercontent.com/ACCLAB/DABEST-python-docs/master/ipynb/dabest_tutorial.ipynb>`_ this tutorial as a Jupyter notebook.
 
 First, we load the libraries we will be using::
 
@@ -113,7 +112,7 @@ One can display the median with the 25th and 75th percentiles (a Tufte-style box
                    color_col='Gender')
 .. image:: _images/f5.png
 
-Controlling Aesthetics
+Controlling aesthetics
 ----------------------
 
 Below we run through ways of customizing various aesthetic features.
