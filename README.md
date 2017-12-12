@@ -24,25 +24,24 @@ To obtain these package dependencies easily, it is highly recommended to downloa
 
 ## Installation
 
-To install this pre-release version, please clone this repo locally (see intstructions [here](https://help.github.com/articles/cloning-a-repository/)).
+You can install this package via `pip`.
+
+To install, at the command line run
+<!-- ```shell
+conda config --add channels conda-forge
+conda install dabest
+```
+or -->
+```shell
+pip install --upgrade dabest
+```
+You can also clone this repo locally (see intstructions [here](https://help.github.com/articles/cloning-a-repository/)).
 
 Then, navigate to the cloned repo in the command line and run
 
 ```shell
 pip install .
 ```
-<!-- You can install this package via `conda` or `pip`. The former is recommended, and comes installed with the above-mentioned Anaconda distribution.
-
-To install, at the command line, run either
-```shell
-conda config --add channels conda-forge
-conda install dabest
-```
-or
-```shell
-pip install --upgrade dabest
-``` -->
-
 
 ## Usage
 
