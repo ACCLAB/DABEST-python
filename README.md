@@ -45,7 +45,7 @@ pip install --upgrade dabest
 
 ## Usage
 
-Please refer to the [tutorial](https://github.com/ACCLAB/DABEST-python/blob/master/dabest_tutorial.ipynb).
+Please refer to the [documentation](https://acclab.github.io/DABEST-python-docs/index.html).
 
 ## Matlab version
 
