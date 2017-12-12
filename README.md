@@ -18,7 +18,7 @@ In addition, the following packages are also required:
 - scipy (1.0.0)
 - pandas (0.21.0).
 
-To obtain these package dependencies easily, it is highly recommended to download the Anaconda distribution of Python from [https://www.continuum.io/downloads](https://www.continuum.io/downloads).
+To obtain these package dependencies easily, it is highly recommended to download the [Anaconda distribution](https://www.continuum.io/downloads) of Python.
 
 
 ## Installation
