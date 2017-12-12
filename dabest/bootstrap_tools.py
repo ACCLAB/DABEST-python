@@ -4,7 +4,7 @@ from __future__ import division
 class bootstrap:
     '''Computes the summary statistic and a bootstrapped confidence interval.
 
-    Keyword arguments:
+    Keywords:
         x1, x2: array-like
             The data in a one-dimensional array form. Only x1 is required.
             If x2 is given, the bootstrapped summary difference between
@@ -279,8 +279,9 @@ def jackknife_indexes(data):
     # Taken without modification from scikits.bootstrap package.
     """
     From the scikits.bootstrap package.
-    Given data points data, where axis 0 is considered to delineate points,
-    return a list of arrays where each array is a set of jackknife indexes.
+    Given an array, returns a list of arrays where each array is a set of 
+    jackknife indexes.
+
     For a given set of data Y, the jackknife sample J[i] is defined as the
     data set Y with the ith data point deleted.
     """

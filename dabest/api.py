@@ -37,7 +37,7 @@ def plot(data, idx,
     either a Cummings hub-and-spoke plot or a Gardner-Altman contrast plot.
     Paired and unpaired options available.
 
-    Keyword arguments:
+    Keywords:
         data: pandas DataFrame
 
         idx: tuple
