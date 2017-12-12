@@ -9,7 +9,7 @@ DABEST is a package for **D**ata **A**nalysis using **B**ootstrapped **EST**imat
 
 ![Gardner-Altman plot](https://acclab.github.io/DABEST-python-docs/_images/f1.png)
 
-The current version is __0.0.3__.
+The current version is __0.1.0__.
 
 ## Requirements
 
