@@ -24,24 +24,28 @@ To obtain these package dependencies easily, it is highly recommended to downloa
 Installation
 ------------
 
-1. Using Github
-^^^^^^^^^^^^^^^
+1. Using ``pip``
+
+At the command line, run
+
+.. code-block:: console
+
+  $ pip install dabest
+
+2. Using Github
 
 Clone the `DABEST-python repo <https://github.com/ACCLAB/DABEST-python>`_ locally (see instructions `here <https://help.github.com/articles/cloning-a-repository/>`_).
 
 Then, navigate to the cloned repo in the command line and run
 
-``pip install .``
+.. code-block:: console
 
-2. Using ``conda``
-^^^^^^^^^^^^^^^^^^
+  $ pip install .
+
+
+3. Using ``conda``
 
 *This section will be updated once this is uploaded to conda.*
-
-3. Using ``pip``
-^^^^^^^^^^^^^^^^
-
-*This section will be updated once this is uploaded to PyPi.*
 
 -------
 Testing
