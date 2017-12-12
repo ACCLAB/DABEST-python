@@ -1,16 +1,16 @@
-.. _usage:
+.. _api:
 
 .. currentmodule:: dabest
 
-Usage
-=====
+API
+===
 
 Plotting
 --------
 
 .. autofunction:: plot
 
-Bootstrap computation
+Bootstrapping
 ---------------------
 
 .. autoclass:: bootstrap

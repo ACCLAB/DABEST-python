@@ -1,0 +1,316 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>API &#8212; dabest 0.0.2 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Tutorial" href="tutorial.html" />
+    <link rel="prev" title="Getting Started" href="getting-started.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="api">
+<span id="id1"></span><h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="plotting">
+<h2>Plotting<a class="headerlink" href="#plotting" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="dabest.plot">
+<code class="descclassname">dabest.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>data</em>, <em>idx</em>, <em>x=None</em>, <em>y=None</em>, <em>color_col=None</em>, <em>float_contrast=True</em>, <em>paired=False</em>, <em>show_pairs=True</em>, <em>group_summaries='mean_sd'</em>, <em>custom_palette=None</em>, <em>swarm_label=None</em>, <em>contrast_label=None</em>, <em>swarm_ylim=None</em>, <em>contrast_ylim=None</em>, <em>fig_size=None</em>, <em>font_scale=1.25</em>, <em>stat_func=None</em>, <em>ci=95</em>, <em>n_boot=5000</em>, <em>show_group_count=True</em>, <em>swarmplot_kwargs=None</em>, <em>violinplot_kwargs=None</em>, <em>reflines_kwargs=None</em>, <em>group_summary_kwargs=None</em>, <em>legend_kwargs=None</em>, <em>aesthetic_kwargs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#dabest.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a pandas DataFrame and produces a contrast plot:
+either a Cummings hub-and-spoke plot or a Gardner-Altman contrast plot.
+Paired and unpaired options available.</p>
+<dl class="docutils">
+<dt>Keywords:</dt>
+<dd><blockquote class="first">
+<div><p>data: pandas DataFrame</p>
+<dl class="docutils">
+<dt>idx: tuple</dt>
+<dd>List of column names (if ‘x’ is not supplied) or of category names
+(if ‘x’ is supplied). This can be expressed as a tuple of tuples,
+with each individual tuple producing its own contrast plot.</dd>
+<dt>x, y: strings, default None</dt>
+<dd>Column names for data to be plotted on the x-axis and y-axis.</dd>
+<dt>color_col: list, default None</dt>
+<dd>Column to be used for colors.</dd>
+<dt>swarm_label, contrast_label: strings, default None</dt>
+<dd>Set labels for the y-axis of the swarmplot and the contrast plot,
+respectively.</dd>
+<dt>float_contrast: boolean, default True</dt>
+<dd>Whether or not to display the halfviolin bootstrapped difference
+distribution alongside the raw data.</dd>
+<dt>paired: boolean, default False</dt>
+<dd>Whether or not the data is paired. To elaborate.</dd>
+<dt>custom_palette: dict or list, default None</dt>
+<dd><p class="first">Pass a dictionary with {‘group’:’color’} pairings here, or a list
+of matplotlib colors. This palette will be used to color the
+swarmplot.</p>
+<p>Please take a look at the seaborn commands <cite>color_palette</cite>
+and <cite>cubehelix_palette</cite> to generate a custom palette.
+<a class="reference external" href="https://seaborn.pydata.org/generated/seaborn.color_palette.html">https://seaborn.pydata.org/generated/seaborn.color_palette.html</a>
+<a class="reference external" href="https://seaborn.pydata.org/generated/seaborn.cubehelix_palette.html">https://seaborn.pydata.org/generated/seaborn.cubehelix_palette.html</a></p>
+<p class="last">The named colors of matplotlib can be found here:
+<a class="reference external" href="https://matplotlib.org/examples/color/named_colors.html">https://matplotlib.org/examples/color/named_colors.html</a></p>
+</dd>
+<dt>show_pairs: boolean, default True</dt>
+<dd>If the data is paired, whether or not to show the raw data as a
+swarmplot, or as paired plot, with a line joining each pair of
+observations.</dd>
+<dt>group_summaries: [‘mean_sd’, ‘median_quartiles’, ‘None’], default ‘mean_sd’</dt>
+<dd>Plots the summary statistics for each group. If ‘mean_sd’, then the
+mean and standard deviation of each group is plotted as a notched
+line beside each group. If ‘median_quantiles’, then the
+median and 25th and 75th percentiles of each group is plotted
+instead. If ‘None’, the summaries are not shown.</dd>
+<dt>swarm_ylim: tuple, default None</dt>
+<dd>The desired y-limits of the raw data swarmplot as a (lower, higher)
+tuple.</dd>
+<dt>contrast_ylim: tuple, default None</dt>
+<dd>The desired y-limits of the constrast plot as a (lower, higher)
+tuple.</dd>
+<dt>fig_size: tuple, default None</dt>
+<dd>The desired dimensions of the figure as a (length, width) tuple.</dd>
+<dt>font_scale: float, default 1.4</dt>
+<dd>The font size will be scaled by this number.</dd>
+<dt>stat_func: callable, default None</dt>
+<dd>The function used to compute the summary. If None, defaults to
+np.mean()</dd>
+<dt>ci: integer, default 95</dt>
+<dd>The size of the confidence interval desired (in percentage).</dd>
+<dt>n_boot: integer, default 5000</dt>
+<dd>Number of bootstrap iterations to perform during calculation of
+confidence intervals.</dd>
+<dt>show_group_count: boolean, default True</dt>
+<dd>Whether or not the group count (e.g. ‘N=10’) will be appended to the
+xtick labels.</dd>
+<dt>swarmplot_kwargs: dict, default None</dt>
+<dd>Pass any keyword arguments accepted by the seaborn <cite>swarmplot</cite>
+command here, as a dict.</dd>
+<dt>violinplot_kwargs: dict, default None</dt>
+<dd>Pass any keyword arguments accepted by the matplotlib `
+pyplot.violinplot` command here, as a dict.</dd>
+<dt>reflines_kwargs: dict, default None</dt>
+<dd>Pass any keyword arguments accepted by the matplotlib Axes <cite>hlines</cite>
+command here, as a dict.T his will change the appearance of the zero
+reference lines.</dd>
+<dt>group_summary_kwargs: dict, default None</dt>
+<dd>Pass any keyword arguments accepted by the matplotlib.lines.Line2D
+command here, as a dict. This will change the appearance of the
+vertical summary lines for each group, if <cite>group_summaries</cite> is not
+‘None’.</dd>
+<dt>legend_kwargs: dict, default None</dt>
+<dd>Pass any keyword arguments accepted by the matplotlib Axes <cite>legend</cite>
+command here, as a dict.</dd>
+<dt>aesthetic_kwargs: dict, default None</dt>
+<dd>Pass any keyword arguments accepted by the seaborn <cite>set</cite> command
+here, as a dict.</dd>
+</dl>
+</div></blockquote>
+<dl class="last docutils">
+<dt>Returns:</dt>
+<dd><p class="first">A matplotlib Figure.
+Arrangement of the axes. Obtaining access to them via figure.axes[i]</p>
+<p class="last">A pandas DataFrame.
+Description of column headings.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="bootstrapping">
+<h2>Bootstrapping<a class="headerlink" href="#bootstrapping" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="dabest.bootstrap">
+<em class="property">class </em><code class="descclassname">dabest.</code><code class="descname">bootstrap</code><span class="sig-paren">(</span><em>x1</em>, <em>x2=None</em>, <em>paired=False</em>, <em>statfunction=None</em>, <em>smoothboot=False</em>, <em>alpha_level=0.05</em>, <em>reps=5000</em><span class="sig-paren">)</span><a class="headerlink" href="#dabest.bootstrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the summary statistic and a bootstrapped confidence interval.</p>
+<dl class="docutils">
+<dt>Keywords:</dt>
+<dd><dl class="first last docutils">
+<dt>x1, x2: array-like</dt>
+<dd>The data in a one-dimensional array form. Only x1 is required.
+If x2 is given, the bootstrapped summary difference between
+the two groups (x2-x1) is computed.
+NaNs are automatically discarded.</dd>
+<dt>paired: boolean, default False</dt>
+<dd>Whether or not x1 and x2 are paired samples.</dd>
+<dt>statfunction: callable, default np.mean</dt>
+<dd>The summary statistic called on data.</dd>
+<dt>smoothboot: boolean, default False</dt>
+<dd>Taken from seaborn.algorithms.bootstrap.
+If True, performs a smoothed bootstrap (draws samples from a kernel
+destiny estimate).</dd>
+<dt>alpha: float, default 0.05</dt>
+<dd>Denotes the likelihood that the confidence interval produced
+_does <a href="#id2"><span class="problematic" id="id3">not_</span></a> include the true summary statistic. When alpha = 0.05,
+a 95% confidence interval is produced.</dd>
+<dt>reps: int, default 5000</dt>
+<dd>Number of bootstrap iterations to perform.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">An <cite>bootstrap</cite> object reporting the summary statistics, percentile CIs,
+bias-corrected and accelerated (BCa) CIs, and the settings used.</p>
+<dl class="last docutils">
+<dt>summary: float</dt>
+<dd>The summary statistic.</dd>
+<dt>is_difference: boolean</dt>
+<dd>Whether or not the summary is the difference between two groups.
+If False, only x1 was supplied.</dd>
+<dt>is_paired: boolean</dt>
+<dd>Whether or not the difference reported is between 2 paired groups.</dd>
+<dt>statistic: callable</dt>
+<dd>The function used to compute the summary.</dd>
+<dt>reps: int</dt>
+<dd>The number of bootstrap iterations performed.</dd>
+<dt>stat_array: array.</dt>
+<dd>A sorted array of values obtained by bootstrapping the input arrays.</dd>
+<dt>ci: float</dt>
+<dd>The size of the confidence interval reported (in percentage).</dd>
+<dt>pct_ci_low, pct_ci_high: floats</dt>
+<dd>The upper and lower bounds of the confidence interval as computed
+by taking the percentage bounds.</dd>
+<dt>pct_low_high_indices: array</dt>
+<dd>An array with the indices in <cite>stat_array</cite> corresponding to the
+percentage confidence interval bounds.</dd>
+<dt>bca_ci_low, bca_ci_high: floats</dt>
+<dd>The upper and lower bounds of the bias-corrected and accelerated
+(BCa) confidence interval. See Efron 1977.</dd>
+<dt>bca_low_high_indices: array</dt>
+<dd>An array with the indices in <cite>stat_array</cite> corresponding to the BCa
+confidence interval bounds.</dd>
+<dt>pvalue_1samp_ttest: float</dt>
+<dd>P-value obtained from scipy.stats.ttest_1samp. If 2 arrays were
+(x1 and x2), returns ‘NIL’.
+See <a class="reference external" href="https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_1samp.html">https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_1samp.html</a></dd>
+<dt>pvalue_2samp_ind_ttest: float</dt>
+<dd>P-value obtained from scipy.stats.ttest_ind.
+If a single array was given (x1 only), or if <cite>paired</cite> is True,
+returns ‘NIL’.
+See <a class="reference external" href="https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_ind.html">https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_ind.html</a></dd>
+<dt>pvalue_2samp_related_ttest: float</dt>
+<dd>P-value obtained from scipy.stats.ttest_rel.
+If a single array was given (x1 only), or if <cite>paired</cite> is False,
+returns ‘NIL’.
+See <a class="reference external" href="https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_rel.html">https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_rel.html</a></dd>
+<dt>pvalue_wilcoxon: float</dt>
+<dd>P-value obtained from scipy.stats.wilcoxon.
+If a single array was given (x1 only), or if <cite>paired</cite> is False,
+returns ‘NIL’.
+The Wilcoxons signed-rank test is a nonparametric paired test of
+the null hypothesis that the related samples x1 and x2 are from
+the same distribution.
+See <a class="reference external" href="https://docs.scipy.org/doc/scipy-1.0.0/reference/scipy.stats.wilcoxon.html">https://docs.scipy.org/doc/scipy-1.0.0/reference/scipy.stats.wilcoxon.html</a></dd>
+<dt>pvalue_mann_whitney: float</dt>
+<dd>Two-sided p-value obtained from scipy.stats.mannwhitneyu.
+If a single array was given (x1 only), returns ‘NIL’.
+The Mann-Whitney U-test is a nonparametric unpaired test of the null
+hypothesis that x1 and x2 are from the same distribution.
+See <a class="reference external" href="https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.mannwhitneyu.html">https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.mannwhitneyu.html</a></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">dabest</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="background.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#plotting">Plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bootstrapping">Bootstrapping</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="getting-started.html" title="previous chapter">Getting Started</a></li>
+      <li>Next: <a href="tutorial.html" title="next chapter">Tutorial</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Joses W. Ho.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/api.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

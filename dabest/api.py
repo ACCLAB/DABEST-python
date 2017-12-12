@@ -46,6 +46,7 @@ def plot(data, idx,
             with each individual tuple producing its own contrast plot.
 
         x, y: strings, default None
+            Column names for data to be plotted on the x-axis and y-axis.
 
         color_col: list, default None
             Column to be used for colors.
@@ -79,8 +80,7 @@ def plot(data, idx,
             swarmplot, or as paired plot, with a line joining each pair of
             observations.
 
-        group_summaries: ['mean_sd', 'median_quartiles', 'None'],
-                         default 'mean_sd'
+        group_summaries: ['mean_sd', 'median_quartiles', 'None'], default 'mean_sd'
             Plots the summary statistics for each group. If 'mean_sd', then the
             mean and standard deviation of each group is plotted as a notched
             line beside each group. If 'median_quantiles', then the
