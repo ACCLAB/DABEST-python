@@ -9,6 +9,8 @@ DABEST
 ---------------------------------------
 Data Analysis with Bootstrap ESTimation
 ---------------------------------------
+*version 0.0.3*
+
 .. image:: _images/f1.png
 
 News
