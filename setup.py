@@ -44,12 +44,12 @@ if __name__=="__main__":
 
     installs=check_dependencies()
     setup(name='dabest',
-    author='Joses Ho',
+    author='Joses W. Ho',
     author_email='joseshowh@gmail.com',
-    version='0.0.3',
+    version='0.1.0',
     description='Data Analysis and Visualization using Bootstrapped Estimation.',
     packages=find_packages(),
     install_requires=installs,
-    url='http://github.com/josesho/bootstrap_contrast',
+    url='https://acclab.github.io/DABEST-python-docs/index.html',
     license='BSD 3-clause "New" or "Revised" License'
     )
