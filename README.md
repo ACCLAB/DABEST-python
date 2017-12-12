@@ -7,6 +7,8 @@
 
 DABEST is a package for **D**ata **A**nalysis using **B**ootstrapped **EST**imation.
 
+![Gardner-Altman plot](https://acclab.github.io/DABEST-python-docs/_images/f1.png)
+
 ## Requirements
 
 Python 3.6 is strongly recommended, although this has been tested with Python 2.7 and Python 3.5.
@@ -19,7 +21,6 @@ In addition, the following packages are also required:
 - pandas (0.21.0).
 
 To obtain these package dependencies easily, it is highly recommended to download the [Anaconda distribution](https://www.continuum.io/downloads) of Python.
-
 
 ## Installation
 
