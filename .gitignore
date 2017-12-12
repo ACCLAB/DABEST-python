@@ -111,3 +111,6 @@ dev*
 # DS_Store
 .DS_Store
 **/.DS_Store
+
+# font list
+fontList.json
