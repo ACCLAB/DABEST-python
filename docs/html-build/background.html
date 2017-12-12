@@ -1,0 +1,188 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Background &#8212; dabest 0.0.2 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Getting Started" href="getting-started.html" />
+    <link rel="prev" title="DABEST" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="background">
+<span id="id1"></span><h1>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="what-is-estimation-statistics">
+<h2>What is estimation statistics?<a class="headerlink" href="#what-is-estimation-statistics" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Estimation_statistics">Estimation statistics</a> is a simple framework that—while avoiding the pitfalls of significance testing—uses familiar statistical concepts: means, mean differences, and error bars.</p>
+</div>
+<div class="section" id="why-use-estimation-statistics">
+<h2>Why use estimation statistics?<a class="headerlink" href="#why-use-estimation-statistics" title="Permalink to this headline">¶</a></h2>
+<p>For each of the most routine significance tests, there is an estimation replacement:</p>
+<ul class="simple">
+<li>Unpaired Student’s t-test → Two-groups Gardner-Altman comparison plot</li>
+<li>Paired Student’s t-test → Paired comparison</li>
+<li>One-way ANOVA + multiple comparisons → Cumming multiple-groups plot</li>
+<li>Repeated measures ANOVA → Multi-paired comparison</li>
+<li>Ordered groups ANOVA → Shared-control comparison</li>
+</ul>
+<p><em>image of all five types of plot</em></p>
+<p>All of these plots enable you to graphically inspect the mean difference and its confidence interval. When there are multiple groups, the side-by-side plotting allows the visual comparison of effect sizes.</p>
+<table border="1" class="colwidths-given docutils" id="id4">
+<caption><span class="caption-text">Benefits of Estimation Plot</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="40%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&#160;</th>
+<th class="head">Bars-and-Stars</th>
+<th class="head">Boxplot &amp; P</th>
+<th class="head">Estimation Plot</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Avoid false dichotomy</td>
+<td>✘</td>
+<td>✘</td>
+<td>✔</td>
+</tr>
+<tr class="row-odd"><td>Display all observed values</td>
+<td>✘</td>
+<td>✘</td>
+<td>✔</td>
+</tr>
+<tr class="row-even"><td>Focus on intervention effect size</td>
+<td>✘</td>
+<td>✘</td>
+<td>✔</td>
+</tr>
+<tr class="row-odd"><td>Visualize estimate precision</td>
+<td>✘</td>
+<td>✘</td>
+<td>✔</td>
+</tr>
+<tr class="row-even"><td>Show mean difference distribution</td>
+<td>✘</td>
+<td>✘</td>
+<td>✔</td>
+</tr>
+</tbody>
+</table>
+<p><strong>1. Avoid false dichotomy.</strong> Is there really a great difference between probabilities of 0.04999 and 0.05001? One of the many problems with significance testing is the application of an α-threshold creates the illusion of a dichotomy. In significance testing, the former is ‘significant’ and the latter is ‘non-significant.’</p>
+<p>The graphical method of showing this test result with clusters of stars amplifies this false dichotomy; since the average reader is primed to look for <em>P</em> &lt; 0.05, presenting <a href="#id2"><span class="problematic" id="id3">*</span></a>P*values is almost as bad.</p>
+<p>Estimation plots present the significance test result innocuously: as the presence or absence of a gap between the mean-difference zero line and the closest confidence interval bound.</p>
+<p><strong>2. Display all observed values.</strong> <a class="reference external" href="https://doi.org/10.1038/nmeth.2837">Bar charts</a> often show means, error, and significance stars only. <a class="reference external" href="https://www.nature.com/articles/nmeth.2811">Boxplots</a> generally show just medians, quartiles, maybe a few outliers, and <em>P</em> values. For observed values, estimation plots follow best practices by presenting <a class="reference external" href="https://doi.org/10.1371/journal.pbio.1002128">each and every datapoint</a>.</p>
+<p>Presenting all observed values means that nothing is hidden: range, normality, skew, kurtosis, outliers, bounds, modality, and sample size are all clearly visible.</p>
+<p><strong>3. Focus on intervention effect size.</strong> Estimation comparison plots include an entirely new axis for the mean difference of two groups (or paired data), and a whole panel for the mean differences of multiple groups. This serves to draw attention to something that deserves it, the answer to the question: “What is the magnitude of the effect of the intervention?”</p>
+<p><strong>4. Visualize estimate precision.</strong> Unlike a significance test result, the narrowness of a confidence interval gives a clear impression of effect size precision. The 95% confidence interval provides the range of the the population mean difference values that are the most plausible.</p>
+<p>This 95% plausible interval also serves as an 83% prediction interval for replications (<a class="reference external" href="https://www.amazon.com/Introduction-New-Statistics-Estimation-Science/dp/1138825522/">Cumming and Calin-Jageman 2016</a>), i.e. predicts future replication effect sizes (assuming no change in protocol) with 83% accuracy.</p>
+<p><strong>5. Show mean difference distribution.</strong> The distribution of mean differences can be estimated using bootstrap resamples of the available data. As an approximation of the <a class="reference external" href="https://web.stanford.edu/~hastie/Papers/ESLII.pdf">Bayes posterior distribution</a>, this curve allows the analyst to weigh plausibility over an effect likelihood size range. Plotting this distribution also discourages dichotomous thinking—engendered by <em>P</em> values and hard-edged confidence intervals (<a class="reference external" href="https://www.ncbi.nlm.nih.gov/pubmed/28176294">Kruschke and Liddell 2017</a>)—by drawing attention to the distribution’s graded nature.</p>
+</div>
+<div class="section" id="why-are-these-plots-named-after-gardner-altman-and-cumming">
+<h2>Why are these plots named after Gardner, Altman, and Cumming?<a class="headerlink" href="#why-are-these-plots-named-after-gardner-altman-and-cumming" title="Permalink to this headline">¶</a></h2>
+<p>To our knowledge, mean difference comparison plots were first described by Martin Gardner and Douglas Altman (<a class="reference external" href="https://www.ncbi.nlm.nih.gov/pmc/articles/pmid/3082422/">Gardner and Altman 1986</a>), while the multiple-comparison design was devised by Geoff Cumming (<a class="reference external" href="https://www.amazon.com/Introduction-New-Statistics-Estimation-Science/dp/1138825522/">Cumming 2012</a>). We propose calling the two-groups plot Gardner-Altman comparison plots and the multi-group plots Cumming comparison plots.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">dabest</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Welcome to the DABEST documentation!</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Background</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-estimation-statistics">What is estimation statistics?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#why-use-estimation-statistics">Why use estimation statistics?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#why-are-these-plots-named-after-gardner-altman-and-cumming">Why are these plots named after Gardner, Altman, and Cumming?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">DABEST</a></li>
+      <li>Next: <a href="getting-started.html" title="next chapter">Getting Started</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Joses W. Ho.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/background.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

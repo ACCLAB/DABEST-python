@@ -4,7 +4,7 @@ from __future__ import division
 class bootstrap:
     '''Computes the summary statistic and a bootstrapped confidence interval.
 
-    Keyword arguments:
+    Keywords:
         x1, x2: array-like
             The data in a one-dimensional array form. Only x1 is required.
             If x2 is given, the bootstrapped summary difference between
@@ -73,24 +73,21 @@ class bootstrap:
             confidence interval bounds.
 
         pvalue_1samp_ttest: float
-            P-value obtained from scipy.stats.ttest_1samp.
-            If 2 arrays were given (x1 and x2), returns 'NIL'.
-            See https://docs.scipy.org/doc/scipy-0.19.0/
-                reference/generated/scipy.stats.ttest_1samp.html
+            P-value obtained from scipy.stats.ttest_1samp. If 2 arrays were
+            (x1 and x2), returns 'NIL'.
+            See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_1samp.html
 
         pvalue_2samp_ind_ttest: float
             P-value obtained from scipy.stats.ttest_ind.
             If a single array was given (x1 only), or if `paired` is True,
             returns 'NIL'.
-            See https://docs.scipy.org/doc/scipy-0.19.0/
-                reference/generated/scipy.stats.ttest_ind.html
+            See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_ind.html
 
         pvalue_2samp_related_ttest: float
             P-value obtained from scipy.stats.ttest_rel.
             If a single array was given (x1 only), or if `paired` is False,
             returns 'NIL'.
-            See https://docs.scipy.org/doc/scipy-0.19.0/
-                reference/generated/scipy.stats.ttest_rel.html
+            See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_rel.html
 
         pvalue_wilcoxon: float
             P-value obtained from scipy.stats.wilcoxon.
@@ -99,16 +96,14 @@ class bootstrap:
             The Wilcoxons signed-rank test is a nonparametric paired test of
             the null hypothesis that the related samples x1 and x2 are from
             the same distribution.
-            See https://docs.scipy.org/doc/scipy-0.19.0/reference/
-                generated/scipy.stats.wilcoxon.html
+            See https://docs.scipy.org/doc/scipy-1.0.0/reference/scipy.stats.wilcoxon.html
 
-        pvalue_mannWhitney: float
+        pvalue_mann_whitney: float
             Two-sided p-value obtained from scipy.stats.mannwhitneyu.
             If a single array was given (x1 only), returns 'NIL'.
             The Mann-Whitney U-test is a nonparametric unpaired test of the null
             hypothesis that x1 and x2 are from the same distribution.
-            See https://docs.scipy.org/doc/scipy-0.19.0/reference/
-                generated/scipy.stats.mannwhitneyu.html
+            See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.mannwhitneyu.html
 
     '''
     def __init__(self, x1, x2=None,
@@ -246,7 +241,7 @@ class bootstrap:
         self.pvalue_2samp_ind_ttest = ttest_2_ind
         self.pvalue_2samp_paired_ttest = ttest_2_paired
         self.pvalue_wilcoxon = wilcoxonresult
-        self.pvalue_mannWhitney = mannwhitneyresult
+        self.pvalue_mann_whitney = mannwhitneyresult
 
         self.results = {'stat_summary': self.summary,
             'is_difference': diff,
@@ -279,8 +274,9 @@ def jackknife_indexes(data):
     # Taken without modification from scikits.bootstrap package.
     """
     From the scikits.bootstrap package.
-    Given data points data, where axis 0 is considered to delineate points,
-    return a list of arrays where each array is a set of jackknife indexes.
+    Given an array, returns a list of arrays where each array is a set of
+    jackknife indexes.
+
     For a given set of data Y, the jackknife sample J[i] is defined as the
     data set Y with the ith data point deleted.
     """

@@ -18,7 +18,7 @@ def check_dependencies():
     try:
         import numpy
     except ImportError:
-        to_install.append('numpy==1.13.1')
+        to_install.append('numpy==1.13')
     try:
         import scipy
     except ImportError:
@@ -26,7 +26,7 @@ def check_dependencies():
     try:
         import matplotlib
     except ImportError:
-        to_install.append('matplotlib==2.0.2')
+        to_install.append('matplotlib==2.1')
     try:
         import pandas
         if int(pandas.__version__.split('.')[1])<21:

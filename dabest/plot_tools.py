@@ -1,7 +1,7 @@
 """
 A set of convenience functions used for producing plots in `dabest`.
 
-Author: Joses Ho
+Author: Joses W. Ho
 Email: joseshowh@gmail.com
 License: MIT
 """
