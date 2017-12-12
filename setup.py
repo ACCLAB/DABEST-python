@@ -46,10 +46,10 @@ if __name__=="__main__":
     setup(name='dabest',
     author='Joses Ho',
     author_email='joseshowh@gmail.com',
-    version='0.0.2',
+    version='0.0.3',
     description='Data Analysis and Visualization using Bootstrapped Estimation.',
     packages=find_packages(),
     install_requires=installs,
     url='http://github.com/josesho/bootstrap_contrast',
-    license='MIT'
+    license='BSD 3-clause "New" or "Revised" License'
     )
