@@ -7,7 +7,7 @@ About
 
 Who made this site?
 -------------------
-``dabest`` is written by `Joses W. Ho <https://twitter.com/jacuzzijo>`_ (with design and input from `Adam Claridge-Chang <https://twitter.com/adamcchang>`_ and `other lab members <https://www.claridgechang.net>`_).
+``dabest`` is written by `Joses W. Ho <https://twitter.com/jacuzzijo>`_ (with design and input from `Adam Claridge-Chang <https://twitter.com/adamcchang>`_ and other lab members.
 
 To find out more about the authors’ research, please visit the `Claridge-Chang lab webpage <http://www.claridgechang.net/>`_.
 
