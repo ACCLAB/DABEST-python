@@ -51,5 +51,5 @@ if __name__=="__main__":
     packages=find_packages(),
     install_requires=installs,
     url='https://acclab.github.io/DABEST-python-docs/index.html',
-    license='BSD 3-clause "New" or "Revised" License'
+    license='BSD 3-clause Clear License'
     )
