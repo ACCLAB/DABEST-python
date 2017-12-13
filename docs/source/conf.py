@@ -95,7 +95,7 @@ html_theme_options = {
     'head_font_family': 'Palatino',
     'font_size': '19px',
 
-    'code_font_size': '15px',
+    # 'code_font_size': '15px',
 
     'github_banner': True,
     'github_button': True,
