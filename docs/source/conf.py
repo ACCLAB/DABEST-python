@@ -90,7 +90,19 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    'font_family': 'Goudy Old Style',
+    'head_font_family': 'Palatino',
+    'font_size': '19px',
+
+    'code_font_size': '15px',
+
+    'github_banner': True,
+    'github_button': True,
+    'github_type': 'watch',
+    'github_user': 'ACCLAB',
+    'github_repo': 'DABEST-python',
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
