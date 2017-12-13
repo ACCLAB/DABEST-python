@@ -46,7 +46,7 @@ if __name__=="__main__":
     setup(name='dabest',
     author='Joses W. Ho',
     author_email='joseshowh@gmail.com',
-    version='0.1.0',
+    version='0.1.1',
     description='Data Analysis and Visualization using Bootstrapped Estimation.',
     packages=find_packages(),
     install_requires=installs,
