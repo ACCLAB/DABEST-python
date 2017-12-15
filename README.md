@@ -1,8 +1,6 @@
 # DABEST (Python)
 ![https://travis-ci.org/ACCLAB/DABEST-python](https://travis-ci.org/ACCLAB/DABEST-python.svg?branch=master)
 
-![](https://github.com/ACCLAB/DABEST-python-docs/raw/master/_images/f1.png)
-
 ## About
 
 DABEST is a package for **D**ata **A**nalysis using **B**ootstrapped **EST**imation.
