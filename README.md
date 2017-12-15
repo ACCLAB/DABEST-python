@@ -1,13 +1,12 @@
 # DABEST (Python)
-![https://travis-ci.org/ACCLAB/DABEST-python](https://travis-ci.org/ACCLAB/DABEST-python.svg?branch=master)
+[![Travis CI](https://travis-ci.org/ACCLAB/DABEST-python.svg?branch=master)]()
+[![PyPI](https://img.shields.io/pypi/v/dabest.svg)]()
 
 ## About
 
 DABEST is a package for **D**ata **A**nalysis using **B**ootstrapped **EST**imation.
 
 ![Gardner-Altman plot](https://acclab.github.io/DABEST-python-docs/_images/f1.png)
-
-The current version is __0.1.1__.
 
 ## Requirements
 
