@@ -1,7 +1,7 @@
 # DABEST (Python)
-<!-- [![Build Status](https://travis-ci.org/ACCLAB/DABEST-python.svg?branch=master)](https://travis-ci.org/ACCLAB/DABEST-python)
+![https://travis-ci.org/ACCLAB/DABEST-python](https://travis-ci.org/ACCLAB/DABEST-python.svg?branch=master)
 
-![](https://raw.githubusercontent.com/ACCLAB/DABEST-python/master/images/readme-float-contrast.png) -->
+![](https://github.com/ACCLAB/DABEST-python-docs/raw/master/_images/f1.png)
 
 ## About
 
