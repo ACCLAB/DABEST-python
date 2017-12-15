@@ -4,12 +4,13 @@
 # Load Libraries
 import numpy as np
 import matplotlib as mpl
+mpl.use('Agg')
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import pytest
 from .. import api
-mpl.use('Agg')
 
 # Fixtures.
 @pytest.fixture
