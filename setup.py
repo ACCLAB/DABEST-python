@@ -17,24 +17,36 @@ def check_dependencies():
 
     try:
         import numpy
+        if int(numpy.__version__.split('.')[1])<=12:
+            to_install.append('numpy==1.13')
     except ImportError:
         to_install.append('numpy==1.13')
+
     try:
         import scipy
+        if int(scipy.__version__.split('.')[0])==0:
+            to_install.append('scipy==1.0')
     except ImportError:
-        to_install.append('scipy==1.0.0')
+        to_install.append('scipy==1.0')
+
     try:
-        import matplotlib
+        import numba
+        if int(numba.__version__.split('.')[0])<=35:
+            to_install.append('numba==0.36')
     except ImportError:
-        to_install.append('matplotlib==2.1')
+        to_install.append('numba==0.36')
+
     try:
         import pandas
-        if int(pandas.__version__.split('.')[1])<21:
-            to_install.append('pandas==0.21')
+        if int(pandas.__version__.split('.')[1])<=21:
+            to_install.append('pandas==0.22')
     except ImportError:
-        to_install.append('pandas==0.21')
+        to_install.append('pandas==0.22')
+
     try:
         import seaborn
+        if int(seaborn.__version__.split('.')[1])<=7:
+            to_install.append('seaborn==0.8')
     except ImportError:
         to_install.append('seaborn==0.8')
 
