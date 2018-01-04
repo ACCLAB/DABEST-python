@@ -17,7 +17,7 @@ What license governs the use of ``dabest``?
 
 The ``dabest`` package in Python is licenced under the `BSD 3-clause Clear License <https://choosealicense.com/licenses/bsd-3-clause-clear/>`_.
 
-Copyright (c) 2016-2017, Joses W. Ho
+Copyright (c) 2016-2018, Joses W. Ho
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
