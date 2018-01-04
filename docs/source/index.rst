@@ -9,7 +9,7 @@ DABEST
 ---------------------------------------
 Data Analysis with Bootstrap ESTimation
 ---------------------------------------
-*version 0.1.1*
+*version 0.1.2*
 
 .. image:: _images/f1.png
 
@@ -28,4 +28,5 @@ Contents
    getting-started
    tutorial
    api
+   release-notes
    about

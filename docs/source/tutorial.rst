@@ -1,4 +1,8 @@
 .. _Tutorial:
+.. highlight:: python
+  :linenothreshold: 2
+  :dedent: 4
+
 ========
 Tutorial
 ========
@@ -17,9 +21,9 @@ This is known as a 'wide' dataset. See this `writeup <https://sejdemyr.github.io
   dataset = list()
 
   for seed in [10,11,12,13,14,15]:
-      # fix the seed so we get the same numbers each time.
-      np.random.seed(seed)
-      dataset.append(np.random.randn(40))
+        # fix the seed so we get the same numbers each time.
+        np.random.seed(seed)
+        dataset.append(np.random.randn(40))
 
   df = pd.DataFrame(dataset).T
   cols = ['Control','Group1','Group2','Group3','Group4','Group5']
@@ -41,24 +45,27 @@ Gardner-Altman comparison plot (two independent groups)
 We can easily use ``dabest.plot()`` to create a **Gardner-Altman mean difference plot** to compare and compute the mean difference between two independent samples::
 
   f1, b1 = dabest.plot(df,
-                     idx=('Control','Group1'),
-                     color_col='Gender',
-                     # Pass the length and width of the image, in inches.
-                     fig_size=(4,6)
-                    )
+                 idx=('Control','Group1'),
+                 color_col='Gender',
+                 # Pass the length and width of the image, in inches.
+                 fig_size=(4,6)
+                )
 .. image:: _images/f1.png
 
-*output table here*
 
 A few things to note:
 
-- The ``dabest.plot()`` function will return **two objects**: a matplotlib ``Figure`` and a pandas ``DataFrame``. (In the Jupyter Notebook, with the ``magic`` command ``%matplotlib inline``, the figure should automatically appear.)
-
-- Note how the *Ns* (appended to the group names in the xtick labels) indicate the number of datapoints being plotted, and used to calculate the contrasts.
+- The ``dabest.plot()`` function will return **two objects**: a matplotlib ``Figure`` and a pandas ``DataFrame``. (In the Jupyter Notebook, with the ``magic`` command ``%matplotlib inline``, the figure should automatically appear.) In the above example, the Figure is assigned to the variable ``f1``, while the DataFrame is assigned to ``b1``.
 
 - ``dabest.plot()`` will automatically drop any NaNs (aka empty cells) in the data.
 
-- The pandas ``DataFrame`` returned by plot contains the pairwise comparisons made in the course of generating the plot, with confidence intervals (95% by default) and relevant *P* values.
+- The *Ns* (appended to the group names in the xtick labels) indicate the number of datapoints being plotted, and used to calculate the contrasts.
+
+- The pandas ``DataFrame`` returned by plot contains the pairwise comparisons made in the course of generating the plot, with confidence intervals (95% by default) and relevant *P* values. The DataFrame produced is shown below, and can be accessed by normal pandas commands.
+
+.. image:: _images/dataframe_out.png
+    :width: 900px
+    :align: center
 
 Gardner-Altman comparison plot (two paired groups)
 -------------------------------------------------------

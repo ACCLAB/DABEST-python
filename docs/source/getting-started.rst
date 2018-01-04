@@ -12,11 +12,11 @@ Python 3.6 is strongly recommended. ``dabest`` has also been tested with Python 
 
 In addition, the following packages are also required:
 
-* `numpy <https://www.numpy.org>`_ (1.13.1)
-* `scipy <https://www.scipy.org>`_ (1.0.0)
-* `matplotlib <https://www.matplotlib.org>`_ (2.0.2)
-* `pandas <https://pandas.pydata.org>`_ (0.21.0).
-* `seaborn <https://seaborn.pydata.org>`_ (0.8)
+* `numpy <https://www.numpy.org>`_ (1.13.x)
+* `scipy <https://www.scipy.org>`_ (1.0.x)
+* `matplotlib <https://www.matplotlib.org>`_ (2.0.x)
+* `pandas <https://pandas.pydata.org>`_ (0.22.x).
+* `seaborn <https://seaborn.pydata.org>`_ (0.8.x)
 
 To obtain these package dependencies easily, it is highly recommended to download the `Anaconda <https://www.continuum.io/downloads>`_ distribution of Python.
 
@@ -42,10 +42,6 @@ Then, navigate to the cloned repo in the command line and run
 
   $ pip install .
 
-
-3. Using ``conda``
-
-*This section will be updated once this is uploaded to conda.*
 
 -------
 Testing
