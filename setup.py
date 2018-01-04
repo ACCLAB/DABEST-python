@@ -30,13 +30,6 @@ def check_dependencies():
         to_install.append('scipy==1.0')
 
     try:
-        import numba
-        if int(numba.__version__.split('.')[0])<=35:
-            to_install.append('numba==0.36')
-    except ImportError:
-        to_install.append('numba==0.36')
-
-    try:
         import pandas
         if int(pandas.__version__.split('.')[1])<=21:
             to_install.append('pandas==0.22')
