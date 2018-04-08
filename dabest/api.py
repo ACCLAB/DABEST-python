@@ -378,28 +378,6 @@ def plot(data, idx,
         contrast_ax_ylim_high = list()
         contrast_ax_ylim_tickintervals = list()
 
- ######  #     #  #####
- #     # #     # #     #
- #     # #     # #
- ######  #     # #  ####
- #     # #     # #     #
- #     # #     # #     #
- ######   #####   #####
- ####### #     # ####### ######
- #     # #     # #       #     #
- #     # #     # #       #     #
- #     # #     # #####   ######
- #     #  #   #  #       #   #
- #     #   # #   #       #    #
- #######    #    ####### #     #
- #     # ####### ######  #######
- #     # #       #     # #
- #     # #       #     # #
- ####### #####   ######  #####
- #     # #       #   #   #
- #     # #       #    #  #
- #     # ####### #     # #######
-
     # CREATE COLOR PALETTE TO NORMALIZE PALETTE ACROSS AXES.
     if color_col is None:
         color_groups = data_in[x].unique()
