@@ -290,10 +290,12 @@ def bca(data, alphas, statarray, statfunction, ostat, reps):
     Subroutine called to calculate the BCa statistics.
     Borrowed heavily from scikits.bootstrap code.
     '''
+    import warnings
+
     import numpy as np
     import pandas as pd
     import seaborn as sns
-
+    
     from scipy.stats import norm
     from numpy.random import randint
 
