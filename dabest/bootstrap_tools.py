@@ -160,7 +160,7 @@ class bootstrap:
 
             else:
                 diff = True
-                tx = x2-x1
+                tx = x2 - x1
                 ttest_single = 'NIL'
                 ttest_2_ind = 'NIL'
                 ttest_2_paired = ttest_rel(x1,x2)[1]
@@ -295,7 +295,7 @@ def bca(data, alphas, statarray, statfunction, ostat, reps):
     import numpy as np
     import pandas as pd
     import seaborn as sns
-    
+
     from scipy.stats import norm
     from numpy.random import randint
 
