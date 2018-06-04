@@ -17,7 +17,7 @@ In addition, the following packages are also required:
 - [scipy](https://www.scipy.org/) (1.0.x)
 - [matplotlib](https://www.matplotlib.org/) (2.0.x)
 - [seaborn](https://seaborn.pydata.org/) (0.8.x)
-- [pandas](https://pandas.pydata.org/) (0.22.x).
+- [pandas](https://pandas.pydata.org/) (0.23.x).
 
 To obtain these package dependencies easily, it is highly recommended to download the [Anaconda distribution](https://www.continuum.io/downloads) of Python.
 
