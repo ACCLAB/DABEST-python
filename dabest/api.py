@@ -732,5 +732,9 @@ def plot(data, idx,
         value=np.nan).dropna(axis=1)
     # Reset seaborn aesthetic parameters.
     sns.set()
+
+    if swarm_label is not None:
+        fig.axes[0].set_ylabel(swarm_label)
+
     # Return the figure and the results DataFrame.
     return fig, bootlist_df
