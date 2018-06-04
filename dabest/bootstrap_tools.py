@@ -1,3 +1,9 @@
+#!/usr/bin/python
+# -*-coding: utf-8 -*-
+# Author: Joses Ho
+# Email : joseshowh@gmail.com
+
+
 from __future__ import division
 
 

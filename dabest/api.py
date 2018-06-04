@@ -1,3 +1,8 @@
+#!/usr/bin/python
+# -*-coding: utf-8 -*-
+# Author: Joses Ho
+# Email : joseshowh@gmail.com
+
 
 
 def plot(data, idx,
