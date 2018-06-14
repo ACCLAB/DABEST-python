@@ -1,6 +1,6 @@
 # DABEST (Python)
 [![Travis CI](https://travis-ci.org/ACCLAB/DABEST-python.svg?branch=master)](https://travis-ci.org/ACCLAB/DABEST-python)
-[![PyPI](https://img.shields.io/pypi/v/dabest.svg)](https://pypi.python.org/pypi/dabest/0.1.2)
+[![PyPI](https://img.shields.io/pypi/v/dabest.svg)](https://pypi.python.org/pypi/dabest/0.1.3)
 
 ## About
 
@@ -42,10 +42,19 @@ Then, navigate to the cloned repo in the command line and run
 pip install .
 ```
 
+
 ## Usage
 
 Please refer to the [documentation](https://acclab.github.io/DABEST-python-docs/index.html).
 
+
 ## Matlab version
 
 There is also a [Matlab version](https://github.com/ACCLAB/DABEST-Matlab) of DABEST.
+
+
+## R version
+
+There isn't an implementation of DABEST in R, and there are no current plans to create one.
+
+However, it is possible to use the R package `reticulate` to run Python code. Please take a look at this [tutorial](https://acclab.github.io/DABEST-python-docs/dabest-r.html) on how to use `reticulate` to analyse data in R.
