@@ -15,7 +15,7 @@ In addition, the following packages are also required:
 * `numpy <https://www.numpy.org>`_ (1.13.x)
 * `scipy <https://www.scipy.org>`_ (1.0.x)
 * `matplotlib <https://www.matplotlib.org>`_ (2.0.x)
-* `pandas <https://pandas.pydata.org>`_ (0.22.x).
+* `pandas <https://pandas.pydata.org>`_ (0.23.x).
 * `seaborn <https://seaborn.pydata.org>`_ (0.8.x)
 
 To obtain these package dependencies easily, it is highly recommended to download the `Anaconda <https://www.continuum.io/downloads>`_ distribution of Python.
