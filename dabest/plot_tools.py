@@ -1,10 +1,9 @@
-"""
-A set of convenience functions used for producing plots in `dabest`.
+#!/usr/bin/python
+# -*-coding: utf-8 -*-
+# Author: Joses Ho
+# Email : joseshowh@gmail.com
+# A set of convenience functions used for producing plots in `dabest`.
 
-Author: Joses W. Ho
-Email: joseshowh@gmail.com
-License: MIT
-"""
 
 
 import matplotlib.pyplot as plt
@@ -12,6 +11,7 @@ import seaborn as sns
 import numpy as np
 
 from .misc_tools import merge_two_dicts
+
 
 
 def halfviolin(v, half = 'right', color = 'k'):
@@ -33,6 +33,8 @@ def halfviolin(v, half = 'right', color = 'k'):
                                                     mHorizontal, np.inf)
             b.set_color(color)
 
+
+
 def align_yaxis(ax1, v1, ax2, v2):
     """adjust ax2 ylimit so that v2 in ax2 is aligned to v1 in ax1"""
     # Taken from
@@ -50,90 +52,7 @@ def rotate_ticks(axes, angle=45, alignment='right'):
         tick.set_rotation(angle)
         tick.set_horizontalalignment(alignment)
 
-def tufte_summary_line(df, x, y, type='mean_sd',
-                       offset=0.3, ax=None, **kwargs):
-    '''Convenience function to plot sumamry statistics (mean and standard
-    deviation, or median and 25th & 75th percentiles) for ach group in the `x`
-    column of `df`. This style is inspired by Edward Tufte.
 
-    Keywords
-    --------
-    data: pandas DataFrame.
-        This DataFrame should be in 'long' format.
-
-    x, y: string.
-        x and y columns to be plotted.
-
-    type: {'mean_sd', 'median_quartiles'}, default 'mean_sd'
-        Plots the summary statistics for each group. If 'mean_sd', then the
-        mean and standard deviation of each group is plotted as a notched
-        line beside each group. If 'median_quantile', then the
-        median and 25th and 75th percentiles of each group is plotted
-        instead.
-
-    offset: float, default 0.4
-        The x-offset of the summary line.
-
-    offset: matplotlib Axes, default None
-        If specified, the axes to plot on.
-
-    kwargs: dict, default None
-        Dictionary with kwargs passed to `matplotlib.patches.FancyArrow`.
-        See docs at
-        https://matplotlib.org/api/_as_gen/
-        matplotlib.patches.FancyArrow.html#matplotlib.patches.FancyArrow
-
-    '''
-    import matplotlib.patches as mpatches
-
-    if ax is None:
-        ax = plt.gca()
-
-    means = df.groupby(x)[y].mean()
-    sd = df.groupby(x)[y].std()
-    lower_sd = means - sd
-    upper_sd = means + sd
-
-    medians = df.groupby(x)[y].median()
-    quantiles = df.groupby(x)[y].quantile([0.25, 0.75]).unstack()
-    lower_quartiles = quantiles[0.25]
-    upper_quartiles = quantiles[0.75]
-
-    if type == 'mean_sd':
-        central_measures = means
-        low = lower_sd
-        high = upper_sd
-    elif type == 'median_quartiles':
-        central_measures = medians
-        low = lower_quartiles
-        high = upper_quartiles
-
-    total_width = 0.05 # the horizontal span of the line, aka `linewidth`.
-
-    for k, m in enumerate(central_measures):
-
-        kwargs['dx'] = 0
-        kwargs['width'] = total_width
-        kwargs['head_width'] = total_width
-        kwargs['length_includes_head'] = True
-
-        if type == 'mean_sd':
-            dy_low = dy_high = sd[k]
-        elif type == 'median_quartiles':
-            dy_low = m - low[k]
-            dy_high = high[k] - m
-
-        arrow = mpatches.FancyArrow(x=offset+k, y=low[k],
-                                    dy=dy_low,
-                                    head_length=0.3*dy_low,
-                                    **kwargs)
-        ax.add_patch(arrow)
-
-        arrow = mpatches.FancyArrow(x=offset+k, y=high[k],
-                                    dy=-dy_high,
-                                    head_length=0.3*dy_high,
-                                    **kwargs)
-        ax.add_patch(arrow)
 
 def get_swarm_spans(coll):
     """
@@ -146,6 +65,8 @@ def get_swarm_spans(coll):
         return x.min(), x.max(), y.min(), y.max()
     except ValueError:
         return None
+
+
 
 def gapped_lines(data, x, y,
                  type='mean_sd',

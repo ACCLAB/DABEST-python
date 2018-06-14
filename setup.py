@@ -31,10 +31,10 @@ def check_dependencies():
 
     try:
         import pandas
-        if int(pandas.__version__.split('.')[1])<=21:
-            to_install.append('pandas==0.22')
+        if int(pandas.__version__.split('.')[1])<=23:
+            to_install.append('pandas==0.23')
     except ImportError:
-        to_install.append('pandas==0.22')
+        to_install.append('pandas==0.23')
 
     try:
         import seaborn
@@ -51,7 +51,7 @@ if __name__=="__main__":
     setup(name='dabest',
     author='Joses W. Ho',
     author_email='joseshowh@gmail.com',
-    version='0.1.2',
+    version='0.1.3',
     description='Data Analysis and Visualization using Bootstrapped Estimation.',
     packages=find_packages(),
     install_requires=installs,

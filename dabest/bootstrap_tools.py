@@ -1,3 +1,9 @@
+#!/usr/bin/python
+# -*-coding: utf-8 -*-
+# Author: Joses Ho
+# Email : joseshowh@gmail.com
+
+
 from __future__ import division
 
 
@@ -160,7 +166,7 @@ class bootstrap:
 
             else:
                 diff = True
-                tx = x2-x1
+                tx = x2 - x1
                 ttest_single = 'NIL'
                 ttest_2_ind = 'NIL'
                 ttest_2_paired = ttest_rel(x1,x2)[1]
@@ -183,6 +189,7 @@ class bootstrap:
 
         elif x2 is not None and paired is False:
             diff = True
+            x2 = pd.Series(x2).dropna()
             # Generate statarrays for both arrays.
             ref_statarray = sns.algorithms.bootstrap(x1, **sns_bootstrap_kwargs)
             exp_statarray = sns.algorithms.bootstrap(x2, **sns_bootstrap_kwargs)
@@ -290,6 +297,8 @@ def bca(data, alphas, statarray, statfunction, ostat, reps):
     Subroutine called to calculate the BCa statistics.
     Borrowed heavily from scikits.bootstrap code.
     '''
+    import warnings
+
     import numpy as np
     import pandas as pd
     import seaborn as sns

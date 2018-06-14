@@ -1,3 +1,8 @@
+#!/usr/bin/python
+# -*-coding: utf-8 -*-
+# Author: Joses Ho
+# Email : joseshowh@gmail.com
+
 # CONVENIENCE FUNCTIONS THAT DON'T DIRECTLY DEAL WITH PLOTTING OR
 # BOOTSTRAP COMPUTATIONS ARE PLACED HERE.
 

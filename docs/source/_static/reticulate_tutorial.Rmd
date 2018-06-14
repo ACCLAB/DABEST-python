@@ -1,0 +1,45 @@
+```{r}
+library(dplyr)
+library(ggplot2)
+
+df = filter(CO2, conc == '1000')
+
+ggplot(df, aes(x = Type, 
+               y = uptake, 
+               color = Treatment)) + 
+  geom_point() + 
+  ggtitle('CO2 conc = 1000 mL/L') + 
+  xlab('City') + ylab('CO2 uptake')
+```
+
+
+```{r}
+library(reticulate)
+```
+
+
+```{python}
+import matplotlib.pyplot as plt
+import dabest
+
+f1, results = dabest.plot(data=r.df, fig_size=(5,7),
+                         x='Type', y='uptake', 
+                         swarm_label='CO2 uptake',
+                         color_col='Treatment',
+                         idx=['Quebec', 'Mississippi']
+                         )
+
+f1.savefig('dabest-plot-CO2.png', bbox_inches='tight')
+```
+
+```{r}
+py_results = py$results
+mean_diff = py_results$stat_summary
+ci_low = py_results$bca_ci_low
+ci_high = py_results$bca_ci_high
+
+# Print results, with all numerical values formatted to 2 decimal places.
+sprintf("Mean Difference = %.2f [95CI %.2f, %.2f]", 
+        mean_diff, ci_low, ci_high)
+```
+
