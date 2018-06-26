@@ -30,6 +30,7 @@ def plot(data, idx,
         n_boot=5000,
         show_group_count=True,
 
+        tick_length=12,
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
         reflines_kwargs=None,
@@ -120,6 +121,9 @@ def plot(data, idx,
         show_group_count: boolean, default True
             Whether or not the group count (e.g. 'N=10') will be appended to the
             xtick labels.
+
+        tick_length: int, default 12
+            The length of the ticks for both thw swarm and contrast axes.
 
         swarmplot_kwargs: dict, default None
             Pass any keyword arguments accepted by the seaborn `swarmplot`
