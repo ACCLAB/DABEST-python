@@ -115,7 +115,7 @@ def gapped_lines(data, x, y,
         kwargs['zorder'] = 5
 
     if 'lw' not in keys:
-        kwargs['lw'] = 2.
+        kwargs['lw'] = 4.
 
     if 'color' not in keys:
         kwargs['color'] = 'black'
