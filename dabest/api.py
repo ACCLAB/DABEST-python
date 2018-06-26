@@ -565,14 +565,12 @@ def plot(data, idx,
             else:
                 spacer = 0
             pos = ix + spacer
+
             # Calculate bootstrapped stats.
             ref = np.array(plotdat[plotdat[x] == current_tuple[0]][y].dropna())
             exp = np.array(plotdat[plotdat[x] == grp][y].dropna())
-            boots = bootstrap(ref, exp,
-                paired = paired,
-                alpha_level=alpha_level,
-                statfunction=stat_func,
-                reps=n_boot)
+            boots = bootstrap(ref, exp, paired=paired, alpha_level=alpha_level,
+                              statfunction=stat_func, reps=n_boot)
             res = boots.results
             res['reference_group'] = current_tuple[0]
             res['experimental_group'] = grp
@@ -582,16 +580,16 @@ def plot(data, idx,
             res['pvalue_wilcoxon'] = boots.pvalue_wilcoxon
             res['pvalue_mann_whitney'] =  boots.pvalue_mann_whitney
             bootlist.append(res)
+
             # Plot the halfviolin and mean+CIs on contrast axes.
-            v = ax_contrast.violinplot(boots.stat_array,
-                positions=[pos+1],
-                **violinplot_kwargs)
+            v = ax_contrast.violinplot(boots.stat_array, positions=[pos+1],
+                                       **violinplot_kwargs)
             halfviolin(v)
-            ax_contrast.plot([pos+1], boots.summary, marker='o',
-                color='k', markersize=10)
+            ax_contrast.plot([pos+1], boots.summary, marker='o', color='k',
+                            markersize=swarmplot_kwargs['size'] * 1.5)
             ax_contrast.plot([pos+1,pos+1],
-                [boots.bca_ci_low, boots.bca_ci_high],
-                'k-', linewidth=2)
+                             [boots.bca_ci_low, boots.bca_ci_high],
+                             'k-', linewidth=group_summary_kwargs['lw'])
             if float_contrast is False:
                 contrast_ax_ylim_low.append( ax_contrast.get_ylim()[0] )
                 contrast_ax_ylim_high.append( ax_contrast.get_ylim()[1] )
