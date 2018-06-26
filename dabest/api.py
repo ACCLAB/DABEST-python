@@ -744,5 +744,9 @@ def plot(data, idx,
     if swarm_label is not None:
         fig.axes[0].set_ylabel(swarm_label)
 
+    # Lengthen the axes ticks so they look better.
+    for ax in fig.axes:
+        ax.tick_params(length=tick_length)
+
     # Return the figure and the results DataFrame.
     return fig, bootlist_df
