@@ -286,7 +286,10 @@ def plot(data, idx,
 
     # Set default kwargs first, then merge with user-dictated ones.
     # Swarmplot.
-    default_swarmplot_kwargs={'size':6}
+    if paired is True and show_pairs is True:
+        default_swarmplot_kwargs={'size':12}
+    else:
+        default_swarmplot_kwargs={'size':7}
     if swarmplot_kwargs is None:
         swarmplot_kwargs = default_swarmplot_kwargs
     else:
