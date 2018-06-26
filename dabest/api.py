@@ -344,9 +344,8 @@ def plot(data, idx,
         raise ValueError('group_summaries must be one of'
         'these: {}.'.format(gs_default) )
 
-    default_group_summary_kwargs = {'zorder': 5,
-        'color': 'k',
-        'alpha': 0.5}
+    default_group_summary_kwargs = {'zorder': 5, 'lw': 4,
+                                    'color': 'k','alpha': 1}
     if group_summary_kwargs is None:
         group_summary_kwargs = default_group_summary_kwargs
     else:
@@ -513,7 +512,7 @@ def plot(data, idx,
                              # pseudo-hardcorded offset...
                              offset=np.max(xspans)+0.09,
                              type=group_summaries,
-                             ax=ax_raw)
+                             ax=ax_raw, **group_summary_kwargs)
 
         ax_raw.set_xlabel('')
 
@@ -559,7 +558,6 @@ def plot(data, idx,
 
         # PLOT CONTRAST DATA.
         # Calculate bootstrapped stats.
-        # Plot the CIs on the bottom axes.
         for ix, grp in enumerate( current_tuple[1::] ) :
             # add spacer to halfviolin if float_contast is true.
             if float_contrast is True:
