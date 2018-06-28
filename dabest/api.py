@@ -317,6 +317,7 @@ def plot(data, idx,
         raise ValueError('`ci` should be between 0 and 100.')
     alpha_level = (100.-int(ci))/100.
 
+
     # CALCULATE RAW SWARM YLIMS.
     if swarm_ylim is None:
         # To ensure points at the limits are clearly seen.
@@ -348,6 +349,7 @@ def plot(data, idx,
         violinplot_kwargs = merge_two_dicts(default_violinplot_kwargs,
             violinplot_kwargs)
 
+
     # Reference lines.
     default_reflines_kwargs={'linestyle':'solid',
                          'linewidth':0.75,
@@ -358,6 +360,7 @@ def plot(data, idx,
         reflines_kwargs = merge_two_dicts(default_reflines_kwargs,
             reflines_kwargs)
 
+
     # Legend.
     default_legend_kwargs = {'loc': 'upper left',
         'bbox_to_anchor': (0.95, 1.),
@@ -366,6 +369,7 @@ def plot(data, idx,
         legend_kwargs = default_legend_kwargs
     else:
         legend_kwargs = merge_two_dicts(default_legend_kwargs,legend_kwargs)
+
 
     # Aesthetic kwargs for sns.set().
     default_aesthetic_kwargs={'context': 'poster',
@@ -377,7 +381,9 @@ def plot(data, idx,
         aesthetic_kwargs = merge_two_dicts(default_aesthetic_kwargs,
                                             aesthetic_kwargs)
 
-    if paired is False: # if paired is False, set show_pairs as False.
+
+    # if paired is False, set show_pairs as False.
+    if paired is False:
         show_pairs = False
 
     gs_default = {'mean_sd', 'median_quartiles', 'None'}
@@ -394,11 +400,13 @@ def plot(data, idx,
                                                group_summary_kwargs)
 
 
-    # Small check to ensure that line summaries for means will not be shown if `
-    # float_contrast` is True.
+
+    # Small check to ensure that line summaries for means will not be shown
+    # if `float_contrast` is True.
     if float_contrast is True and group_summaries != 'None':
         group_summaries = 'None'
 
+    # Set default statfunc as np.mean
     if stat_func is None:
         stat_func = np.mean
 
@@ -406,29 +414,37 @@ def plot(data, idx,
     # INITIALISE FIGURE.
     # Set clean style.
     sns.set(**aesthetic_kwargs)
-    # Set appropriate horizontal spacing between subplots, based on whether the
-    # contrast is floating.
+
+    # Set appropriate horizontal spacing between subplots,
+    # based on whether the contrast is floating.
     if float_contrast:
         ws = 0.75
     else:
         ws = 0.
+
+
     # Set figure size.
     if fig_size is None:
         if len(idx) > 2:
             fig_size = (11, (11/np.sqrt(2)) )
         else:
             fig_size = (7, (7/np.sqrt(2)) )
+
+
     # Create subplots.
-    fig,axx=plt.subplots(ncols = ncols,
+    fig,axx=plt.subplots(ncols=ncols,
                          figsize=fig_size,
                          gridspec_kw={'wspace':ws,
                                        'width_ratios':widthratio})
+
+
     # If the contrast axes are NOT floating, create lists to store raw ylims
     # and raw tick intervals, so that I can normalize their ylims later.
     if float_contrast is False:
         contrast_ax_ylim_low = list()
         contrast_ax_ylim_high = list()
         contrast_ax_ylim_tickintervals = list()
+
 
     # CREATE COLOR PALETTE TO NORMALIZE PALETTE ACROSS AXES.
     if color_col is None:
@@ -437,8 +453,10 @@ def plot(data, idx,
         color_groups = data_in[color_col].unique()
 
     if custom_palette is None:
-        plotPal=dict( zip( color_groups,
-                      sns.color_palette(n_colors = len(color_groups))) )
+        plotPal=dict(zip(color_groups,
+                         sns.color_palette(n_colors = len(color_groups))
+                         )
+                    )
     else:
         if isinstance(custom_palette, dict):
             # check that all the keys in custom_palette are found in the
@@ -447,7 +465,9 @@ def plot(data, idx,
             pal_grps = {k for k in custom_palette.keys()}
             not_in_pal = pal_grps.difference(col_grps)
             if len( not_in_pal ) > 0:
-                raise IndexError('The custom palette keys {} are not found in `{}`. Please check.'.format(not_in_pal, color_col))
+                errstring = ('The custom palette keys {} '.format(not_in_pal) +
+                       'are not found in `{}`. Please check.'.format(color_col))
+                raise IndexError(errstring)
             plotPal = custom_palette
 
         elif isinstance(custom_palette, list):
@@ -458,12 +478,15 @@ def plot(data, idx,
             plotPal = dict( zip( color_groups,
                                  custom_palette ))
 
+
     # Create lists to store legend handles and labels for proper legend generation.
     legend_handles = []
     legend_labels = []
 
+
     # LIST TO STORE BOOTSTRAPPED RESULTS.
     bootlist = list()
+
 
     # FOR EACH TUPLE IN IDX, CREATE PLOT.
     for j, current_tuple in enumerate(idx):
@@ -557,6 +580,7 @@ def plot(data, idx,
 
         ax_raw.set_xlabel('')
 
+
         # Set new tick labels. The tick labels belong to the SWARM axes
         # for both floating and non-floating plots.
         # This is because `sharex` was invoked.
@@ -572,6 +596,7 @@ def plot(data, idx,
                 rotation=45,
                 horizontalalignment='right')
 
+
         # Despine appropriately.
         if float_contrast:
             sns.despine(ax = ax_raw,trim = True)
@@ -585,6 +610,7 @@ def plot(data, idx,
             if not_first_ax:
                 ax_raw.yaxis.set_visible(False)
 
+
         # Save the handles and labels for the legend.
         handles,labels = ax_raw.get_legend_handles_labels()
         for l in labels:
@@ -596,6 +622,7 @@ def plot(data, idx,
         # Make sure we can easily pull out the right-most raw swarm axes.
         if j+1 == ncols:
             last_swarm = ax_raw
+
 
         # PLOT CONTRAST DATA.
         # Calculate bootstrapped stats.
@@ -623,6 +650,7 @@ def plot(data, idx,
             res['pvalue_mann_whitney'] =  boots.pvalue_mann_whitney
             bootlist.append(res)
 
+
             # Plot the halfviolin and mean+CIs on contrast axes.
             v = ax_contrast.violinplot(boots.stat_array, positions=[pos+1],
                                        **violinplot_kwargs)
@@ -638,11 +666,15 @@ def plot(data, idx,
                 ticklocs = ax_contrast.yaxis.get_majorticklocs()
                 contrast_ax_ylim_tickintervals.append(ticklocs[1]-ticklocs[0])
 
+
+
         # NORMALISE Y LIMS AND DESPINE FLOATING CONTRAST AXES.
         if float_contrast:
-            ## Align 0 of ax_contrast to reference group mean of ax_raw.
+
+            # Align 0 of ax_contrast to reference group mean of ax_raw.
             ylimlow, ylimhigh = ax_contrast.get_xlim()
             ax_contrast.set_xlim(ylimlow, ylimhigh+spacer)
+
             # If the effect size is positive, shift the contrast axis up.
             if boots.summary > 0:
                 rightmin = ax_raw.get_ylim()[0]-boots.summary
@@ -655,6 +687,7 @@ def plot(data, idx,
             align_yaxis(ax_raw,
                 np.mean(plotdat[plotdat[x] == grp][y].dropna()),
                 ax_contrast, boots.summary)
+
             # Draw zero line.
             xlimlow, xlimhigh = ax_contrast.get_xlim()
             ax_contrast.hlines(0,   # y-coordinates
@@ -670,24 +703,29 @@ def plot(data, idx,
             # Get the lower and upper limits.
             lower = boots.stat_array.min()
             upper = boots.stat_array.max()
+
             # Make sure we have zero in the limits.
             if lower > 0:
                 lower = 0.
             if upper < 0:
                 upper = 0.
+
             # Get the tick interval from the left y-axis.
             leftticks = ax_contrast.get_yticks()
             tickstep = leftticks[1] -leftticks[0]
+
             # First re-draw of axis with new tick interval
             new_locator = tk.MultipleLocator(base=tickstep)
             ax_contrast.yaxis.set_major_locator(new_locator)
             newticks1 = ax_contrast.get_yticks()
+
             # Obtain major ticks that comfortably encompass lower and upper.
             newticks2 = list()
             for a, b in enumerate(newticks1):
                 if (b >= lower and b <= upper):
                     # if the tick lies within upper and lower, take it.
                     newticks2.append(b)
+
             # if the boots.summary falls outside of the newticks2 set,
             # add a tick in the right direction.
             if np.max(newticks2) < boots.summary:
@@ -700,14 +738,17 @@ def plot(data, idx,
                 newticks2.append(newticks1[ind-1])
             newticks2 = np.array(newticks2)
             newticks2.sort()
+
             # Re-draw axis to shrink it to desired limits.
             ax_contrast.yaxis.set_major_locator(tk.FixedLocator(locs=newticks2))
-            ## Despine the axes.
+
+            # Despine the axes.
             sns.despine(ax=ax_contrast, trim=True,
                 # remove the left and bottom spines...
                 left=True, bottom=True,
                 # ...but not the right spine.
                 right=False)
+
 
         # SET Y AXIS LABELS .
         if j > 0:
@@ -732,31 +773,37 @@ def plot(data, idx,
 
     # NORMALIZE Y LIMS AND DESPINE NON-FLOATING CONTRAST AXES.
     if float_contrast is False:
-        ## Sort and convert to numpy arrays.
+        # Sort and convert to numpy arrays.
         contrast_ax_ylim_low = np.sort(contrast_ax_ylim_low)
         contrast_ax_ylim_high = np.sort(contrast_ax_ylim_high)
         contrast_ax_ylim_tickintervals=np.sort(contrast_ax_ylim_tickintervals)
-        ## Compute normalized ylim, or set normalized ylim to desired ylim.
+
+        # Compute normalized ylim, or set normalized ylim to desired ylim.
         if contrast_ylim is None:
             normYlim = (contrast_ax_ylim_low[0], contrast_ax_ylim_high[-1])
         else:
             normYlim = contrast_ylim
-        ## Loop thru the contrast axes again to re-draw all the y-axes.
+
+        # Loop thru the contrast axes again to re-draw all the y-axes.
         for i in range(ncols, ncols*2, 1):
             # The last half of the axes in `fig` are the contrast axes.
             axx = fig.get_axes()[i]
-            # Set the axes to the max ylim
+
+            # Set the axes to the max ylim.
             axx.set_ylim(normYlim[0], normYlim[1])
+
             # Draw zero reference line if zero is in the ylim range.
-            if normYlim[0]<0. and 0.<normYlim[1]:
+            if normYlim[0] < 0. and 0. < normYlim[1]:
                 axx.axhline(y=0, lw=0.5, color='k')
+
             # Hide the y-axis except for the leftmost contrast axes.
-            if i>ncols:
+            if i > ncols:
                 axx.get_yaxis().set_visible(False)
                 sns.despine(ax=axx, left=True, trim=True)
             else:
                 # Despine.
                 sns.despine(ax=axx, trim=True)
+
 
     # Add Figure Legend.
     legend_labels_unique = np.unique(legend_labels)
@@ -767,27 +814,38 @@ def plot(data, idx,
                      legend_labels_unique,
                      **legend_kwargs)
 
+
     # PREPARE OUTPUT
     # Turn `bootlist` into a pandas DataFrame
     bootlist_df = pd.DataFrame(bootlist)
+
+
     # Order the columns properly.
     bootlist_df=bootlist_df[['reference_group', 'experimental_group',
     'stat_summary','bca_ci_low', 'bca_ci_high', 'ci',
     'is_difference', 'is_paired', 'pvalue_1samp_ttest',
     'pvalue_2samp_ind_ttest', 'pvalue_2samp_paired_ttest',
     'pvalue_mann_whitney', 'pvalue_wilcoxon']]
+
+
     # Remove unused columns.
     bootlist_df = bootlist_df.replace(to_replace='NIL',
-        value=np.nan).dropna(axis=1)
+                                      value=np.nan).dropna(axis=1)
+
+
     # Reset seaborn aesthetic parameters.
     sns.set()
 
+
+    # Set custom swarm label if so desired.
     if swarm_label is not None:
         fig.axes[0].set_ylabel(swarm_label)
+
 
     # Lengthen the axes ticks so they look better.
     for ax in fig.axes:
         ax.tick_params(length=tick_length)
+
 
     # Return the figure and the results DataFrame.
     return fig, bootlist_df
