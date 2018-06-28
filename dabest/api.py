@@ -324,17 +324,18 @@ def plot(data, idx,
         swarm_ylim = (data_in[y].min() - pad,
                       data_in[y].max() + pad)
 
+
     # Set default kwargs first, then merge with user-dictated ones.
     # Swarmplot.
-    if paired is True and show_pairs is True:
-        default_swarmplot_kwargs={'size':12}
-    else:
-        default_swarmplot_kwargs={'size':7}
+    # if paired is True and show_pairs is True:
+    #     default_swarmplot_kwargs={'size':12}
+    default_swarmplot_kwargs={'size':10}
     if swarmplot_kwargs is None:
         swarmplot_kwargs = default_swarmplot_kwargs
     else:
         swarmplot_kwargs = merge_two_dicts(default_swarmplot_kwargs,
             swarmplot_kwargs)
+
 
     # Violinplot.
     default_violinplot_kwargs={'widths':0.5,
