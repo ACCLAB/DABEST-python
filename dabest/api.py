@@ -39,7 +39,8 @@ def plot(data, idx,
         aesthetic_kwargs=None,
         ):
 
-    '''Takes a pandas DataFrame and produces a contrast plot:
+    '''
+    Takes a pandas DataFrame and produces a contrast plot:
     either a Cummings hub-and-spoke plot or a Gardner-Altman contrast plot.
     Paired and unpaired options available.
 
@@ -135,7 +136,7 @@ def plot(data, idx,
 
         reflines_kwargs: dict, default None
             Pass any keyword arguments accepted by the matplotlib Axes `hlines`
-            command here, as a dict.T his will change the appearance of the zero
+            command here, as a dict. This will change the appearance of the zero
             reference lines.
 
         group_summary_kwargs: dict, default None
@@ -154,10 +155,49 @@ def plot(data, idx,
 
      Returns:
         A matplotlib Figure.
-        Arrangement of the axes. Obtaining access to them via figure.axes[i]
+            You can access each figure via `figure.axes[i]`.
+            The odd-numbered axes are the swarmplot axes. The even-numbered
+            axes are the contrast axes. Every group in `idx` will have its own
+            pair of axes.
 
-        A pandas DataFrame.
-        Description of column headings.
+        A pandas DataFrame with the following columns:
+                stat_summary
+                    The mean difference.
+
+                bca_ci_low
+                    The lower bound of the confidence interval.
+
+                bca_ci_high
+                    The upper bound of the confidence interval.
+
+                ci
+                    The width of the confidence interval, typically 95%.
+
+                pvalue_2samp_ind_ttest
+                    P-value obtained from scipy.stats.ttest_ind. Only produced
+                    if paired is False.
+                    See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_ind.html
+
+                pvalue_2samp_related_ttest
+                    P-value obtained from scipy.stats.ttest_rel. Only produced
+                    if paired is True.
+                    See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_rel.html
+
+                pvalue_wilcoxon: float
+                    P-value obtained from scipy.stats.wilcoxon. Only produced
+                    if paired is False.
+                    The Wilcoxons signed-rank test is a nonparametric paired test of
+                    the null hypothesis that the related samples x1 and x2 are from
+                    the same distribution.
+                    See https://docs.scipy.org/doc/scipy-1.0.0/reference/scipy.stats.wilcoxon.html
+
+                pvalue_mann_whitney: float
+                    Two-sided p-value obtained from scipy.stats.mannwhitneyu.
+                    Only produced if paired is True.
+                    The Mann-Whitney U-test is a nonparametric unpaired test of the null
+                    hypothesis that x1 and x2 are from the same distribution.
+                    See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.mannwhitneyu.html
+
 
     '''
     import matplotlib as mpl
