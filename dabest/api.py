@@ -280,14 +280,16 @@ def plot(data, idx,
         for g in all_plot_groups:
             if g not in data_in[x].unique():
                 raise IndexError('{0} is not a group in `{1}`.'.format(g, x))
+
     elif x is None and y is None:
         # Assume we have a wide dataset.
         # extract only the columns we need.
-        ## first check we have all columns in the dataset.
+        # First, check we have all columns in the dataset.
         for g in all_plot_groups:
             if g not in data_in.columns:
                 raise IndexError('{0} is not a column in `data`.'.format(g))
-        ## Melt it so it is easier to use.
+
+        # Melt it so it is easier to use.
         x = 'group'
         if swarm_label is None:
             y = 'value'
@@ -311,13 +313,7 @@ def plot(data, idx,
             data_in.loc[:,c] = pd.Categorical(data_in[c],
                                               categories=data_in[c].unique(),
                                               ordered=True)
-        # if color_col is not None:
-        #     data_in.loc[:,color_col] = pd.Categorical(data_in[color_col],
-        #                                 categories=data_in[color_col]unique(),
-        #                                 ordered=False)
-        # idv.append(x)
-        # idv.append(y)
-        # data_in.columns = [idv]
+
 
     # CALCULATE CI.
     if ci < 0 or ci > 100:
@@ -334,10 +330,7 @@ def plot(data, idx,
 
 
     # Set default kwargs first, then merge with user-dictated ones.
-    # Swarmplot.
-    # if paired is True and show_pairs is True:
-    #     default_swarmplot_kwargs={'size':12}
-    default_swarmplot_kwargs={'size':10}
+    default_swarmplot_kwargs = {'size':10}
     if swarmplot_kwargs is None:
         swarmplot_kwargs = default_swarmplot_kwargs
     else:
@@ -358,9 +351,8 @@ def plot(data, idx,
 
 
     # Reference lines.
-    default_reflines_kwargs={'linestyle':'solid',
-                         'linewidth':0.75,
-                         'color':'k'}
+    default_reflines_kwargs = {'linestyle':'solid', 'linewidth':0.75,
+                               'color':'k'}
     if reflines_kwargs is None:
         reflines_kwargs = default_reflines_kwargs
     else:
@@ -370,8 +362,8 @@ def plot(data, idx,
 
     # Legend.
     default_legend_kwargs = {'loc': 'upper left',
-        'bbox_to_anchor': (0.95, 1.),
-        'markerscale': 1.1}
+                             'bbox_to_anchor': (0.95, 1.),
+                             'markerscale': 2}
     if legend_kwargs is None:
         legend_kwargs = default_legend_kwargs
     else:
@@ -627,13 +619,13 @@ def plot(data, idx,
         if color_col is not None:
             ax_raw.legend().set_visible(False)
         # Make sure we can easily pull out the right-most raw swarm axes.
-        if j+1 == ncols:
+        if j + 1 == ncols:
             last_swarm = ax_raw
 
 
         # PLOT CONTRAST DATA.
         # Calculate bootstrapped stats.
-        for ix, grp in enumerate( current_tuple[1::] ) :
+        for ix, grp in enumerate(current_tuple[1::]) :
             # add spacer to halfviolin if float_contast is true.
             if float_contrast is True:
                 spacer = 0.75
