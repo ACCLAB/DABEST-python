@@ -250,6 +250,10 @@ def plot(data, idx,
         'entered--{}.'.format(idx)
         raise ValueError(err)
 
+    # infer the figsize.
+    xinches = 1.5 * len(all_plot_groups) + 1
+    fsize = (xinches, 8)
+
     # SANITY CHECKS
     # check color_col is a column name.
     if (color_col is not None) and (color_col not in data_in.columns):
@@ -424,10 +428,7 @@ def plot(data, idx,
 
     # Set figure size.
     if fig_size is None:
-        if len(idx) > 2:
-            fig_size = (11, (11/np.sqrt(2)) )
-        else:
-            fig_size = (7, (7/np.sqrt(2)) )
+        fig_size = fsize
 
 
     # Create subplots.
