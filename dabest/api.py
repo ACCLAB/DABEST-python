@@ -37,6 +37,7 @@ def plot(data, idx,
         group_summary_kwargs=None,
         legend_kwargs=None,
         aesthetic_kwargs=None,
+
         ):
 
     '''
@@ -230,21 +231,27 @@ def plot(data, idx,
 
     # IDENTIFY PLOT TYPE.
     if all([isinstance(i, str) for i in idx]):
-        if len(idx) > 2: # plottype='hubspoke'
+        if len(idx) > 2: # plottype = 'hubspoke'
             paired = False
             float_contrast = False
-        all_plot_groups = np.unique([t for t in idx]) # flatten out idx.
-        idx = (idx,)
+        # flatten out idx.
+        all_plot_groups = np.unique([t for t in idx])
+        # Set aspect ratio etc.
         ncols = 1
         widthratio = [1]
+        # Place idx into tuple.
+        idx = (idx,)
+
+
     elif all([isinstance(i, tuple) for i in idx]):
-        # plottype='multiplot'
+        # plottype = 'multiplot'
         all_plot_groups = np.unique([tt for t in idx for tt in t])
         ncols = len(idx)
         widthratio = [len(ii) for ii in idx]
-        if [True for i in widthratio if i>2]:
+        if [True for i in widthratio if i > 2]:
             paired = False
             float_contrast = False
+
     else: # mix of string and tuple?
         err = 'There seems to be a problem with the idx you'
         'entered--{}.'.format(idx)
@@ -264,9 +271,11 @@ def plot(data, idx,
     if x is None and y is not None:
         err = 'You have only specified `y`. Please also specify `x`.'
         raise ValueError(err)
+
     elif y is None and x is not None:
         err = 'You have only specified `x`. Please also specify `y`.'
         raise ValueError(err)
+
     elif x is not None and y is not None:
         # Assume we have a long dataset.
         # check both x and y are column names in data.
@@ -516,37 +525,33 @@ def plot(data, idx,
 
         if (paired is True and show_pairs is True):
             # first, sanity checks. Do we have 2 elements (no more, no less) here?
-            if len(current_tuple)!=2:
+            if len(current_tuple) != 2:
                 raise ValueError('Paired plotting is True, but {0} does not have 2 elements.'\
                                  .format(str(current_tuple)) )
+
             # Are the groups equal in length??
-            before = plotdat[ plotdat[x]==current_tuple[0] ][y].dropna().tolist()
-            after = plotdat[ plotdat[x]==current_tuple[1] ][y].dropna().tolist()
-            if len(before)!=len(after):
+            before = plotdat[plotdat[x] == current_tuple[0]][y].dropna().tolist()
+            after = plotdat[plotdat[x] == current_tuple[1]][y].dropna().tolist()
+            if len(before) != len(after):
                 raise ValueError('The sizes of {0} and {1} do not match.'\
                                  .format(current_tuple[0], current_tuple[1]) )
 
             if color_col is not None:
-                colors = plotdat[plotdat[x]==current_tuple[0]][color_col]
+                colors = plotdat[plotdat[x] == current_tuple[0]][color_col]
             else:
-                plotPal['__default_black__']=(0., 0., 0.) # black
+                plotPal['__default_black__'] = (0., 0., 0.) # black
                 colors = np.repeat('__default_black__',len(before))
-            linedf=pd.DataFrame(
-                    {str(current_tuple[0]):before,
-                    str(current_tuple[1]):after,
-                    'colors':colors}
-                    )
+            linedf = pd.DataFrame({str(current_tuple[0]):before,
+                                   str(current_tuple[1]):after,
+                                   'colors':colors})
 
             for ii in linedf.index:
-                ax_raw.plot( [0,1],  # x1, x2
-                            [ linedf.loc[ii,current_tuple[0]],
-                             linedf.loc[ii,current_tuple[1]] ], # y1, y2
-                            linestyle='solid',
-                            color = plotPal[ linedf.loc[ii,'colors'] ],
-                            linewidth = 0.75,
-                            label = linedf.loc[ii,'colors']
-                           )
-            # ax_raw.set_ylabel(y)
+                ax_raw.plot([0,1],  # x1, x2
+                            [linedf.loc[ii,current_tuple[0]],
+                             linedf.loc[ii,current_tuple[1]]] , # y1, y2
+                            linestyle='solid', linewidth = 1,
+                            color = plotPal[linedf.loc[ii,'colors']],
+                            label = linedf.loc[ii,'colors'])
             ax_raw.set_xticks([0,1])
             ax_raw.set_xlim(-0.25, 1.5)
             ax_raw.set_xticklabels([current_tuple[0],current_tuple[1]])
@@ -603,7 +608,7 @@ def plot(data, idx,
             sns.despine(ax = ax_raw,trim = True)
         else:
             ax_raw.xaxis.set_visible(False)
-            not_first_ax = (j!=0)
+            not_first_ax = (j != 0)
             sns.despine(ax=ax_raw,
                         bottom=True,
                         left=not_first_ax,
@@ -673,19 +678,19 @@ def plot(data, idx,
 
         # NORMALISE Y LIMS AND DESPINE FLOATING CONTRAST AXES.
         if float_contrast:
-
             # Align 0 of ax_contrast to reference group mean of ax_raw.
             ylimlow, ylimhigh = ax_contrast.get_xlim()
             ax_contrast.set_xlim(ylimlow, ylimhigh+spacer)
 
             # If the effect size is positive, shift the contrast axis up.
             if boots.summary > 0:
-                rightmin = ax_raw.get_ylim()[0]-boots.summary
-                rightmax = ax_raw.get_ylim()[1]-boots.summary
+                rightmin = ax_raw.get_ylim()[0] - boots.summary
+                rightmax = ax_raw.get_ylim()[1] - boots.summary
             # If the effect size is negative, shift the contrast axis down.
             elif boots.summary < 0:
-                rightmin = ax_raw.get_ylim()[0]+boots.summary
-                rightmax = ax_raw.get_ylim()[1]+boots.summary
+                rightmin = ax_raw.get_ylim()[0] + boots.summary
+                rightmax = ax_raw.get_ylim()[1] + boots.summary
+
             ax_contrast.set_ylim(rightmin, rightmax)
             align_yaxis(ax_raw,
                 np.mean(plotdat[plotdat[x] == grp][y].dropna()),
@@ -773,6 +778,7 @@ def plot(data, idx,
 
         # ROTATE X-TICKS OF ax_contrast
         rotate_ticks(ax_contrast, angle=45, alignment='right')
+
 
     # NORMALIZE Y LIMS AND DESPINE NON-FLOATING CONTRAST AXES.
     if float_contrast is False:
