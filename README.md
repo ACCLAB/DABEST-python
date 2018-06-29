@@ -6,7 +6,7 @@
 
 DABEST is a package for **D**ata **A**nalysis using **B**ootstrapped **EST**imation.
 
-![Gardner-Altman plot](https://acclab.github.io/DABEST-python-docs/_images/f1.png)
+![Two-group contrast plot](https://www.github.com/ACCLAB/DABEST-Python/img/readme-fig.png)
 
 ## Requirements
 
