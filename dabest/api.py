@@ -548,7 +548,8 @@ def plot(data, idx,
                            )
             # ax_raw.set_ylabel(y)
             ax_raw.set_xticks([0,1])
-            ax_raw.set_xticklabels( [current_tuple[0],current_tuple[1]] )
+            ax_raw.set_xlim(-0.25, 1.5)
+            ax_raw.set_xticklabels([current_tuple[0],current_tuple[1]])
 
         elif (paired is True and show_pairs is False) or (paired is False):
             # Swarmplot for raw data points.
@@ -629,8 +630,10 @@ def plot(data, idx,
         for ix, grp in enumerate(current_tuple[1::]) :
             # add spacer to halfviolin if float_contast is true.
             if float_contrast is True:
-                spacer = 0.75
-
+                if paired is True and show_pairs is True:
+                    spacer = 0.5
+                else:
+                    spacer = 0.75
             else:
                 spacer = 0
             pos = ix + spacer
