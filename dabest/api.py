@@ -128,26 +128,33 @@ def plot(data, idx,
 
         swarmplot_kwargs: dict, default None
             Pass any keyword arguments accepted by the seaborn `swarmplot`
-            command here, as a dict.
+            command here, as a dict. If None, the following keywords are passed
+            to sns.swarmplot: {'size':10}.
 
         violinplot_kwargs: dict, default None
             Pass any keyword arguments accepted by the matplotlib `
-            pyplot.violinplot` command here, as a dict.
+            pyplot.violinplot` command here, as a dict. If None, the following
+            keywords are passed to violinplot: {'widths':0.5, 'vert':True,
+            'showextrema':False, 'showmedians':False}.
 
         reflines_kwargs: dict, default None
-            Pass any keyword arguments accepted by the matplotlib Axes `hlines`
-            command here, as a dict. This will change the appearance of the zero
-            reference lines.
+            This will change the appearance of the zero reference lines. Pass
+            any keyword arguments accepted by the matplotlib Axes `hlines`
+            command here, as a dict. If None, the following keywords are passed
+            to Axes.hlines: {'linestyle':'solid', 'linewidth':0.75, 'color':'k'}.
 
         group_summary_kwargs: dict, default None
             Pass any keyword arguments accepted by the matplotlib.lines.Line2D
             command here, as a dict. This will change the appearance of the
             vertical summary lines for each group, if `group_summaries` is not
-            'None'.
+            'None'. If None, the following keywords are passed to Line2D:
+            {'lw': 4, 'color': 'k','alpha': 1, 'zorder': 5}.
 
         legend_kwargs: dict, default None
             Pass any keyword arguments accepted by the matplotlib Axes `legend`
-            command here, as a dict.
+            command here, as a dict. If None, the following keywords are passed
+            to Axes.legend:
+            {'loc': 'upper left', 'bbox_to_anchor': (0.95, 1.), 'markerscale': 2}.
 
         aesthetic_kwargs: dict, default None
             Pass any keyword arguments accepted by the seaborn `set` command
@@ -178,6 +185,13 @@ def plot(data, idx,
                     if paired is False.
                     See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_ind.html
 
+                pvalue_mann_whitney: float
+                    Two-sided p-value obtained from scipy.stats.mannwhitneyu.
+                    Only produced if paired is True.
+                    The Mann-Whitney U-test is a nonparametric unpaired test of
+                    the null hypothesis that x1 and x2 are from the same distribution.
+                    See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.mannwhitneyu.html
+
                 pvalue_2samp_related_ttest
                     P-value obtained from scipy.stats.ttest_rel. Only produced
                     if paired is True.
@@ -186,20 +200,13 @@ def plot(data, idx,
                 pvalue_wilcoxon: float
                     P-value obtained from scipy.stats.wilcoxon. Only produced
                     if paired is False.
-                    The Wilcoxons signed-rank test is a nonparametric paired test of
-                    the null hypothesis that the related samples x1 and x2 are from
-                    the same distribution.
+                    The Wilcoxons signed-rank test is a nonparametric paired
+                    test of the null hypothesis that the paired samples x1 and
+                    x2 are from the same distribution.
                     See https://docs.scipy.org/doc/scipy-1.0.0/reference/scipy.stats.wilcoxon.html
-
-                pvalue_mann_whitney: float
-                    Two-sided p-value obtained from scipy.stats.mannwhitneyu.
-                    Only produced if paired is True.
-                    The Mann-Whitney U-test is a nonparametric unpaired test of the null
-                    hypothesis that x1 and x2 are from the same distribution.
-                    See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.mannwhitneyu.html
-
-
     '''
+
+
     import matplotlib as mpl
     import matplotlib.pyplot as plt
     import matplotlib.ticker as tk
