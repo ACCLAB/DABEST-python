@@ -809,9 +809,11 @@ def plot(data, idx,
     unique_idx = np.unique(legend_labels,
                             return_index=True)[1]
     legend_handles_unique = (pd.Series(legend_handles).loc[unique_idx]).tolist()
-    last_swarm.legend(legend_handles_unique,
-                     legend_labels_unique,
-                     **legend_kwargs)
+    leg = last_swarm.legend(legend_handles_unique, legend_labels_unique,
+                            **legend_kwargs)
+    if paired is True and show_pairs is True and color_col is not None:
+        for line in leg.get_lines():
+            line.set_linewidth(3.0)
 
 
     # PREPARE OUTPUT
