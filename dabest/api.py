@@ -106,7 +106,7 @@ def plot(data, idx,
         fig_size: tuple, default None
             The desired dimensions of the figure as a (length, width) tuple.
 
-        font_scale: float, default 1.4
+        font_scale: float, default 1.25
             The font size will be scaled by this number.
 
         stat_func: callable, default None
