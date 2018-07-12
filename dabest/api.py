@@ -483,7 +483,7 @@ def plot(data, idx,
             if len(custom_palette) != len(color_groups):
                 raise ValueError('Length mismatch: The number of colors'
             'specified in {} does not match {} in {}'.format(custom_palette,
-                                        color_groups, col_grp))
+                                        color_groups))
             plotPal = dict( zip( color_groups,
                                  custom_palette ))
 
