@@ -483,12 +483,10 @@ def plot(data, idx,
             plotPal = custom_palette
 
         elif isinstance(custom_palette, list):
-            if len(custom_palette) != len(color_groups):
-                raise ValueError('Length mismatch: The number of colors'
-            'specified in {} does not match {} in {}'.format(custom_palette,
-                                        color_groups))
-            plotPal = dict( zip( color_groups,
-                                 custom_palette ))
+            plotPal = dict(zip(color_groups,
+                            custom_palette[0: len(color_groups)]
+                            )
+                        )
 
 
     # Create lists to store legend handles and labels for proper legend generation.
