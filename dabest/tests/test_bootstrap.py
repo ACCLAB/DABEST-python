@@ -5,6 +5,12 @@ import pytest
 import sys
 import numpy as np
 import scipy as sp
+
+# This filters out an innocuous warning when pandas is imported,
+# but the version has not been compiled against the newest numpy.
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+
 import pandas as pd
 from .. import bootstrap_tools as bst
 

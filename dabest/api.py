@@ -206,7 +206,10 @@ def plot(data, idx,
                     x2 are from the same distribution.
                     See https://docs.scipy.org/doc/scipy-1.0.0/reference/scipy.stats.wilcoxon.html
     '''
-
+    # This filters out an innocuous warning when pandas is imported,
+    # but the version has not been compiled against the newest numpy.
+    import warnings
+    warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 
     import matplotlib as mpl
     import matplotlib.pyplot as plt
