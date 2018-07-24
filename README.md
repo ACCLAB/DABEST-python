@@ -12,10 +12,10 @@ DABEST is a package for **D**ata **A**nalysis using **B**ootstrap-Coupled **EST*
 Python 3.6 is strongly recommended, although this has been tested with Python 2.7 and Python 3.5.
 
 In addition, the following packages are also required:
-- [numpy](https://www.numpy.org/) (1.13.x)
-- [scipy](https://www.scipy.org/) (1.0.x)
-- [matplotlib](https://www.matplotlib.org/) (2.0.x)
-- [seaborn](https://seaborn.pydata.org/) (0.8.x)
+- [numpy](https://www.numpy.org/) (1.15.x)
+- [scipy](https://www.scipy.org/) (1.1.x)
+- [matplotlib](https://www.matplotlib.org/) (2.2.x)
+- [seaborn](https://seaborn.pydata.org/) (0.9.x)
 - [pandas](https://pandas.pydata.org/) (0.23.x).
 
 To obtain these package dependencies easily, it is highly recommended to download the [Anaconda distribution](https://www.continuum.io/downloads) of Python.
@@ -54,6 +54,4 @@ There is also a [Matlab version](https://github.com/ACCLAB/DABEST-Matlab) of DAB
 
 ## R version
 
-There isn't an implementation of DABEST in R, and there are no current plans to create one.
-
-However, it is possible to use the R package `reticulate` to run Python code. Please take a look at this [tutorial](https://acclab.github.io/DABEST-python-docs/dabest-r.html) on how to use `reticulate` to analyse data in R.
+It is possible to use the R package `reticulate` to run Python code. Please take a look at this [tutorial](https://acclab.github.io/DABEST-python-docs/dabest-r.html) on how to use `reticulate` to analyse data in R.
