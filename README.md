@@ -4,7 +4,7 @@
 
 ## About
 
-DABEST is a package for **D**ata **A**nalysis using **B**ootstrapped **EST**imation.
+DABEST is a package for **D**ata **A**nalysis using **B**ootstrap-Coupled **EST**imation.
 ![Two-group contrast plot](img/readme-fig.png?raw=true "Two-group contrast plot")
 
 ## Requirements
