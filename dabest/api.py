@@ -155,7 +155,8 @@ def plot(data, idx,
             Pass any keyword arguments accepted by the matplotlib Axes `legend`
             command here, as a dict. If None, the following keywords are passed
             to Axes.legend:
-            {'loc': 'upper left', 'bbox_to_anchor': (0.95, 1.), 'markerscale': 2}.
+            {'loc': 'upper left', 'frameon': False, 'bbox_to_anchor': (0.95, 1.),
+            'markerscale': 2}.
 
         aesthetic_kwargs: dict, default None
             Pass any keyword arguments accepted by the seaborn `set` command
@@ -377,13 +378,13 @@ def plot(data, idx,
 
 
     # Legend.
-    default_legend_kwargs = {'loc': 'upper left',
+    default_legend_kwargs = {'loc': 'upper left', 'frameon': False,
                              'bbox_to_anchor': (0.95, 1.),
                              'markerscale': 2}
     if legend_kwargs is None:
         legend_kwargs = default_legend_kwargs
     else:
-        legend_kwargs = merge_two_dicts(default_legend_kwargs,legend_kwargs)
+        legend_kwargs = merge_two_dicts(default_legend_kwargs, legend_kwargs)
 
 
     # Aesthetic kwargs for sns.set().
@@ -816,15 +817,16 @@ def plot(data, idx,
 
 
     # Add Figure Legend.
-    legend_labels_unique = np.unique(legend_labels)
-    unique_idx = np.unique(legend_labels,
-                            return_index=True)[1]
-    legend_handles_unique = (pd.Series(legend_handles).loc[unique_idx]).tolist()
-    leg = last_swarm.legend(legend_handles_unique, legend_labels_unique,
-                            **legend_kwargs)
-    if paired is True and show_pairs is True and color_col is not None:
-        for line in leg.get_lines():
-            line.set_linewidth(3.0)
+    if color_col is not None:
+        legend_labels_unique = np.unique(legend_labels)
+        unique_idx = np.unique(legend_labels,
+                                return_index=True)[1]
+        legend_handles_unique = (pd.Series(legend_handles).loc[unique_idx]).tolist()
+        leg = last_swarm.legend(legend_handles_unique, legend_labels_unique,
+                                **legend_kwargs)
+        if paired is True and show_pairs is True:
+            for line in leg.get_lines():
+                line.set_linewidth(3.0)
 
 
     # PREPARE OUTPUT
