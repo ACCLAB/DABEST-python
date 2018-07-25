@@ -1,16 +1,17 @@
 # #! /usr/bin/env python
 
-
 # Load Libraries
 import numpy as np
 import matplotlib as mpl
 mpl.use('Agg')
+
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import pytest
 from .. import api
+
 
 # Fixtures.
 @pytest.fixture
@@ -33,6 +34,8 @@ def create_dummy_dataset(n=50, expt_groups=6):
 
     return df
 
+
+
 @pytest.fixture
 def get_swarm_yspans(coll, round_result=False, decimals=12):
     """
@@ -49,6 +52,7 @@ def get_swarm_yspans(coll, round_result=False, decimals=12):
             return y.min(), y.max()
     except ValueError:
         return None
+
 
 
 # Start tests.
@@ -72,6 +76,8 @@ def test_swarmspan():
 
         for j, span in enumerate(sns_yspans):
             assert span == pytest.approx(dabest_yspans[j])
+
+
 
 def test_ylims():
     print('Testing assignment of ylims')
@@ -100,6 +106,7 @@ def test_ylims():
         assert f1.axes[i].get_ylim() == pytest.approx(rand_contrast_ylim1)
 
 
+
 def test_ylabels():
     print('Testing assignment of ylabels')
     df = create_dummy_dataset()
@@ -122,6 +129,8 @@ def test_ylabels():
                         )
     assert f2.axes[0].get_ylabel() == "Hello Again"
     assert f2.axes[2].get_ylabel() == "World\nFolks"
+
+
 
 def test_paired():
     print('Testing Gardner-Altman paired plotting')
