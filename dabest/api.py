@@ -607,7 +607,7 @@ def plot(data, idx,
 
         # Despine appropriately.
         if float_contrast:
-            sns.despine(ax = ax_raw,trim = True)
+            sns.despine(ax=ax_raw, trim=True)
         else:
             ax_raw.xaxis.set_visible(False)
             not_first_ax = (j != 0)
@@ -694,9 +694,9 @@ def plot(data, idx,
                 rightmax = ax_raw.get_ylim()[1] + boots.summary
 
             ax_contrast.set_ylim(rightmin, rightmax)
-            align_yaxis(ax_raw,
-                np.mean(plotdat[plotdat[x] == grp][y].dropna()),
-                ax_contrast, boots.summary)
+
+            align_yaxis(ax_raw, np.mean(plotdat[plotdat[x] == grp][y].dropna()),
+                        ax_contrast, boots.summary)
 
             # Draw zero line.
             xlimlow, xlimhigh = ax_contrast.get_xlim()
@@ -787,7 +787,7 @@ def plot(data, idx,
         # Sort and convert to numpy arrays.
         contrast_ax_ylim_low = np.sort(contrast_ax_ylim_low)
         contrast_ax_ylim_high = np.sort(contrast_ax_ylim_high)
-        contrast_ax_ylim_tickintervals=np.sort(contrast_ax_ylim_tickintervals)
+        contrast_ax_ylim_tickintervals = np.sort(contrast_ax_ylim_tickintervals)
 
         # Compute normalized ylim, or set normalized ylim to desired ylim.
         if contrast_ylim is None:
