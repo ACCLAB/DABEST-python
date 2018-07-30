@@ -35,64 +35,60 @@ def need_to_install(library, desired_major_version, desired_minor_version):
 def check_dependencies():
     to_install = []
 
+
+    NUMPY_LATEST_MAJOR = 1
+    NUMPY_LATEST_MINOR = 15
+    TO_INSTALL = 'numpy=={}.{}'.format(NUMPY_LATEST_MAJOR,
+                                       NUMPY_LATEST_MINOR)
     try:
         import numpy
-        NUMPY_LATEST_MAJOR = 1
-        NUMPY_LATEST_MINOR = 15
-        TO_INSTALL = 'numpy=={}.{}'.format(NUMPY_LATEST_MAJOR,
-                                           NUMPY_LATEST_MINOR)
-
         if need_to_install(numpy, NUMPY_LATEST_MAJOR, NUMPY_LATEST_MINOR):
             to_install.append(TO_INSTALL)
     except ImportError:
         to_install.append(TO_INSTALL)
 
 
+    SCIPY_LATEST_MAJOR = 1
+    SCIPY_LATEST_MINOR = 1
+    TO_INSTALL = 'scipy=={}.{}'.format(SCIPY_LATEST_MAJOR,
+                                       SCIPY_LATEST_MINOR)
     try:
         import scipy
-        SCIPY_LATEST_MAJOR = 1
-        SCIPY_LATEST_MINOR = 1
-        TO_INSTALL = 'scipy=={}.{}'.format(SCIPY_LATEST_MAJOR,
-                                           SCIPY_LATEST_MINOR)
-
         if need_to_install(scipy, SCIPY_LATEST_MAJOR, SCIPY_LATEST_MINOR):
             to_install.append(TO_INSTALL)
     except ImportError:
         to_install.append(TO_INSTALL)
 
-
+    PANDAS_LATEST_MAJOR = 0
+    PANDAS_LATEST_MINOR = 23
+    TO_INSTALL = 'pandas=={}.{}'.format(PANDAS_LATEST_MAJOR,
+                                        PANDAS_LATEST_MINOR)
     try:
         import pandas
-        PANDAS_LATEST_MAJOR = 0
-        PANDAS_LATEST_MINOR = 23
-        TO_INSTALL = 'pandas=={}.{}'.format(PANDAS_LATEST_MAJOR,
-                                            PANDAS_LATEST_MINOR)
-
         if need_to_install(pandas, PANDAS_LATEST_MAJOR, PANDAS_LATEST_MINOR):
             to_install.append(TO_INSTALL)
     except ImportError:
         to_install.append(TO_INSTALL)
 
+
+    MPL_LATEST_MAJOR = 2
+    MPL_LATEST_MINOR = 2
+    TO_INSTALL = 'matplotlib=={}.{}'.format(MPL_LATEST_MAJOR,
+                                            MPL_LATEST_MINOR)
     try:
         import matplotlib as mpl
-        MPL_LATEST_MAJOR = 2
-        MPL_LATEST_MINOR = 2
-        TO_INSTALL = 'matplotlib=={}.{}'.format(MPL_LATEST_MAJOR,
-                                                MPL_LATEST_MINOR)
-
         if need_to_install(mpl, MPL_LATEST_MAJOR, MPL_LATEST_MINOR):
             to_install.append(TO_INSTALL)
     except ImportError:
         to_install.append(TO_INSTALL)
 
 
+    SNS_LATEST_MAJOR = 0
+    SNS_LATEST_MINOR = 9
+    TO_INSTALL = 'seaborn=={}.{}'.format(SNS_LATEST_MAJOR,
+                                        SNS_LATEST_MINOR)
     try:
         import seaborn
-        SNS_LATEST_MAJOR = 0
-        SNS_LATEST_MINOR = 9
-        TO_INSTALL = 'seaborn=={}.{}'.format(SNS_LATEST_MAJOR,
-                                            SNS_LATEST_MINOR)
-
         if need_to_install(pandas, SNS_LATEST_MAJOR, SNS_LATEST_MINOR):
             to_install.append(TO_INSTALL)
     except ImportError:
