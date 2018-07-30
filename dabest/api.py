@@ -31,6 +31,9 @@ def plot(data, idx,
         show_group_count=True,
 
         tick_length=12,
+        tick_pad=12,
+        # spine_offset=12,
+
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
         reflines_kwargs=None,
@@ -125,7 +128,12 @@ def plot(data, idx,
             xtick labels.
 
         tick_length: int, default 12
-            The length of the ticks for both thw swarm and contrast axes.
+            The length of the ticks (in points) for both the swarm and contrast
+            axes.
+
+        tick_pad: int, default 12
+            The distance of the tick label from the tick (in points), for both
+            the swarm and contrast axes.
 
         swarmplot_kwargs: dict, default None
             Pass any keyword arguments accepted by the seaborn `swarmplot`
@@ -773,21 +781,24 @@ def plot(data, idx,
 
         # SET Y AXIS LABELS .
         if j > 0:
-            ax_raw.set_ylabel('')
+            ax_raw.set_ylabel('', labelpad=tick_length)
         else:
-            ax_raw.set_ylabel(y)
+            ax_raw.set_ylabel(y, labelpad=tick_length)
 
         if float_contrast is False:
             if j > 0:
-                ax_contrast.set_ylabel('')
+                ax_contrast.set_ylabel('', labelpad=tick_length)
             else:
                 if contrast_label is None:
                     if paired:
-                        ax_contrast.set_ylabel('paired delta\n'+y)
+                        ax_contrast.set_ylabel('paired delta\n' + y,
+                                                labelpad=tick_length)
                     else:
-                        ax_contrast.set_ylabel('delta\n'+y)
+                        ax_contrast.set_ylabel('delta\n' + y,
+                                                labelpad=tick_length)
                 else:
-                    ax_contrast.set_ylabel(str(contrast_label))
+                    ax_contrast.set_ylabel(str(contrast_label),
+                                            labelpad=tick_length)
 
         # ROTATE X-TICKS OF ax_contrast
         rotate_ticks(ax_contrast, angle=45, alignment='right')
@@ -869,7 +880,7 @@ def plot(data, idx,
 
     # Lengthen the axes ticks so they look better.
     for ax in fig.axes:
-        ax.tick_params(length=tick_length)
+        ax.tick_params(length=tick_length, pad=tick_pad)
 
 
     # Return the figure and the results DataFrame.
