@@ -103,36 +103,45 @@ def test_swarmspan():
 
 
 def test_ylims():
-    print('Testing assignment of ylims')
-    df = create_dummy_dataset()
+    print('Testing assignment of ylims.')
+    seed, ptp, df = create_dummy_dataset()
+    ylim_min = int(np.floor(-ptp) - 1)
+    ylim_max = int(np.ceil(ptp) + 1)
+    print('seed = {}'.format(seed))
 
-    print('Testing assignment for Gardner-Altman plot')
-    rand_swarm_ylim2 = (np.random.randint(-7, 0), np.random.randint(0, 7))
-    f2, b2 = api.plot(data=df,
-                   idx=(('0','1'),('2','3')),
-                   float_contrast=True,
-                   swarm_ylim=rand_swarm_ylim2)
-    for i in range(0, int(len(f2.axes)/2)):
-        assert f2.axes[i].get_ylim() == pytest.approx(rand_swarm_ylim2)
 
-    print('Testing assignment of ylims for Cummings plot')
-    rand_swarm_ylim1 = (np.random.randint(-7, 0), np.random.randint(0, 7))
+    print('\nTesting assignment of ylims for Cummings plot')
+    rand_swarm_ylim1 = (np.random.randint(ylim_min, 0), np.random.randint(ylim_max, ylim_max*2))
     rand_contrast_ylim1 = (np.random.randint(-1, 0), np.random.randint(0, 1))
+    print('Swarm ylim = {}, {}'.format(rand_swarm_ylim1[0], rand_swarm_ylim1[1]))
+    print('Contrast ylim = {}, {}'.format(rand_contrast_ylim1[0], rand_contrast_ylim1[1]))
     f1, b1 = api.plot(data=df,
                    idx=(('0','1'),('2','3')),
                    float_contrast=False,
                    swarm_ylim=rand_swarm_ylim1,
                    contrast_ylim=rand_contrast_ylim1)
+
     for i in range(0, int(len(f1.axes)/2)):
         assert f1.axes[i].get_ylim() == pytest.approx(rand_swarm_ylim1)
     for i in range(int(len(f1.axes)/2), len(f1.axes)):
         assert f1.axes[i].get_ylim() == pytest.approx(rand_contrast_ylim1)
 
 
+    print('\nTesting assignment for Gardner-Altman plot')
+    rand_swarm_ylim2 = (np.random.randint(ylim_min, 0), np.random.randint(ylim_max, ylim_max*2))
+    print('Swarm ylim = {}, {}'.format(rand_swarm_ylim2[0], rand_swarm_ylim2[1]))
+    f2, b2 = api.plot(data=df,
+                   idx=(('0','1'),('2','3')),
+                   float_contrast=True,
+                   swarm_ylim=rand_swarm_ylim2)
+
+    for i in range(0, int(len(f2.axes)/2)):
+        assert f2.axes[i].get_ylim() == pytest.approx(rand_swarm_ylim2)
+
 
 def test_ylabels():
     print('Testing assignment of ylabels')
-    df = create_dummy_dataset()
+    seed, ptp, df = create_dummy_dataset()
 
     print('Testing ylabel assignment for Gardner-Altman plot')
     f1, _ = api.plot(data=df,
@@ -157,7 +166,7 @@ def test_ylabels():
 
 def test_paired():
     print('Testing Gardner-Altman paired plotting')
-    df = create_dummy_dataset()
+    seed, ptp, df = create_dummy_dataset()
     f, b = api.plot(data=df,
                    idx=('0','1'),
                    paired=True)
