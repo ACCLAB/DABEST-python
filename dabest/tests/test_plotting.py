@@ -76,19 +76,23 @@ def get_swarm_yspans(coll, round_result=False, decimals=12):
 
 # Start tests.
 def test_swarmspan():
-    print('Testing swarmspan')
-    df = create_dummy_dataset()
+    print('Testing swarmspans')
+
+    base_mean = np.random.randint(10, 101)
+    seed, ptp, df = create_dummy_dataset(base_mean=base_mean)
+
+    print('\nSeed = {}; base mean = {}'.format(seed, base_mean))
+
     for c in df.columns[1:-1]:
-        f1, swarmplt = plt.subplots(figsize=(10, 10))
-        sns.swarmplot(data=df[[df.columns[0], c]],
-            ax=swarmplt)
+        print('{}...'.format(c))
+
+        f1, swarmplt = plt.subplots(1)
+        sns.swarmplot(data=df[[df.columns[0], c]], ax=swarmplt)
         sns_yspans = []
         for coll in swarmplt.collections:
             sns_yspans.append(get_swarm_yspans(coll))
 
-        f2, b = api.plot(data=df,
-            fig_size=(12.5, 11),
-            idx=(df.columns[0], c))
+        f2, b = api.plot(data=df, idx=(df.columns[0], c))
         dabest_yspans = []
         for coll in f2.axes[0].collections:
             dabest_yspans.append(get_swarm_yspans(coll))
