@@ -342,8 +342,8 @@ def plot(data, idx,
     if swarm_ylim is None:
         # To ensure points at the limits are clearly seen.
         pad = np.abs(data_in[y].diff().min()) / 2 #
-        swarm_ylim = (data_in[y].min() - pad,
-                      data_in[y].max() + pad)
+        swarm_ylim = (np.floor(data_in[y].min() - pad),
+                      np.ceil(data_in[y].max() + pad))
 
 
     # Set default kwargs first, then merge with user-dictated ones.
@@ -680,6 +680,17 @@ def plot(data, idx,
 
         # NORMALISE Y LIMS AND DESPINE FLOATING CONTRAST AXES.
         if float_contrast:
+            # Check that the effect size is within the swarm ylims.
+            min_check = swarm_ylim[0] - ref.mean()
+            max_check = swarm_ylim[1] - ref.mean()
+            if (min_check <= boots.summary <=  max_check) == False:
+                err1 = 'The mean of the reference group {}'.format(ref.mean())
+                err2 = ' does not fall in the specified `swarm_ylim` {}.'.format(swarm_ylim)
+                err2 = ' Please select a `swarm_ylim` that includes the reference mean, '
+                err4 = ' or set `float_contrast=False`. '
+                err = err1 + err2 + err3 + err4
+                raise ValueError(err)
+
             # Align 0 of ax_contrast to reference group mean of ax_raw.
             ylimlow, ylimhigh = ax_contrast.get_xlim()
             ax_contrast.set_xlim(ylimlow, ylimhigh+spacer)
