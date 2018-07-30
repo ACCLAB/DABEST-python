@@ -132,11 +132,13 @@ def test_single_sample_bootstrap(mean=100, sd=10, n=25,
     # single sample
     pop = sp.stats.norm.rvs(loc=mean, scale=sd*np.random.random(1)[0], size=10000)
     sample = np.random.choice(pop, size=n, replace=False)
+    print("Mean={}".format(mean))
 
     error_count = 0
     for i in range(1, nreps):
         try:
             results = bst.bootstrap(sample, alpha_level=alpha)
+            print("95CI={}, {}".format(results.bca_ci_low, results.bca_ci_high))
             test_bootstrap(mean, results)
 
         except AssertionError:
@@ -217,6 +219,7 @@ def test_difference_paired_bootstrap(mean=100, sd=10, n=25,
     # are supposed to be paired.
 
     rand_delta = np.random.randint(-10, 10) # randint between -10 and 10
+    print('difference={}'.format(rand_delta))
     SCALE = sd * np.random.random(1)[0]
 
     pop1 = sp.stats.norm.rvs(loc=mean, scale=SCALE, size=10000)
@@ -231,6 +234,7 @@ def test_difference_paired_bootstrap(mean=100, sd=10, n=25,
             results = bst.bootstrap(sample1, sample2,
                                     alpha_level=alpha, paired=True)
             test_bootstrap(rand_delta, results)
+            print("95CI={}, {}".format(results.bca_ci_low, results.bca_ci_high))
 
         except AssertionError:
             error_count += 1
