@@ -2,6 +2,7 @@
 
 # Load Libraries
 import numpy as np
+import scipy as sp
 import matplotlib as mpl
 mpl.use('Agg')
 
@@ -15,24 +16,42 @@ from .. import api
 
 # Fixtures.
 @pytest.fixture
-def create_dummy_dataset(n=50, expt_groups=6):
-    # Dummy dataset
-    Ns = n
-    dataset = list()
-    for seed in np.random.randint(low=100, high=1000, size=expt_groups):
-        np.random.seed(seed)
-        dataset.append(np.random.randn(Ns))
-    df = pd.DataFrame(dataset).T
-    # Create some upwards/downwards shifts.
-    for c in df.columns:
-        df.loc[:,c] =(df[c] * np.random.random()) + np.random.random()
-    # Turn columns into strings
-    df.columns = [str(c) for c in df.columns]
-    # Add gender column for color.
-    df['Gender'] = np.concatenate([np.repeat('Male', Ns/2),
-                                   np.repeat('Female', Ns/2)])
+def create_dummy_dataset(seed=None, n=30, base_mean=0, expt_groups=6,
+                         scale_means=2, scale_std=1.2):
+    """
+    Creates a dummy dataset for plotting.
 
-    return df
+    Returns the seed used to generate the random numbers,
+    the maximum possible difference between mean differences,
+    and the dataset itself.
+    """
+
+    # Set a random seed.
+    if seed is None:
+        random_seed = np.random.randint(low=1, high=1000, size=1)[0]
+    else:
+        if isinstance(seed, int):
+            random_seed = seed
+        else:
+            raise TypeError('{} is not an integer.'.format(seed))
+
+    # Generate a set of random means
+    np.random.seed(random_seed)
+    MEANS = np.repeat(base_mean, expt_groups) + np.random.random(size=expt_groups) * scale_means
+    SCALES = np.random.random(size=expt_groups) * scale_std
+
+    max_mean_diff = np.ptp(MEANS)
+
+    dataset = list()
+    for i, m in enumerate(MEANS):
+        pop = sp.stats.norm.rvs(loc=m, scale=SCALES[i], size=10000)
+        sample = np.random.choice(pop, size=n, replace=False)
+        dataset.append(sample)
+
+    df = pd.DataFrame(dataset).T
+    df.columns = [str(c) for c in df.columns]
+
+    return random_seed, max_mean_diff, df
 
 
 
