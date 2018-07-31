@@ -104,7 +104,7 @@ def test_swarmspan():
 
 def test_ylims():
     print('Testing assignment of ylims.')
-    seed, ptp, df = create_dummy_dataset()
+    seed, ptp, df = create_dummy_dataset(base_mean=0)
     ylim_min = int(np.floor(-ptp) - 1)
     ylim_max = int(np.ceil(ptp) + 1)
     print('seed = {}'.format(seed))
