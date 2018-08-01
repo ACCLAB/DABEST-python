@@ -73,13 +73,19 @@ def plot(data, idx,
         paired: boolean, default False
             Whether or not the data is paired. To elaborate.
 
-        custom_palette: dict or list, default None
-            Pass a dictionary with {'group':'color'} pairings here, or a list
-            of matplotlib colors. This palette will be used to color the
-            swarmplot.
+        custom_palette: dict, list, or matplotlib color palette, default None
+            This keyword accepts a dictionary with {'group':'color'} pairings,
+            a list of RGB colors, or a specified matplotlib palette.
+            This palette will be used to color the swarmplot. If no `color_col`
+            is specified, then each group will be colored in sequence according
+            to the palette.
 
-            Please take a look at the seaborn commands `color_palette`
-            and `cubehelix_palette` to generate a custom palette.
+            If `color_col` is specified but this is not, the default palette
+            used is 'tab10'.
+
+            Please take a look at the seaborn commands `sns.color_palette`
+            and `sns.cubehelix_palette` to generate a custom palette. Both
+            these functions generate a list of RGB colors.
             https://seaborn.pydata.org/generated/seaborn.color_palette.html
             https://seaborn.pydata.org/generated/seaborn.cubehelix_palette.html
 
@@ -499,6 +505,14 @@ def plot(data, idx,
                             custom_palette[0: len(color_groups)]
                             )
                         )
+        elif isinstance(custom_palette, str):
+            # check it is in the list of matplotlib palettes.
+            if custom_palette in mpl.pyplot.colormaps():
+                plotPal = custom_palette
+            else:
+                err1 = 'The specified `custom_palette` {}'.format(custom_palette)
+                err2 = ' is not a matplotlib palette. Please check.'
+                raise ValueError(err1 + err2)
 
 
     # Create lists to store legend handles and labels for proper legend generation.
