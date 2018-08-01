@@ -352,7 +352,7 @@ def plot(data, idx,
     # CALCULATE RAW SWARM YLIMS.
     if swarm_ylim is None:
         # To ensure points at the limits are clearly seen.
-        pad = np.abs(data_in[y].diff().min()) / 2 #
+        pad = data_in[y].diff().abs().min() / 2 #
         swarm_ylim = (np.floor(data_in[y].min() - pad),
                       np.ceil(data_in[y].max() + pad))
 
