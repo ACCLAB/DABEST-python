@@ -197,7 +197,7 @@ def plot(data, idx,
 
                 pvalue_mann_whitney: float
                     Two-sided p-value obtained from scipy.stats.mannwhitneyu.
-                    Only produced if paired is True.
+                    Only produced if paired is False.
                     The Mann-Whitney U-test is a nonparametric unpaired test of
                     the null hypothesis that x1 and x2 are from the same distribution.
                     See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.mannwhitneyu.html
@@ -209,7 +209,7 @@ def plot(data, idx,
 
                 pvalue_wilcoxon: float
                     P-value obtained from scipy.stats.wilcoxon. Only produced
-                    if paired is False.
+                    if paired is True.
                     The Wilcoxons signed-rank test is a nonparametric paired
                     test of the null hypothesis that the paired samples x1 and
                     x2 are from the same distribution.
