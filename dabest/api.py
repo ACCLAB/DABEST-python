@@ -697,7 +697,7 @@ def plot(data, idx,
             if (min_check <= boots.summary <=  max_check) == False:
                 err1 = 'The mean of the reference group {}'.format(ref.mean())
                 err2 = ' does not fall in the specified `swarm_ylim` {}.'.format(swarm_ylim)
-                err2 = ' Please select a `swarm_ylim` that includes the reference mean, '
+                err3 = ' Please select a `swarm_ylim` that includes the reference mean, '
                 err4 = ' or set `float_contrast=False`. '
                 err = err1 + err2 + err3 + err4
                 raise ValueError(err)
