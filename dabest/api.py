@@ -247,7 +247,7 @@ def plot(data, idx,
             paired = False
             float_contrast = False
         # flatten out idx.
-        all_plot_groups = np.unique([t for t in idx])
+        all_plot_groups = np.unique([t for t in idx]).tolist()
         # Set aspect ratio etc.
         ncols = 1
         widthratio = [1]
@@ -257,7 +257,7 @@ def plot(data, idx,
 
     elif all([isinstance(i, tuple) for i in idx]):
         # plottype = 'multiplot'
-        all_plot_groups = np.unique([tt for t in idx for tt in t])
+        all_plot_groups = np.unique([tt for t in idx for tt in t]).tolist()
         ncols = len(idx)
         widthratio = [len(ii) for ii in idx]
         if [True for i in widthratio if i > 2]:
@@ -308,25 +308,28 @@ def plot(data, idx,
 
     elif x is None and y is None:
         # Assume we have a wide dataset.
-        # extract only the columns we need.
         # First, check we have all columns in the dataset.
         for g in all_plot_groups:
             if g not in data_in.columns:
                 raise IndexError('{0} is not a column in `data`.'.format(g))
 
         # Melt it so it is easier to use.
+        # Preliminaries before we melt the dataframe.
         x = 'group'
         if swarm_label is None:
             y = 'value'
         else:
             y = str(swarm_label)
 
+        # Extract only the columns being plotted.
         if color_col is None:
             idv = ['index']
             turn_to_cat = [x]
+            data_in = data_in[all_plot_groups].copy()
         else:
             idv = ['index', color_col]
             turn_to_cat = [x, color_col]
+            data_in = data_in[[*all_plot_groups, color_col]].copy()
 
         data_in = pd.melt(data_in.reset_index(),
                           id_vars=idv,
@@ -336,8 +339,8 @@ def plot(data, idx,
 
         for c in turn_to_cat:
             data_in.loc[:,c] = pd.Categorical(data_in[c],
-                                              categories=data_in[c].unique(),
-                                              ordered=True)
+                                        categories=data_in[c].unique(),
+                                        ordered=True)
 
 
     # CALCULATE CI.
