@@ -247,21 +247,24 @@ def plot(data, idx,
 
     # IDENTIFY PLOT TYPE.
     if all([isinstance(i, str) for i in idx]):
-        if len(idx) > 2: # plottype = 'hubspoke'
+        plottype = 'hubspoke'
+        # Set columns and width ratio.
+        ncols = 1
+        widthratio = [1]
+
+        if len(idx) > 2:
             paired = False
             float_contrast = False
         # flatten out idx.
         all_plot_groups = np.unique([t for t in idx]).tolist()
-        # Set aspect ratio etc.
-        ncols = 1
-        widthratio = [1]
         # Place idx into tuple.
         idx = (idx,)
 
 
-    elif all([isinstance(i, tuple) for i in idx]):
-        # plottype = 'multiplot'
+    elif all([isinstance(i, (tuple, list)) for i in idx]):
+        plottype = 'multigroup'
         all_plot_groups = np.unique([tt for t in idx for tt in t]).tolist()
+        # Set columns and width ratio.
         ncols = len(idx)
         widthratio = [len(ii) for ii in idx]
         if [True for i in widthratio if i > 2]:
@@ -273,9 +276,6 @@ def plot(data, idx,
         'entered--{}.'.format(idx)
         raise ValueError(err)
 
-    # infer the figsize.
-    xinches = 1.5 * len(all_plot_groups) + 1
-    fsize = (xinches, 8)
 
     # SANITY CHECKS
     # check color_col is a column name.
@@ -446,13 +446,35 @@ def plot(data, idx,
     # Set clean style.
     sns.set(**aesthetic_kwargs)
 
+    swarm_xspan = 3
+    float_spacing = 1
+
     # Set appropriate horizontal spacing between subplots,
     # based on whether the contrast is floating.
-    if float_contrast:
-        ws = 0.75
+    if float_contrast is True:
+        # Check if this is multi two-group or not.
+        ws = float_spacing
     else:
-        ws = 0.
+        ws = 0
 
+
+    # infer the figsize.
+    if color_col is None:
+        legend_xspan = 0
+    else:
+        legend_xspan = 1.5
+
+    if plottype == 'multigroup' and float_contrast is True:
+        raw_xspan = 5
+        ws = 0.5
+    else:
+        if color_col is None:
+            raw_xspan = swarm_xspan + 1.5
+        else:
+            raw_xspan = swarm_xspan
+
+    xinches = raw_xspan * ncols + legend_xspan
+    fsize = (xinches, 7)
 
     # Set figure size.
     if fig_size is None:
