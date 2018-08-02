@@ -8,15 +8,15 @@ Getting Started
 Requirements
 ------------
 
-Python 3.6 is strongly recommended. ``dabest`` has also been tested with Python 2.7 and Python 3.5.
+Python 3.6 is strongly recommended. ``dabest`` has also been tested with Python 2.7, 3.5, and 3.7.
 
 In addition, the following packages are also required:
 
-* `numpy <https://www.numpy.org>`_ (1.13.x)
-* `scipy <https://www.scipy.org>`_ (1.0.x)
-* `matplotlib <https://www.matplotlib.org>`_ (2.0.x)
-* `pandas <https://pandas.pydata.org>`_ (0.23.x).
-* `seaborn <https://seaborn.pydata.org>`_ (0.8.x)
+* `numpy 1.15 <https://www.numpy.org>`_
+* `scipy 1.1 <https://www.scipy.org>`_
+* `matplotlib 2.2 <https://www.matplotlib.org>`_
+* `pandas 0.23 <https://pandas.pydata.org>`_
+* `seaborn 0.9 <https://seaborn.pydata.org>`_
 
 To obtain these package dependencies easily, it is highly recommended to download the `Anaconda <https://www.continuum.io/downloads>`_ distribution of Python.
 
@@ -59,4 +59,4 @@ Please report any bugs on the `Github issue tracker <https://github.com/ACCLAB/D
 ------------
 Contributing
 ------------
-All contributions are welcome. Please fork the `Github repo    <https://github.com/ACCLAB/DABEST-python/>`_ and open a pull request.
+All contributions are welcome. Please fork the `Github repo <https://github.com/ACCLAB/DABEST-python/>`_ and open a pull request.

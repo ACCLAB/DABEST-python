@@ -6,15 +6,20 @@
 ======
 DABEST
 ======
----------------------------------------
-Data Analysis with Bootstrap ESTimation
----------------------------------------
-*version 0.1.3*
+-----------------------------------------------
+Data Analysis with Bootstrap-coupled ESTimation
+-----------------------------------------------
+*version 0.1.4*
 
-.. image:: _images/f1.png
+Analyze your data with effect sizes!
+
+.. image:: _images/output_7_0.png
+  :scale: 75 %
 
 News
 ----
+July 2018: Release of v0.1.4. See the :doc:`release-notes`.
+
 June 2018: Release of v0.1.3. Also added a short tutorial :doc:`dabest-r`!
 
 December 2017: We have made a `webapp <https://www.estimationstats.com>`_ that produces Gardner-Altman and Cumming plots!
@@ -29,6 +34,6 @@ Contents
    getting-started
    tutorial
    dabest-r
-   api
    release-notes
    about
+   api
