@@ -13,8 +13,7 @@ Data Analysis with Bootstrap-coupled ESTimation
 
 Analyze your data with effect sizes!
 
-.. image:: _images/output_7_0.png
-  :scale: 75 %
+.. image:: _images/showpiece.png
 
 News
 ----
