@@ -30,9 +30,8 @@ def plot(data, idx,
         n_boot=5000,
         show_group_count=True,
 
-        tick_length=12,
-        tick_pad=12,
-        # spine_offset=12,
+        tick_length=15,
+        tick_pad=9,
 
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
