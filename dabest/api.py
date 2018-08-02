@@ -460,10 +460,10 @@ def plot(data, idx,
 
 
     # Create subplots.
-    fig,axx=plt.subplots(ncols=ncols,
-                         figsize=fig_size,
-                         gridspec_kw={'wspace':ws,
-                                       'width_ratios':widthratio})
+    fig,axx=plt.subplots(ncols=ncols, figsize=fig_size,
+                         gridspec_kw={'width_ratios': widthratio,
+                                      'wspace' : ws}
+                        )
 
 
     # If the contrast axes are NOT floating, create lists to store raw ylims
@@ -856,11 +856,11 @@ def plot(data, idx,
     # Add Figure Legend.
     if color_col is not None:
         legend_labels_unique = np.unique(legend_labels)
-        unique_idx = np.unique(legend_labels,
-                                return_index=True)[1]
+        unique_idx = np.unique(legend_labels, return_index=True)[1]
         legend_handles_unique = (pd.Series(legend_handles).loc[unique_idx]).tolist()
         leg = last_swarm.legend(legend_handles_unique, legend_labels_unique,
                                 **legend_kwargs)
+
         if paired is True and show_pairs is True:
             for line in leg.get_lines():
                 line.set_linewidth(3.0)
