@@ -4,7 +4,6 @@
 # Email : joseshowh@gmail.com
 
 
-
 def plot(data, idx,
         x=None, y=None,
         color_col=None,
@@ -39,7 +38,6 @@ def plot(data, idx,
         group_summary_kwargs=None,
         legend_kwargs=None,
         aesthetic_kwargs=None,
-
         ):
 
     '''
@@ -58,7 +56,7 @@ def plot(data, idx,
         x, y: strings, default None
             Column names for data to be plotted on the x-axis and y-axis.
 
-        color_col: list, default None
+        color_col: string, default None
             Column to be used for colors.
 
         swarm_label, contrast_label: strings, default None
@@ -75,6 +73,7 @@ def plot(data, idx,
         custom_palette: dict, list, or matplotlib color palette, default None
             This keyword accepts a dictionary with {'group':'color'} pairings,
             a list of RGB colors, or a specified matplotlib palette.
+
             This palette will be used to color the swarmplot. If no `color_col`
             is specified, then each group will be colored in sequence according
             to the palette.
@@ -114,7 +113,7 @@ def plot(data, idx,
         fig_size: tuple, default None
             The desired dimensions of the figure as a (length, width) tuple.
 
-        font_scale: float, default 1.25
+        font_scale: float, default 1.2
             The font size will be scaled by this number.
 
         stat_func: callable, default None
@@ -132,11 +131,11 @@ def plot(data, idx,
             Whether or not the group count (e.g. 'N=10') will be appended to the
             xtick labels.
 
-        tick_length: int, default 12
+        tick_length: int, default 15
             The length of the ticks (in points) for both the swarm and contrast
             axes.
 
-        tick_pad: int, default 12
+        tick_pad: int, default 9
             The distance of the tick label from the tick (in points), for both
             the swarm and contrast axes.
 
