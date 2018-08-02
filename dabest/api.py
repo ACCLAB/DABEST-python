@@ -23,7 +23,7 @@ def plot(data, idx,
 
         fig_size=None,
 
-        font_scale=1.25,
+        font_scale=1.2,
 
         stat_func=None,
         ci=95,
