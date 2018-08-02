@@ -80,7 +80,7 @@ class bootstrap:
 
         pvalue_1samp_ttest: float
             P-value obtained from scipy.stats.ttest_1samp. If 2 arrays were
-            (x1 and x2), returns 'NIL'.
+            passed (x1 and x2), returns 'NIL'.
             See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_1samp.html
 
         pvalue_2samp_ind_ttest: float
@@ -152,25 +152,26 @@ class bootstrap:
                 raise ValueError('Please specify x2.')
             else:
                 x2 = pd.Series(x2).dropna()
-                if len(x1)!=len(x2):
+                if len(x1) != len(x2):
                     raise ValueError('x1 and x2 are not the same length.')
 
         if (x2 is None) or (paired is True) :
+
             if x2 is None:
                 tx = x1
                 paired = False
-                ttest_single = ttest_1samp(x1,0)[1]
+                ttest_single = ttest_1samp(x1, 0)[1]
                 ttest_2_ind = 'NIL'
                 ttest_2_paired = 'NIL'
                 wilcoxonresult = 'NIL'
 
-            else:
+            elif paired is True:
                 diff = True
                 tx = x2 - x1
                 ttest_single = 'NIL'
                 ttest_2_ind = 'NIL'
-                ttest_2_paired = ttest_rel(x1,x2)[1]
-                wilcoxonresult = wilcoxon(x1,x2)[1]
+                ttest_2_paired = ttest_rel(x1, x2)[1]
+                wilcoxonresult = wilcoxon(x1, x2)[1]
             mannwhitneyresult = 'NIL'
 
             # Turns data into array, then tuple.
@@ -183,7 +184,7 @@ class bootstrap:
             statarray.sort()
 
             # Get Percentile indices
-            pct_low_high = np.round((reps-1)*alphas)
+            pct_low_high = np.round((reps-1) * alphas)
             pct_low_high = np.nan_to_num(pct_low_high).astype('int')
 
 
@@ -197,26 +198,25 @@ class bootstrap:
             tdata = exp_statarray - ref_statarray
             statarray = tdata.copy()
             statarray.sort()
-            tdata=(tdata,) # Note tuple form.
+            tdata = (tdata, ) # Note tuple form.
 
             # The difference as one would calculate it.
             summ_stat = statfunction(x2) - statfunction(x1)
 
             # Get Percentile indices
-            pct_low_high = np.round((reps-1)*alphas)
+            pct_low_high = np.round((reps-1) * alphas)
             pct_low_high = np.nan_to_num(pct_low_high).astype('int')
 
             # Statistical tests.
             ttest_single='NIL'
             ttest_2_ind = ttest_ind(x1,x2)[1]
             ttest_2_paired='NIL'
-            mannwhitneyresult = mannwhitneyu(x1, x2,
-                alternative='two-sided')[1]
-            wilcoxonresult='NIL'
+            mannwhitneyresult = mannwhitneyu(x1, x2, alternative='two-sided')[1]
+            wilcoxonresult = 'NIL'
 
         # Get Bias-Corrected Accelerated indices convenience function invoked.
         bca_low_high = bca(tdata, alphas, statarray,
-            statfunction, summ_stat, reps)
+                           statfunction, summ_stat, reps)
 
         # Warnings for unstable or extreme indices.
         for ind in [pct_low_high, bca_low_high]:
@@ -233,7 +233,7 @@ class bootstrap:
         self.statistic = str(statfunction)
         self.n_reps = reps
 
-        self.ci=(1-alpha_level)*100
+        self.ci = (1-alpha_level)*100
         self.stat_array = np.array(statarray)
 
         self.pct_ci_low = statarray[pct_low_high[0]]
@@ -251,11 +251,12 @@ class bootstrap:
         self.pvalue_mann_whitney = mannwhitneyresult
 
         self.results = {'stat_summary': self.summary,
-            'is_difference': diff,
-            'is_paired': paired,
-            'bca_ci_low': self.bca_ci_low,
-            'bca_ci_high': self.bca_ci_high,
-            'ci': self.ci}
+                        'is_difference': diff,
+                        'is_paired': paired,
+                        'bca_ci_low': self.bca_ci_low,
+                        'bca_ci_high': self.bca_ci_high,
+                        'ci': self.ci
+                        }
 
     def __repr__(self):
         import numpy as np

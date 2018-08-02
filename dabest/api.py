@@ -352,7 +352,7 @@ def plot(data, idx,
     # CALCULATE CI.
     if ci < 0 or ci > 100:
         raise ValueError('`ci` should be between 0 and 100.')
-    alpha_level = (100.-int(ci))/100.
+    alpha_level = (100.-int(ci)) / 100.
 
 
     # CALCULATE RAW SWARM YLIMS.
