@@ -239,7 +239,7 @@ def plot(data, idx,
     from .plot_tools import halfviolin, align_yaxis, rotate_ticks
     from .plot_tools import gapped_lines, get_swarm_spans
     from .bootstrap_tools import bootstrap, jackknife_indexes, bca
-    from .misc_tools import merge_two_dicts
+    from .misc_tools import merge_two_dicts, unpack_and_add
 
     # MAKE COPY OF DATA.
     data_in = data.copy()
@@ -333,7 +333,8 @@ def plot(data, idx,
         else:
             idv = ['index', color_col]
             turn_to_cat = [x, color_col]
-            data_in = data_in[[*all_plot_groups, color_col]].copy()
+            plot_groups_with_color = unpack_and_add(all_plot_groups, color_col)
+            data_in = data_in[plot_groups_with_color].copy()
 
         data_in = pd.melt(data_in.reset_index(),
                           id_vars=idv,
