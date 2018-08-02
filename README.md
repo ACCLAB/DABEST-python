@@ -9,7 +9,7 @@ DABEST is a package for **D**ata **A**nalysis using **B**ootstrap-Coupled **EST*
 
 ## Requirements
 
-Python 3.6 is strongly recommended, although this has been tested with Python 2.7 and Python 3.5.
+DABEST has been tested on Python 2.7, 3.5, 3.6, and 3.7.
 
 In addition, the following packages are also required:
 - [numpy](https://www.numpy.org/) (1.15.x)
