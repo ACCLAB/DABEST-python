@@ -14,13 +14,7 @@ matrix:
         - python: 3.7
           dist: xenial
           sudo: true
-
-env:
-  - PYTHON=2.7
-  - PYTHON=3.5
-  - PYTHON=3.6
-  - PYTHON=3.7
-
+          
 before_install:
   - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - bash miniconda.sh -b -p $HOME/miniconda
