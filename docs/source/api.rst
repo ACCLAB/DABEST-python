@@ -10,8 +10,8 @@ Plotting
 
 .. autofunction:: plot
 
-Bootstrapping
----------------------
+Bootstrap Confidence Intervals
+------------------------------
 
 .. autoclass:: bootstrap
    :members:
