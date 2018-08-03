@@ -6,6 +6,25 @@ import os
 # certain easy_install versions
 os.environ["MPLCONFIGDIR"]="."
 
+DESCRIPTION = 'Data Analysis and Visualization using Bootstrap-Coupled Estimation.'
+LONG_DESCRIPTION = """\
+Estimation statistics is a simple framework <https://thenewstatistics.com/itns/>
+that—while avoiding the pitfalls of significance testing—uses familiar statistical
+concepts: means, mean differences, and error bars. More importantly, it focuses on
+the effect size of one's experiment/intervention, as opposed to
+significance testing.
+
+An estimation plot has two key features. Firstly, it presents all
+datapoints as a swarmplot, which orders each point to display the
+underlying distribution. Secondly, an estimation plot presents the
+effect size as a bootstrap 95% confidence interval on a separate but
+aligned axes.
+
+Please cite this work as:
+Moving beyond P values: Everyday data analysis with estimation plots
+Joses Ho, Tayfun Tumkaya, Sameer Aryal, Hyungwon Choi, Adam Claridge-Chang
+https://doi.org/10.1101/377978
+"""
 
 
 # Modified from from setup.py in seaborn.
@@ -106,10 +125,14 @@ if __name__ == "__main__":
         name='dabest',
         author='Joses W. Ho',
         author_email='joseshowh@gmail.com',
+        maintainer='Joses W. Ho'
+        maintainer_email='joseshowh@gmail.com'
         version='0.1.4',
-        description='Data Analysis and Visualization using Bootstrap-Coupled Estimation.',
+        description=DESCRIPTION,
+        long_description=LONG_DESCRIPTION,
         packages=find_packages(),
         install_requires=installs,
-        url='https://acclab.github.io/DABEST-python-docs/index.html',
+        url='https://acclab.github.io/DABEST-python-docs',
+        download_url='https://www.github.com/ACCLAB/DABEST-python'
         license='BSD 3-clause Clear License'
     )
