@@ -1,22 +1,22 @@
 # DABEST (Python)
 [![Travis CI](https://travis-ci.org/ACCLAB/DABEST-python.svg)](https://travis-ci.org/ACCLAB/DABEST-python)
-[![PyPI](https://img.shields.io/pypi/v/dabest.svg)](https://pypi.python.org/pypi/dabest/0.1.4)
+[![PyPI](https://badge.fury.io/py/dabest.svg)](https://pypi.python.org/pypi/dabest)
 
 ## About
 
 DABEST is a package for **D**ata **A**nalysis using **B**ootstrap-Coupled **EST**imation.
-![Two-group contrast plot](img/readme-fig.png?raw=true "Two-group contrast plot")
+![Two-group contrast plot](docs/source/_images/showpiece.png?raw=true "The five kinds of estimation plots.")
 
 ## Requirements
 
 DABEST has been tested on Python 2.7, 3.5, 3.6, and 3.7.
 
 In addition, the following packages are also required:
-- [numpy](https://www.numpy.org/) (1.15.x)
-- [scipy](https://www.scipy.org/) (1.1.x)
-- [matplotlib](https://www.matplotlib.org/) (2.2.x)
-- [seaborn](https://seaborn.pydata.org/) (0.9.x)
-- [pandas](https://pandas.pydata.org/) (0.23.x).
+- [numpy](https://www.numpy.org) (1.15)
+- [scipy](https://www.scipy.org) (1.1)
+- [matplotlib](https://www.matplotlib.org) (2.2)
+- [seaborn](https://seaborn.pydata.org) (0.9)
+- [pandas](https://pandas.pydata.org) (0.23).
 
 To obtain these package dependencies easily, it is highly recommended to download the [Anaconda distribution](https://www.continuum.io/downloads) of Python.
 
@@ -33,7 +33,7 @@ or -->
 ```shell
 pip install --upgrade dabest
 ```
-You can also clone this repo locally (see intstructions [here](https://help.github.com/articles/cloning-a-repository/)).
+You can also clone this repo locally (see intstructions [here](https://help.github.com/articles/cloning-a-repository)).
 
 Then, navigate to the cloned repo in the command line and run
 
@@ -41,10 +41,16 @@ Then, navigate to the cloned repo in the command line and run
 pip install .
 ```
 
-
 ## Usage
 
 Please refer to the [documentation](https://acclab.github.io/DABEST-python-docs/index.html).
+
+
+## How to cite
+
+Moving beyond P values: Everyday data analysis with estimation plots
+Joses Ho, Tayfun Tumkaya, Sameer Aryal, Hyungwon Choi, Adam Claridge-Chang
+[https://doi.org/10.1101/377978](https://doi.org/10.1101/377978)
 
 
 ## Matlab version
