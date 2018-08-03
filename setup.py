@@ -125,8 +125,8 @@ if __name__ == "__main__":
         name='dabest',
         author='Joses W. Ho',
         author_email='joseshowh@gmail.com',
-        maintainer='Joses W. Ho'
-        maintainer_email='joseshowh@gmail.com'
+        maintainer='Joses W. Ho',
+        maintainer_email='joseshowh@gmail.com',
         version='0.1.4',
         description=DESCRIPTION,
         long_description=LONG_DESCRIPTION,
