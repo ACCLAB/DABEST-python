@@ -101,7 +101,7 @@ Supply the DataFrame; supply the two groups you want to compare in the
 
 
 
-.. image:: _images/output_7_0.png
+.. image:: _images/tutorial_7_0.png
 
 
 The ``dabest.plot()`` function will return 2 objects: a matplotlib
@@ -210,7 +210,7 @@ You can color the dots with any column in the DataFrame, using the
 
 
 
-.. image:: _images/output_11_0.png
+.. image:: _images/tutorial_11_0.png
 
 
 Paired two-group estimation plot
@@ -234,7 +234,7 @@ of repeated observations.
 
 
 
-.. image:: _images/output_14_0.png
+.. image:: _images/tutorial_14_0.png
 
 
 If you want to plot the raw swarmplot instead of the paired lines, use
@@ -294,7 +294,7 @@ be paired, as indicated by the DataFrame produced.
 
 
 
-.. image:: _images/output_16_1.png
+.. image:: _images/tutorial_16_1.png
 
 
 Multi two-group estimation plot
@@ -391,7 +391,7 @@ be computed.
 
 
 
-.. image:: _images/output_18_1.png
+.. image:: _images/tutorial_18_1.png
 
 
 Each two-group experiment has its own floating contrast axes. Another
@@ -408,10 +408,21 @@ controlled with the ``float_contrast`` option.
                                float_contrast=False
                               )
 
+.. image:: _images/tutorial_20_0.png
 
+You can also produce a paired multi-group plot, by setting `paired=True`.
 
-.. image:: _images/output_20_0.png
+.. code-block:: ipython3
+   :linenos:
 
+    f6_paired, results6_paired = dabest.plot(df, idx=(('Control','Group 1'),
+                                                      ('Group 2','Group 3'),
+                                                      ('Group 4','Group 5')),
+                                             float_contrast=False,
+                                             paired=True
+                                            )
+
+.. image:: _images/tutorial_20_PAIRED.png
 
 Shared-control estimation plot
 ==============================
@@ -493,7 +504,7 @@ be computed against the first control group.
 
 
 
-.. image:: _images/output_22_1.png
+.. image:: _images/tutorial_22_1.png
 
 
 In a shared control plot, the effect sizes and bootstrap 95CIs are shown
@@ -514,7 +525,7 @@ the function.
 
 
 
-.. image:: _images/output_24_0.png
+.. image:: _images/tutorial_24_0.png
 
 
 Controlling aesthetics
@@ -533,7 +544,7 @@ Below we run through ways of customizing various aesthetic features.
 
 
 
-.. image:: _images/output_26_0.png
+.. image:: _images/tutorial_26_0.png
 
 
 .. code-block:: ipython3
@@ -547,7 +558,7 @@ Below we run through ways of customizing various aesthetic features.
 
 
 
-.. image:: _images/output_27_0.png
+.. image:: _images/tutorial_27_0.png
 
 
 .. code-block:: ipython3
@@ -565,7 +576,7 @@ Below we run through ways of customizing various aesthetic features.
 
 
 
-.. image:: _images/output_28_0.png
+.. image:: _images/tutorial_28_0.png
 
 
 .. code-block:: ipython3
@@ -583,7 +594,7 @@ Below we run through ways of customizing various aesthetic features.
 
 
 
-.. image:: _images/output_29_0.png
+.. image:: _images/tutorial_29_0.png
 
 
 .. code-block:: ipython3
@@ -599,7 +610,7 @@ Below we run through ways of customizing various aesthetic features.
 
 
 
-.. image:: _images/output_30_0.png
+.. image:: _images/tutorial_30_0.png
 
 
 .. code-block:: ipython3
@@ -618,7 +629,7 @@ Below we run through ways of customizing various aesthetic features.
 
 
 
-.. image:: _images/output_31_0.png
+.. image:: _images/tutorial_31_0.png
 
 
 .. code-block:: ipython3
@@ -636,7 +647,7 @@ Below we run through ways of customizing various aesthetic features.
 
 
 
-.. image:: _images/output_32_0.png
+.. image:: _images/tutorial_32_0.png
 
 
 .. code-block:: ipython3
@@ -651,7 +662,7 @@ Below we run through ways of customizing various aesthetic features.
 
 
 
-.. image:: _images/output_33_0.png
+.. image:: _images/tutorial_33_0.png
 
 
 .. code-block:: ipython3
@@ -666,7 +677,7 @@ Below we run through ways of customizing various aesthetic features.
 
 
 
-.. image:: _images/output_34_0.png
+.. image:: _images/tutorial_34_0.png
 
 
 Working with 'melted' DataFrames
@@ -811,4 +822,4 @@ numerical values for plotting) columns.
 
 
 
-.. image:: _images/output_38_1.png
+.. image:: _images/tutorial_38_1.png
