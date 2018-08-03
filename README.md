@@ -1,6 +1,6 @@
 # DABEST (Python)
 [![Travis CI](https://travis-ci.org/ACCLAB/DABEST-python.svg)](https://travis-ci.org/ACCLAB/DABEST-python)
-[![PyPI](https://badge.fury.io/py/dabest.svg)](https://pypi.python.org/pypi/dabest)
+[![PyPI version](https://badge.fury.io/py/dabest@2x.png)](https://badge.fury.io/py/dabest)
 
 ## About
 
