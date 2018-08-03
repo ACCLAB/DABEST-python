@@ -8,7 +8,11 @@ DABEST is a package for **D**ata **A**nalysis using **B**ootstrap-Coupled **EST*
 
 [Estimation statistics](https://en.wikipedia.org/wiki/Estimation_statistics) is a [simple framework](https://thenewstatistics.com/itns/) that avoids the [pitfalls](https://www.nature.com/articles/nmeth.3288) of significance testing. It uses familiar statistical concepts: means, mean differences, and error bars. More importantly, it focuses on the effect size of one's experiment/intervention, as opposed to a false dichotomy engendered by *P* values.
 
-An estimation plot has two key features. Firstly, it presents all datapoints as a swarmplot, which orders each point to display the underlying distribution. Secondly, an estimation plot presents the effect size as a bootstrap 95% confidence interval on a separate but aligned axes.
+An estimation plot has two key features.
+
+1. It presents all datapoints as a swarmplot, which orders each point to display the underlying distribution.
+
+2. It presents the effect size as a **bootstrap 95% confidence interval** on a **separate but aligned axes**.
 
 ![The five kinds of estimation plots](docs/source/_images/showpiece.png?raw=true "The five kinds of estimation plots.")
 
