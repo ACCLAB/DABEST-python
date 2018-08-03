@@ -45,7 +45,6 @@ pip install .
 
 Please refer to the [documentation](https://acclab.github.io/DABEST-python-docs).
 
-
 ## How to cite
 
 **Moving beyond P values: Everyday data analysis with estimation plots**
@@ -63,3 +62,20 @@ There is also a [Matlab version](https://github.com/ACCLAB/DABEST-Matlab) of DAB
 ## R version
 
 It is possible to use the R package `reticulate` to run Python code. Please take a look at this [tutorial](https://acclab.github.io/DABEST-python-docs/dabest-r.html) on how to use `reticulate` to analyse data in R.
+
+
+## Testing
+
+To test DABEST, you will need to install [pytest](https://docs.pytest.org/en/latest)
+
+Run `pytest` in the root directory of the source distribution. This runs the test suite in the folder `dabest/tests`. The test suite will ensure that the bootstrapping functions and the plotting functions perform as expected.
+
+
+## Bugs
+
+Please report any bugs on the [Github issue tracker](https://github.com/ACCLAB/DABEST-python/issues/new).
+
+
+## Contributing
+
+All contributions are welcome. Please fork the [Github repo](https://github.com/ACCLAB/DABEST-python) and open a pull request.
