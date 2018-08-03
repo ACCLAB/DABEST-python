@@ -48,8 +48,10 @@ Please refer to the [documentation](https://acclab.github.io/DABEST-python-docs/
 
 ## How to cite
 
-Moving beyond P values: Everyday data analysis with estimation plots
-Joses Ho, Tayfun Tumkaya, Sameer Aryal, Hyungwon Choi, Adam Claridge-Chang
+**Moving beyond P values: Everyday data analysis with estimation plots**
+
+*Joses Ho, Tayfun Tumkaya, Sameer Aryal, Hyungwon Choi, Adam Claridge-Chang*
+
 [https://doi.org/10.1101/377978](https://doi.org/10.1101/377978)
 
 
