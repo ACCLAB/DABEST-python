@@ -1,60 +1,183 @@
-.. _background:
 
-==========
 Background
 ==========
 
+DABEST provides you with plots from an `estimation
+statistics <https://en.wikipedia.org/wiki/Estimation_statistics>`__
+paradigm. You may have found significance testing and *P* values
+`problematic <https://www.nature.com/articles/nmeth.3288>`__; you may be
+asking what comes `next <https://doi.org/10.5281/zenodo.60156>`__.
+
+Estimation statistics > *P* Values
+----------------------------------
+
+Estimation statistics is a simple
+`framework <https://thenewstatistics.com/itns/>`__ that—while avoiding
+the pitfalls of significance testing—uses familiar statistical concepts:
+means, mean differences, and error bars. More importantly, it focuses on
+the effect size of one's experiment/intervention, as opposed to
+significance testing.
+
+Significance testing calculates the probability (the P-value) that the
+experimental data would be observed, if the intervention did not produce
+a change in the metric measured (i.e. the null hypothesis). This leads
+analysts to apply a false dichotomy on the experimental intervention.
+
+Estimation statistics, on the other hand, focuses on the magnitude of
+the effect (the effect size) and its precision. This encourages analysts
+to gain a deeper understanding of the metrics used, and how they relate
+to the natural processes being studied.
+
+
+The Inadequacy of Common Plots
 ------------------------------
-What is estimation statistics?
-------------------------------
 
-`Estimation statistics <https://en.wikipedia.org/wiki/Estimation_statistics>`_ is a simple framework that—while avoiding the pitfalls of significance testing—uses familiar statistical concepts: means, mean differences, and error bars.
+Let's say we have performed an experiment with 30 control subjects, and
+30 test subjects. We begin our data analysis by making a barplot of the
+data.
 
-------------------------------
-Why use estimation statistics?
-------------------------------
-For each of the most routine significance tests, there is an estimation replacement:
+.. image:: _images/background_10_2.png
 
-* Unpaired Student’s t-test → Two-groups Gardner-Altman estimation plot
-* Paired Student’s t-test → Paired comparison
-* One-way ANOVA + multiple comparisons → Cumming multiple-groups plot
-* Repeated measures ANOVA → Multi-paired comparison
-* Ordered groups ANOVA → Shared-control comparison
 
-.. *image of all five types of plot*
+The barplot has several shortcomings, despite enjoying widespread usage
+in academic journals. We're not the first ones (see
+`this <https://www.nature.com/articles/nmeth.2837>`__,
+`this <http://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.1002128>`__,
+or
+`that <https://onlinelibrary.wiley.com/doi/full/10.1111/ejn.13400>`__)
+to point out the myriad flaws with the barplot. Importantly, the barplot
+does not show us the effect size.
 
-All of these plots enable you to graphically inspect the mean difference and its confidence interval. When there are multiple groups, the side-by-side plotting allows the visual comparison of effect sizes.
+Instead, we can use a boxplot to visualize the data.
 
-.. csv-table:: Benefits of Estimation Plot
-  :header: " ", "Bars-and-Stars", "Boxplot & P", "Estimation Plot"
-  :widths: 30, 15, 15, 15
+.. image:: _images/background_12_1.png
 
-  "Avoid false dichotomy", "✘", "✘", "✔"
-  "Display all observed values", "✘", "✘", "✔"
-  "Focus on intervention effect size", "✘", "✘", "✔"
-  "Visualize estimate precision", "✘", "✘", "✔"
-  "Show mean difference distribution", "✘", "✘", "✔"
+Unfortunately, the boxplot still doesn't show all our data. We still
+lack information about the underlying distribution of your data. Is it
+normally distributed? Is there skew in the points? What is the sample
+size? More importantly, boxplots do not display the effect size.
 
-**1. Avoid false dichotomy.** Is there really a great difference between probabilities of 0.04999 and 0.05001? One of the many problems with significance testing is the application of an α-threshold creates the illusion of a dichotomy. In significance testing, the former is ‘significant’ and the latter is ‘non-significant.’
+To display several data points across one or more categories, we can use
+the jitter plot.
 
-The graphical method of showing this test result with clusters of stars amplifies this false dichotomy; since the average reader is primed to look for *P* < 0.05, presenting *P* values is almost as bad.
+.. image:: _images/background_15_1.png
 
-Estimation plots present the significance test result innocuously: as the presence or absence of a gap between the mean-difference zero line and the closest confidence interval bound.
+Jitter plots avoid overlapping datapoints (i.e. datapoints with the same
+y-value) by adding a random factor to each point along the orthogonal
+x-axes. Thus, while a jitter plot displays all datapoints (implicitly
+indicating the sample size visually), it might not accurately depict the
+underlying distribution of the data.
 
-**2. Display all observed values.** `Bar charts <https://doi.org/10.1038/nmeth.2837>`_ often show means, error, and significance stars only. `Boxplots <https://www.nature.com/articles/nmeth.2811>`_ generally show just medians, quartiles, maybe a few outliers, and *P* values. For observed values, estimation plots follow best practices by presenting `each and every datapoint <https://doi.org/10.1371/journal.pbio.1002128>`_.
+Introducing the Estimation Plot
+-------------------------------
 
-Presenting all observed values means that nothing is hidden: range, normality, skew, kurtosis, outliers, bounds, modality, and sample size are all clearly visible.
+.. image:: _images/background_17_1.png
 
-**3. Focus on intervention effect size.** Estimation estimation plots include an entirely new axis for the mean difference of two groups (or paired data), and a whole panel for the mean differences of multiple groups. This serves to draw attention to something that deserves it, the answer to the question: “What is the magnitude of the effect of the intervention?”
 
-**4. Visualize estimate precision.** Unlike a significance test result, the narrowness of a confidence interval gives a clear impression of effect size precision. The 95% confidence interval provides the range of the the population mean difference values that are the most plausible.
+An estimation plot has two key features. Firstly, it presents all
+datapoints as a swarmplot, which orders each point to display the
+underlying distribution. Secondly, an estimation plot presents the
+effect size as a *bootstrap 95% confidence interval* on a *separate but
+aligned axes*.
 
-This 95% plausible interval also serves as an 83% prediction interval for replications (`Cumming and Calin-Jageman 2016 <https://www.amazon.com/Introduction-New-Statistics-Estimation-Science/dp/1138825522/>`_), i.e. predicts future replication effect sizes (assuming no change in protocol) with 83% accuracy.
+We illustrate how bootstrap confidence intervals are generated below.
 
-**5. Show mean difference distribution.** The distribution of mean differences can be estimated using bootstrap resamples of the available data. As an approximation of the `Bayes posterior distribution <https://web.stanford.edu/~hastie/Papers/ESLII.pdf>`_, this curve allows the analyst to weigh plausibility over an effect likelihood size range. Plotting this distribution also discourages dichotomous thinking—engendered by *P* values and hard-edged confidence intervals (`Kruschke and Liddell 2017 <https://www.ncbi.nlm.nih.gov/pubmed/28176294>`_)—by drawing attention to the distribution’s graded nature.
+.. image:: _images/background_20_1.png
 
-------------------------------------------------------------
-Why are these plots named after Gardner, Altman, and Cumming?
-------------------------------------------------------------
 
-To our knowledge, mean difference estimation plots were first described by Martin Gardner and Douglas Altman (`Gardner and Altman 1986 <https://www.ncbi.nlm.nih.gov/pmc/articles/pmid/3082422/>`_), while the multiple-comparison design was devised by Geoff Cumming (`Cumming 2012 <https://www.amazon.com/Introduction-New-Statistics-Estimation-Science/dp/1138825522/>`_). We propose calling the two-groups plot Gardner-Altman estimation plots and the multi-group plots Cumming estimation plots.
+In a typical scientific experiment, we are attempting to estimate the
+mean difference between two populations: µControl and µTest (Figure 5A).
+We go about this by obtaining samples from the control population and
+from the test population (Figure 5B). We can easily compute the mean
+difference in our observed sample (Δ).
+
+**But how do we obtain a measure of precision and confidence about our
+observed mean difference, and also get a sense of the population mean
+difference?**
+
+We can calculate the 95% confidence interval (95% CI) of the mean
+difference by resampling from our observed data several times (Figure
+5C). With computers, we can perform 5000 resamples very easily. The mean
+difference for each of these resamples is calculated. According to the
+`Central Limit
+Theorem <https://en.wikipedia.org/wiki/Central_limit_theorem>`__, these
+5000 resampled mean differences are normally distributed, allowing easy
+derivation of a 95% CI of the mean difference (Figure 5D).
+
+An added benefit of bootstrap confidence intervals is that we do not
+need to assume that the population from which our samples come from have
+a normal distribution.
+
+The "95%" of the confidence interval refers to the proportion of
+confidence intervals that would contain the population mean, if samples
+from the population were repeatedly obtained, and confidence intervals
+obtained for each sample. That is to say, we can be 95% confident the
+interval contains the true mean of the population.
+
+The estimation plot presents Figure 5B and Figure 5D side-by-side as a
+single integrated plot. It thus tightly couples visual presentation of
+the raw data with an indication of the population mean difference, and
+its confidence interval.
+
+A plot for every type of data
+-----------------------------
+
+For each of the most routine significance tests, there is an estimation
+replacement:
+
+Unpaired Student’s t-test → `Two-group estimation plot <tutorial.html#independent-two-group-estimation-plot>`__
+
+
+.. image:: _images/background_24_0.png
+
+
+Paired Student’s t-test → `Paired estimation plot <tutorial.html#paired-two-group-estimation-plot>`__
+
+
+.. image:: _images/background_26_0.png
+
+
+One-way ANOVA + multiple comparisons → `Multi two-group estimation plot <tutorial.html#multi-two-group-estimation-plot>`__
+
+
+.. image:: _images/background_28_0.png
+
+
+Repeated measures ANOVA → `Multi paired estimation plot <tutorial.html#multi-two-group-estimation-plot>`__
+
+
+.. image:: _images/background_30_0.png
+
+
+Ordered groups ANOVA → `Shared-control estimation plot <tutorial.html#shared-control-estimation-plot>`__
+
+
+.. image:: _images/background_32_0.png
+
+
+All of these plots enable you to graphically inspect the mean difference
+and its confidence interval. When there are multiple groups, the
+side-by-side plotting allows the visual comparison of effect sizes.
+
+Relative to conventional plots, estimation plots offer five key
+benefits:
+
++------------------------------------+-----------+-----------+----------+-------------------+
+|                                    | Barplot   | Boxplot   | Jitter   | Estimation Plot   |
++====================================+===========+===========+==========+===================+
+| Displays all observed values       | ✘         | ✘         | ✘        | ✔                 |
++------------------------------------+-----------+-----------+----------+-------------------+
+| Displays effect size               | ✘         | ✘         | ✘        | ✔                 |
++------------------------------------+-----------+-----------+----------+-------------------+
+| Visualizes estimate precision      | ✘         | ✘         | ✘        | ✔                 |
++------------------------------------+-----------+-----------+----------+-------------------+
+| Shows mean difference likelihood   | ✘         | ✘         | ✘        | ✔                 |
++------------------------------------+-----------+-----------+----------+-------------------+
+| Avoids false dichotomy             | ✘         | ✘         | ✘        | ✔                 |
++------------------------------------+-----------+-----------+----------+-------------------+
+
+To our knowledge, mean difference estimation plots were first described
+by Martin Gardner and Douglas Altman (`Gardner and Altman
+1986 <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1339793/pdf/bmjcred00225-0036.pdf>`__),
+while the multiple-comparison design was devised by Geoff Cumming
+(`Cumming 2012 <https://thenewstatistics.com/itns/>`__).
