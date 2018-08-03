@@ -93,6 +93,7 @@ html_theme = 'alabaster'
 html_sidebars = {
     '**': [
         'about.html',
+        'badges.html',
         'navigation.html',
         'relations.html',  # needs 'show_related': True theme option to display
         'searchbox.html',
@@ -116,6 +117,7 @@ html_theme_options = {
     'github_type': 'star',
     'github_user': 'ACCLAB',
     'github_repo': 'DABEST-python',
+
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
