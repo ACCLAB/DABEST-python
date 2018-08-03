@@ -43,7 +43,7 @@ pip install .
 
 ## Usage
 
-Please refer to the [documentation](https://acclab.github.io/DABEST-python-docs/index.html).
+Please refer to the [documentation](https://acclab.github.io/DABEST-python-docs).
 
 
 ## How to cite
