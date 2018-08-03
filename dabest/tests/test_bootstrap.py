@@ -1,190 +1,247 @@
 # #! /usr/bin/env python
-
-
 import pytest
 import sys
 import numpy as np
 import scipy as sp
+
+# This filters out an innocuous warning when pandas is imported,
+# but the version has not been compiled against the newest numpy.
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+
 import pandas as pd
 from .. import bootstrap_tools as bst
 
 
+
 @pytest.fixture
-def create_dummy_dataset(n=50, expt_groups=6):
-    # Dummy dataset
-    Ns = n
+def create_dummy_dataset(seed=None, n=30, base_mean=0, expt_groups=6,
+                         scale_means=2, scale_std=1.2):
+    """
+    Creates a dummy dataset for plotting.
+
+    Returns the seed used to generate the random numbers,
+    the maximum possible difference between mean differences,
+    and the dataset itself.
+    """
+
+    # Set a random seed.
+    if seed is None:
+        random_seed = np.random.randint(low=1, high=1000, size=1)[0]
+    else:
+        if isinstance(seed, int):
+            random_seed = seed
+        else:
+            raise TypeError('{} is not an integer.'.format(seed))
+
+    # Generate a set of random means
+    np.random.seed(random_seed)
+    MEANS = np.repeat(base_mean, expt_groups) + np.random.random(size=expt_groups) * scale_means
+    SCALES = np.random.random(size=expt_groups) * scale_std
+
+    max_mean_diff = np.ptp(MEANS)
+
     dataset = list()
-    for seed in np.random.randint(low=100, high=1000, size=expt_groups):
-        np.random.seed(seed)
-        dataset.append(np.random.randn(Ns))
+    for i, m in enumerate(MEANS):
+        pop = sp.stats.norm.rvs(loc=m, scale=SCALES[i], size=10000)
+        sample = np.random.choice(pop, size=n, replace=False)
+        dataset.append(sample)
+
     df = pd.DataFrame(dataset).T
-    # Create some upwards/downwards shifts.
-    for c in df.columns:
-        df.loc[:,c] =( df[c] * np.random.random()) + np.random.random()
+    df.columns = [str(c) for c in df.columns]
 
-    return df
+    return random_seed, max_mean_diff, df
 
-# Unpaired tests.
-@pytest.fixture
-def unpaired(df, control, expt):
-    result = bst.bootstrap(df[control], df[expt])
-
-    assert(result.is_difference == True)
-    assert(result.pvalue_1samp_ttest =='NIL')
-    assert(result.is_paired == False)
-    assert(result.pvalue_2samp_paired_ttest =='NIL')
-    assert(result.pvalue_wilcoxon == 'NIL')
-
-    true_mean = df[expt].mean() - df[control].mean()
-    assert(result.summary == true_mean)
-
-    scipy_ttest_ind_result = sp.stats.ttest_ind(df[control],
-        df[expt]).pvalue
-    assert(result.pvalue_2samp_ind_ttest == scipy_ttest_ind_result)
-
-    mann_whitney_result = sp.stats.mannwhitneyu(df[control],
-        df[expt],
-        alternative='two-sided').pvalue
-    assert(result.pvalue_mann_whitney == mann_whitney_result)
-
-# Paired tests.
-@pytest.fixture
-def paired(df, control, expt):
-    result = bst.bootstrap(df[control], df[expt], paired=True)
-
-    assert(result.is_difference == True)
-    assert(result.pvalue_1samp_ttest =='NIL')
-    assert(result.is_paired == True)
-    assert(result.pvalue_2samp_ind_ttest =='NIL')
-    assert(result.pvalue_mann_whitney == 'NIL')
-
-    true_mean = np.mean(df[expt] - df[control])
-    assert(result.summary == true_mean)
-
-    scipy_ttest_ind_result = sp.stats.ttest_rel(df[control],
-        df[expt]).pvalue
-    assert(result.pvalue_2samp_paired_ttest == scipy_ttest_ind_result)
-
-    wilcoxon_result = sp.stats.wilcoxon(df[control],
-        df[expt]).pvalue
-    assert(result.pvalue_wilcoxon == wilcoxon_result)
 
 @pytest.fixture
-def make_test_tuples(df):
-    # Create all pairs of control-expt tuples.
-    con = np.repeat(df.columns[0], len(df.columns)-1)
-    expt = [c for c in df.columns[1:]]
-    zipped = zip(con, expt)
-    test_tuples = list(zipped)
+def is_difference(result):
+    assert result.is_difference == True
 
-    return test_tuples
+
+@pytest.fixture
+def is_paired(result):
+    assert result.is_paired == True
+
+
+@pytest.fixture
+def check_pvalue_1samp(result):
+    assert result.pvalue_1samp_ttest != 'NIL'
+
+
+@pytest.fixture
+def check_pvalue_2samp_unpaired(result):
+    assert result.pvalue_2samp_ind_ttest != 'NIL'
+
+
+@pytest.fixture
+def check_pvalue_2samp_paired(result):
+    assert result.pvalue_2samp_related_ttest != 'NIL'
+
+
+@pytest.fixture
+def check_mann_whitney(result):
+    """Nonparametric unpaired"""
+    assert result.pvalue_mann_whitney != 'NIL'
+    assert result.pvalue_wilcoxon == 'NIL'
+
+
+@pytest.fixture
+def check_wilcoxon(result):
+    """Nonparametric Paired"""
+    assert result.pvalue_wilcoxon != 'NIL'
+    assert result.pvalue_mann_whitney == 'NIL'
+
+
+@pytest.fixture
+def test_mean_within_ci_bca(mean, result):
+    assert mean >= result.bca_ci_low
+    assert mean <= result.bca_ci_high
+
+
+@pytest.fixture
+def test_mean_within_ci_pct(mean, result):
+    assert mean >= result.pct_ci_low
+    assert mean <= result.pct_ci_high
+
+
+@pytest.fixture
+def single_samp_stat_tests(sample, result):
+
+    assert result.is_difference == False
+    assert result.is_paired == False
+
+    ttest_result = sp.stats.ttest_1samp(sample, 0).pvalue
+    assert result.pvalue_1samp_ttest == pytest.approx(ttest_result)
+
+
+@pytest.fixture
+def unpaired_stat_tests(control, expt, result):
+    is_difference(result)
+    check_pvalue_2samp_unpaired(result)
+    check_mann_whitney(result)
+
+    true_mean = expt.mean() - control.mean()
+    assert result.summary == pytest.approx(true_mean)
+
+    scipy_ttest_ind_result = sp.stats.ttest_ind(control, expt).pvalue
+    assert result.pvalue_2samp_ind_ttest == pytest.approx(scipy_ttest_ind_result)
+
+    mann_whitney_result = sp.stats.mannwhitneyu(control, expt,
+                                                alternative='two-sided').pvalue
+    assert result.pvalue_mann_whitney == pytest.approx(mann_whitney_result)
+
+
+@pytest.fixture
+def paired_stat_tests(control, expt, result):
+    is_difference(result)
+    is_paired(result)
+    check_wilcoxon(result)
+
+    true_mean = np.mean(expt - control)
+    assert result.summary == pytest.approx(true_mean)
+
+    scipy_ttest_paired = sp.stats.ttest_rel(control, expt).pvalue
+    assert result.pvalue_2samp_paired_ttest == pytest.approx(scipy_ttest_paired)
+
+    wilcoxon_result = sp.stats.wilcoxon(control, expt).pvalue
+    assert result.pvalue_wilcoxon == pytest.approx(wilcoxon_result)
+
+
+@pytest.fixture
+def does_ci_captures_mean_diff(control, expt, paired, nreps=100, alpha=0.05):
+    if expt is None:
+        mean_diff = control.mean()
+    else:
+        if paired is True:
+            mean_diff = np.mean(expt - control)
+        elif paired is False:
+            mean_diff = expt.mean() - control.mean()
+
+    ERROR_THRESHOLD = nreps * alpha
+    error_count_bca = 0
+    error_count_pct = 0
+
+    for i in range(1, nreps):
+        results = bst.bootstrap(control, expt, paired=paired, alpha_level=alpha)
+
+        print("\n95CI BCa = {}, {}".format(results.bca_ci_low, results.bca_ci_high))
+        try:
+            test_mean_within_ci_bca(mean_diff, results)
+        except AssertionError:
+            error_count_bca += 1
+
+        print("\n95CI %tage = {}, {}".format(results.pct_ci_low, results.pct_ci_high))
+        try:
+            test_mean_within_ci_pct(mean_diff, results)
+        except AssertionError:
+            error_count_pct += 1
+
+    print('\nNumber of BCa CIs not capturing the mean is {}'.format(error_count_bca))
+    assert error_count_bca < ERROR_THRESHOLD
+
+    print('\nNumber of Pct CIs not capturing the mean is {}'.format(error_count_pct))
+    assert error_count_pct < ERROR_THRESHOLD
+
+
+
 
 # Start tests below.
-def test_unpaired(expt_groups_count=5):
-    # Create dummy data for testing.
-    test_data = create_dummy_dataset(expt_groups=expt_groups_count)
-    # Now, create all pairs of control-expt tuples.
-    test_tuples = make_test_tuples(test_data)
-    # Run tests.
-    print('testing unpaired with dataframe.')
-    for t in test_tuples:
-        sys.stdout.write('\r{}'.format(t))
-        sys.stdout.flush()
-        unpaired(df=test_data, control=t[0], expt=t[1])
-
-def test_paired(expt_groups_count=5):
-    # Create dummy data for testing.
-    test_data = create_dummy_dataset(expt_groups=expt_groups_count)
-    # Now, create all pairs of control-expt tuples.
-    test_tuples = make_test_tuples(test_data)
-    # Run tests.
-    print('testing paired with dataframe.')
-    for t in test_tuples:
-        sys.stdout.write('\r{}'.format(t))
-        sys.stdout.flush()
-        paired(df=test_data, control=t[0], expt=t[1])
-
-def test_single_sample_bootstrap(mean=100, sd=10, n=25,
-    alpha=0.05, nreps=100):
+def test_single_sample_bootstrap(mean=100, sd=10, n=25, nreps=100, alpha=0.05):
     print("Testing single sample bootstrap.")
+
+    # Set the random seed.
+    random_seed = np.random.randint(low=1, high=1000, size=1)[0]
+    np.random.seed(random_seed)
+    print("\nRandom seed = {}".format(random_seed))
+
     # single sample
-    sample = np.random.normal(loc=mean,
-                              scale=sd*np.random.random(1)[0],
-                              size=n)
-    error_count = 0
-    for i in range(1, nreps):
-        try:
-            results = bst.bootstrap(sample, alpha_level=alpha)
-            assert mean >= results.bca_ci_low
-            assert mean <= results.bca_ci_high
-            assert mean >= results.pct_ci_low
-            assert mean <= results.pct_ci_high
+    pop = sp.stats.norm.rvs(loc=mean, scale=sd * np.random.random(1)[0], size=10000)
+    sample = np.random.choice(pop, size=n, replace=False)
+    print("\nMean = {}".format(mean))
 
-        except AssertionError:
-            error_count += 1
-        sys.stdout.write('\r{0} runs of {1};  errors so far={2}'.format(i+1,
-            nreps, error_count))
-        sys.stdout.flush()
-    print('\nNumber of CIs not capturing the mean is {}'.format(error_count))
-    assert error_count < nreps*alpha
+    results = bst.bootstrap(sample, alpha_level=alpha)
+    single_samp_stat_tests(sample, results)
 
-def test_difference_paired_bootstrap(mean=100, sd=10, n=25,
-    alpha=0.05, nreps=100):
-    print("Testing paired difference bootstrap.")
-    # Assume equal variances here
-    # given that the samples are supposed to be paired.
-    sample1 = np.random.normal(loc=mean,
-                               scale=sd*(1+np.random.random(1)[0]),
-                               size=n)
+    does_ci_captures_mean_diff(sample, None, False, nreps, alpha)
+
+
+
+def test_unpaired_difference(mean=100, sd=10, n=25, nreps=100, alpha=0.05):
+    print("Testing unpaired difference bootstrap.\n")
+
     rand_delta = np.random.randint(-10, 10) # randint between -10 and 10
-    sample2 = np.random.normal(loc=mean+rand_delta,
-                               scale=sd*(1+np.random.random(1)[0]),
-                               size=n)
+    SCALES = sd * np.random.random(2)
 
-    error_count = 0
-    for i in range(1, nreps):
-        try:
-            results = bst.bootstrap(sample1, sample2,
-                                    alpha_level=alpha, paired=True)
-            assert rand_delta >= results.bca_ci_low
-            assert rand_delta <= results.bca_ci_high
-            assert rand_delta >= results.pct_ci_low
-            assert rand_delta <= results.pct_ci_high
+    pop1 = sp.stats.norm.rvs(loc=mean, scale=SCALES[0], size=10000)
+    sample1 = np.random.choice(pop1, size=n, replace=False)
 
-        except AssertionError:
-            error_count += 1
-        sys.stdout.write('\r{0} runs of {1};  errors so far={2}'.format(i+1,
-            nreps, error_count))
-        sys.stdout.flush()
-    print('\nNumber of CIs not capturing the mean is {}'.format(error_count))
-    assert error_count < nreps*alpha
+    pop2 = sp.stats.norm.rvs(loc=mean+rand_delta, scale=SCALES[1], size=10000)
+    sample2 = np.random.choice(pop2, size=n, replace=False)
 
-def test_difference_unpaired_bootstrap(mean=100, sd=10, n=25,
-    alpha=0.05, nreps=100):
-    print("Testing unpaired difference bootstrap.")
-    rand_n1 = np.random.randint(low=-10, high=10, size=1)[0]
-    sample1 = np.random.normal(loc=mean,
-                               scale=sd*(1+np.random.random(1)[0]),
-                               size=n+rand_n1)
-    rand_n2 = np.random.randint(low=-10, high=10, size=1)[0]
-    rand_delta = np.random.randint(0, 10) # randint between 0 and 10
-    sample2 = np.random.normal(loc=mean+rand_delta,
-                               scale=sd*(1+np.random.random(1)[0]),
-                               size=n+rand_n2)
-    error_count = 0
-    for i in range(1, nreps):
-        try:
-            results = bst.bootstrap(sample1, sample2,
-                alpha_level=alpha, paired=False)
-            assert rand_delta >= results.bca_ci_low
-            assert rand_delta <= results.bca_ci_high
-            assert rand_delta >= results.pct_ci_low
-            assert rand_delta <= results.pct_ci_high
+    results = bst.bootstrap(sample1, sample2, paired=False, alpha_level=alpha)
+    unpaired_stat_tests(sample1, sample2, results)
 
-        except AssertionError:
-            error_count += 1
-        sys.stdout.write('\r{0} runs of {1};  errors so far={2}'.format(i+1,
-            nreps, error_count))
-        sys.stdout.flush()
-    print('\nNumber of CIs not capturing the mean is {}'.format(error_count))
-    assert error_count < nreps*alpha
+    does_ci_captures_mean_diff(sample1, sample2, False, nreps, alpha)
+
+
+
+def test_paired_difference(mean=100, sd=10, n=25, nreps=100, alpha=0.05):
+    print("Testing paired difference bootstrap.\n")
+
+    # Assume equal variances here, given that the samples
+    # are supposed to be paired.
+
+    rand_delta = np.random.randint(-10, 10) # randint between -10 and 10
+    print('difference={}'.format(rand_delta))
+    SCALE = sd * np.random.random(1)[0]
+
+    pop1 = sp.stats.norm.rvs(loc=mean, scale=SCALE, size=10000)
+    sample1 = np.random.choice(pop1, size=n, replace=False)
+
+    pop2 = sp.stats.norm.rvs(loc=mean+rand_delta, scale=SCALE, size=10000)
+    sample2 = np.random.choice(pop2, size=n, replace=False)
+
+    results = bst.bootstrap(sample1, sample2, alpha_level=alpha, paired=True)
+    paired_stat_tests(sample1, sample2, results)
+
+    does_ci_captures_mean_diff(sample1, sample2, True, nreps, alpha)

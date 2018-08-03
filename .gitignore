@@ -45,6 +45,7 @@ nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
+.pytest_cache/*
 
 # Translations
 *.mo
@@ -109,8 +110,12 @@ venv.bak/
 dev*
 
 # DS_Store
-.DS_Store
+*.DS_Store
 **/.DS_Store
 
 # font list
 fontList.json
+fontList.py3k.cache
+
+# tex folders
+tex.cache/

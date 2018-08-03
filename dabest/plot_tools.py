@@ -115,7 +115,7 @@ def gapped_lines(data, x, y,
         kwargs['zorder'] = 5
 
     if 'lw' not in keys:
-        kwargs['lw'] = 2.
+        kwargs['lw'] = 4.
 
     if 'color' not in keys:
         kwargs['color'] = 'black'
@@ -156,7 +156,7 @@ def gapped_lines(data, x, y,
         # add horzontal central measure line.
         kwargs['zorder'] = 6
         kwargs['color'] = 'white'
-        kwargs['lw'] = 2
+        kwargs['lw'] = span_lw + 0.5
         mean_line = mlines.Line2D([xpos+offset-0.01,
                                     xpos+offset+0.01],
                                     [cm, cm],
