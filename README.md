@@ -66,7 +66,7 @@ It is possible to use the R package `reticulate` to run Python code. Please take
 
 ## Testing
 
-To test DABEST, you will need to install [pytest](https://docs.pytest.org/en/latest)
+To test DABEST, you will need to install [pytest](https://docs.pytest.org/en/latest).
 
 Run `pytest` in the root directory of the source distribution. This runs the test suite in the folder `dabest/tests`. The test suite will ensure that the bootstrapping functions and the plotting functions perform as expected.
 
