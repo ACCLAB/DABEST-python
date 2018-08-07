@@ -5,8 +5,13 @@ Release Notes
 =============
 
 
+v0.1.5
+======
+Fix bug that wasn't updating the seaborn version upon setup and install.
+
+
 v0.1.4
-=====
+======
 Update dependencies to
 
 * numpy 1.15

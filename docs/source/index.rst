@@ -9,7 +9,7 @@ DABEST
 -----------------------------------------------
 Data Analysis with Bootstrap-coupled ESTimation
 -----------------------------------------------
-*version 0.1.4*
+*version 0.1.5*
 
 Analyze your data with effect sizes!
 

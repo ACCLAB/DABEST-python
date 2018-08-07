@@ -26,7 +26,7 @@ Load libraries
 
 .. parsed-literal::
 
-    We're using DABEST v0.1.4
+    We're using DABEST v0.1.5
 
 
 Create dummy dataset
