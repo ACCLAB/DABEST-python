@@ -1,7 +1,6 @@
 .. _Tutorial:
 .. highlight:: python
   :linenothreshold: 2
-  :dedent: 4
 
 ========
 Tutorial
@@ -12,6 +11,7 @@ Load libraries
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     import os
 
@@ -42,6 +42,7 @@ for more details.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     from scipy.stats import norm # Used in generation of populations.
 
@@ -96,6 +97,7 @@ Supply the DataFrame; supply the two groups you want to compare in the
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     fig1, results1 = dabest.plot(df, idx=('Control','Group 1'))
 
@@ -120,6 +122,7 @@ confidence intervals (95% by default) and relevant *P* values.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     results1 # prints out the DataFrame returned by `dabest.plot()`.
 
@@ -204,6 +207,7 @@ You can color the dots with any column in the DataFrame, using the
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     f2, results2 = dabest.plot(df, idx=('Control','Group 1'),
                                color_col='Gender')
@@ -227,6 +231,7 @@ of repeated observations.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     f3, results3 = dabest.plot(df, idx=('Control','Group 1'),
                                color_col='Gender',
@@ -243,6 +248,7 @@ be paired, as indicated by the DataFrame produced.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     f4, results4 = dabest.plot(df, idx=('Control','Group 1'),
                                color_col='Gender',
@@ -314,6 +320,7 @@ be computed.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     f5, results5 = dabest.plot(df, idx=(('Control','Group 1'),
                                         ('Group 2','Group 3'),
@@ -401,6 +408,7 @@ controlled with the ``float_contrast`` option.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     f6, results6 = dabest.plot(df, idx=(('Control','Group 1'),
                                         ('Group 2','Group 3'),
@@ -414,6 +422,7 @@ You can also produce a paired multi-group plot, by setting `paired=True`.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     f6_paired, results6_paired = dabest.plot(df, idx=(('Control','Group 1'),
                                                       ('Group 2','Group 3'),
@@ -442,6 +451,7 @@ be computed against the first control group.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     f7, results7 = dabest.plot(df, idx=('Control', 'Group 2', 'Group 4'),
                        color_col='Gender')
@@ -518,6 +528,7 @@ the function.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     f8, results8 = dabest.plot(df, idx=('Control', 'Group 2', 'Group 4'),
                                color_col='Gender',
@@ -535,6 +546,7 @@ Below we run through ways of customizing various aesthetic features.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     # Changing the contrast y-limits.
 
@@ -549,6 +561,7 @@ Below we run through ways of customizing various aesthetic features.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     # Changing the swarmplot y-limits.
 
@@ -563,6 +576,7 @@ Below we run through ways of customizing various aesthetic features.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     # Changing the figure size.
     # The default figure size has been tweaked for
@@ -581,6 +595,7 @@ Below we run through ways of customizing various aesthetic features.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     # Changing the size and alpha (transparency) of the dots in the swarmplot.
     # This is done through swarmplot_kwargs, which accepts a dictionary.
@@ -599,6 +614,7 @@ Below we run through ways of customizing various aesthetic features.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     # Custom y-axis labels.
     f13, results13 = dabest.plot(df, idx=('Control','Group 1','Group 2'),
@@ -615,6 +631,7 @@ Below we run through ways of customizing various aesthetic features.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     # Any of matplotlib's named colors will work.
     # See https://matplotlib.org/examples/color/named_colors.html
@@ -634,6 +651,7 @@ Below we run through ways of customizing various aesthetic features.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     # You can also pass colors in the RGB tuple form (r, g, b),
     # or in hexadecimal form (if you're more familiar with HTML color codes).
@@ -652,6 +670,7 @@ Below we run through ways of customizing various aesthetic features.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     # Passing a dict as a custom palette.
     f16, results16 = dabest.plot(df, idx=('Control','Group 1','Group 2'),
@@ -667,6 +686,7 @@ Below we run through ways of customizing various aesthetic features.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     # Tweaking the tick length and padding between tick and label.
 
@@ -693,6 +713,7 @@ More details on wide vs long or 'melted' data can be found in this `Wikipedia ar
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     x='group'
     y='my_metric'
@@ -769,6 +790,7 @@ numerical values for plotting) columns.
 
 .. code-block:: ipython3
    :linenos:
+   :dedent: 1
 
     f17, results17 = dabest.plot(df_melt,
                                  x='group',
