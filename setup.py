@@ -108,7 +108,7 @@ def check_dependencies():
                                         SNS_LATEST_MINOR)
     try:
         import seaborn
-        if need_to_install(pandas, SNS_LATEST_MAJOR, SNS_LATEST_MINOR):
+        if need_to_install(seaborn, SNS_LATEST_MAJOR, SNS_LATEST_MINOR):
             to_install.append(TO_INSTALL)
     except ImportError:
         to_install.append(TO_INSTALL)
