@@ -29,7 +29,7 @@ def mean_difference(x1, x2=None, paired=False):
 
     Returns
     -------
-    results: namedtuple
+    results: dict
         mean_diff:      float. This is simply the mean of x1 subtracted from the
                         mean of x2.
 
@@ -56,14 +56,13 @@ def mean_difference(x1, x2=None, paired=False):
     """
 
     from numpy import ndarray, isnan, array, mean, std, nan
-    from collections import namedtuple
 
-    # Create namedtuple for easy output
-    es = namedtuple('EffectSize', __effect_sizes)
+    # Create dict
+    es_dict = {}
 
     # Convert to numpy arrays for speed,
     if isinstance(x1, (list, tuple, ndarray)):
-        x1 = array([x for x in x1 if ~isnan(x)])
+        x1 = array(x1)
 
     if x2 is not None:
         if isinstance(x2, (float, int)):
@@ -71,7 +70,7 @@ def mean_difference(x1, x2=None, paired=False):
             paired = False
         else:
             is_single_samp = False
-            x2 = array([x for x in x2 if ~isnan(x)])
+            x2 = array(x2)
     else:
         is_single_samp = True
         paired = False
@@ -100,12 +99,14 @@ def mean_difference(x1, x2=None, paired=False):
         d = M / pooled_sd
 
         # Compute Hedges' g
-        df = len(x1) + len(x2) - 2
-        correction_factor = __hedges_correction_factor(df)
+        correction_factor = __hedges_correction_factor(len(x1), len(x2))
         g = correction_factor * d
 
-    out = es(M, d, g)
-    return out
+    es_dict['mean_diff'] = M
+    es_dict['cohens_d'] = d
+    es_dict['hedges_g'] = g
+
+    return es_dict
 
 
 
@@ -150,7 +151,7 @@ def cliffs_delta(control, test):
 
 
 
-def __hedges_correction_factor(a):
+def __hedges_correction_factor(n1, n2):
     """
     Computes the bias correction factor for Hedges' g.
     Uses the gamma function.
@@ -159,13 +160,23 @@ def __hedges_correction_factor(a):
     """
 
     from scipy.special import gamma
-    from numpy import sqrt
+    from numpy import sqrt, isinf
+    import warnings
 
-    num = gamma(a / 2)
-    denom0 = gamma((a - 1) / 2)
-    denom = sqrt(a / 2) * denom0
+    df = n1 + n2 - 2
+    numer = gamma(df / 2)
+    denom0 = gamma((df - 1) / 2)
+    denom = sqrt(df / 2) * denom0
 
-    out = num / denom
+    if isinf(numer) or isinf(denom):
+        # occurs when df is too large.
+        # Apply Hedges and Olkin's approximation.
+        df_sum = n1 + n2
+        denom = (4 * df_sum) - 9
+        out = 1 - (3 / denom)
+
+    else:
+        out = numer / denom
 
     return out
 

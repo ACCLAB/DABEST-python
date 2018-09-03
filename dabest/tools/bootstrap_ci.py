@@ -8,7 +8,6 @@ from . import effect_sizes as __es
 __effect_sizes = __es.__effect_sizes
 
 
-
 def create_jackknife_indexes(data):
     """
     Given an array-like, creates a jackknife bootstrap.
@@ -63,8 +62,6 @@ def compute_meandiff_jackknife(x0, x1, jackknives, paired=False):
     """
     Returns the jackknife for the mean difference, Cohen's d, and Hedges' g.
     """
-    import effectsizes as es
-    from collections import namedtuple
 
     jack_dict = {}
     for a in __effect_sizes:
@@ -74,15 +71,15 @@ def compute_meandiff_jackknife(x0, x1, jackknives, paired=False):
         x0_shuffled = x0[j[0]]
         x1_shuffled = x1[j[1]]
 
-        e = es.mean_difference(x0_shuffled, x1_shuffled,
-                               paired=paired)
+        e = __es.mean_difference(x0_shuffled, x1_shuffled,
+                                 paired=paired)
+
         for a in __effect_sizes:
-            jackknife = getattr(e, a)
+            jackknife = e[a]
             jack_dict[a].append(jackknife)
 
     # Create namedtuple for easy output
-    jk = namedtuple('JackKnives', __effect_sizes)
-    return jk(*jack_dict.values())
+    return jack_dict
 
 
 
@@ -101,17 +98,15 @@ def __calc_accel(jack_dist):
 
 def compute_acceleration(jack_dist):
 
-    from collections import namedtuple
-
-    # Create namedtuple for easy output
-    acc = namedtuple('Acceleration', __effect_sizes)
-
-    results = []
+    acc = dict()
     for a in __effect_sizes:
-        effsize = getattr(jack_dist, a)
-        results.append(__calc_accel(effsize))
+        acc[a] = []
 
-    return acc(*results)
+    for a in __effect_sizes:
+        effsize_jack = jack_dist[a]
+        acc[a] = __calc_accel(effsize_jack)
+
+    return acc
 
 
 
@@ -129,32 +124,34 @@ def create_bootstrap_indexes(size, resamples=5000, random_seed=12345):
 
 
 
-def compute_mean_diff_bootstraps(x0, x1, paired=False):
+def compute_mean_diff_bootstraps(x0, x1, paired=False,
+                                 resamples=5000, random_seed=12345):
     """Bootstraps the mean difference, Cohen's d, and Hedges' g for 2 groups."""
-    import effectsizes as es
-    from collections import namedtuple
+
+    bs_index_kwargs = {'resamples': resamples,
+                       'random_seed': random_seed}
 
     boots_dict = {}
     for a in __effect_sizes:
         boots_dict[a] = []
 
-    boot_indexes = list(zip(create_bootstrap_indexes(len(x0)),
-                            create_bootstrap_indexes(len(x1))))
+    x0_bs_idx = create_bootstrap_indexes(len(x0), **bs_index_kwargs)
+    x1_bs_idx = create_bootstrap_indexes(len(x1), **bs_index_kwargs)
+
+    boot_indexes = list(zip(x0_bs_idx, x1_bs_idx))
 
     for b in boot_indexes:
         x0_boot = x0[b[0]]
         x1_boot = x1[b[1]]
 
-        e = es.mean_difference(x0_boot, x1_boot,
+        e = __es.mean_difference(x0_boot, x1_boot,
                                paired=paired)
 
         for a in __effect_sizes:
-            bootstrap = getattr(e, a)
+            bootstrap = e[a]
             boots_dict[a].append(bootstrap)
 
-    # Create namedtuple for easy output
-    B = namedtuple('bootstraps', __effect_sizes)
-    return B(*boots_dict.values())
+    return boots_dict
 
 
 
@@ -175,26 +172,21 @@ def compute_bias_correction(bootstraps, effect_size):
 
     Returns
     -------
-    z0: float
+    bias_dict: dictionary
         The bias correction value for the given bootstraps
         and effect size.
 
     """
     from scipy.stats import norm
-    from collections import namedtuple
 
-    # Create namedtuple for easy output
-    attributes = effect_size._fields
+    bias_dict = {}
 
-    bias_list = []
-
-    for a in attributes:
-        B = getattr(bootstraps, a)
-        e = getattr(effect_size, a)
+    for a in __effect_sizes:
+        B = bootstraps[a]
+        e = effect_size[a]
 
         prop_less_than_es = sum(B < e) / len(B)
 
-        bias_list.append(norm.ppf(prop_less_than_es))
+        bias_dict[a] = norm.ppf(prop_less_than_es)
 
-    out = namedtuple('Bias', attributes)
-    return out(*bias_list)
+    return bias_dict
