@@ -2,6 +2,7 @@
 # -*-coding: utf-8 -*-
 # Author: Joses Ho
 # Email : joseshowh@gmail.com
+from __future__ import division
 
 
 def plot(data, idx,
@@ -223,8 +224,6 @@ def plot(data, idx,
     # but the version has not been compiled against the newest numpy.
     import warnings
     warnings.filterwarnings("ignore", message="numpy.dtype size changed")
-
-    from __future__ import division
 
     import matplotlib as mpl
     import matplotlib.pyplot as plt
