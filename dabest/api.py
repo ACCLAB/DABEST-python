@@ -224,6 +224,8 @@ def plot(data, idx,
     import warnings
     warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 
+    from __future__ import division
+
     import matplotlib as mpl
     import matplotlib.pyplot as plt
     import matplotlib.ticker as tk
