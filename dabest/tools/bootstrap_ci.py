@@ -42,7 +42,7 @@ def create_repeated_indexes(data):
 
 
 
-def create_two_group_jackknife_indexes(x0, x1):
+def __create_two_group_jackknife_indexes(x0, x1):
     """Creates the jackknife bootstrap for 2 groups."""
 
     jackknife_c = list(zip([j for j in create_jackknife_indexes(x0)],
@@ -58,7 +58,7 @@ def create_two_group_jackknife_indexes(x0, x1):
 
 
 
-def compute_meandiff_jackknife(x0, x1, jackknives, paired=False):
+def compute_meandiff_jackknife(x0, x1, paired=False):
     """
     Returns the jackknife for the mean difference, Cohen's d, and Hedges' g.
     """
@@ -66,6 +66,8 @@ def compute_meandiff_jackknife(x0, x1, jackknives, paired=False):
     jack_dict = {}
     for a in __effect_sizes:
         jack_dict[a] = []
+
+    jackknives = __create_two_group_jackknife_indexes(x0, x1)
 
     for j in jackknives:
         x0_shuffled = x0[j[0]]
@@ -110,7 +112,7 @@ def compute_acceleration(jack_dist):
 
 
 
-def create_bootstrap_indexes(size, resamples=5000, random_seed=12345):
+def __create_bootstrap_indexes(size, resamples=5000, random_seed=12345):
     from numpy.random import choice, seed
 
     # Set seed.
@@ -135,8 +137,8 @@ def compute_mean_diff_bootstraps(x0, x1, paired=False,
     for a in __effect_sizes:
         boots_dict[a] = []
 
-    x0_bs_idx = create_bootstrap_indexes(len(x0), **bs_index_kwargs)
-    x1_bs_idx = create_bootstrap_indexes(len(x1), **bs_index_kwargs)
+    x0_bs_idx = __create_bootstrap_indexes(len(x0), **bs_index_kwargs)
+    x1_bs_idx = __create_bootstrap_indexes(len(x1), **bs_index_kwargs)
 
     boot_indexes = list(zip(x0_bs_idx, x1_bs_idx))
 
@@ -190,3 +192,35 @@ def compute_bias_correction(bootstraps, effect_size):
         bias_dict[a] = norm.ppf(prop_less_than_es)
 
     return bias_dict
+
+
+
+def __compute_quantile(z, bias, acceleration):
+    numer = bias + z
+    denom = 1 - (acceleration * numer)
+
+    return bias + (numer / denom)
+
+
+
+def compute_interval_limits(bias, acceleration, n_boots, alpha=0.05):
+    """
+    Returns the indexes of the interval limits for a given bootstrap.
+    Supply the bias, acceleration factor, and array of bootstraps.
+    """
+    from scipy.stats import norm
+
+    alpha_low = alpha / 2
+    alpha_high = 1 - (alpha / 2)
+
+    z_low = norm.ppf(alpha_low)
+    z_high = norm.ppf(alpha_high)
+
+    quant = {'bias': bias, 'acceleration': acceleration}
+    low = __compute_quantile(z_low, **quant)
+    high = __compute_quantile(z_high, **quant)
+
+    low = int(norm.cdf(low) * n_boots)
+    high = int(norm.cdf(high) * n_boots)
+
+    return low, high
