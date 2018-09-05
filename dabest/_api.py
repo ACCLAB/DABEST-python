@@ -8,6 +8,7 @@ from __future__ import division
 def plot(data, idx,
         x=None, y=None,
         color_col=None,
+        effect_size="mean_diff",
 
         float_contrast=True,
         paired=False,
@@ -25,7 +26,6 @@ def plot(data, idx,
 
         font_scale=1.2,
 
-        stat_func=None,
         ci=95,
         n_boot=5000,
         show_group_count=True,
@@ -59,6 +59,9 @@ def plot(data, idx,
 
         color_col: string, default None
             Column to be used for colors.
+
+        effect_size: ['mean_diff', 'cohens_d', 'hedges_g', 'median_diff',
+                      'cliffs_delta'], default 'mean_diff'.
 
         swarm_label, contrast_label: strings, default None
             Set labels for the y-axis of the swarmplot and the contrast plot,
@@ -116,10 +119,6 @@ def plot(data, idx,
 
         font_scale: float, default 1.2
             The font size will be scaled by this number.
-
-        stat_func: callable, default None
-            The function used to compute the summary. If None, defaults to
-            np.mean()
 
         ci: integer, default 95
             The size of the confidence interval desired (in percentage).
@@ -220,10 +219,14 @@ def plot(data, idx,
                     x2 are from the same distribution.
                     See https://docs.scipy.org/doc/scipy-1.0.0/reference/scipy.stats.wilcoxon.html
     '''
+    import warnings
     # This filters out an innocuous warning when pandas is imported,
     # but the version has not been compiled against the newest numpy.
-    import warnings
     warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+    # This filters out a "FutureWarning: elementwise comparison failed;
+    # returning scalar instead, but in the future will perform
+    # elementwise comparison". Not exactly sure what is causing it....
+    warnings.simplefilter(action='ignore', category=FutureWarning)
 
     import matplotlib as mpl
     import matplotlib.pyplot as plt
@@ -233,13 +236,16 @@ def plot(data, idx,
     plt.rcParams['svg.fonttype'] = 'none'
 
     import numpy as np
-    import scipy as sp
+    from scipy.stats import ttest_ind, ttest_rel, wilcoxon, mannwhitneyu
+
     import seaborn as sns
     import pandas as pd
 
+    from ._stats_tools.confint_2group_diff import difference_ci
+
     from .plot_tools import halfviolin, align_yaxis, rotate_ticks
     from .plot_tools import gapped_lines, get_swarm_spans
-    from .bootstrap_tools import bootstrap, jackknife_indexes, bca
+    # from .bootstrap_tools import bootstrap, jackknife_indexes, bca
     from .misc_tools import merge_two_dicts, unpack_and_add
 
     # MAKE COPY OF DATA.
@@ -364,7 +370,7 @@ def plot(data, idx,
 
 
     # Set default kwargs first, then merge with user-dictated ones.
-    default_swarmplot_kwargs = {'size':10}
+    default_swarmplot_kwargs = {'size':8}
     if swarmplot_kwargs is None:
         swarmplot_kwargs = default_swarmplot_kwargs
     else:
@@ -422,9 +428,9 @@ def plot(data, idx,
     gs_default = {'mean_sd', 'median_quartiles', 'None'}
     if group_summaries not in {'mean_sd', 'median_quartiles', 'None'}:
         raise ValueError('group_summaries must be one of'
-        'these: {}.'.format(gs_default) )
+        ' these: {}.'.format(gs_default) )
 
-    default_group_summary_kwargs = {'zorder': 5, 'lw': 4,
+    default_group_summary_kwargs = {'zorder': 5, 'lw': 2,
                                     'color': 'k','alpha': 1}
     if group_summary_kwargs is None:
         group_summary_kwargs = default_group_summary_kwargs
@@ -432,17 +438,23 @@ def plot(data, idx,
         group_summary_kwargs = merge_two_dicts(default_group_summary_kwargs,
                                                group_summary_kwargs)
 
+    # Plot standardized effect sizes / ordinal effect sizes on non-floating axes.
+    _es = ['mean_diff', 'cohens_d', 'hedges_g', 'median_diff',  'cliffs_delta']
+    labels = ['Mean\ndifference', "Cohen's d", "Hedges' g",
+              'Median\ndifference', "Cliff's delta"]
+    if effect_size not in _es:
+        err1 = "{} is not a plottable effect size. ".format(effect_size)
+        err2 = "Acceptable effect sizes are: {}".format(_es)
+        raise ValueError(err1 + err2)
+    if effect_size in ['cliffs_delta', 'cohens_d', 'hedges_g']:
+        float_contrast = False
+    dict_effect_size_label = dict(zip(_es, labels))
+    effect_size_label = dict_effect_size_label[effect_size]
 
-
-    # Small check to ensure that line summaries for means will not be shown
+    # Check to ensure that line summaries for means will not be shown
     # if `float_contrast` is True.
     if float_contrast is True and group_summaries != 'None':
         group_summaries = 'None'
-
-    # Set default statfunc as np.mean
-    if stat_func is None:
-        stat_func = np.mean
-
 
     # INITIALISE FIGURE.
     # Set clean style.
@@ -484,10 +496,9 @@ def plot(data, idx,
 
 
     # Create subplots.
-    fig,axx=plt.subplots(ncols=ncols, figsize=fig_size,
-                         gridspec_kw={'width_ratios': widthratio,
-                                      'wspace' : ws}
-                        )
+    fig, axx = plt.subplots(ncols=ncols, figsize=fig_size, #dpi=100,
+                            gridspec_kw={'width_ratios': widthratio,
+                                        'wspace' : ws})
 
 
     # If the contrast axes are NOT floating, create lists to store raw ylims
@@ -542,18 +553,18 @@ def plot(data, idx,
     legend_labels = []
 
 
-    # LIST TO STORE BOOTSTRAPPED RESULTS.
+    # Create list to store the bootstrap confidence interval results.
     bootlist = list()
 
 
-    # FOR EACH TUPLE IN IDX, CREATE PLOT.
+    # Plot each tuple in idx.
     for j, current_tuple in enumerate(idx):
         plotdat = data_in[data_in[x].isin(current_tuple)].copy()
         plotdat.loc[:,x] = pd.Categorical(plotdat[x],
                             categories=current_tuple,
                             ordered=True)
         plotdat.sort_values(by=[x])
-        summaries = plotdat.groupby(x)[y].apply(stat_func)
+        # summaries = plotdat.groupby(x)[y].apply(stat_func)
         # Compute Ns per group.
         counts = plotdat.groupby(x)[y].count()
 
@@ -567,16 +578,17 @@ def plot(data, idx,
         else:
             divider = make_axes_locatable(ax_raw)
             ax_contrast = divider.append_axes("bottom", size="100%",
-                                            pad=0.5, sharex=ax_raw)
+                                              pad=0.5, sharex=ax_raw)
 
         # PLOT RAW DATA.
         ax_raw.set_ylim(swarm_ylim)
 
         if (paired is True and show_pairs is True):
-            # first, sanity checks. Do we have 2 elements (no more, no less) here?
+            # Sanity checks. Do we have 2 elements (no more, no less) here?
             if len(current_tuple) != 2:
-                raise ValueError('Paired plotting is True, but {0} does not have 2 elements.'\
-                                 .format(str(current_tuple)) )
+                err1 = 'Paired plotting is True, '
+                err2 = 'but {0} does not have 2 elements.'.format(current_tuple)
+                raise ValueError(err1 + err2)
 
             # Are the groups equal in length??
             before = plotdat[plotdat[x] == current_tuple[0]][y].dropna().tolist()
@@ -594,6 +606,7 @@ def plot(data, idx,
                                    str(current_tuple[1]):after,
                                    'colors':colors})
 
+            # Slopegraph for paired raw data points.
             for ii in linedf.index:
                 ax_raw.plot([0,1],  # x1, x2
                             [linedf.loc[ii,current_tuple[0]],
@@ -680,8 +693,8 @@ def plot(data, idx,
 
 
         # PLOT CONTRAST DATA.
-        # Calculate bootstrapped stats.
-        for ix, grp in enumerate(current_tuple[1::]) :
+        ref = np.array(plotdat[plotdat[x] == current_tuple[0]][y].dropna())
+        for ix, grp in enumerate(current_tuple[1:]) :
             # add spacer to halfviolin if float_contast is true.
             if float_contrast is True:
                 if paired is True and show_pairs is True:
@@ -693,68 +706,92 @@ def plot(data, idx,
             pos = ix + spacer
 
             # Calculate bootstrapped stats.
-            ref = np.array(plotdat[plotdat[x] == current_tuple[0]][y].dropna())
             exp = np.array(plotdat[plotdat[x] == grp][y].dropna())
-            boots = bootstrap(ref, exp, paired=paired, alpha_level=alpha_level,
-                              statfunction=stat_func, reps=n_boot)
-            res = boots.results
+            results = difference_ci(ref, exp, paired=paired, alpha=alpha_level,
+                                    resamples=n_boot)
+            res = {}
             res['reference_group'] = current_tuple[0]
             res['experimental_group'] = grp
-            res['pvalue_1samp_ttest'] = boots.pvalue_1samp_ttest
-            res['pvalue_2samp_ind_ttest'] = boots.pvalue_2samp_ind_ttest
-            res['pvalue_2samp_paired_ttest'] = boots.pvalue_2samp_paired_ttest
-            res['pvalue_wilcoxon'] = boots.pvalue_wilcoxon
-            res['pvalue_mann_whitney'] =  boots.pvalue_mann_whitney
+
+            # Parse results into dict.
+            for _es_ in results.index:
+                res[_es_] = results.loc[_es_,'effect_size']
+
+                es_ci_low = '{}_ci_low'.format(_es_)
+                res[es_ci_low] = results.loc[_es_,'bca_ci_low']
+
+                es_ci_high = '{}_ci_high'.format(_es_)
+                res[es_ci_high] = results.loc[_es_,'bca_ci_high']
+
+                es_bootstraps = '{}_bootstraps'.format(_es_)
+                res[es_bootstraps] = results.loc[_es_,'bootstraps']
+
+            if paired:
+                res['paired'] = True
+                res['pvalue_paired_ttest'] = ttest_rel(ref, exp).pvalue
+                res['pvalue_mann_whitney'] = mannwhitneyu(ref, exp).pvalue
+            else:
+                res['paired'] = False
+                res['pvalue_ind_ttest'] = ttest_ind(ref, exp).pvalue
+                res['pvalue_wilcoxon'] = wilcoxon(ref, exp).pvalue
+
             bootlist.append(res)
 
+            # Figure out what to plot based on desired effect size.
+            bootstraps = res['{}_bootstraps'.format(effect_size)]
+            es = res[effect_size]
+            ci_low = res['{}_ci_low'.format(effect_size)]
+            ci_high = res['{}_ci_high'.format(effect_size)]
 
             # Plot the halfviolin and mean+CIs on contrast axes.
-            v = ax_contrast.violinplot(boots.stat_array, positions=[pos+1],
+            v = ax_contrast.violinplot(bootstraps, positions=[pos+1],
                                        **violinplot_kwargs)
             halfviolin(v)
-            ax_contrast.plot([pos+1], boots.summary, marker='o', color='k',
+            ax_contrast.plot([pos+1], es, marker='o', color='k',
                             markersize=swarmplot_kwargs['size'] * 1.5)
-            ax_contrast.plot([pos+1,pos+1],
-                             [boots.bca_ci_low, boots.bca_ci_high],
+            ax_contrast.plot([pos+1, pos+1], [ci_low, ci_high],
                              'k-', linewidth=group_summary_kwargs['lw'])
+
             if float_contrast is False:
-                contrast_ax_ylim_low.append( ax_contrast.get_ylim()[0] )
-                contrast_ax_ylim_high.append( ax_contrast.get_ylim()[1] )
+                l, h = ax_contrast.get_ylim()
+                contrast_ax_ylim_low.append(l)
+                contrast_ax_ylim_high.append(h)
                 ticklocs = ax_contrast.yaxis.get_majorticklocs()
-                contrast_ax_ylim_tickintervals.append(ticklocs[1]-ticklocs[0])
+                contrast_ax_ylim_tickintervals.append(ticklocs[1] - ticklocs[0])
 
-
-
-        # NORMALISE Y LIMS AND DESPINE FLOATING CONTRAST AXES.
         if float_contrast:
+            # Normalize ylims and despine the floating contrast axes.
             # Check that the effect size is within the swarm ylims.
-            min_check = swarm_ylim[0] - ref.mean()
-            max_check = swarm_ylim[1] - ref.mean()
-            if (min_check <= boots.summary <=  max_check) == False:
-                err1 = 'The mean of the reference group {}'.format(ref.mean())
-                err2 = ' does not fall in the specified `swarm_ylim` {}.'.format(swarm_ylim)
-                err3 = ' Please select a `swarm_ylim` that includes the reference mean, '
-                err4 = ' or set `float_contrast=False`. '
+            if effect_size == 'mean_diff':
+                _e = np.mean(exp)
+            elif effect_size == 'median_diff':
+                _e = np.median(exp)
+            min_check = swarm_ylim[0] - _e
+            max_check = swarm_ylim[1] - _e
+            if (min_check <= es <=  max_check) == False:
+                err1 = 'The mean of the reference group {} does '.format(_e)
+                err2 = 'not fall in the specified \
+                        `swarm_ylim` {}.'.format(swarm_ylim)
+                err3 = ' Please select a `swarm_ylim` that includes the \
+                         reference mean, or set `float_contrast=False`.'
                 err = err1 + err2 + err3 + err4
                 raise ValueError(err)
 
             # Align 0 of ax_contrast to reference group mean of ax_raw.
             ylimlow, ylimhigh = ax_contrast.get_xlim()
-            ax_contrast.set_xlim(ylimlow, ylimhigh+spacer)
+            ax_contrast.set_xlim(ylimlow, ylimhigh + spacer)
 
             # If the effect size is positive, shift the contrast axis up.
-            if boots.summary > 0:
-                rightmin = ax_raw.get_ylim()[0] - boots.summary
-                rightmax = ax_raw.get_ylim()[1] - boots.summary
+            if es > 0:
+                rightmin, rightmax = np.array(ax_raw.get_ylim()) - es
             # If the effect size is negative, shift the contrast axis down.
-            elif boots.summary < 0:
-                rightmin = ax_raw.get_ylim()[0] + boots.summary
-                rightmax = ax_raw.get_ylim()[1] + boots.summary
+            elif es < 0:
+                rightmin, rightmax = np.array(ax_raw.get_ylim()) + es
 
             ax_contrast.set_ylim(rightmin, rightmax)
 
-            align_yaxis(ax_raw, np.mean(plotdat[plotdat[x] == grp][y].dropna()),
-                        ax_contrast, boots.summary)
+            # align statfunc(exp) on ax_raw with the effect size on ax_contrast.
+            align_yaxis(ax_raw, _e, ax_contrast, es)
 
             # Draw zero line.
             xlimlow, xlimhigh = ax_contrast.get_xlim()
@@ -763,14 +800,14 @@ def plot(data, idx,
                                **reflines_kwargs)
 
             # Draw effect size line.
-            ax_contrast.hlines(boots.summary,
+            ax_contrast.hlines(es,
                                1, xlimhigh,  # x-coordinates, start and end.
                                **reflines_kwargs)
 
             ## Shrink or stretch axis to encompass 0 and min/max contrast.
             # Get the lower and upper limits.
-            lower = boots.stat_array.min()
-            upper = boots.stat_array.max()
+            lower = bootstraps.min()
+            upper = bootstraps.max()
 
             # Make sure we have zero in the limits.
             if lower > 0:
@@ -794,21 +831,22 @@ def plot(data, idx,
                     # if the tick lies within upper and lower, take it.
                     newticks2.append(b)
 
-            # if the boots.summary falls outside of the newticks2 set,
+            # if the effect size falls outside of the newticks2 set,
             # add a tick in the right direction.
-            if np.max(newticks2) < boots.summary:
+            if np.max(newticks2) < es:
                 # find out the max tick index in newticks1.
                 ind = np.where(newticks1 == np.max(newticks2))[0][0]
-                newticks2.append(newticks1[ind+1])
-            elif boots.summary < np.min(newticks2):
+                newticks2.append(newticks1[ind + 1])
+            elif es < np.min(newticks2):
                 # find out the min tick index in newticks1.
                 ind = np.where(newticks1 == np.min(newticks2))[0][0]
-                newticks2.append(newticks1[ind-1])
+                newticks2.append(newticks1[ind - 1])
             newticks2 = np.array(newticks2)
             newticks2.sort()
 
             # Re-draw axis to shrink it to desired limits.
-            ax_contrast.yaxis.set_major_locator(tk.FixedLocator(locs=newticks2))
+            locc = tk.FixedLocator(locs=newticks2)
+            ax_contrast.yaxis.set_major_locator(locc)
 
             # Despine the axes.
             sns.despine(ax=ax_contrast, trim=True,
@@ -830,10 +868,10 @@ def plot(data, idx,
             else:
                 if contrast_label is None:
                     if paired:
-                        ax_contrast.set_ylabel('paired delta\n' + y,
+                        ax_contrast.set_ylabel('paired \n' + effect_size_label,
                                                 labelpad=tick_length)
                     else:
-                        ax_contrast.set_ylabel('delta\n' + y,
+                        ax_contrast.set_ylabel(effect_size_label,
                                                 labelpad=tick_length)
                 else:
                     ax_contrast.set_ylabel(str(contrast_label),
@@ -895,13 +933,16 @@ def plot(data, idx,
     bootlist_df = pd.DataFrame(bootlist)
 
 
-    # Order the columns properly.
-    bootlist_df=bootlist_df[['reference_group', 'experimental_group',
-    'stat_summary','bca_ci_low', 'bca_ci_high', 'ci',
-    'is_difference', 'is_paired', 'pvalue_1samp_ttest',
-    'pvalue_2samp_ind_ttest', 'pvalue_2samp_paired_ttest',
-    'pvalue_mann_whitney', 'pvalue_wilcoxon']]
+    # # Order the columns properly.
+    cols = bootlist_df.columns.tolist()
 
+    move_to_front = ['reference_group', 'experimental_group', 'paired']
+    mean_diff_cols = ['mean_diff', 'mean_diff_bootstraps',
+                      'mean_diff_ci_high', 'mean_diff_ci_low']
+    for c in move_to_front + mean_diff_cols:
+        cols.remove(c)
+    new_order_cols = move_to_front + mean_diff_cols + cols
+    bootlist_df = bootlist_df[new_order_cols]
 
     # Remove unused columns.
     bootlist_df = bootlist_df.replace(to_replace='NIL',
