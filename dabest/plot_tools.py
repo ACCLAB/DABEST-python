@@ -5,33 +5,30 @@
 # A set of convenience functions used for producing plots in `dabest`.
 
 
-
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
-
 from .misc_tools import merge_two_dicts
 
 
 
-def halfviolin(v, half = 'right', color = 'k'):
+def halfviolin(v, half='right', color='k'):
+    import numpy as np
+
     for b in v['bodies']:
-            mVertical = np.mean(b.get_paths()[0].vertices[:, 0])
-            mHorizontal = np.mean(b.get_paths()[0].vertices[:, 1])
-            vertices = b.get_paths()[0].vertices
-            if half is 'left':
-                b.get_paths()[0].vertices[:, 0] = np.clip(vertices[:, 0],
-                                                    -np.inf, mVertical)
-            if half is 'right':
-                b.get_paths()[0].vertices[:, 0] = np.clip(vertices[:, 0],
-                                                    mVertical, np.inf)
-            if half is 'bottom':
-                b.get_paths()[0].vertices[:, 1] = np.clip(vertices[:, 1],
-                                                    -np.inf, mHorizontal)
-            if half is 'top':
-                b.get_paths()[0].vertices[:, 1] = np.clip(vertices[:, 1],
-                                                    mHorizontal, np.inf)
-            b.set_color(color)
+        V = b.get_paths()[0].vertices
+
+        mean_vertical = np.mean(V[:, 0])
+        mean_horizontal = np.mean(V[:, 1])
+
+        if half is 'left':
+            V[:, 0] = np.clip(V[:, 0], -np.inf, mean_vertical)
+        if half is 'right':
+            V[:, 0] = np.clip(V[:, 0], mean_vertical, np.inf)
+        if half is 'bottom':
+            V[:, 1] = np.clip(V[:, 1], -np.inf, mean_horizontal)
+        if half is 'top':
+            V[:, 1] = np.clip(V[:, 1], mean_horizontal, np.inf)
+
+        b.set_color(color)
+        b.set_linewidth(0)
 
 
 
@@ -68,11 +65,7 @@ def get_swarm_spans(coll):
 
 
 
-def gapped_lines(data, x, y,
-                 type='mean_sd',
-                 offset=0.3,
-                 ax=None,
-                 **kwargs):
+def gapped_lines(data, x, y, type='mean_sd', offset=0.3, ax=None, **kwargs):
     '''
     Convenience function to plot the standard devations as vertical
     errorbars. The mean is a gap defined by negative space.
@@ -88,7 +81,7 @@ def gapped_lines(data, x, y,
     x, y: string.
         x and y columns to be plotted.
 
-    type: ['mean_sd', 'median_quartiles',], default 'mean_sd'
+    type: ['mean_sd', 'median_quartiles'], default 'mean_sd'
         Plots the summary statistics for each group. If 'mean_sd', then the
         mean and standard deviation of each group is plotted as a gapped line.
         If 'median_quantiles', then the median and 25th and 75th percentiles of
@@ -105,17 +98,21 @@ def gapped_lines(data, x, y,
     kwargs: dict, default None
         Dictionary with kwargs passed to matplotlib.lines.Line2D
     '''
+    import matplotlib.pyplot as plt
     import matplotlib.lines as mlines
 
     if ax is None:
         ax = plt.gca()
 
     keys = kwargs.keys()
+    if 'clip_on' not in keys:
+        kwargs['clip_on'] = False
+
     if 'zorder' not in keys:
         kwargs['zorder'] = 5
 
     if 'lw' not in keys:
-        kwargs['lw'] = 4.
+        kwargs['lw'] = 2.
 
     if 'color' not in keys:
         kwargs['color'] = 'black'
@@ -143,6 +140,7 @@ def gapped_lines(data, x, y,
     original_zorder = kwargs['zorder']
     span_color = kwargs['color']
     span_lw = kwargs['lw']
+
     for xpos, cm in enumerate(central_measures):
         # add vertical span line.
         kwargs['zorder'] = original_zorder
@@ -156,9 +154,8 @@ def gapped_lines(data, x, y,
         # add horzontal central measure line.
         kwargs['zorder'] = 6
         kwargs['color'] = 'white'
-        kwargs['lw'] = span_lw + 0.5
-        mean_line = mlines.Line2D([xpos+offset-0.01,
-                                    xpos+offset+0.01],
-                                    [cm, cm],
-                                    **kwargs)
+        kwargs['lw'] = span_lw + 2
+        line_xpos = xpos + offset
+        mean_line = mlines.Line2D([line_xpos-0.01, line_xpos+0.01], [cm, cm],
+                                   **kwargs)
         ax.add_line(mean_line)

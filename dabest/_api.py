@@ -5,32 +5,31 @@
 from __future__ import division
 
 
-def plot(data, idx,
-        x=None, y=None,
+def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
+
         color_col=None,
-        effect_size="mean_diff",
-
-        float_contrast=True,
         paired=False,
-        show_pairs=True,
-        group_summaries="mean_sd",
-
-        custom_palette=None,
+        effect_size="mean_diff",
+        raw_marker_size=6,
+        es_marker_size=9,
 
         swarm_label=None,
         contrast_label=None,
         swarm_ylim=None,
         contrast_ylim=None,
 
-        fig_size=None,
+        plot_context='talk',
+        font_scale=1.,
 
-        font_scale=1.2,
-
-        ci=95,
-        n_boot=5000,
+        custom_palette=None,
+        float_contrast=True,
+        show_pairs=True,
         show_group_count=True,
+        group_summaries="mean_sd",
 
-        tick_length=15,
+        fig_size=None,
+        dpi=100,
+        tick_length=12,
         tick_pad=9,
 
         swarmplot_kwargs=None,
@@ -42,11 +41,12 @@ def plot(data, idx,
         ):
 
     '''
-    Takes a pandas DataFrame and produces a contrast plot:
+    Takes a pandas DataFrame and produces an estimation plot:
     either a Cummings hub-and-spoke plot or a Gardner-Altman contrast plot.
     Paired and unpaired options available.
 
     Keywords:
+    ---------
         data: pandas DataFrame
 
         idx: tuple
@@ -57,31 +57,53 @@ def plot(data, idx,
         x, y: strings, default None
             Column names for data to be plotted on the x-axis and y-axis.
 
+        ci: integer, default 95
+            The size of the confidence interval desired (in percentage).
+
+        n_boot: integer, default 5000
+            Number of bootstrap iterations to perform during calculation of
+            confidence intervals.
+
         color_col: string, default None
             Column to be used for colors.
-
-        effect_size: ['mean_diff', 'cohens_d', 'hedges_g', 'median_diff',
-                      'cliffs_delta'], default 'mean_diff'.
-
-        swarm_label, contrast_label: strings, default None
-            Set labels for the y-axis of the swarmplot and the contrast plot,
-            respectively.
-
-        float_contrast: boolean, default True
-            Whether or not to display the halfviolin bootstrapped difference
-            distribution alongside the raw data.
 
         paired: boolean, default False
             Whether or not the data is paired. To elaborate.
 
+        effect_size: ['mean_diff', 'cohens_d', 'hedges_g', 'median_diff',
+                      'cliffs_delta'], default 'mean_diff'.
+
+        raw_marker_size: float, default 7
+            The diameter (in points) of the marker dots plotted in the swarmplot.
+
+        es_marker_size: float, default 9
+            The size (in points) of the effect size points on the difference axes.
+
+        swarm_label, contrast_label: strings, default None
+            Set labels for the y-axis of the swarmplot and the contrast plot,
+            respectively. If `swarm_label` is not specified, it defaults to
+            "value", unless a column name was passed to `y`. If `contrast_label`
+            is not specified, it defaults to the effect size being plotted.
+
+        swarm_ylim, contrast_ylim: tuples, default None
+            The desired y-limits of the raw data (swarmplot) axes and the
+            difference axes respectively, as a (lower, higher) tuple. If these
+            are not specified, they will be autoscaled to sensible values.
+
+        plot_context: default 'talk'
+            Accepts any of seaborn's plotting contexts: 'notebook', 'paper',
+            'talk', and 'poster' to determine the scaling of the plot elements.
+            Read more about the contexts here:
+            https://seaborn.pydata.org/generated/seaborn.set_context.html
+
+        font_scale: float, default 1.
+            The font size will be scaled by this number.
+
         custom_palette: dict, list, or matplotlib color palette, default None
             This keyword accepts a dictionary with {'group':'color'} pairings,
-            a list of RGB colors, or a specified matplotlib palette.
-
-            This palette will be used to color the swarmplot. If no `color_col`
-            is specified, then each group will be colored in sequence according
-            to the palette.
-
+            a list of RGB colors, or a specified matplotlib palette. This palette
+            will be used to color the swarmplot. If no `color_col` is specified,
+            then each group will be colored in sequence according to the palette.
             If `color_col` is specified but this is not, the default palette
             used is 'tab10'.
 
@@ -90,14 +112,21 @@ def plot(data, idx,
             these functions generate a list of RGB colors.
             https://seaborn.pydata.org/generated/seaborn.color_palette.html
             https://seaborn.pydata.org/generated/seaborn.cubehelix_palette.html
-
             The named colors of matplotlib can be found here:
             https://matplotlib.org/examples/color/named_colors.html
 
+        float_contrast: boolean, default True
+            Whether or not to display the halfviolin bootstrapped difference
+            distribution alongside the raw data.
+
         show_pairs: boolean, default True
             If the data is paired, whether or not to show the raw data as a
-            swarmplot, or as paired plot, with a line joining each pair of
+            swarmplot, or as slopegraph, with a line joining each pair of
             observations.
+
+        show_group_count: boolean, default True
+            Whether or not the group count (e.g. 'N=10') will be appended to the
+            xtick labels.
 
         group_summaries: ['mean_sd', 'median_quartiles', 'None'], default 'mean_sd'
             Plots the summary statistics for each group. If 'mean_sd', then the
@@ -106,32 +135,15 @@ def plot(data, idx,
             median and 25th and 75th percentiles of each group is plotted
             instead. If 'None', the summaries are not shown.
 
-        swarm_ylim: tuple, default None
-            The desired y-limits of the raw data swarmplot as a (lower, higher)
-            tuple.
-
-        contrast_ylim: tuple, default None
-            The desired y-limits of the constrast plot as a (lower, higher)
-            tuple.
-
         fig_size: tuple, default None
             The desired dimensions of the figure as a (length, width) tuple.
+            The default is (5 * ncols, 7), where `ncols` is the number of
+            pairwise comparisons being plotted.
 
-        font_scale: float, default 1.2
-            The font size will be scaled by this number.
+        dpi: int, default 100
+            The dots per inch of the resulting figure.
 
-        ci: integer, default 95
-            The size of the confidence interval desired (in percentage).
-
-        n_boot: integer, default 5000
-            Number of bootstrap iterations to perform during calculation of
-            confidence intervals.
-
-        show_group_count: boolean, default True
-            Whether or not the group count (e.g. 'N=10') will be appended to the
-            xtick labels.
-
-        tick_length: int, default 15
+        tick_length: int, default 12
             The length of the ticks (in points) for both the swarm and contrast
             axes.
 
@@ -174,50 +186,55 @@ def plot(data, idx,
             Pass any keyword arguments accepted by the seaborn `set` command
             here, as a dict.
 
+
      Returns:
-        A matplotlib Figure.
-            You can access each figure via `figure.axes[i]`.
-            The odd-numbered axes are the swarmplot axes. The even-numbered
-            axes are the contrast axes. Every group in `idx` will have its own
-            pair of axes.
+     --------
+        matplotlib Figure, and a pandas DataFrame.
 
-        A pandas DataFrame with the following columns:
-                stat_summary
-                    The mean difference.
+        The matplotlib Figure consists of several axes. The odd-numbered axes
+        are the swarmplot axes. The even-numbered axes are the contrast axes.
+        Every group in `idx` will have its own pair of axes. You can access each
+        axes via `figure.axes[i]`.
 
-                bca_ci_low
-                    The lower bound of the confidence interval.
 
-                bca_ci_high
-                    The upper bound of the confidence interval.
+        The pandas DataFrame contains the estimation statistics for every
+        comparison being plotted. The following columns are presented:
+            stat_summary
+                The mean difference.
 
-                ci
-                    The width of the confidence interval, typically 95%.
+            bca_ci_low
+                The lower bound of the confidence interval.
 
-                pvalue_2samp_ind_ttest
-                    P-value obtained from scipy.stats.ttest_ind. Only produced
-                    if paired is False.
-                    See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_ind.html
+            bca_ci_high
+                The upper bound of the confidence interval.
 
-                pvalue_mann_whitney: float
-                    Two-sided p-value obtained from scipy.stats.mannwhitneyu.
-                    Only produced if paired is False.
-                    The Mann-Whitney U-test is a nonparametric unpaired test of
-                    the null hypothesis that x1 and x2 are from the same distribution.
-                    See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.mannwhitneyu.html
+            ci
+                The width of the confidence interval, typically 95%.
 
-                pvalue_2samp_related_ttest
-                    P-value obtained from scipy.stats.ttest_rel. Only produced
-                    if paired is True.
-                    See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_rel.html
+            pvalue_2samp_ind_ttest
+                P-value obtained from scipy.stats.ttest_ind. Only produced
+                if paired is False.
+                See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_ind.html
 
-                pvalue_wilcoxon: float
-                    P-value obtained from scipy.stats.wilcoxon. Only produced
-                    if paired is True.
-                    The Wilcoxons signed-rank test is a nonparametric paired
-                    test of the null hypothesis that the paired samples x1 and
-                    x2 are from the same distribution.
-                    See https://docs.scipy.org/doc/scipy-1.0.0/reference/scipy.stats.wilcoxon.html
+            pvalue_mann_whitney: float
+                Two-sided p-value obtained from scipy.stats.mannwhitneyu.
+                Only produced if paired is False.
+                The Mann-Whitney U-test is a nonparametric unpaired test of
+                the null hypothesis that x1 and x2 are from the same distribution.
+                See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.mannwhitneyu.html
+
+            pvalue_2samp_related_ttest
+                P-value obtained from scipy.stats.ttest_rel. Only produced
+                if paired is True.
+                See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_rel.html
+
+            pvalue_wilcoxon: float
+                P-value obtained from scipy.stats.wilcoxon. Only produced
+                if paired is True.
+                The Wilcoxons signed-rank test is a nonparametric paired
+                test of the null hypothesis that the paired samples x1 and
+                x2 are from the same distribution.
+                See https://docs.scipy.org/doc/scipy-1.0.0/reference/scipy.stats.wilcoxon.html
     '''
     import warnings
     # This filters out an innocuous warning when pandas is imported,
@@ -248,11 +265,11 @@ def plot(data, idx,
     # from .bootstrap_tools import bootstrap, jackknife_indexes, bca
     from .misc_tools import merge_two_dicts, unpack_and_add
 
-    # MAKE COPY OF DATA.
+    # Make a copy of the data, so we don't make alterations to it.
     data_in = data.copy()
     data_in.reset_index(inplace=True)
 
-    # IDENTIFY PLOT TYPE.
+    # Determine the kind of estimation plot we need to produce.
     if all([isinstance(i, str) for i in idx]):
         plottype = 'hubspoke'
         # Set columns and width ratio.
@@ -284,8 +301,7 @@ def plot(data, idx,
         raise ValueError(err)
 
 
-    # SANITY CHECKS
-    # check color_col is a column name.
+    # Sanity checks.
     if (color_col is not None) and (color_col not in data_in.columns):
         err = ' '.join(['The specified `color_col`',
         '{} is not a column in `data`.'.format(color_col)])
@@ -355,13 +371,13 @@ def plot(data, idx,
                                         ordered=True)
 
 
-    # CALCULATE CI.
+    # Calculate the CI from alpha.
     if ci < 0 or ci > 100:
         raise ValueError('`ci` should be between 0 and 100.')
     alpha_level = (100.-int(ci)) / 100.
 
 
-    # CALCULATE RAW SWARM YLIMS.
+    # Calculate the swarmplot ylims.
     if swarm_ylim is None:
         # To ensure points at the limits are clearly seen.
         pad = data_in[y].diff().abs().min() / 2 #
@@ -370,7 +386,7 @@ def plot(data, idx,
 
 
     # Set default kwargs first, then merge with user-dictated ones.
-    default_swarmplot_kwargs = {'size':8}
+    default_swarmplot_kwargs = {'size': raw_marker_size}
     if swarmplot_kwargs is None:
         swarmplot_kwargs = default_swarmplot_kwargs
     else:
@@ -378,11 +394,9 @@ def plot(data, idx,
             swarmplot_kwargs)
 
 
-    # Violinplot.
-    default_violinplot_kwargs={'widths':0.5,
-                                'vert':True,
-                                'showextrema':False,
-                                'showmedians':False}
+    # Violinplot kwargs.
+    default_violinplot_kwargs={'widths':0.5, 'vert':True,
+                               'showextrema':False, 'showmedians':False}
     if violinplot_kwargs is None:
         violinplot_kwargs = default_violinplot_kwargs
     else:
@@ -390,7 +404,7 @@ def plot(data, idx,
             violinplot_kwargs)
 
 
-    # Reference lines.
+    # Zero reference-line kwargs.
     default_reflines_kwargs = {'linestyle':'solid', 'linewidth':0.75,
                                'color':'k'}
     if reflines_kwargs is None:
@@ -400,10 +414,9 @@ def plot(data, idx,
             reflines_kwargs)
 
 
-    # Legend.
+    # Legend kwargs.
     default_legend_kwargs = {'loc': 'upper left', 'frameon': False,
-                             'bbox_to_anchor': (0.95, 1.),
-                             'markerscale': 2}
+                             'bbox_to_anchor': (0.95, 1.), 'markerscale': 2}
     if legend_kwargs is None:
         legend_kwargs = default_legend_kwargs
     else:
@@ -411,9 +424,9 @@ def plot(data, idx,
 
 
     # Aesthetic kwargs for sns.set().
-    default_aesthetic_kwargs={'context': 'poster',
-        'style': 'ticks',
-        'font_scale': font_scale}
+    default_aesthetic_kwargs={'context': plot_context, 'style': 'ticks',
+                              'font_scale': font_scale,
+                              'rc': {'axes.linewidth': 1}}
     if aesthetic_kwargs is None:
         aesthetic_kwargs = default_aesthetic_kwargs
     else:
@@ -456,7 +469,6 @@ def plot(data, idx,
     if float_contrast is True and group_summaries != 'None':
         group_summaries = 'None'
 
-    # INITIALISE FIGURE.
     # Set clean style.
     sns.set(**aesthetic_kwargs)
 
@@ -494,9 +506,8 @@ def plot(data, idx,
     if fig_size is None:
         fig_size = fsize
 
-
     # Create subplots.
-    fig, axx = plt.subplots(ncols=ncols, figsize=fig_size, #dpi=100,
+    fig, axx = plt.subplots(ncols=ncols, figsize=fig_size, dpi=dpi,
                             gridspec_kw={'width_ratios': widthratio,
                                         'wspace' : ws})
 
@@ -509,17 +520,17 @@ def plot(data, idx,
         contrast_ax_ylim_tickintervals = list()
 
 
-    # CREATE COLOR PALETTE TO NORMALIZE PALETTE ACROSS AXES.
+    # Create color palette that will be shared across subplots.
     if color_col is None:
         color_groups = data_in[x].unique()
     else:
         color_groups = data_in[color_col].unique()
 
     if custom_palette is None:
-        plotPal=dict(zip(color_groups,
-                         sns.color_palette(n_colors = len(color_groups))
-                         )
-                    )
+        plotPal = dict(zip(color_groups,
+                           sns.color_palette(n_colors=len(color_groups))
+                           )
+                       )
     else:
         if isinstance(custom_palette, dict):
             # check that all the keys in custom_palette are found in the
@@ -564,7 +575,6 @@ def plot(data, idx,
                             categories=current_tuple,
                             ordered=True)
         plotdat.sort_values(by=[x])
-        # summaries = plotdat.groupby(x)[y].apply(stat_func)
         # Compute Ns per group.
         counts = plotdat.groupby(x)[y].count()
 
@@ -580,7 +590,7 @@ def plot(data, idx,
             ax_contrast = divider.append_axes("bottom", size="100%",
                                               pad=0.5, sharex=ax_raw)
 
-        # PLOT RAW DATA.
+        # Plot the raw data.
         ax_raw.set_ylim(swarm_ylim)
 
         if (paired is True and show_pairs is True):
@@ -594,8 +604,9 @@ def plot(data, idx,
             before = plotdat[plotdat[x] == current_tuple[0]][y].dropna().tolist()
             after = plotdat[plotdat[x] == current_tuple[1]][y].dropna().tolist()
             if len(before) != len(after):
-                raise ValueError('The sizes of {0} and {1} do not match.'\
-                                 .format(current_tuple[0], current_tuple[1]) )
+                err1 = 'The sizes of {} '.format(current_tuple[0])
+                err2 = 'and {} do not match.'.format(current_tuple[1])
+                raise ValueError(err1 + err2)
 
             if color_col is not None:
                 colors = plotdat[plotdat[x] == current_tuple[0]][color_col]
@@ -620,14 +631,9 @@ def plot(data, idx,
 
         elif (paired is True and show_pairs is False) or (paired is False):
             # Swarmplot for raw data points.
-            sns.swarmplot(data=plotdat,
-                          x=x, y=y,
-                          ax=ax_raw,
-                          order=current_tuple,
-                          hue=color_col,
-                          palette=plotPal,
-                          zorder=3,
-                          **swarmplot_kwargs)
+            sns.swarmplot(data=plotdat, x=x, y=y, ax=ax_raw,
+                          order=current_tuple, hue=color_col,
+                          palette=plotPal, zorder=3, **swarmplot_kwargs)
 
             if group_summaries != 'None':
                 # Create list to gather xspans.
@@ -641,8 +647,8 @@ def plot(data, idx,
                         # we have got a None, so skip and move on.
                         pass
                 gapped_lines(plotdat, x=x, y=y,
-                             # pseudo-hardcorded offset...
-                             offset=np.max(xspans)+0.09,
+                             # Hardcoded offset...
+                             offset=np.max(xspans) + 0.1,
                              type=group_summaries,
                              ax=ax_raw, **group_summary_kwargs)
 
@@ -671,10 +677,7 @@ def plot(data, idx,
         else:
             ax_raw.xaxis.set_visible(False)
             not_first_ax = (j != 0)
-            sns.despine(ax=ax_raw,
-                        bottom=True,
-                        left=not_first_ax,
-                        trim=True)
+            sns.despine(ax=ax_raw, bottom=True, left=not_first_ax, trim=True)
             if not_first_ax:
                 ax_raw.yaxis.set_visible(False)
 
@@ -692,7 +695,7 @@ def plot(data, idx,
             last_swarm = ax_raw
 
 
-        # PLOT CONTRAST DATA.
+        # Plot the contrast data.
         ref = np.array(plotdat[plotdat[x] == current_tuple[0]][y].dropna())
         for ix, grp in enumerate(current_tuple[1:]) :
             # add spacer to halfviolin if float_contast is true.
@@ -746,9 +749,11 @@ def plot(data, idx,
             # Plot the halfviolin and mean+CIs on contrast axes.
             v = ax_contrast.violinplot(bootstraps, positions=[pos+1],
                                        **violinplot_kwargs)
-            halfviolin(v)
+            halfviolin(v) # Turn the violinplot into half.
+            # Plot the effect size.
             ax_contrast.plot([pos+1], es, marker='o', color='k',
-                            markersize=swarmplot_kwargs['size'] * 1.5)
+                            markersize=es_marker_size)
+            # Plot the confidence interval.
             ax_contrast.plot([pos+1, pos+1], [ci_low, ci_high],
                              'k-', linewidth=group_summary_kwargs['lw'])
 
@@ -757,7 +762,8 @@ def plot(data, idx,
                 contrast_ax_ylim_low.append(l)
                 contrast_ax_ylim_high.append(h)
                 ticklocs = ax_contrast.yaxis.get_majorticklocs()
-                contrast_ax_ylim_tickintervals.append(ticklocs[1] - ticklocs[0])
+                new_interval = ticklocs[1] - ticklocs[0]
+                contrast_ax_ylim_tickintervals.append(new_interval)
 
         if float_contrast:
             # Normalize ylims and despine the floating contrast axes.
@@ -804,7 +810,7 @@ def plot(data, idx,
                                1, xlimhigh,  # x-coordinates, start and end.
                                **reflines_kwargs)
 
-            ## Shrink or stretch axis to encompass 0 and min/max contrast.
+            # Shrink or stretch axis to encompass 0 and min/max contrast.
             # Get the lower and upper limits.
             lower = bootstraps.min()
             upper = bootstraps.max()
@@ -831,7 +837,7 @@ def plot(data, idx,
                     # if the tick lies within upper and lower, take it.
                     newticks2.append(b)
 
-            # if the effect size falls outside of the newticks2 set,
+            # If the effect size falls outside of the newticks2 set,
             # add a tick in the right direction.
             if np.max(newticks2) < es:
                 # find out the max tick index in newticks1.
@@ -856,7 +862,7 @@ def plot(data, idx,
                 right=False)
 
 
-        # SET Y AXIS LABELS .
+        # Set the y-axis labels.
         if j > 0:
             ax_raw.set_ylabel('', labelpad=tick_length)
         else:
@@ -881,7 +887,7 @@ def plot(data, idx,
         rotate_ticks(ax_contrast, angle=45, alignment='right')
 
 
-    # NORMALIZE Y LIMS AND DESPINE NON-FLOATING CONTRAST AXES.
+    # Equalize the ylims across subplots.
     if float_contrast is False:
         # Sort and convert to numpy arrays.
         contrast_ax_ylim_low = np.sort(contrast_ax_ylim_low)
@@ -928,12 +934,11 @@ def plot(data, idx,
                 line.set_linewidth(3.0)
 
 
-    # PREPARE OUTPUT
     # Turn `bootlist` into a pandas DataFrame
     bootlist_df = pd.DataFrame(bootlist)
 
 
-    # # Order the columns properly.
+    # Order the columns properly.
     cols = bootlist_df.columns.tolist()
 
     move_to_front = ['reference_group', 'experimental_group', 'paired']
@@ -960,7 +965,12 @@ def plot(data, idx,
 
     # Lengthen the axes ticks so they look better.
     for ax in fig.axes:
-        ax.tick_params(length=tick_length, pad=tick_pad)
+        ax.tick_params(length=tick_length, pad=tick_pad, width=1)
+
+
+    # Remove the background from all the axes.
+    for ax in fig.axes:
+        ax.patch.set_visible(False)
 
 
     # Return the figure and the results DataFrame.
