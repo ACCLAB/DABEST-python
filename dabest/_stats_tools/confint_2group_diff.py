@@ -67,6 +67,7 @@ def _create_two_group_jackknife_indexes(x0, x1, paired):
     return out
 
 
+
 def compute_meandiff_jackknife(x0, x1, paired):
     """
     Returns the jackknife for the mean difference, Cohen's d, and Hedges' g.
@@ -294,8 +295,29 @@ def difference_ci(x0, x1, paired=False, resamples=5000, alpha=0.05,
 
     Returns
     -------
-    A pandas DataFrame with the following columns:
+    A pandas DataFrame with the various effect sizes as the index, and with the
+    following columns:
+        effect_size:    The effect size of interest.
+        bias:           Bias as computed according to the method of Efron and
+                        Tibshirani.
+        acceleration:   Accelration as computed according to the method of
+                        Efron and Tibshirani.
+        index_low:      The index of the sorted bootstrap array corresponding to
+                        the lower confidence interval bound.
+        index_high:     The index of the sorted bootstrap array corresponding to
+                        the upper confidence interval bound.
+        bca_ci_low:     The bias corrected and accelerated lower bound of the
+                        confidence interval.
+        bca_ci_high:    The bias corrected and accelerated upper bound of the
+                        confidence interval.
+        bootstraps:     The unsorted of resamples used to compute the confidence
+                        interval.
 
+
+    References
+    ----------
+    Efron, B., & Tibshirani, R. J. (1993). An introduction to the bootstrap.
+    New York: Chapman & Hall.
 
     """
     from numpy import sort as npsort
@@ -316,7 +338,7 @@ def difference_ci(x0, x1, paired=False, resamples=5000, alpha=0.05,
                          index=["effect_size", "bias", "acceleration"]).T
 
     interval_kwargs = [effsizes.bias, effsizes.acceleration, resamples, alpha]
-    l, h = vectorize(compute_interval_limits)(*interval_kwargs)
+    l, h = vectorize(compute_interval_limits, otypes=[float, float])(*interval_kwargs)
     effsizes['index_low'], effsizes['index_high'] = l, h
 
     for e in bootstraps.keys():
@@ -324,10 +346,6 @@ def difference_ci(x0, x1, paired=False, resamples=5000, alpha=0.05,
 
     for e in effsizes.index:
         B_sorted = npsort(bootstraps[e])
-
-        # TODO: FIX THIS DAMMIT.
-        # effsizes.loc[e, 'bca_ci_low'] = B_sorted[effsizes.loc[e, 'index_low']]
-        # effsizes.loc[e, 'bca_ci_high'] = B_sorted[effsizes.loc[e, 'index_high']]
 
         for ci_suffix in ['low', 'high']:
             bca_name = 'bca_ci_' + ci_suffix
