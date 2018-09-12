@@ -103,6 +103,7 @@ def gapped_lines(data, x, y, type='mean_sd', offset=0.3, ax=None, **kwargs):
 
     if ax is None:
         ax = plt.gca()
+    ax_ylims = ax.get_ylim()
 
     keys = kwargs.keys()
     if 'clip_on' not in keys:
@@ -122,6 +123,10 @@ def gapped_lines(data, x, y, type='mean_sd', offset=0.3, ax=None, **kwargs):
     pooled_sd = sd.mean()
     lower_sd = means - sd
     upper_sd = means + sd
+
+
+    if (lower_sd < ax_ylims[0]).any() or (upper_sd > ax_ylims[1]).any():
+        kwargs['clip_on'] = True
 
     medians = data.groupby(x)[y].median()
     quantiles = data.groupby(x)[y].quantile([0.25, 0.75]).unstack()
