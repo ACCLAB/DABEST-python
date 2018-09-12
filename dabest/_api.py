@@ -249,7 +249,7 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
     import matplotlib.pyplot as plt
     import matplotlib.ticker as tk
     import matplotlib.lines as mlines
-    from mpl_toolkits.axes_grid1 import make_axes_locatable
+    # from mpl_toolkits.axes_grid1 import make_axes_locatable
     plt.rcParams['svg.fonttype'] = 'none'
 
     import numpy as np
@@ -377,12 +377,12 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
     alpha_level = (100.-int(ci)) / 100.
 
 
-    # Calculate the swarmplot ylims.
-    if swarm_ylim is None:
-        # To ensure points at the limits are clearly seen.
-        pad = data_in[y].diff().abs().min() / 2 #
-        swarm_ylim = (np.floor(data_in[y].min() - pad),
-                      np.ceil(data_in[y].max() + pad))
+    # # Calculate the swarmplot ylims.
+    # if swarm_ylim is None:
+    #     # To ensure points at the limits are clearly seen.
+    #     pad = data_in[y].diff().abs().min() / 2 #
+    #     swarm_ylim = (np.floor(data_in[y].min() - pad),
+    #                   np.ceil(data_in[y].max() + pad))
 
 
     # Set default kwargs first, then merge with user-dictated ones.
@@ -507,17 +507,21 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
         fig_size = fsize
 
     # Create subplots.
-    fig, axx = plt.subplots(ncols=ncols, figsize=fig_size, dpi=dpi,
-                            gridspec_kw={'width_ratios': widthratio,
-                                        'wspace' : ws})
-
-
-    # If the contrast axes are NOT floating, create lists to store raw ylims
-    # and raw tick intervals, so that I can normalize their ylims later.
     if float_contrast is False:
+        fig, axx = plt.subplots(ncols=ncols, nrows=2, figsize=fig_size, dpi=dpi,
+                                gridspec_kw={'width_ratios': widthratio,
+                                            'wspace' : ws})
+
+        # If the contrast axes are NOT floating, create lists to store raw ylims
+        # and raw tick intervals, so that I can normalize their ylims later.
         contrast_ax_ylim_low = list()
         contrast_ax_ylim_high = list()
         contrast_ax_ylim_tickintervals = list()
+
+    else:
+        fig, axx = plt.subplots(ncols=ncols, figsize=fig_size, dpi=dpi,
+                                gridspec_kw={'width_ratios': widthratio,
+                                            'wspace' : ws})
 
 
     # Create color palette that will be shared across subplots.
@@ -578,21 +582,30 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
         # Compute Ns per group.
         counts = plotdat.groupby(x)[y].count()
 
-        if ncols == 1:
-            ax_raw = axx
-        else:
-            ax_raw = axx[j]
-
-        if float_contrast:
+        if float_contrast is True:
+            if ncols == 1:
+                ax_raw = axx
+            else:
+                ax_raw = axx[j]
             ax_contrast = ax_raw.twinx()
         else:
-            divider = make_axes_locatable(ax_raw)
-            ax_contrast = divider.append_axes("bottom", size="100%",
-                                              pad=0.5, sharex=ax_raw)
+            if ncols == 1:
+                ax_raw = axx[0]
+                ax_contrast = axx[1]
+            else:
+                ax_raw = axx[0, j] # the swarm axes are always on row 0.
+                ax_contrast = axx[1, j] # the contrast axes are always on row 1.
+
+        # if float_contrast:
+        #     ax_contrast = ax_raw.twinx()
+        # else:
+        #     ax_contrast = axx[1, j] # the contrast axes are always on row 1.
+        #     divider = make_axes_locatable(ax_raw)
+        #     ax_contrast = divider.append_axes("bottom", size="100%",
+        #                                       pad=0.5, sharex=ax_raw)
+
 
         # Plot the raw data.
-        ax_raw.set_ylim(swarm_ylim)
-
         if (paired is True and show_pairs is True):
             # Sanity checks. Do we have 2 elements (no more, no less) here?
             if len(current_tuple) != 2:
@@ -663,17 +676,18 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
         # Set new tick labels. The tick labels belong to the SWARM axes
         # for both floating and non-floating plots.
         # This is because `sharex` was invoked.
-        newticklabs = list()
+        xticklabels = list()
+
         for xticklab in ax_raw.xaxis.get_ticklabels():
             t = xticklab.get_text()
             N = str(counts.ix[t])
             if show_group_count:
-                newticklabs.append(t+' n='+N)
+                xticklabels.append(t+' n='+N)
             else:
-                newticklabs.append(t)
-            ax_raw.set_xticklabels(newticklabs,
-                rotation=45,
-                horizontalalignment='right')
+                xticklabels.append(t)
+            if float_contrast is True:
+                ax_raw.set_xticklabels(xticklabels, rotation=45,
+                                       horizontalalignment='right')
 
 
         # Despine appropriately.
@@ -770,9 +784,13 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
                 new_interval = ticklocs[1] - ticklocs[0]
                 contrast_ax_ylim_tickintervals.append(new_interval)
 
-        if float_contrast:
-            # Normalize ylims and despine the floating contrast axes.
-            # Check that the effect size is within the swarm ylims.
+        if float_contrast is False:
+            ax_contrast.set_xlim(ax_raw.get_xlim())
+            ax_contrast.set_xticks(ax_raw.get_xticks())
+            ax_contrast.set_xticklabels(xticklabels, rotation=45,
+                                        horizontalalignment='right')
+
+        else: # float_contrast is True
             if effect_size == 'mean_diff':
                 _e = np.mean(exp)
             elif effect_size == 'median_diff':
