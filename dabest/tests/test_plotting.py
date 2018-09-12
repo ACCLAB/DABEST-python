@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import pytest
-from .. import api
+from .. import _api
 
 
 # Fixtures.
@@ -92,7 +92,7 @@ def test_swarmspan():
         for coll in swarmplt.collections:
             sns_yspans.append(get_swarm_yspans(coll))
 
-        f2, b = api.plot(data=df, idx=(df.columns[0], c))
+        f2, b = _api.plot(data=df, idx=(df.columns[0], c))
         dabest_yspans = []
         for coll in f2.axes[0].collections:
             dabest_yspans.append(get_swarm_yspans(coll))
@@ -115,7 +115,7 @@ def test_ylims():
     rand_contrast_ylim1 = (np.random.randint(-1, 0), np.random.randint(0, 1))
     print('Swarm ylim = {}, {}'.format(rand_swarm_ylim1[0], rand_swarm_ylim1[1]))
     print('Contrast ylim = {}, {}'.format(rand_contrast_ylim1[0], rand_contrast_ylim1[1]))
-    f1, b1 = api.plot(data=df,
+    f1, b1 = _api.plot(data=df,
                    idx=(('0','1'),('2','3')),
                    float_contrast=False,
                    swarm_ylim=rand_swarm_ylim1,
@@ -130,7 +130,7 @@ def test_ylims():
     print('\nTesting assignment for Gardner-Altman plot')
     rand_swarm_ylim2 = (np.random.randint(ylim_min, 0), np.random.randint(ylim_max, ylim_max*2))
     print('Swarm ylim = {}, {}'.format(rand_swarm_ylim2[0], rand_swarm_ylim2[1]))
-    f2, b2 = api.plot(data=df,
+    f2, b2 = _api.plot(data=df,
                    idx=(('0','1'),('2','3')),
                    float_contrast=True,
                    swarm_ylim=rand_swarm_ylim2)
@@ -144,7 +144,7 @@ def test_ylabels():
     seed, ptp, df = create_dummy_dataset()
 
     print('Testing ylabel assignment for Gardner-Altman plot')
-    f1, _ = api.plot(data=df,
+    f1, _ = _api.plot(data=df,
                      idx=(('0','1'),('2','3')),
                      float_contrast=True,
                      swarm_label="Hello",
@@ -153,8 +153,8 @@ def test_ylabels():
     assert f1.axes[0].get_ylabel() == 'Hello'
 
     print('Testing ylabel assignment for Cummings plot')
-    f2, _ = api.plot(data=df,
-                         idx=(('0','1'),('2','3')),
+    f2, _ = _api.plot(data=df,
+                         idx=(('0','1'), ('2','3')),
                          float_contrast=False,
                          swarm_label="Hello Again",
                          contrast_label="World\nFolks"
@@ -167,9 +167,7 @@ def test_ylabels():
 def test_paired():
     print('Testing Gardner-Altman paired plotting')
     seed, ptp, df = create_dummy_dataset()
-    f, b = api.plot(data=df,
-                   idx=('0','1'),
-                   paired=True)
+    f, b = _api.plot(data=df, dx=('0','1'), paired=True)
     axx = f.axes[0]
     assert df['0'].tolist() == [l.get_ydata()[0] for l in axx.lines]
     assert df['1'].tolist() == [l.get_ydata()[1] for l in axx.lines]
