@@ -780,7 +780,7 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
                         `swarm_ylim` {}.'.format(swarm_ylim)
                 err3 = ' Please select a `swarm_ylim` that includes the \
                          reference mean, or set `float_contrast=False`.'
-                err = err1 + err2 + err3 + err4
+                err = err1 + err2 + err3
                 raise ValueError(err)
 
             # Align 0 of ax_contrast to reference group mean of ax_raw.
