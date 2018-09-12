@@ -95,8 +95,8 @@ def _compute_standardizers(control, test):
     control_mean = mean(control)
     test_mean = mean(test)
 
-    control_var = var(control)
-    test_var = var(test)
+    control_var = var(control, ddof=1) # use N-1 to compute the variance.
+    test_var = var(test, ddof=1)
 
     control_std = sqrt(control_var)
     test_std = sqrt(test_var)
@@ -155,8 +155,18 @@ def cohens_d(control, test, paired=False):
              / var(control) + var(test)
             / -------------------------
            V              2
+
+    Notes
+    -----
+    The sample variance (and standard deviation) uses N-1 degrees of freedoms.
+    This is an application of Bessel's correction, and yields the unbiased
+    sample variance.
+
+    References:
+        https://en.wikipedia.org/wiki/Bessel%27s_correction
+        https://en.wikipedia.org/wiki/Standard_deviation#Corrected_sample_standard_deviation
     """
-    from numpy import ndarray, array, mean, std
+    from numpy import array, mean
 
     # Convert to numpy arrays for speed
     control = array(control)
