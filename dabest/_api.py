@@ -538,17 +538,17 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
             col_grps = {k for k in color_groups}
             pal_grps = {k for k in custom_palette.keys()}
             not_in_pal = pal_grps.difference(col_grps)
-            if len( not_in_pal ) > 0:
-                errstring = ('The custom palette keys {} '.format(not_in_pal) +
-                       'are not found in `{}`. Please check.'.format(color_col))
+            if len(not_in_pal) > 0:
+                err1 = 'The custom palette keys {} '.format(not_in_pal)
+                err2 = 'are not found in `{}`. Please check.'.format(color_col)
+                errstring = (err1 + err2)
                 raise IndexError(errstring)
             plotPal = custom_palette
 
         elif isinstance(custom_palette, list):
-            plotPal = dict(zip(color_groups,
-                            custom_palette[0: len(color_groups)]
-                            )
-                        )
+            n_groups = len(color_groups)
+            plotPal = dict(zip(color_groups, custom_palette[0: n_groups]))
+
         elif isinstance(custom_palette, str):
             # check it is in the list of matplotlib palettes.
             if custom_palette in mpl.pyplot.colormaps():
@@ -619,21 +619,26 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
 
             # Slopegraph for paired raw data points.
             for ii in linedf.index:
-                ax_raw.plot([0,1],  # x1, x2
+                ax_raw.plot([0, 1],  # x1, x2
                             [linedf.loc[ii,current_tuple[0]],
                              linedf.loc[ii,current_tuple[1]]] , # y1, y2
                             linestyle='solid', linewidth = 1,
                             color = plotPal[linedf.loc[ii,'colors']],
                             label = linedf.loc[ii,'colors'])
-            ax_raw.set_xticks([0,1])
+            ax_raw.set_xticks([0, 1])
             ax_raw.set_xlim(-0.25, 1.5)
-            ax_raw.set_xticklabels([current_tuple[0],current_tuple[1]])
+            ax_raw.set_xticklabels([current_tuple[0], current_tuple[1]])
+            swarm_ylim = ax_raw.get_ylim()
 
         elif (paired is True and show_pairs is False) or (paired is False):
             # Swarmplot for raw data points.
+            if swarm_ylim is not None:
+                ax_raw.set_ylim(swarm_ylim)
             sns.swarmplot(data=plotdat, x=x, y=y, ax=ax_raw,
                           order=current_tuple, hue=color_col,
                           palette=plotPal, zorder=3, **swarmplot_kwargs)
+            if swarm_ylim is None:
+                swarm_ylim = ax_raw.get_ylim()
 
             if group_summaries != 'None':
                 # Create list to gather xspans.
@@ -697,7 +702,7 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
 
         # Plot the contrast data.
         ref = np.array(plotdat[plotdat[x] == current_tuple[0]][y].dropna())
-        for ix, grp in enumerate(current_tuple[1:]) :
+        for ix, grp in enumerate(current_tuple[1:]):
             # add spacer to halfviolin if float_contast is true.
             if float_contrast is True:
                 if paired is True and show_pairs is True:
@@ -772,15 +777,17 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
                 _e = np.mean(exp)
             elif effect_size == 'median_diff':
                 _e = np.median(exp)
+
+            # Normalize ylims and despine the floating contrast axes.
+            # Check that the effect size is within the swarm ylims.
             min_check = swarm_ylim[0] - _e
             max_check = swarm_ylim[1] - _e
             if (min_check <= es <=  max_check) == False:
-                err1 = 'The mean of the reference group {} does '.format(_e)
-                err2 = 'not fall in the specified \
-                        `swarm_ylim` {}.'.format(swarm_ylim)
-                err3 = ' Please select a `swarm_ylim` that includes the \
-                         reference mean, or set `float_contrast=False`.'
-                err = err1 + err2 + err3
+                err1 = 'The mean of the reference group {} does not '.format(_e)
+                err2 = 'fall in the specified `swarm_ylim` {}. '.format(swarm_ylim)
+                err3 = 'Please select a `swarm_ylim` that includes the '
+                err4 = 'reference mean, or set `float_contrast=False`.'
+                err = err1 + err2 + err3 + err4
                 raise ValueError(err)
 
             # Align 0 of ax_contrast to reference group mean of ax_raw.
