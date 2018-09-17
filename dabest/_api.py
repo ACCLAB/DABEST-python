@@ -29,8 +29,8 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
 
         fig_size=None,
         dpi=100,
-        tick_length=12,
-        tick_pad=9,
+        tick_length=10,
+        tick_pad=7,
 
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
