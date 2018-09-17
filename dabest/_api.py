@@ -265,18 +265,21 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
     # from .bootstrap_tools import bootstrap, jackknife_indexes, bca
     from .misc_tools import merge_two_dicts, unpack_and_add
 
+
     # Make a copy of the data, so we don't make alterations to it.
     data_in = data.copy()
     data_in.reset_index(inplace=True)
+
 
     # Determine the kind of estimation plot we need to produce.
     if all([isinstance(i, str) for i in idx]):
         plottype = 'hubspoke'
         # Set columns and width ratio.
         ncols = 1
+        ngroups = len(idx)
         widthratio = [1]
 
-        if len(idx) > 2:
+        if ngroups > 2:
             paired = False
             float_contrast = False
         # flatten out idx.
@@ -288,12 +291,14 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
     elif all([isinstance(i, (tuple, list)) for i in idx]):
         plottype = 'multigroup'
         all_plot_groups = np.unique([tt for t in idx for tt in t]).tolist()
-        # Set columns and width ratio.
-        ncols = len(idx)
         widthratio = [len(ii) for ii in idx]
         if [True for i in widthratio if i > 2]:
             paired = False
             float_contrast = False
+        # Set columns and width ratio.
+        ncols = len(idx)
+        ngroups = len(all_plot_groups)
+
 
     else: # mix of string and tuple?
         err = 'There seems to be a problem with the idx you'
@@ -369,20 +374,6 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
             data_in.loc[:,c] = pd.Categorical(data_in[c],
                                         categories=data_in[c].unique(),
                                         ordered=True)
-
-
-    # Calculate the CI from alpha.
-    if ci < 0 or ci > 100:
-        raise ValueError('`ci` should be between 0 and 100.')
-    alpha_level = (100.-int(ci)) / 100.
-
-
-    # # Calculate the swarmplot ylims.
-    # if swarm_ylim is None:
-    #     # To ensure points at the limits are clearly seen.
-    #     pad = data_in[y].diff().abs().min() / 2 #
-    #     swarm_ylim = (np.floor(data_in[y].min() - pad),
-    #                   np.ceil(data_in[y].max() + pad))
 
 
     # Set default kwargs first, then merge with user-dictated ones.
@@ -469,59 +460,39 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
     if float_contrast is True and group_summaries != 'None':
         group_summaries = 'None'
 
-    # Set clean style.
-    sns.set(**aesthetic_kwargs)
+    # Calculate the CI from alpha.
+    if ci < 0 or ci > 100:
+        raise ValueError('`ci` should be between 0 and 100.')
+    alpha_level = (100.-int(ci)) / 100.
 
-    swarm_xspan = 3
-    float_spacing = 1
-
-    # Set appropriate horizontal spacing between subplots,
-    # based on whether the contrast is floating.
-    if float_contrast is True:
-        # Check if this is multi two-group or not.
-        ws = float_spacing
-    else:
-        ws = 0
+    # Calculate the swarmplot ylims.
+    if swarm_ylim is None:
+        # To ensure points at the limits are clearly seen.
+        pad = data_in[y].diff().abs().min() * 2
+        if pad < 3:
+            pad = 3
+        swarm_ylim = (np.floor(data_in[y].min() - pad),
+                      np.ceil(data_in[y].max() + pad))
 
 
-    # infer the figsize.
+    # Infer the figsize.
     if color_col is None:
         legend_xspan = 0
     else:
         legend_xspan = 1.5
 
-    if plottype == 'multigroup' and float_contrast is True:
-        raw_xspan = 5
-        ws = 0.5
+    if float_contrast is True:
+        height_inches = 4
+        width_inches = 3.5 * ncols + legend_xspan
     else:
-        if color_col is None:
-            raw_xspan = swarm_xspan + 1.5
-        else:
-            raw_xspan = swarm_xspan
+        height_inches = 6
+        width_inches = 1.5 * ngroups + legend_xspan
 
-    xinches = raw_xspan * ncols + legend_xspan
-    fsize = (xinches, 7)
 
-    # Set figure size.
+
+    fsize = (width_inches, height_inches)
     if fig_size is None:
         fig_size = fsize
-
-    # Create subplots.
-    if float_contrast is False:
-        fig, axx = plt.subplots(ncols=ncols, nrows=2, figsize=fig_size, dpi=dpi,
-                                gridspec_kw={'width_ratios': widthratio,
-                                            'wspace' : ws})
-
-        # If the contrast axes are NOT floating, create lists to store raw ylims
-        # and raw tick intervals, so that I can normalize their ylims later.
-        contrast_ax_ylim_low = list()
-        contrast_ax_ylim_high = list()
-        contrast_ax_ylim_tickintervals = list()
-
-    else:
-        fig, axx = plt.subplots(ncols=ncols, figsize=fig_size, dpi=dpi,
-                                gridspec_kw={'width_ratios': widthratio,
-                                            'wspace' : ws})
 
 
     # Create color palette that will be shared across subplots.
@@ -570,6 +541,27 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
 
     # Create list to store the bootstrap confidence interval results.
     bootlist = list()
+
+
+    # Create the figure.
+    # Set clean style.
+    sns.set(**aesthetic_kwargs)
+
+    if float_contrast is True:
+        fig, axx = plt.subplots(ncols=ncols, figsize=fig_size, dpi=dpi,
+                                gridspec_kw={'width_ratios': widthratio,
+                                             'wspace' : 1.})
+
+    else:
+        fig, axx = plt.subplots(ncols=ncols, nrows=2, figsize=fig_size, dpi=dpi,
+                                gridspec_kw={'width_ratios': widthratio,
+                                             'wspace' : 0})
+
+        # If the contrast axes are NOT floating, create lists to store raw ylims
+        # and raw tick intervals, so that I can normalize their ylims later.
+        contrast_ax_ylim_low = list()
+        contrast_ax_ylim_high = list()
+        contrast_ax_ylim_tickintervals = list()
 
 
     # Plot each tuple in idx.
@@ -636,8 +628,8 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
                             [linedf.loc[ii,current_tuple[0]],
                              linedf.loc[ii,current_tuple[1]]] , # y1, y2
                             linestyle='solid', linewidth = 1,
-                            color = plotPal[linedf.loc[ii,'colors']],
-                            label = linedf.loc[ii,'colors'])
+                            color = plotPal[linedf.loc[ii, 'colors']],
+                            label = linedf.loc[ii, 'colors'])
             ax_raw.set_xticks([0, 1])
             ax_raw.set_xlim(-0.25, 1.5)
             ax_raw.set_xticklabels([current_tuple[0], current_tuple[1]])
