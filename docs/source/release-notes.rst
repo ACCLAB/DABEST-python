@@ -5,6 +5,11 @@ Release Notes
 =============
 
 
+v0.1.6
+======
+Allow easier control of the swarmplot dot size and the difference point estimate marker size with the `swarm_dotsize` and `difference_dotsize` keywords, respectively.
+
+
 v0.1.5
 ======
 Fix bug that wasn't updating the seaborn version upon setup and install.
