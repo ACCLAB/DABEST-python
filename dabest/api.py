@@ -15,6 +15,9 @@ def plot(data, idx,
 
         custom_palette=None,
 
+        swarm_dotsize=7,
+        difference_dotsize=9,
+
         swarm_label=None,
         contrast_label=None,
         swarm_ylim=None,
@@ -89,6 +92,12 @@ def plot(data, idx,
 
             The named colors of matplotlib can be found here:
             https://matplotlib.org/examples/color/named_colors.html
+
+        swarm_dotsize: integer, default 7
+            The size of the dots used to plot the rawdata in the swarmplot.
+
+        difference_dotsize: integer, default 9
+            The size of the dots used to indicate the effect sizes.
 
         show_pairs: boolean, default True
             If the data is paired, whether or not to show the raw data as a
@@ -363,7 +372,7 @@ def plot(data, idx,
 
 
     # Set default kwargs first, then merge with user-dictated ones.
-    default_swarmplot_kwargs = {'size':10}
+    default_swarmplot_kwargs = {'size': swarm_dotsize}
     if swarmplot_kwargs is None:
         swarmplot_kwargs = default_swarmplot_kwargs
     else:
@@ -712,7 +721,7 @@ def plot(data, idx,
                                        **violinplot_kwargs)
             halfviolin(v)
             ax_contrast.plot([pos+1], boots.summary, marker='o', color='k',
-                            markersize=swarmplot_kwargs['size'] * 1.5)
+                             markersize=difference_dotsize)
             ax_contrast.plot([pos+1,pos+1],
                              [boots.bca_ci_low, boots.bca_ci_high],
                              'k-', linewidth=group_summary_kwargs['lw'])
