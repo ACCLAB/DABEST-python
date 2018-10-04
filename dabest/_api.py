@@ -10,6 +10,7 @@ def plot(data, idx,
 
         float_contrast=True,
         paired=False,
+        id_col=None,
         show_pairs=True,
         group_summaries="mean_sd",
 
@@ -74,6 +75,9 @@ def plot(data, idx,
         paired: boolean, default False
             Whether or not the data is paired. To elaborate.
 
+        id_col: string, default None
+            If `paired` is True, this must be supplied. This column indicates
+            the identity of the datapoint if the data is paired.
         custom_palette: dict, list, or matplotlib color palette, default None
             This keyword accepts a dictionary with {'group':'color'} pairings,
             a list of RGB colors, or a specified matplotlib palette.
@@ -301,6 +305,18 @@ def plot(data, idx,
 
 
     # SANITY CHECKS
+    # If `paired` is True, check that `id_col` is supplied.
+    # Then check that `id_col` is actually a column in `data`.
+    # Lastly, sort `data` by `id_col`.
+    if paired is True:
+        if id_col is None:
+            raise ValueError("`paired` is True, but no `id_col` was given.")
+        if id_col not in data_in.columns:
+            err = "{} is not a column in `data`".format(id_col)
+            raise ValueError(err)
+        data_in.sort_values(id_col, inplace=True)
+
+
     # check color_col is a column name.
     if (color_col is not None) and (color_col not in data_in.columns):
         err = ' '.join(['The specified `color_col`',
