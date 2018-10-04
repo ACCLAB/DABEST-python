@@ -495,20 +495,29 @@ def plot(data, idx,
         fig_size = fsize
 
 
-    # Create subplots.
-    fig,axx=plt.subplots(ncols=ncols, figsize=fig_size,
-                         gridspec_kw={'width_ratios': widthratio,
-                                      'wspace' : ws}
-                        )
+    # # Create subplots.
+    # fig,axx=plt.subplots(ncols=ncols, figsize=fig_size,
+    #                      gridspec_kw={'width_ratios': widthratio,
+    #                                   'wspace' : ws}
+    #                     )
 
 
-    # If the contrast axes are NOT floating, create lists to store raw ylims
-    # and raw tick intervals, so that I can normalize their ylims later.
+    # Create the figure.
     if float_contrast is False:
+        fig, axx = plt.subplots(ncols=ncols, nrows=2,
+                                figsize=fig_size, dpi=dpi,
+                                gridspec_kw={'width_ratios': widthratio,
+                                            'wspace' : ws})
+        # If the contrast axes are NOT floating, create lists to store raw ylims
+        # and raw tick intervals, so that I can normalize their ylims later.
         contrast_ax_ylim_low = list()
         contrast_ax_ylim_high = list()
         contrast_ax_ylim_tickintervals = list()
 
+    else:
+        fig, axx = plt.subplots(ncols=ncols, figsize=fig_size, dpi=dpi,
+                                gridspec_kw={'width_ratios': widthratio,
+                                            'wspace' : ws})
 
     # CREATE COLOR PALETTE TO NORMALIZE PALETTE ACROSS AXES.
     if color_col is None:
@@ -569,17 +578,23 @@ def plot(data, idx,
         # Compute Ns per group.
         counts = plotdat.groupby(x)[y].count()
 
-        if ncols == 1:
-            ax_raw = axx
-        else:
-            ax_raw = axx[j]
+        # if ncols == 1:
+        #     ax_raw = axx
+        # else:
+        #     ax_raw = axx[j]
 
         if float_contrast:
+            if ncols == 1:
+                ax_raw = axx
+            else:
+                ax_raw = axx[j]
             ax_contrast = ax_raw.twinx()
         else:
-            divider = make_axes_locatable(ax_raw)
-            ax_contrast = divider.append_axes("bottom", size="100%",
-                                            pad=0.5, sharex=ax_raw)
+            # divider = make_axes_locatable(ax_raw)
+            # ax_contrast = divider.append_axes("bottom", size="100%",
+            #                                 pad=0.5, sharex=ax_raw)
+            ax_raw = axx[0, j] # the swarm axes are always on row 0.
+            ax_contrast = axx[1, j] # the contrast axes are always on row 1.
 
         # PLOT RAW DATA.
         ax_raw.set_ylim(swarm_ylim)
