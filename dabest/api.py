@@ -25,7 +25,7 @@ def plot(data, idx,
 
         fig_size=None,
 
-        font_scale=1.2,
+        font_scale=1.1,
         dpi=80,
 
         stat_func=None,
@@ -123,7 +123,7 @@ def plot(data, idx,
         fig_size: tuple, default None
             The desired dimensions of the figure as a (length, width) tuple.
 
-        font_scale: float, default 1.2
+        font_scale: float, default 1.1
             The font size will be scaled by this number.
 
         dpi: float, default 80
@@ -480,7 +480,7 @@ def plot(data, idx,
 
     if plottype == 'multigroup' and float_contrast is True:
         raw_xspan = 5
-        ws = 0.5
+        ws = 0.75
     else:
         if color_col is None:
             raw_xspan = swarm_xspan + 1.5
@@ -756,7 +756,7 @@ def plot(data, idx,
             ax_contrast.set_xticks(ax_raw.get_xticks())
             ax_contrast.set_xticklabels(xticklabels, rotation=45,
                                         horizontalalignment='right')
-                                        
+
         else: # float_contrast is True
             # Check that the effect size is within the swarm ylims.
             min_check = swarm_ylim[0] - ref.mean()
