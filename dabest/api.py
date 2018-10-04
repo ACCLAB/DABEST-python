@@ -258,14 +258,15 @@ def plot(data, idx,
     data_in = data.copy()
     data_in.reset_index(inplace=True)
 
-    # IDENTIFY PLOT TYPE.
+    # Determine the kind of estimation plot we need to produce.
     if all([isinstance(i, str) for i in idx]):
         plottype = 'hubspoke'
         # Set columns and width ratio.
         ncols = 1
+        ngroups = len(idx)
         widthratio = [1]
 
-        if len(idx) > 2:
+        if ngroups > 2:
             paired = False
             float_contrast = False
         # flatten out idx.
@@ -277,12 +278,14 @@ def plot(data, idx,
     elif all([isinstance(i, (tuple, list)) for i in idx]):
         plottype = 'multigroup'
         all_plot_groups = np.unique([tt for t in idx for tt in t]).tolist()
-        # Set columns and width ratio.
-        ncols = len(idx)
         widthratio = [len(ii) for ii in idx]
         if [True for i in widthratio if i > 2]:
             paired = False
             float_contrast = False
+        # Set columns and width ratio.
+        ncols = len(idx)
+        ngroups = len(all_plot_groups)
+
 
     else: # mix of string and tuple?
         err = 'There seems to be a problem with the idx you'
