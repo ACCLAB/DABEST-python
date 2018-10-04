@@ -348,6 +348,9 @@ def plot(data, idx,
         for g in all_plot_groups:
             if g not in data_in[x].unique():
                 raise IndexError('{0} is not a group in `{1}`.'.format(g, x))
+        # Filter the dataset so only the categories in flattened idx
+        # are considered.
+        data_in = data_in.loc[data_in[x].isin(all_plot_groups)]
 
     elif x is None and y is None:
         # Assume we have a wide dataset.
