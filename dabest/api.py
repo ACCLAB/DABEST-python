@@ -751,8 +751,13 @@ def plot(data, idx,
 
 
 
-        # NORMALISE Y LIMS AND DESPINE FLOATING CONTRAST AXES.
-        if float_contrast:
+        if float_contrast is False:
+            ax_contrast.set_xlim(ax_raw.get_xlim())
+            ax_contrast.set_xticks(ax_raw.get_xticks())
+            ax_contrast.set_xticklabels(xticklabels, rotation=45,
+                                        horizontalalignment='right')
+                                        
+        else: # float_contrast is True
             # Check that the effect size is within the swarm ylims.
             min_check = swarm_ylim[0] - ref.mean()
             max_check = swarm_ylim[1] - ref.mean()
