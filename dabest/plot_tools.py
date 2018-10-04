@@ -111,6 +111,7 @@ def gapped_lines(data, x, y,
 
     if ax is None:
         ax = plt.gca()
+    ax_ylims = ax.get_ylim()
 
     keys = kwargs.keys()
     if 'zorder' not in keys:
@@ -141,6 +142,9 @@ def gapped_lines(data, x, y,
         central_measures = medians
         lows = lower_quartiles
         highs = upper_quartiles
+
+    if (lows < ax_ylims[0]).any() or (highs > ax_ylims[1]).any():
+        kwargs['clip_on'] = True
 
     original_zorder = kwargs['zorder']
     span_color = kwargs['color']
