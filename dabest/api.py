@@ -487,17 +487,19 @@ def plot(data, idx,
     else:
         legend_xspan = 1.5
 
-    if plottype == 'multigroup' and float_contrast is True:
-        raw_xspan = 5
-        ws = 0.75
-    else:
-        if color_col is None:
-            raw_xspan = swarm_xspan + 1.5
-        else:
-            raw_xspan = swarm_xspan
+    # These values were obtained through aesthetic optimisation.
+    group_height = 8
+    group_width = 3
+    float_aspect = 0.8
 
-    xinches = raw_xspan * ncols + legend_xspan
-    fsize = (xinches, 7)
+    if float_contrast is True:
+        height_inches = group_height * float_aspect
+        width_inches = group_width * ncols + legend_xspan
+    else:
+        height_inches = group_height
+        width_inches = (group_width / 2) * ngroups + legend_xspan
+
+    fsize = (width_inches, height_inches)
 
     # Set figure size.
     if fig_size is None:
