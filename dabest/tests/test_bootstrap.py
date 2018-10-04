@@ -10,7 +10,7 @@ import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 
 import pandas as pd
-from .. import bootstrap_tools as bst
+from .. import _bootstrap_tools as bst
 
 
 

@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-from .misc_tools import merge_two_dicts
+from ._misc_tools import merge_two_dicts
 
 
 
