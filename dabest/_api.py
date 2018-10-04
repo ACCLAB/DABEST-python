@@ -64,10 +64,6 @@ def plot(data, idx,
         color_col: string, default None
             Column to be used for colors.
 
-        swarm_label, contrast_label: strings, default None
-            Set labels for the y-axis of the swarmplot and the contrast plot,
-            respectively.
-
         float_contrast: boolean, default True
             Whether or not to display the halfviolin bootstrapped difference
             distribution alongside the raw data.
@@ -78,6 +74,20 @@ def plot(data, idx,
         id_col: string, default None
             If `paired` is True, this must be supplied. This column indicates
             the identity of the datapoint if the data is paired.
+
+        show_pairs: boolean, default True
+            If the data is paired, whether or not to show the raw data as a
+            swarmplot, or as paired plot, with a line joining each pair of
+            observations.
+
+        group_summaries: ['mean_sd', 'median_quartiles', 'None'], default 'mean_sd'
+            Plots the summary statistics for each group. If 'mean_sd', then the
+            mean and standard deviation of each group is plotted as a notched
+            line beside each group. If 'median_quantiles', then the
+            median and 25th and 75th percentiles of each group is plotted
+            instead. If 'None', the summaries are not shown.
+
+
         custom_palette: dict, list, or matplotlib color palette, default None
             This keyword accepts a dictionary with {'group':'color'} pairings,
             a list of RGB colors, or a specified matplotlib palette.
@@ -104,17 +114,9 @@ def plot(data, idx,
         difference_dotsize: integer, default 12
             The size of the dots used to indicate the effect sizes.
 
-        show_pairs: boolean, default True
-            If the data is paired, whether or not to show the raw data as a
-            swarmplot, or as paired plot, with a line joining each pair of
-            observations.
-
-        group_summaries: ['mean_sd', 'median_quartiles', 'None'], default 'mean_sd'
-            Plots the summary statistics for each group. If 'mean_sd', then the
-            mean and standard deviation of each group is plotted as a notched
-            line beside each group. If 'median_quantiles', then the
-            median and 25th and 75th percentiles of each group is plotted
-            instead. If 'None', the summaries are not shown.
+        swarm_label, contrast_label: strings, default None
+            Set labels for the y-axis of the swarmplot and the contrast plot,
+            respectively.
 
         swarm_ylim: tuple, default None
             The desired y-limits of the raw data swarmplot as a (lower, higher)
@@ -141,6 +143,7 @@ def plot(data, idx,
 
         ci: integer, default 95
             The size of the confidence interval desired (in percentage).
+            Sensible values range from 50 to 99.
 
         n_boot: integer, default 5000
             Number of bootstrap iterations to perform during calculation of
