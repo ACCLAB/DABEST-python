@@ -49,6 +49,7 @@ def create_dummy_dataset(seed=None, n=30, base_mean=0, expt_groups=6,
         dataset.append(sample)
 
     df = pd.DataFrame(dataset).T
+    df["idcol"] = pd.Series(range(1, n))
     df.columns = [str(c) for c in df.columns]
 
     return random_seed, max_mean_diff, df
@@ -167,9 +168,7 @@ def test_ylabels():
 def test_paired():
     print('Testing Gardner-Altman paired plotting')
     seed, ptp, df = create_dummy_dataset()
-    f, b = api.plot(data=df,
-                   idx=('0','1'),
-                   paired=True)
+    f, b = _api.plot(data=df, idx=('0','1'), paired=True, id_col="idcol")
     axx = f.axes[0]
     assert df['0'].tolist() == [l.get_ydata()[0] for l in axx.lines]
     assert df['1'].tolist() == [l.get_ydata()[1] for l in axx.lines]
