@@ -123,8 +123,9 @@ def plot(data, idx,
         fig_size: tuple, default None
             The desired dimensions of the figure as a (length, width) tuple.
 
-        font_scale: float, default 1.1
-            The font size will be scaled by this number.
+        font_scale: float, default 0.9
+            The font size will be scaled by this number. This value is passed
+            on to seaborn.set().
 
         dpi: float, default 100
             The dots per inch of the figure produced. The default of 100 matches
