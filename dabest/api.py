@@ -184,7 +184,7 @@ def plot(data, idx,
             to Axes.legend:
             {'loc': 'upper left', 'frameon': False,'markerscale': 2,
             'bbox_to_anchor': (0.95, 1.)}.
-            
+
         aesthetic_kwargs: dict, default None
             Pass any keyword arguments accepted by the seaborn `set` command
             here, as a dict. If None, the following keywords are passed to
@@ -248,6 +248,7 @@ def plot(data, idx,
     import matplotlib.ticker as tk
     import matplotlib.lines as mlines
     from mpl_toolkits.axes_grid1 import make_axes_locatable
+    # Ensure that text will be saved as text in SVG files.
     plt.rcParams['svg.fonttype'] = 'none'
 
     import numpy as np
@@ -501,13 +502,6 @@ def plot(data, idx,
     # Set figure size.
     if fig_size is None:
         fig_size = fsize
-
-
-    # # Create subplots.
-    # fig,axx=plt.subplots(ncols=ncols, figsize=fig_size,
-    #                      gridspec_kw={'width_ratios': widthratio,
-    #                                   'wspace' : ws}
-    #                     )
 
 
     # Create the figure.
@@ -953,9 +947,15 @@ def plot(data, idx,
         fig.axes[0].set_ylabel(swarm_label)
 
 
-    # Lengthen the axes ticks so they look better.
+    axes_spine_linewidth = 1.25
+    # After some visual investigation, this seemed to be an ideal thickness.
     for ax in fig.axes:
-        ax.tick_params(length=tick_length, pad=tick_pad)
+        # Lengthen the axes ticks so they look better.
+        ax.tick_params(length=tick_length, pad=tick_pad,
+                       width=axes_spine_linewidth)
+        # Set a thinner axes spine for better aesthetics.
+        for axis in ['top','bottom','left','right']:
+            ax.spines[axis].set_linewidth(axes_spine_linewidth)
 
 
     # Return the figure and the results DataFrame.
