@@ -573,6 +573,11 @@ def plot(data, idx,
 
     # FOR EACH TUPLE IN IDX, CREATE PLOT.
     for j, current_tuple in enumerate(idx):
+        # Check that current_tuple has no duplicate categories.
+        if len(np.unique(current_tuple) != len(current_tuple):
+            err = '{} has duplicate categories.'.format(current_tuple)
+            raise ValueError(err)
+            
         plotdat = data_in[data_in[x].isin(current_tuple)].copy()
         plotdat.loc[:,x] = pd.Categorical(plotdat[x],
                             categories=current_tuple,
