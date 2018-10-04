@@ -600,18 +600,21 @@ def plot(data, idx,
                 ax_raw = axx[0, j] # the swarm axes are always on row 0.
                 ax_contrast = axx[1, j] # the contrast axes are always on row 1.
 
+        # Plot the raw data.
         if (paired is True and show_pairs is True):
-            # first, sanity checks. Do we have 2 elements (no more, no less) here?
+            # Sanity checks. Do we have 2 elements (no more, no less) here?
             if len(current_tuple) != 2:
-                raise ValueError('Paired plotting is True, but {0} does not have 2 elements.'\
-                                 .format(str(current_tuple)) )
+                err1 = 'Paired plotting is True, '
+                err2 = 'but {0} does not have 2 elements.'.format(current_tuple)
+                raise ValueError(err1 + err2)
 
             # Are the groups equal in length??
             before = plotdat[plotdat[x] == current_tuple[0]][y].dropna().tolist()
             after = plotdat[plotdat[x] == current_tuple[1]][y].dropna().tolist()
             if len(before) != len(after):
-                raise ValueError('The sizes of {0} and {1} do not match.'\
-                                 .format(current_tuple[0], current_tuple[1]) )
+                err1 = 'The sizes of {} '.format(current_tuple[0])
+                err2 = 'and {} do not match.'.format(current_tuple[1])
+                raise ValueError(err1 + err2)
 
             if color_col is not None:
                 colors = plotdat[plotdat[x] == current_tuple[0]][color_col]
@@ -622,27 +625,28 @@ def plot(data, idx,
                                    str(current_tuple[1]):after,
                                    'colors':colors})
 
+            # Slopegraph for paired raw data points.
             for ii in linedf.index:
-                ax_raw.plot([0,1],  # x1, x2
+                ax_raw.plot([0, 1],  # x1, x2
                             [linedf.loc[ii,current_tuple[0]],
                              linedf.loc[ii,current_tuple[1]]] , # y1, y2
                             linestyle='solid', linewidth = 1,
-                            color = plotPal[linedf.loc[ii,'colors']],
-                            label = linedf.loc[ii,'colors'])
-            ax_raw.set_xticks([0,1])
+                            color = plotPal[linedf.loc[ii, 'colors']],
+                            label = linedf.loc[ii, 'colors'])
+            ax_raw.set_xticks([0, 1])
             ax_raw.set_xlim(-0.25, 1.5)
-            ax_raw.set_xticklabels([current_tuple[0],current_tuple[1]])
+            ax_raw.set_xticklabels([current_tuple[0], current_tuple[1]])
+            swarm_ylim = ax_raw.get_ylim()
 
         elif (paired is True and show_pairs is False) or (paired is False):
             # Swarmplot for raw data points.
-            sns.swarmplot(data=plotdat,
-                          x=x, y=y,
-                          ax=ax_raw,
-                          order=current_tuple,
-                          hue=color_col,
-                          palette=plotPal,
-                          zorder=3,
-                          **swarmplot_kwargs)
+            if swarm_ylim is not None:
+                ax_raw.set_ylim(swarm_ylim)
+            sns.swarmplot(data=plotdat, x=x, y=y, ax=ax_raw,
+                          order=current_tuple, hue=color_col,
+                          palette=plotPal, zorder=3, **swarmplot_kwargs)
+            if swarm_ylim is None:
+                swarm_ylim = ax_raw.get_ylim()
 
             if group_summaries != 'None':
                 # Create list to gather xspans.
@@ -656,8 +660,8 @@ def plot(data, idx,
                         # we have got a None, so skip and move on.
                         pass
                 gapped_lines(plotdat, x=x, y=y,
-                             # pseudo-hardcorded offset...
-                             offset=np.max(xspans)+0.09,
+                             # Hardcoded offset...
+                             offset=np.max(xspans) + 0.1,
                              type=group_summaries,
                              ax=ax_raw, **group_summary_kwargs)
 
