@@ -14,24 +14,26 @@ from .misc_tools import merge_two_dicts
 
 
 
-def halfviolin(v, half = 'right', color = 'k'):
+def halfviolin(v, half='right', color='k'):
+    import numpy as np
+
     for b in v['bodies']:
-            mVertical = np.mean(b.get_paths()[0].vertices[:, 0])
-            mHorizontal = np.mean(b.get_paths()[0].vertices[:, 1])
-            vertices = b.get_paths()[0].vertices
-            if half is 'left':
-                b.get_paths()[0].vertices[:, 0] = np.clip(vertices[:, 0],
-                                                    -np.inf, mVertical)
-            if half is 'right':
-                b.get_paths()[0].vertices[:, 0] = np.clip(vertices[:, 0],
-                                                    mVertical, np.inf)
-            if half is 'bottom':
-                b.get_paths()[0].vertices[:, 1] = np.clip(vertices[:, 1],
-                                                    -np.inf, mHorizontal)
-            if half is 'top':
-                b.get_paths()[0].vertices[:, 1] = np.clip(vertices[:, 1],
-                                                    mHorizontal, np.inf)
-            b.set_color(color)
+        V = b.get_paths()[0].vertices
+
+        mean_vertical = np.mean(V[:, 0])
+        mean_horizontal = np.mean(V[:, 1])
+
+        if half is 'left':
+            V[:, 0] = np.clip(V[:, 0], -np.inf, mean_vertical)
+        if half is 'right':
+            V[:, 0] = np.clip(V[:, 0], mean_vertical, np.inf)
+        if half is 'bottom':
+            V[:, 1] = np.clip(V[:, 1], -np.inf, mean_horizontal)
+        if half is 'top':
+            V[:, 1] = np.clip(V[:, 1], mean_horizontal, np.inf)
+
+        b.set_color(color)
+        b.set_linewidth(0)
 
 
 
