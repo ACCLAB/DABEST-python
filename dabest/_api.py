@@ -256,10 +256,10 @@ def plot(data, idx,
     import seaborn as sns
     import pandas as pd
 
-    from .plot_tools import halfviolin, align_yaxis, rotate_ticks
-    from .plot_tools import gapped_lines, get_swarm_spans
-    from .bootstrap_tools import bootstrap, jackknife_indexes, bca
-    from .misc_tools import merge_two_dicts, unpack_and_add
+    from ._plot_tools import halfviolin, align_yaxis, rotate_ticks
+    from ._plot_tools import gapped_lines, get_swarm_spans
+    from ._bootstrap_tools import bootstrap, jackknife_indexes, bca
+    from ._misc_tools import merge_two_dicts, unpack_and_add
 
     # MAKE COPY OF DATA.
     data_in = data.copy()
