@@ -155,8 +155,7 @@ def plot(data, idx,
 
         swarmplot_kwargs: dict, default None
             Pass any keyword arguments accepted by the seaborn `swarmplot`
-            command here, as a dict. If None, the following keywords are passed
-            to sns.swarmplot: {'size':10}.
+            command here, as a dict.
 
         violinplot_kwargs: dict, default None
             Pass any keyword arguments accepted by the matplotlib `
@@ -168,7 +167,8 @@ def plot(data, idx,
             This will change the appearance of the zero reference lines. Pass
             any keyword arguments accepted by the matplotlib Axes `hlines`
             command here, as a dict. If None, the following keywords are passed
-            to Axes.hlines: {'linestyle':'solid', 'linewidth':0.75, 'color':'k'}.
+            to Axes.hlines:
+            {'linestyle':'solid', 'linewidth':0.75, 'color':'k'}.
 
         group_summary_kwargs: dict, default None
             Pass any keyword arguments accepted by the matplotlib.lines.Line2D
@@ -181,12 +181,16 @@ def plot(data, idx,
             Pass any keyword arguments accepted by the matplotlib Axes `legend`
             command here, as a dict. If None, the following keywords are passed
             to Axes.legend:
-            {'loc': 'upper left', 'frameon': False, 'bbox_to_anchor': (0.95, 1.),
-            'markerscale': 2}.
-
+            {'loc': 'upper left', 'frameon': False,'markerscale': 2,
+            'bbox_to_anchor': (0.95, 1.)}.
+            
         aesthetic_kwargs: dict, default None
             Pass any keyword arguments accepted by the seaborn `set` command
-            here, as a dict.
+            here, as a dict. If None, the following keywords are passed to
+            seaborn.set:
+            {'context': 'poster', 'style': 'ticks', 'font_scale': font_scale}
+            (`font_scale` is a keyword as noted above with default 0.9.)
+
 
      Returns:
         A matplotlib Figure.
@@ -421,9 +425,8 @@ def plot(data, idx,
 
 
     # Aesthetic kwargs for sns.set().
-    default_aesthetic_kwargs={'context': 'poster',
-        'style': 'ticks',
-        'font_scale': font_scale}
+    default_aesthetic_kwargs={'context': 'poster', 'style': 'ticks',
+                              'font_scale': font_scale}
     if aesthetic_kwargs is None:
         aesthetic_kwargs = default_aesthetic_kwargs
     else:
