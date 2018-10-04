@@ -25,8 +25,8 @@ def plot(data, idx,
 
         fig_size=None,
 
-        font_scale=1.1,
-        dpi=80,
+        font_scale=0.9,
+        dpi=100,
 
         stat_func=None,
         ci=95,
@@ -126,8 +126,9 @@ def plot(data, idx,
         font_scale: float, default 1.1
             The font size will be scaled by this number.
 
-        dpi: float, default 80
-            The dots per inch of the figure produced.
+        dpi: float, default 100
+            The dots per inch of the figure produced. The default of 100 matches
+            the matplotlib default for both screen display and image saving.
 
         stat_func: callable, default None
             The function used to compute the summary. If None, defaults to
