@@ -698,7 +698,7 @@ def plot(data, idx,
         xticklabels = list()
         for xticklab in ax_raw.xaxis.get_ticklabels():
             t = xticklab.get_text()
-            N = str(counts.ix[t])
+            N = str(counts.loc[t])
             if show_group_count:
                 xticklabels.append(t+' n='+N)
             else:
