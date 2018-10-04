@@ -15,8 +15,8 @@ def plot(data, idx,
 
         custom_palette=None,
 
-        swarm_dotsize=7,
-        difference_dotsize=9,
+        swarm_dotsize=10,
+        difference_dotsize=12,
 
         swarm_label=None,
         contrast_label=None,
@@ -93,10 +93,10 @@ def plot(data, idx,
             The named colors of matplotlib can be found here:
             https://matplotlib.org/examples/color/named_colors.html
 
-        swarm_dotsize: integer, default 7
+        swarm_dotsize: integer, default 10
             The size of the dots used to plot the rawdata in the swarmplot.
 
-        difference_dotsize: integer, default 9
+        difference_dotsize: integer, default 12
             The size of the dots used to indicate the effect sizes.
 
         show_pairs: boolean, default True
