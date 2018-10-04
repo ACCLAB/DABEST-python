@@ -586,11 +586,6 @@ def plot(data, idx,
         # Compute Ns per group.
         counts = plotdat.groupby(x)[y].count()
 
-        # if ncols == 1:
-        #     ax_raw = axx
-        # else:
-        #     ax_raw = axx[j]
-
         if float_contrast:
             if ncols == 1:
                 ax_raw = axx
@@ -598,14 +593,12 @@ def plot(data, idx,
                 ax_raw = axx[j]
             ax_contrast = ax_raw.twinx()
         else:
-            # divider = make_axes_locatable(ax_raw)
-            # ax_contrast = divider.append_axes("bottom", size="100%",
-            #                                 pad=0.5, sharex=ax_raw)
-            ax_raw = axx[0, j] # the swarm axes are always on row 0.
-            ax_contrast = axx[1, j] # the contrast axes are always on row 1.
-
-        # PLOT RAW DATA.
-        ax_raw.set_ylim(swarm_ylim)
+            if ncols == 1:
+                ax_raw = axx[0]
+                ax_contrast = axx[1]
+            else:
+                ax_raw = axx[0, j] # the swarm axes are always on row 0.
+                ax_contrast = axx[1, j] # the contrast axes are always on row 1.
 
         if (paired is True and show_pairs is True):
             # first, sanity checks. Do we have 2 elements (no more, no less) here?
