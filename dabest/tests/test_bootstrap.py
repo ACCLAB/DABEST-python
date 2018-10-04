@@ -166,13 +166,17 @@ def does_ci_captures_mean_diff(control, expt, paired, nreps=100, alpha=0.05):
 
         print("\n95CI BCa = {}, {}".format(results.bca_ci_low, results.bca_ci_high))
         try:
-            test_mean_within_ci_bca(mean_diff, results)
+            # test_mean_within_ci_bca(mean_diff, results)
+            assert mean_diff >= results.bca_ci_low
+            assert mean_diff <= results.bca_ci_high
         except AssertionError:
             error_count_bca += 1
 
         print("\n95CI %tage = {}, {}".format(results.pct_ci_low, results.pct_ci_high))
         try:
-            test_mean_within_ci_pct(mean_diff, results)
+            # test_mean_within_ci_pct(mean_diff, results)
+            assert mean_diff >= results.pct_ci_low
+            assert mean_diff <= results.pct_ci_high
         except AssertionError:
             error_count_pct += 1
 
