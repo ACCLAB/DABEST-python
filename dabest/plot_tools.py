@@ -145,6 +145,8 @@ def gapped_lines(data, x, y,
 
     if (lows < ax_ylims[0]).any() or (highs > ax_ylims[1]).any():
         kwargs['clip_on'] = True
+    else:
+        kwargs['clip_on'] = False
 
     original_zorder = kwargs['zorder']
     span_color = kwargs['color']
