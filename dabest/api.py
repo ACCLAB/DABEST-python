@@ -665,18 +665,17 @@ def plot(data, idx,
 
         # Set new tick labels. The tick labels belong to the SWARM axes
         # for both floating and non-floating plots.
-        # This is because `sharex` was invoked.
-        newticklabs = list()
+        xticklabels = list()
         for xticklab in ax_raw.xaxis.get_ticklabels():
             t = xticklab.get_text()
             N = str(counts.ix[t])
             if show_group_count:
-                newticklabs.append(t+' n='+N)
+                xticklabels.append(t+' n='+N)
             else:
-                newticklabs.append(t)
-            ax_raw.set_xticklabels(newticklabs,
-                rotation=45,
-                horizontalalignment='right')
+                xticklabels.append(t)
+            if float_contrast is True:
+                ax_raw.set_xticklabels(xticklabels, rotation=45,
+                                       horizontalalignment='right')
 
 
         # Despine appropriately.
