@@ -191,7 +191,7 @@ def plot(data, idx,
             Pass any keyword arguments accepted by the matplotlib Axes `legend`
             command here, as a dict. If None, the following keywords are passed
             to Axes.legend:
-            {'loc': 'upper left', 'frameon': False,'markerscale': 2,
+            {'loc': 'upper left', 'frameon': False, 'markerscale': 1.5,
             'bbox_to_anchor': (0.95, 1.)}.
 
         aesthetic_kwargs: dict, default None
@@ -443,8 +443,8 @@ def plot(data, idx,
 
     # Legend.
     default_legend_kwargs = {'loc': 'upper left', 'frameon': False,
-                             'bbox_to_anchor': (0.95, 1.),
-                             'markerscale': 2}
+                             'bbox_to_anchor': (1., 1.),
+                             'markerscale': 1.5}
     if legend_kwargs is None:
         legend_kwargs = default_legend_kwargs
     else:
