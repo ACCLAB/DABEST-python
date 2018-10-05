@@ -164,7 +164,7 @@ def gapped_lines(data, x, y,
         # add horzontal central measure line.
         kwargs['zorder'] = 6
         kwargs['color'] = 'white'
-        kwargs['lw'] = span_lw + 0.5
+        kwargs['lw'] = span_lw * 1.5
         mean_line = mlines.Line2D([xpos+offset-0.01,
                                     xpos+offset+0.01],
                                     [cm, cm],
