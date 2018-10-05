@@ -2,18 +2,10 @@
 .. highlight:: python
   :linenothreshold: 2
 
-========
-Tutorial
-========
-
-Load libraries
+Load Libraries
 ==============
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
-
-    import os
+.. code:: ipython3
 
     import numpy as np
     import pandas as pd
@@ -23,10 +15,9 @@ Load libraries
 
     print("We're using DABEST v{}".format(dabest.__version__))
 
-
 .. parsed-literal::
 
-    We're using DABEST v0.1.5
+    We're using DABEST v0.1.6
 
 
 Create dummy dataset
@@ -40,9 +31,7 @@ This is known as a 'wide' dataset. See this
 `writeup <https://sejdemyr.github.io/r-tutorials/basics/wide-and-long/>`__
 for more details.
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
     from scipy.stats import norm # Used in generation of populations.
 
@@ -51,59 +40,164 @@ for more details.
     Ns = 20 # The number of samples taken from each population
 
     # Create populations
-    control_pop = norm.rvs(loc=3, scale=0.4, size=pop_size)
-    pop1 = norm.rvs(loc=3.5, scale=0.5, size=pop_size)
-    pop2 = norm.rvs(loc=2.5, scale=0.6, size=pop_size)
-    pop3 = norm.rvs(loc=3, scale=0.75, size=pop_size)
-    pop4 = norm.rvs(loc=3.5, scale=0.75, size=pop_size)
-    pop5 = norm.rvs(loc=3.25, scale=0.4, size=pop_size)
+    pop1 = norm.rvs(loc=3, scale=0.4, size=pop_size)
+    pop2 = norm.rvs(loc=3.5, scale=0.5, size=pop_size)
+    pop3 = norm.rvs(loc=2.5, scale=0.6, size=pop_size)
+    pop4 = norm.rvs(loc=3, scale=0.75, size=pop_size)
+    pop5 = norm.rvs(loc=3.5, scale=0.75, size=pop_size)
+    pop6 = norm.rvs(loc=3.25, scale=0.4, size=pop_size)
 
 
     # Sample from the populations
-    choice_kwargs = dict(size=Ns, replace=False)
+    sampling_kwargs = dict(size=Ns, replace=False)
 
-    control = np.random.choice(control_pop, **choice_kwargs)
-    g1 = np.random.choice(pop1, **choice_kwargs)
-    g2 = np.random.choice(pop2, **choice_kwargs)
-    g3 = np.random.choice(pop3, **choice_kwargs)
-    g4 = np.random.choice(pop4, **choice_kwargs)
-    g5 = np.random.choice(pop5, **choice_kwargs)
+    g1 = np.random.choice(pop1, **sampling_kwargs)
+    g2 = np.random.choice(pop2, **sampling_kwargs)
+    g3 = np.random.choice(pop3, **sampling_kwargs)
+    g4 = np.random.choice(pop4, **sampling_kwargs)
+    g5 = np.random.choice(pop5, **sampling_kwargs)
+    g6 = np.random.choice(pop6, **sampling_kwargs)
 
     # Add a `gender` column for coloring the data.
     females = np.repeat('Female', Ns/2).tolist()
     males = np.repeat('Male', Ns/2).tolist()
     gender = females + males
 
+    # Add an `id` column for paired data plotting.
+    # More info below!
+    id_col = pd.Series(range(1, Ns+1))
+
     # Combine samples and gender into a DataFrame.
-    df = pd.DataFrame({'Control': control,
-                       'Group 1': g1,
-                       'Group 2': g2,
-                       'Group 3': g3,
-                       'Group 4': g4,
-                       'Group 5': g5,
-                       'Gender' : gender,
+    df = pd.DataFrame({'Control' : g1,
+                       'Group 1' : g2,
+                       'Group 2' : g3,
+                       'Group 3' : g4,
+                       'Group 4' : g5,
+                       'Group 5' : g6,
+                       'Gender'  : gender,
+                       'ID'      : id_col
                       })
 
 Note that we have 6 groups of observations, with an additional
-non-numerical column indicating gender.
+non-numerical column indicating gender, and a column indicating the
+identity of each observation.
+
+.. code:: ipython3
+
+    df.head()
 
 
-Independent two-group estimation plot
-=====================================
+
+
+.. raw:: html
+
+    <div>
+    <style scoped>
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+
+        .dataframe tbody tr th {
+            vertical-align: top;
+        }
+
+        .dataframe thead th {
+            text-align: right;
+        }
+    </style>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>Control</th>
+          <th>Group 1</th>
+          <th>Group 2</th>
+          <th>Group 3</th>
+          <th>Group 4</th>
+          <th>Group 5</th>
+          <th>Gender</th>
+          <th>ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>0</th>
+          <td>2.742313</td>
+          <td>3.737751</td>
+          <td>2.703766</td>
+          <td>3.933794</td>
+          <td>2.138557</td>
+          <td>2.997997</td>
+          <td>Female</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <th>1</th>
+          <td>2.681590</td>
+          <td>2.954575</td>
+          <td>3.158262</td>
+          <td>2.983600</td>
+          <td>3.377651</td>
+          <td>3.699350</td>
+          <td>Female</td>
+          <td>2</td>
+        </tr>
+        <tr>
+          <th>2</th>
+          <td>3.180724</td>
+          <td>2.531722</td>
+          <td>2.474184</td>
+          <td>2.286611</td>
+          <td>3.450214</td>
+          <td>2.507875</td>
+          <td>Female</td>
+          <td>3</td>
+        </tr>
+        <tr>
+          <th>3</th>
+          <td>1.961873</td>
+          <td>2.629912</td>
+          <td>2.431826</td>
+          <td>1.985591</td>
+          <td>3.565215</td>
+          <td>3.251389</td>
+          <td>Female</td>
+          <td>4</td>
+        </tr>
+        <tr>
+          <th>4</th>
+          <td>2.867556</td>
+          <td>3.335618</td>
+          <td>2.454033</td>
+          <td>3.887869</td>
+          <td>2.841621</td>
+          <td>3.513511</td>
+          <td>Female</td>
+          <td>5</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+
+
+Producing Plots
+===============
+
+Independant two-group estimation plot
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The simplest estimation plot can be generated with ``dabest.plot()``.
 Supply the DataFrame; supply the two groups you want to compare in the
 ``idx`` argument as a tuple or list.
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
     fig1, results1 = dabest.plot(df, idx=('Control','Group 1'))
 
 
 
-.. image:: _images/tutorial_7_0.png
+.. image:: _images/tutorial_8_0.png
 
 
 The ``dabest.plot()`` function will return 2 objects: a matplotlib
@@ -118,55 +212,33 @@ number of datapoints being plotted, and used to calculate the contrasts.
 
 The pandas ``DataFrame`` returned by ``dabest.plot()`` contains the
 statistics computed in the course of generating the plot, with
-confidence intervals (95% by default) and relevant *P* values.
+confidence intervals (95% by default) and relevant p-values.
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
-    results1 # prints out the DataFrame returned by `dabest.plot()`.
+    # prints out the DataFrame returned by `dabest.plot()`.
+    results1
+
+
+
 
 .. raw:: html
 
     <div>
     <style scoped>
-        .dataframe {
-          display: block;
-          overflow-x: scroll;
-          border-collapse: collapse;
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+
+        .dataframe tbody tr th {
+            vertical-align: top;
         }
 
         .dataframe thead th {
-          text-align: centre;
-          background-color: #586e75;
-          color: #eee8d5;
+            text-align: right;
         }
-
-        .dataframe td {
-          padding:10px 25px 10px 1px;
-          border-left: 1px solid #000;
-          border-right: 1px solid #000;
-        }
-
-        .dataframe th td {
-          border-bottom: 1px solid #ddd;
-        }
-
-        .dataframe tbody tr:nth-child(even) {
-          background-color: #f2f2f2;
-        }
-
-        .dataframe tbody tr td {
-          vertical-align: centre;
-          text-align: right;
-        }
-
-        .dataframe tbody tr:hover {
-          background-color: #eee8d5;
-        }
-
     </style>
-    <table border="0" class="dataframe">
+    <table border="1" class="dataframe">
       <thead>
         <tr style="text-align: right;">
           <th></th>
@@ -188,8 +260,8 @@ confidence intervals (95% by default) and relevant *P* values.
           <td>Control</td>
           <td>Group 1</td>
           <td>0.564092</td>
-          <td>0.253715</td>
-          <td>0.890816</td>
+          <td>0.251295</td>
+          <td>0.900291</td>
           <td>95.0</td>
           <td>True</td>
           <td>False</td>
@@ -205,56 +277,46 @@ confidence intervals (95% by default) and relevant *P* values.
 You can color the dots with any column in the DataFrame, using the
 ``color_col`` keyword.
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
     f2, results2 = dabest.plot(df, idx=('Control','Group 1'),
                                color_col='Gender')
 
 
 
-.. image:: _images/tutorial_11_0.png
+.. image:: _images/tutorial_12_0.png
 
-
+.. _producing-slopgraphs:
 Paired two-group estimation plot
-================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 DABEST can also produce estimation plots for paired observations
 (repeated measures). This is done by setting the ``paired`` option to
-``True``.
+``True``. You will also have to tell ``dabest.plot()`` which column
+contains the identity of the each datum with the ``id_col`` keyword.
 
 The estimation plot uses lines to indicate the pairs of observations.
-The combined visual effect of the slopes of these lines serves to give
-the viewer an intuitive sense of the effect size between the two groups
-of repeated observations.
+This is known as a slopegraph. The combined visual effect of the slopes
+of these lines serves to give the viewer an intuitive sense of the effect
+size between the two groups of repeated observations.
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
     f3, results3 = dabest.plot(df, idx=('Control','Group 1'),
                                color_col='Gender',
-                               paired=True)
+                               paired=True, id_col="ID")
 
 
 
-.. image:: _images/tutorial_14_0.png
+.. image:: _images/tutorial_15_0.png
 
 
-If you want to plot the raw swarmplot instead of the paired lines, use
-the ``show_pairs`` flag to set this. The contrasts computed will still
-be paired, as indicated by the DataFrame produced.
+Note that the statistical output records that the difference is a paired
+one, in the ``is_paired`` column.
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
-    f4, results4 = dabest.plot(df, idx=('Control','Group 1'),
-                               color_col='Gender',
-                               paired=True,
-                               show_pairs=False)
-    results4
+    results3
 
 
 
@@ -262,8 +324,43 @@ be paired, as indicated by the DataFrame produced.
 .. raw:: html
 
     <div>
+    <style scoped>
+      .dataframe {
+        display: block;
+        overflow-x: scroll;
+        border-collapse: collapse;
+      }
 
-    <table border="0" class="dataframe">
+      .dataframe thead th {
+        text-align: centre;
+        background-color: #586e75;
+        color: #eee8d5;
+      }
+
+      .dataframe td {
+        padding:10px 25px 10px 1px;
+        border-left: 1px solid #000;
+        border-right: 1px solid #000;
+      }
+
+      .dataframe th td {
+        border-bottom: 1px solid #ddd;
+      }
+
+      .dataframe tbody tr:nth-child(even) {
+        background-color: #f2f2f2;
+      }
+
+      .dataframe tbody tr td {
+        vertical-align: centre;
+        text-align: right;
+      }
+
+      .dataframe tbody tr:hover {
+        background-color: #eee8d5;
+      }
+    </style>
+    <table border="1" class="dataframe">
       <thead>
         <tr style="text-align: right;">
           <th></th>
@@ -285,8 +382,8 @@ be paired, as indicated by the DataFrame produced.
           <td>Control</td>
           <td>Group 1</td>
           <td>0.564092</td>
-          <td>0.26027</td>
-          <td>0.826475</td>
+          <td>0.262493</td>
+          <td>0.842903</td>
           <td>95.0</td>
           <td>True</td>
           <td>True</td>
@@ -299,12 +396,24 @@ be paired, as indicated by the DataFrame produced.
 
 
 
+If you want to plot the raw swarmplot instead of the paired lines, use
+the ``show_pairs`` flag to set this. The contrasts computed will still
+be paired, as indicated by the DataFrame produced.
 
-.. image:: _images/tutorial_16_1.png
+.. code:: ipython3
+
+    f4, results4 = dabest.plot(df, idx=('Control','Group 1'),
+                               color_col='Gender',
+                               paired=True, id_col="ID",
+                               show_pairs=False)
+
+
+
+.. image:: _images/tutorial_19_0.png
 
 
 Multi two-group estimation plot
-===============================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In a multi-group design, you can horizontally tile two or more two-group
 floating-contrasts. This is designed to meet data visualization and
@@ -318,9 +427,7 @@ for that contrast.
 The effect sizes and confidence intervals for each two-group plot will
 be computed.
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
     f5, results5 = dabest.plot(df, idx=(('Control','Group 1'),
                                         ('Group 2','Group 3'),
@@ -335,7 +442,20 @@ be computed.
 .. raw:: html
 
     <div>
-    <table border="0" class="dataframe">
+    <style scoped>
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+
+        .dataframe tbody tr th {
+            vertical-align: top;
+        }
+
+        .dataframe thead th {
+            text-align: right;
+        }
+    </style>
+    <table border="1" class="dataframe">
       <thead>
         <tr style="text-align: right;">
           <th></th>
@@ -357,8 +477,8 @@ be computed.
           <td>Control</td>
           <td>Group 1</td>
           <td>0.564092</td>
-          <td>0.243696</td>
-          <td>0.889834</td>
+          <td>0.256753</td>
+          <td>0.892652</td>
           <td>95.0</td>
           <td>True</td>
           <td>False</td>
@@ -370,8 +490,8 @@ be computed.
           <td>Group 2</td>
           <td>Group 3</td>
           <td>0.253319</td>
-          <td>-0.116257</td>
-          <td>0.600037</td>
+          <td>-0.112335</td>
+          <td>0.616018</td>
           <td>95.0</td>
           <td>True</td>
           <td>False</td>
@@ -383,8 +503,8 @@ be computed.
           <td>Group 4</td>
           <td>Group 5</td>
           <td>-0.278511</td>
-          <td>-0.543416</td>
-          <td>0.021980</td>
+          <td>-0.551978</td>
+          <td>0.019770</td>
           <td>95.0</td>
           <td>True</td>
           <td>False</td>
@@ -398,7 +518,7 @@ be computed.
 
 
 
-.. image:: _images/tutorial_18_1.png
+.. image:: _images/tutorial_21_1.png
 
 
 Each two-group experiment has its own floating contrast axes. Another
@@ -406,9 +526,7 @@ way to present this is to place all the effect sizes (and their
 bootstrap distributions) on a common axes, beneath the raw data. This is
 controlled with the ``float_contrast`` option.
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
     f6, results6 = dabest.plot(df, idx=(('Control','Group 1'),
                                         ('Group 2','Group 3'),
@@ -416,25 +534,28 @@ controlled with the ``float_contrast`` option.
                                float_contrast=False
                               )
 
-.. image:: _images/tutorial_20_0.png
 
-You can also produce a paired multi-group plot, by setting `paired=True`.
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. image:: _images/tutorial_23_0.png
+
+
+.. code:: ipython3
 
     f6_paired, results6_paired = dabest.plot(df, idx=(('Control','Group 1'),
                                                       ('Group 2','Group 3'),
                                                       ('Group 4','Group 5')),
                                              float_contrast=False,
-                                             paired=True
+                                             color_col='Gender',
+                                             paired=True, id_col='ID'
                                             )
 
-.. image:: _images/tutorial_20_PAIRED.png
+
+
+.. image:: _images/tutorial_24_0.png
+
 
 Shared-control estimation plot
-==============================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A common experimental setup seen in contemporary biomedical research is
 a shared-control design (also known as a 'hub-and-spoke' design), where
@@ -449,9 +570,7 @@ the first group in the tuple/list is considered the control group. The
 mean difference and confidence intervals of each subsequent group will
 be computed against the first control group.
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
     f7, results7 = dabest.plot(df, idx=('Control', 'Group 2', 'Group 4'),
                        color_col='Gender')
@@ -464,7 +583,20 @@ be computed against the first control group.
 .. raw:: html
 
     <div>
-    <table border="0" class="dataframe">
+    <style scoped>
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+
+        .dataframe tbody tr th {
+            vertical-align: top;
+        }
+
+        .dataframe thead th {
+            text-align: right;
+        }
+    </style>
+    <table border="1" class="dataframe">
       <thead>
         <tr style="text-align: right;">
           <th></th>
@@ -486,8 +618,8 @@ be computed against the first control group.
           <td>Control</td>
           <td>Group 2</td>
           <td>-0.049862</td>
-          <td>-0.330886</td>
-          <td>0.234553</td>
+          <td>-0.318671</td>
+          <td>0.231657</td>
           <td>95.0</td>
           <td>True</td>
           <td>False</td>
@@ -499,8 +631,8 @@ be computed against the first control group.
           <td>Control</td>
           <td>Group 4</td>
           <td>0.698509</td>
-          <td>0.388645</td>
-          <td>0.968367</td>
+          <td>0.409364</td>
+          <td>0.969665</td>
           <td>95.0</td>
           <td>True</td>
           <td>False</td>
@@ -514,7 +646,7 @@ be computed against the first control group.
 
 
 
-.. image:: _images/tutorial_22_1.png
+.. image:: _images/tutorial_26_1.png
 
 
 In a shared control plot, the effect sizes and bootstrap 95CIs are shown
@@ -526,9 +658,7 @@ One can display the median with the 25th and 75th percentiles (a
 Tufte-style boxplot) using the ``group_summaries`` keyword argument in
 the function.
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
     f8, results8 = dabest.plot(df, idx=('Control', 'Group 2', 'Group 4'),
                                color_col='Gender',
@@ -536,17 +666,15 @@ the function.
 
 
 
-.. image:: _images/tutorial_24_0.png
+.. image:: _images/tutorial_28_0.png
 
 
-Controlling aesthetics
+Controlling Aesthetics
 ======================
 
 Below we run through ways of customizing various aesthetic features.
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
     # Changing the contrast y-limits.
 
@@ -556,12 +684,10 @@ Below we run through ways of customizing various aesthetic features.
 
 
 
-.. image:: _images/tutorial_26_0.png
+.. image:: _images/tutorial_30_0.png
 
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
     # Changing the swarmplot y-limits.
 
@@ -571,12 +697,10 @@ Below we run through ways of customizing various aesthetic features.
 
 
 
-.. image:: _images/tutorial_27_0.png
+.. image:: _images/tutorial_31_0.png
 
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
     # Changing the figure size.
     # The default figure size has been tweaked for
@@ -590,31 +714,23 @@ Below we run through ways of customizing various aesthetic features.
 
 
 
-.. image:: _images/tutorial_28_0.png
+.. image:: _images/tutorial_32_0.png
 
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
-    # Changing the size and alpha (transparency) of the dots in the swarmplot.
-    # This is done through swarmplot_kwargs, which accepts a dictionary.
-    # You can pass any keywords that `sns.swarmplot()` can accept.
+    # Changing the size of the dots in the swarmplot.
 
     f12, results12 = dabest.plot(df, idx=('Control','Group 1','Group 2'),
-                                 color_col='Gender',
-                                 swarmplot_kwargs={'alpha':0.8,
-                                                   'size':6}
+                                 color_col='Gender', swarm_dotsize=13,
                                 )
 
 
 
-.. image:: _images/tutorial_29_0.png
+.. image:: _images/tutorial_33_0.png
 
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
     # Custom y-axis labels.
     f13, results13 = dabest.plot(df, idx=('Control','Group 1','Group 2'),
@@ -626,12 +742,10 @@ Below we run through ways of customizing various aesthetic features.
 
 
 
-.. image:: _images/tutorial_30_0.png
+.. image:: _images/tutorial_34_0.png
 
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
     # Any of matplotlib's named colors will work.
     # See https://matplotlib.org/examples/color/named_colors.html
@@ -646,12 +760,10 @@ Below we run through ways of customizing various aesthetic features.
 
 
 
-.. image:: _images/tutorial_31_0.png
+.. image:: _images/tutorial_35_0.png
 
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
     # You can also pass colors in the RGB tuple form (r, g, b),
     # or in hexadecimal form (if you're more familiar with HTML color codes).
@@ -665,28 +777,24 @@ Below we run through ways of customizing various aesthetic features.
 
 
 
-.. image:: _images/tutorial_32_0.png
+.. image:: _images/tutorial_36_0.png
 
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
-    # Passing a dict as a custom palette.
+    # Passing a dictionary as a custom palette.
     f16, results16 = dabest.plot(df, idx=('Control','Group 1','Group 2'),
                                  color_col='Gender',
-                                 custom_palette={'Male':'slategrey',
-                                                 'Female':'darkorange'}
+                                 custom_palette={'Male'   : 'slategrey',
+                                                 'Female' : 'darkorange'}
                                 )
 
 
 
-.. image:: _images/tutorial_33_0.png
+.. image:: _images/tutorial_37_0.png
 
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
     # Tweaking the tick length and padding between tick and label.
 
@@ -697,11 +805,11 @@ Below we run through ways of customizing various aesthetic features.
 
 
 
-.. image:: _images/tutorial_34_0.png
+.. image:: _images/tutorial_38_0.png
 
 
-Working with 'melted' DataFrames
-=================================
+Appendix: On working with 'melted' DataFrames.
+==============================================
 
 ``dabest.plot`` can also work with 'melted' or 'longform' data. This
 term is so used because each row will now correspond to a single
@@ -709,19 +817,21 @@ datapoint, with one column carrying the value (``value``) and other
 columns carrying 'metadata' describing that datapoint (in this case,
 ``group`` and ``Gender``).
 
-More details on wide vs long or 'melted' data can be found in this `Wikipedia article <https://en.wikipedia.org/wiki/Wide_and_narrow_data>`_. The `pandas documentation <https://pandas.pydata.org/pandas-docs/stable/generated/pandas.melt.html>`_ gives recipes for melting dataframes.
+For more details on wide vs long or 'melted' data, see
+https://en.wikipedia.org/wiki/Wide\_and\_narrow\_data
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+To read more about melting a dataframe,see
+https://pandas.pydata.org/pandas-docs/stable/generated/pandas.melt.html
+
+.. code:: ipython3
 
     x='group'
     y='my_metric'
     color_col='Gender'
-    value_cols = df.columns[:-1] # select all but the 'Gender' column.
+    value_cols = df.columns[:-2] # select all but the 'Gender' and 'ID' columns.
 
-    df_melt=pd.melt(df.reset_index(),
-                    id_vars=['index',color_col],
+    df_melt=pd.melt(df,
+                    id_vars=['ID',color_col],
                     value_vars=value_cols,
                     value_name=y,
                     var_name=x)
@@ -729,14 +839,29 @@ More details on wide vs long or 'melted' data can be found in this `Wikipedia ar
     df_melt.head() # Gives the first five rows of `df_melt`.
 
 
+
+
 .. raw:: html
 
     <div>
-    <table border="0" class="dataframe">
+    <style scoped>
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+
+        .dataframe tbody tr th {
+            vertical-align: top;
+        }
+
+        .dataframe thead th {
+            text-align: right;
+        }
+    </style>
+    <table border="1" class="dataframe">
       <thead>
-        <tr>
+        <tr style="text-align: right;">
           <th></th>
-          <th>index</th>
+          <th>ID</th>
           <th>Gender</th>
           <th>group</th>
           <th>my_metric</th>
@@ -745,35 +870,35 @@ More details on wide vs long or 'melted' data can be found in this `Wikipedia ar
       <tbody>
         <tr>
           <th>0</th>
-          <td>0</td>
+          <td>1</td>
           <td>Female</td>
           <td>Control</td>
           <td>2.742313</td>
         </tr>
         <tr>
           <th>1</th>
-          <td>1</td>
+          <td>2</td>
           <td>Female</td>
           <td>Control</td>
           <td>2.681590</td>
         </tr>
         <tr>
           <th>2</th>
-          <td>2</td>
+          <td>3</td>
           <td>Female</td>
           <td>Control</td>
           <td>3.180724</td>
         </tr>
         <tr>
           <th>3</th>
-          <td>3</td>
+          <td>4</td>
           <td>Female</td>
           <td>Control</td>
           <td>1.961873</td>
         </tr>
         <tr>
           <th>4</th>
-          <td>4</td>
+          <td>5</td>
           <td>Female</td>
           <td>Control</td>
           <td>2.867556</td>
@@ -788,9 +913,7 @@ If you are using a melted DataFrame, you will need to specify the ``x``
 (containing the categorical group names) and ``y`` (containing the
 numerical values for plotting) columns.
 
-.. code-block:: ipython3
-   :linenos:
-   :dedent: 1
+.. code:: ipython3
 
     f17, results17 = dabest.plot(df_melt,
                                  x='group',
@@ -806,8 +929,20 @@ numerical values for plotting) columns.
 .. raw:: html
 
     <div>
+    <style scoped>
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+
+        .dataframe tbody tr th {
+            vertical-align: top;
+        }
+
+        .dataframe thead th {
+            text-align: right;
+        }
     </style>
-    <table border="0" class="dataframe">
+    <table border="1" class="dataframe">
       <thead>
         <tr style="text-align: right;">
           <th></th>
@@ -829,8 +964,8 @@ numerical values for plotting) columns.
           <td>Control</td>
           <td>Group 1</td>
           <td>0.564092</td>
-          <td>0.244025</td>
-          <td>0.889509</td>
+          <td>0.244049</td>
+          <td>0.881805</td>
           <td>95.0</td>
           <td>True</td>
           <td>False</td>
@@ -844,4 +979,4 @@ numerical values for plotting) columns.
 
 
 
-.. image:: _images/tutorial_38_1.png
+.. image:: _images/tutorial_42_1.png
