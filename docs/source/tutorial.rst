@@ -2,8 +2,13 @@
 .. highlight:: python
   :linenothreshold: 2
 
+========
+Tutorial
+========
+
+--------------
 Load Libraries
-==============
+--------------
 
 .. code:: ipython3
 
@@ -19,9 +24,9 @@ Load Libraries
 
     We're using DABEST v0.1.6
 
-
+--------------------
 Create dummy dataset
-====================
+--------------------
 
 Here, we create a dummy dataset to illustrate how ``dabest`` functions.
 In this dataset, each column corresponds to a group of observations, and
@@ -180,12 +185,12 @@ identity of each observation.
     </div>
 
 
-
+---------------
 Producing Plots
-===============
+---------------
 
 Independant two-group estimation plot
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------
 
 The simplest estimation plot can be generated with ``dabest.plot()``.
 Supply the DataFrame; supply the two groups you want to compare in the
@@ -286,9 +291,8 @@ You can color the dots with any column in the DataFrame, using the
 
 .. image:: _images/tutorial_12_0.png
 
-.. _producing-slopgraphs:
 Paired two-group estimation plot
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------
 
 DABEST can also produce estimation plots for paired observations
 (repeated measures). This is done by setting the ``paired`` option to
@@ -296,7 +300,7 @@ DABEST can also produce estimation plots for paired observations
 contains the identity of the each datum with the ``id_col`` keyword.
 
 The estimation plot uses lines to indicate the pairs of observations.
-This is known as a slopegraph. The combined visual effect of the slopes
+This is known as a `slopegraph <https://www.edwardtufte.com/bboard/q-and-a-fetch-msg?msg_id=0003nk>`_. The combined visual effect of the slopes
 of these lines serves to give the viewer an intuitive sense of the effect
 size between the two groups of repeated observations.
 
@@ -413,7 +417,7 @@ be paired, as indicated by the DataFrame produced.
 
 
 Multi two-group estimation plot
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------
 
 In a multi-group design, you can horizontally tile two or more two-group
 floating-contrasts. This is designed to meet data visualization and
@@ -555,7 +559,7 @@ controlled with the ``float_contrast`` option.
 
 
 Shared-control estimation plot
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------
 
 A common experimental setup seen in contemporary biomedical research is
 a shared-control design (also known as a 'hub-and-spoke' design), where
@@ -668,9 +672,9 @@ the function.
 
 .. image:: _images/tutorial_28_0.png
 
-
+----------------------
 Controlling Aesthetics
-======================
+----------------------
 
 Below we run through ways of customizing various aesthetic features.
 
@@ -807,9 +811,9 @@ Below we run through ways of customizing various aesthetic features.
 
 .. image:: _images/tutorial_38_0.png
 
-
+----------------------------------------------
 Appendix: On working with 'melted' DataFrames.
-==============================================
+----------------------------------------------
 
 ``dabest.plot`` can also work with 'melted' or 'longform' data. This
 term is so used because each row will now correspond to a single
