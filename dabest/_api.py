@@ -402,11 +402,10 @@ def plot(data, idx,
     # CALCULATE RAW SWARM YLIMS.
     if swarm_ylim is None:
         # To ensure points at the limits are clearly seen.
-        pad = data_in[y].diff().abs().min() * 2
-        if pad < 3:
-            pad = 3
-        swarm_ylim = (np.floor(data_in[y].min() - pad),
-                      np.ceil(data_in[y].max() + pad))
+        minimum, maximum = (data_in[y].min(), data_in[y].max())
+        # midpoint = data_in[y].mean()
+        pad = (maximum - minimum) * 0.1 # 10% of the data range.
+        swarm_ylim = (minimum - pad, maximum + pad)
 
 
     # Set default kwargs first, then merge with user-dictated ones.
