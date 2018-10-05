@@ -66,29 +66,52 @@ def plot(
         color_col: string, default None
             Column to be used for colors.
 
-        float_contrast: boolean, default True
-            Whether or not to display the halfviolin bootstrapped difference
-            distribution alongside the raw data.
-
         paired: boolean, default False
-            Whether or not the data is paired. To elaborate.
+            Whether or not the data is paired. If True, `idx` must consist of a
+            tuple of length 2, or each tuple in `idx` must have a length of 2.
+            The first category/group is the observation before treatment, whilst
+            the second category/group is that after treatment.
 
         id_col: string, default None
             If `paired` is True, this must be supplied. This column indicates
             the identity of the datapoint if the data is paired.
 
-        show_pairs: boolean, default True
-            If the data is paired, whether or not to show the raw data as a
-            swarmplot, or as paired plot, with a line joining each pair of
-            observations.
+        float_contrast: boolean, default True
+            Whether or not to display the halfviolin bootstrapped difference
+            distribution alongside the raw data.
 
-        group_summaries: ['mean_sd', 'median_quartiles', 'None'], default 'mean_sd'
-            Plots the summary statistics for each group. If 'mean_sd', then the
-            mean and standard deviation of each group is plotted as a notched
-            line beside each group. If 'median_quantiles', then the
-            median and 25th and 75th percentiles of each group is plotted
-            instead. If 'None', the summaries are not shown.
+        fig_size: tuple, default None
+            The desired dimensions of the figure as a (length, width) tuple.
 
+        stat_func: callable, default None
+            The function used to compute the summary. If None, defaults to
+            np.mean()
+
+        ci: integer, default 95
+            The size of the confidence interval desired (in percentage).
+            Sensible values range from 50 to 99.
+
+        n_boot: integer, default 5000
+            Number of bootstrap iterations to perform during calculation of
+            confidence intervals.
+
+        swarm_dotsize: integer, default 8
+            The size of the dots used to plot the rawdata in the swarmplot.
+
+        difference_dotsize: integer, default 10
+            The size of the dots used to indicate the effect sizes.
+
+        swarm_label, contrast_label: strings, default None
+            Set labels for the y-axis of the swarmplot and the contrast plot,
+            respectively.
+
+        swarm_ylim: tuple, default None
+            The desired y-limits of the raw data swarmplot as a (lower, higher)
+            tuple.
+
+        contrast_ylim: tuple, default None
+            The desired y-limits of the constrast plot as a (lower, higher)
+            tuple.
 
         custom_palette: dict, list, or matplotlib color palette, default None
             This keyword accepts a dictionary with {'group':'color'} pairings,
@@ -110,28 +133,42 @@ def plot(
             The named colors of matplotlib can be found here:
             https://matplotlib.org/examples/color/named_colors.html
 
-        swarm_dotsize: integer, default 10
-            The size of the dots used to plot the rawdata in the swarmplot.
+        show_pairs: boolean, default True
+            If the data is paired, whether or not to show the raw data as a
+            swarmplot, or as paired plot, with a line joining each pair of
+            observations.
 
-        difference_dotsize: integer, default 12
-            The size of the dots used to indicate the effect sizes.
+        show_group_count: boolean, default True
+            Whether or not the group count (e.g. 'N=10') will be appended to the
+            xtick labels.
 
-        swarm_label, contrast_label: strings, default None
-            Set labels for the y-axis of the swarmplot and the contrast plot,
-            respectively.
+        group_summaries: ['mean_sd', 'median_quartiles', 'None'], default 'mean_sd'
+            Plots the summary statistics for each group. If 'mean_sd', then the
+            mean and standard deviation of each group is plotted as a notched
+            line beside each group. If 'median_quantiles', then the
+            median and 25th and 75th percentiles of each group is plotted
+            instead. If 'None', the summaries are not shown.
 
-        swarm_ylim: tuple, default None
-            The desired y-limits of the raw data swarmplot as a (lower, higher)
-            tuple.
+        context: string, default 'talk'
+            This implements the plotting context, as defined in seaborn.
+            There are four contexts: “paper”, “notebook”, “talk”, and “poster”,
+            which have plot elements (e.g. font scales) scaled by 0.8x, 1x,
+            1.3x, and 1.6x, respectively.
 
-        contrast_ylim: tuple, default None
-            The desired y-limits of the constrast plot as a (lower, higher)
-            tuple.
+        ci_linewidth: float, default 3
+            The width of the vertical line (in points) indicating the confidence
+            interval.
 
-        fig_size: tuple, default None
-            The desired dimensions of the figure as a (length, width) tuple.
+        summary_linewidth: float, default 3
+            The width of the vertical gapped line (in points) indicating the
+            summary of each group (as specified by `group_summaries`)
 
-        font_scale: float, default 0.9
+        multiplot_horizontal_spacing: float, default 0.75
+            If the plot is a two-group multiplot with floating contrast axes,
+            this determines the horizontal spacing between each plot. This
+            number is a fraction of the axes width.
+
+        font_scale: float, default 1.
             The font size will be scaled by this number. This value is passed
             on to seaborn.set().
 
@@ -139,27 +176,11 @@ def plot(
             The dots per inch of the figure produced. The default of 100 matches
             the matplotlib default for both screen display and image saving.
 
-        stat_func: callable, default None
-            The function used to compute the summary. If None, defaults to
-            np.mean()
-
-        ci: integer, default 95
-            The size of the confidence interval desired (in percentage).
-            Sensible values range from 50 to 99.
-
-        n_boot: integer, default 5000
-            Number of bootstrap iterations to perform during calculation of
-            confidence intervals.
-
-        show_group_count: boolean, default True
-            Whether or not the group count (e.g. 'N=10') will be appended to the
-            xtick labels.
-
-        tick_length: int, default 15
+        tick_length: int, default 10
             The length of the ticks (in points) for both the swarm and contrast
             axes.
 
-        tick_pad: int, default 9
+        tick_pad: int, default 5
             The distance of the tick label from the tick (in points), for both
             the swarm and contrast axes.
 
