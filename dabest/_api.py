@@ -626,6 +626,8 @@ def plot(data, idx,
                 ax_raw = axx[0, j] # the swarm axes are always on row 0.
                 ax_contrast = axx[1, j] # the contrast axes are always on row 1.
 
+        ax_raw.set_ylim(swarm_ylim)
+
         # Plot the raw data.
         if (paired is True and show_pairs is True):
             # Sanity checks. Do we have 2 elements (no more, no less) here?
@@ -662,17 +664,17 @@ def plot(data, idx,
             ax_raw.set_xticks([0, 1])
             ax_raw.set_xlim(-0.25, 1.5)
             ax_raw.set_xticklabels([current_tuple[0], current_tuple[1]])
-            swarm_ylim = ax_raw.get_ylim()
+            # swarm_ylim = ax_raw.get_ylim()
 
         elif (paired is True and show_pairs is False) or (paired is False):
-            # Swarmplot for raw data points.
-            if swarm_ylim is not None:
-                ax_raw.set_ylim(swarm_ylim)
+            # # Swarmplot for raw data points.
+            # if swarm_ylim is not None:
+            #     ax_raw.set_ylim(swarm_ylim)
             sns.swarmplot(data=plotdat, x=x, y=y, ax=ax_raw,
                           order=current_tuple, hue=color_col,
                           palette=plotPal, zorder=3, **swarmplot_kwargs)
-            if swarm_ylim is None:
-                swarm_ylim = ax_raw.get_ylim()
+            # if swarm_ylim is None:
+            #     swarm_ylim = ax_raw.get_ylim()
 
             if group_summaries != 'None':
                 # Create list to gather xspans.
