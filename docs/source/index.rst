@@ -17,15 +17,21 @@ Analyze your data with effect sizes!
 
 News
 ----
-July 2018:
+October 2018
+ - Release of v0.1.6. *Added more keywords for control of plot elements.*  See the :doc:`release-notes`.
+
+
+July 2018
  - Release of v0.1.5. *bugfix for setup and package management*
  - Release of v0.1.4.
 
-  See the :doc:`release-notes`.
 
-June 2018: Release of v0.1.3. Also added a short tutorial :doc:`dabest-r`!
+June 2018
+ - Release of v0.1.3.
+ - Added a short tutorial :doc:`dabest-r`!
 
-December 2017: We have made a `webapp <https://www.estimationstats.com>`_ that produces Gardner-Altman and Cumming plots!
+December 2017
+ - We have made a `webapp <https://www.estimationstats.com>`_ that produces Gardner-Altman and Cumming plots!
 
 Contents
 --------
