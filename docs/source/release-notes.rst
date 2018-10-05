@@ -16,7 +16,7 @@ Several keywords have been added to allow more fine-grained control over a selec
 
 The new keyword `context` allows you to set the plotting context as defined by seaborn's `plotting_context() <https://seaborn.pydata.org/generated/seaborn.plotting_context.html>`_ .
 
-Now, if `paired=True`, you will need to supply an `id_col`, which is a column in the DataFrame which specifies which sample the datapoint belongs to. See :ref:`producing-slopgraphs` for more details.
+Now, if `paired=True`, you will need to supply an `id_col`, which is a column in the DataFrame which specifies which sample the datapoint belongs to. See the :doc:`tutorial` for more details.
 
 
 v0.1.5
