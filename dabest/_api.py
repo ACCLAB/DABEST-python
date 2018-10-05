@@ -52,6 +52,8 @@ def plot(
     either a Cummings hub-and-spoke plot or a Gardner-Altman contrast plot.
     Paired and unpaired options available.
 
+
+
     Keywords:
         data: pandas DataFrame
 
@@ -221,6 +223,7 @@ def plot(
             seaborn.set:
             {'context': 'poster', 'style': 'ticks', 'font_scale': font_scale}
             (`font_scale` is a keyword as noted above with default 0.9.)
+
 
 
      Returns:
@@ -473,7 +476,7 @@ def plot(
 
 
     # Aesthetic kwargs for sns.set().
-    default_aesthetic_kwargs={'context': 'poster', 'style': 'ticks',
+    default_aesthetic_kwargs={'context': context, 'style': 'ticks',
                               'font_scale': font_scale}
     if aesthetic_kwargs is None:
         aesthetic_kwargs = default_aesthetic_kwargs
@@ -491,7 +494,7 @@ def plot(
         raise ValueError('group_summaries must be one of'
         'these: {}.'.format(gs_default) )
 
-    default_group_summary_kwargs = {'zorder': 5, 'lw': 4,
+    default_group_summary_kwargs = {'zorder': 5, 'lw': summary_linewidth,
                                     'color': 'k','alpha': 1}
     if group_summary_kwargs is None:
         group_summary_kwargs = default_group_summary_kwargs
@@ -522,7 +525,7 @@ def plot(
     # based on whether the contrast is floating.
     if float_contrast is True:
         # Check if this is multi two-group or not.
-        ws = float_spacing
+        ws = multiplot_horizontal_spacing
     else:
         ws = 0
 
@@ -535,15 +538,14 @@ def plot(
 
     # These values were obtained through aesthetic optimisation.
     group_height = 8
-    group_width = 3
     float_aspect = 0.8
 
     if float_contrast is True:
         height_inches = group_height * float_aspect
-        width_inches = group_width * ncols + legend_xspan
+        width_inches = 4 * ncols + legend_xspan
     else:
         height_inches = group_height
-        width_inches = (group_width / 2) * ngroups + legend_xspan
+        width_inches = 1.5 * ngroups + legend_xspan
 
     fsize = (width_inches, height_inches)
 
@@ -551,13 +553,14 @@ def plot(
     if fig_size is None:
         fig_size = fsize
 
+    gridspecs = {'width_ratios': widthratio, 'wspace' : ws, 'hspace': 0}
+    subplots_args = {'ncols': ncols, 'figsize':fig_size, 'dpi':dpi,
+                     'gridspec_kw': gridspecs}
+
 
     # Create the figure.
     if float_contrast is False:
-        fig, axx = plt.subplots(ncols=ncols, nrows=2,
-                                figsize=fig_size, dpi=dpi,
-                                gridspec_kw={'width_ratios': widthratio,
-                                            'wspace' : ws})
+        fig, axx = plt.subplots(nrows=2, **subplots_args)
         # If the contrast axes are NOT floating, create lists to store raw ylims
         # and raw tick intervals, so that I can normalize their ylims later.
         contrast_ax_ylim_low = list()
@@ -565,9 +568,7 @@ def plot(
         contrast_ax_ylim_tickintervals = list()
 
     else:
-        fig, axx = plt.subplots(ncols=ncols, figsize=fig_size, dpi=dpi,
-                                gridspec_kw={'width_ratios': widthratio,
-                                            'wspace' : ws})
+        fig, axx = plt.subplots(nrows=1, **subplots_args)
 
     # CREATE COLOR PALETTE TO NORMALIZE PALETTE ACROSS AXES.
     if color_col is None:
@@ -796,7 +797,7 @@ def plot(
                              markersize=difference_dotsize)
             ax_contrast.plot([pos+1,pos+1],
                              [boots.bca_ci_low, boots.bca_ci_high],
-                             'k-', linewidth=group_summary_kwargs['lw'])
+                             'k-', linewidth=ci_linewidth)
             if float_contrast is False:
                 contrast_ax_ylim_low.append( ax_contrast.get_ylim()[0] )
                 contrast_ax_ylim_high.append( ax_contrast.get_ylim()[1] )
