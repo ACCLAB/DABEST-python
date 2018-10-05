@@ -4,40 +4,40 @@
 # Email : joseshowh@gmail.com
 from __future__ import division
 
-def plot(data, idx,
+def plot(
+        data, idx,
         x=None, y=None,
         color_col=None,
-
-        float_spacing=1,
-
-        float_contrast=True,
         paired=False,
         id_col=None,
-        show_pairs=True,
-        group_summaries="mean_sd",
+        float_contrast=True,
+        fig_size=None,
 
-        custom_palette=None,
+        stat_func=None,
+        ci=95,
+        n_boot=5000,
 
-        swarm_dotsize=10,
-        difference_dotsize=12,
+        swarm_dotsize=8,
+        difference_dotsize=10,
 
         swarm_label=None,
         contrast_label=None,
         swarm_ylim=None,
         contrast_ylim=None,
 
-        fig_size=None,
+        custom_palette=None,
 
-        font_scale=0.9,
-        dpi=100,
-
-        stat_func=None,
-        ci=95,
-        n_boot=5000,
+        show_pairs=True,
         show_group_count=True,
-
-        tick_length=15,
-        tick_pad=9,
+        group_summaries="mean_sd",
+        context='talk',
+        ci_linewidth=3,
+        summary_linewidth=3,
+        multiplot_horizontal_spacing=0.75,
+        font_scale=1,
+        dpi=100,
+        tick_length=10,
+        tick_pad=5,
 
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
