@@ -8,6 +8,8 @@ def plot(data, idx,
         x=None, y=None,
         color_col=None,
 
+        float_spacing=1,
+
         float_contrast=True,
         paired=False,
         id_col=None,
@@ -493,7 +495,7 @@ def plot(data, idx,
     sns.set(**aesthetic_kwargs)
 
     swarm_xspan = 3
-    float_spacing = 1
+    #float_spacing = 1
 
     # Set appropriate horizontal spacing between subplots,
     # based on whether the contrast is floating.
