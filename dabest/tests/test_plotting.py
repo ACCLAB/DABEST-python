@@ -6,12 +6,12 @@ import scipy as sp
 import matplotlib as mpl
 mpl.use('Agg')
 
-
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import pytest
 from .. import _api
+
 
 
 # Fixtures.
@@ -139,6 +139,7 @@ def test_ylims():
         assert f2.axes[i].get_ylim() == pytest.approx(rand_swarm_ylim2)
 
 
+
 def test_ylabels():
     print('Testing assignment of ylabels')
     seed, ptp, df = create_dummy_dataset()
@@ -167,7 +168,7 @@ def test_ylabels():
 def test_paired():
     print('Testing Gardner-Altman paired plotting')
     seed, ptp, df = create_dummy_dataset()
-    f, b = _api.plot(data=df, dx=('0','1'), paired=True)
+    f, b = _api.plot(data=df, idx=('0','1'), paired=True)
     axx = f.axes[0]
     assert df['0'].tolist() == [l.get_ydata()[0] for l in axx.lines]
     assert df['1'].tolist() == [l.get_ydata()[1] for l in axx.lines]
