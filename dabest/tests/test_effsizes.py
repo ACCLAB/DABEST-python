@@ -1,4 +1,6 @@
+# coding: utf-8
 #! /usr/bin/env python
+
 import pytest
 import sys
 import numpy as np
@@ -30,7 +32,7 @@ paired_wellbeing = pd.DataFrame(paired_wb)
 # “Analysis Options for Testing Group Differences on Ordered Categorical
 # Variables: An Empirical Investigation of Type I Error Control
 # Statistical Power.”
-# Multiple Linear Regression Viewpoints 25 (1): 70–82.
+# Multiple Linear Regression Viewpoints 25 (1): 70 - 82.
 likert_control   = [1, 1, 2, 2, 2, 3, 3, 3, 4, 5]
 likert_treatment = [1, 2, 3, 4, 4, 5]
 
@@ -75,8 +77,8 @@ def test_hedges_g_paired():
 def test_cliffs_delta():
     print("Testing Cliff's delta.")
 
-    likert_delta = effsize.cliffs_delta(likert_control, likert_treatment)
+    likert_delta = effsize.cliffs_delta(likert_treatment, likert_control)
     assert likert_delta == pytest.approx(-0.25)
 
-    scores_delta = effsize.cliffs_delta(a_scores, b_scores)
+    scores_delta = effsize.cliffs_delta(b_scores, a_scores)
     assert scores_delta == pytest.approx(0.65)
