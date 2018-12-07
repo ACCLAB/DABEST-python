@@ -280,29 +280,32 @@ def cliffs_delta(control, test):
         delta: float.
     """
     from numpy import array, isnan
+    import numpy as np
 
-    control = array(control)
-    test = array(test)
+    # Convert to array, and drop any NaNs.
+    control   = array(control)
+    test      = array(test)
 
-    control = control[~isnan(control)]
-    test = test[~isnan(test)]
+    control   = control[~isnan(control)]
+    test      = test[~isnan(test)]
 
-    control_n = len(control)
-    test_n = len(test)
+    # Create dominance matrix.
+    dominance_matrix = np.zeros((len(control),
+                                 len(test)))
 
-    more = 0
-    less = 0
+    for idx, i in np.ndenumerate(dominance_matrix):
+        c = control[idx[0]]
+        t = test[idx[1]]
 
-    for i, c in enumerate(control):
-        for j, t in enumerate(test):
-            if t > c:
-                more += 1
-            elif t < c:
-                less += 1
+        if c < t:
+            dominance_matrix[idx] = -1
+        elif c == t:
+            dominance_matrix[idx] = 0
+        elif c > t:
+            dominance_matrix[idx] = 1
 
-    cliffs_delta = (more - less) / (control_n * test_n)
-
-    return cliffs_delta
+    # Compute the mean and return it.
+    return np.mean(dominance_matrix)
 
 
 
