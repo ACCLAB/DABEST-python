@@ -297,12 +297,10 @@ def cliffs_delta(control, test):
         c = control[idx[0]]
         t = test[idx[1]]
 
-        if c < t:
-            dominance_matrix[idx] = -1
-        elif c == t:
-            dominance_matrix[idx] = 0
-        elif c > t:
+        if t > c:
             dominance_matrix[idx] = 1
+        elif t < c:
+            dominance_matrix[idx] = -1
 
     # Compute the mean and return it.
     return np.mean(dominance_matrix)
