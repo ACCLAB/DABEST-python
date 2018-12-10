@@ -5,7 +5,7 @@
 from __future__ import division
 
 
-def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
+def plot(data, idx, x=None, y=None, ci=95, n_boot=5000, random_seed=12345,
 
         color_col=None,
         paired=False,
@@ -63,6 +63,11 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
         n_boot: integer, default 5000
             Number of bootstrap iterations to perform during calculation of
             confidence intervals.
+
+        random_seed: integer, default 12345
+            This integer is used to seed the random number generator during
+            bootstrap resampling. This ensures that the confidence intervals
+            reported are replicable.
 
         color_col: string, default None
             Column to be used for colors.
@@ -722,7 +727,7 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000,
             # Calculate bootstrapped stats.
             exp = np.array(plotdat[plotdat[x] == grp][y].dropna())
             results = difference_ci(ref, exp, paired=paired, alpha=alpha_level,
-                                    resamples=n_boot)
+                                    resamples=n_boot, random_seed=random_seed)
             res = {}
             res['reference_group'] = current_tuple[0]
             res['experimental_group'] = grp

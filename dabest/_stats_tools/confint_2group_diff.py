@@ -331,7 +331,8 @@ def difference_ci(x0, x1, paired=False, resamples=5000, alpha=0.05,
     acceleration_value = compute_meandiff_acceleration(jackknives, md)
     del jackknives # for memory management
 
-    bootstraps = compute_mean_diff_bootstraps(x0, x1, paired)
+    bootstraps = compute_mean_diff_bootstraps(x0, x1, paired,
+                                              resamples, random_seed)
     bias_correction = compute_meandiff_bias_correction(bootstraps, md)
 
     effsizes = DataFrame([md, bias_correction, acceleration_value],
