@@ -726,8 +726,9 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000, random_seed=12345,
 
             # Calculate bootstrapped stats.
             exp = np.array(plotdat[plotdat[x] == grp][y].dropna())
-            results = difference_ci(ref, exp, paired=paired, alpha=alpha_level,
-                                    resamples=n_boot, random_seed=random_seed)
+            results = difference_ci(ref, exp, is_paired=paired,
+                                    alpha=alpha_level, resamples=n_boot,
+                                    random_seed=random_seed)
             res = {}
             res['reference_group'] = current_tuple[0]
             res['experimental_group'] = grp

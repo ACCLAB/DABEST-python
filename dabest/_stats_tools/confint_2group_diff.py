@@ -42,10 +42,10 @@ def create_repeated_indexes(data):
 
 
 
-def _create_two_group_jackknife_indexes(x0, x1, paired):
+def _create_two_group_jackknife_indexes(x0, x1, is_paired):
     """Creates the jackknife bootstrap for 2 groups."""
 
-    if paired and len(x0) == len(x1):
+    if is_paired and len(x0) == len(x1):
         out = list(zip([j for j in create_jackknife_indexes(x0)],
                        [i for i in create_jackknife_indexes(x1)]
                        )
@@ -68,7 +68,7 @@ def _create_two_group_jackknife_indexes(x0, x1, paired):
 
 
 
-def compute_meandiff_jackknife(x0, x1, paired):
+def compute_meandiff_jackknife(x0, x1, is_paired):
     """
     Returns the jackknife for the mean difference, Cohen's d, and Hedges' g.
     """
@@ -77,19 +77,19 @@ def compute_meandiff_jackknife(x0, x1, paired):
     # Introspection: compute a throwaway mean difference to get the correct
     # effect sizes. This allows us to alter the standardized mean differences
     # computed in effsize.mean_difference(), and still gain access to it.
-    _temp_md = __es.two_group_difference(x0, x1, paired)
+    _temp_md = __es.two_group_difference(x0, x1, is_paired)
     for eff_s in _temp_md.keys():
         jack_dict[eff_s] = []
     del _temp_md
 
-    jackknives = _create_two_group_jackknife_indexes(x0, x1, paired)
+    jackknives = _create_two_group_jackknife_indexes(x0, x1, is_paired)
 
     for j in jackknives:
         x0_shuffled = x0[j[0]]
         x1_shuffled = x1[j[1]]
 
         e = __es.two_group_difference(x0_shuffled, x1_shuffled,
-                                 paired=paired)
+                                      is_paired=is_paired)
 
         for eff_size in e.keys():
             jackknife = e[eff_size]
@@ -146,7 +146,7 @@ def _create_bootstrap_indexes(size, resamples=5000, random_seed=12345):
 
 
 
-def compute_mean_diff_bootstraps(x0, x1, paired, resamples=5000,
+def compute_mean_diff_bootstraps(x0, x1, is_paired, resamples=5000,
                                  random_seed=12345):
     """Bootstraps the mean difference, Cohen's d, Hedges' g, and Cliff's delta
      for 2 groups."""
@@ -160,7 +160,7 @@ def compute_mean_diff_bootstraps(x0, x1, paired, resamples=5000,
     # Introspection: compute a throwaway mean difference to get the correct
     # effect sizes. This allows us to alter the standardized mean differences
     # computed in effsize.mean_difference(), and still gain access to it.
-    _temp_md = __es.two_group_difference(x0, x1, paired)
+    _temp_md = __es.two_group_difference(x0, x1, is_paired)
     for eff_s in _temp_md.keys():
         boots_dict[eff_s] = []
     del _temp_md
@@ -177,7 +177,7 @@ def compute_mean_diff_bootstraps(x0, x1, paired, resamples=5000,
         x0_boot = x0[b[0]]
         x1_boot = x1[b[1]]
 
-        e = __es.two_group_difference(x0_boot, x1_boot, paired)
+        e = __es.two_group_difference(x0_boot, x1_boot, is_paired)
 
         for eff_size in e.keys():
             bootstrap = e[eff_size]
@@ -264,7 +264,7 @@ def compute_interval_limits(bias, acceleration, n_boots, alpha=0.05):
 
 
 
-def difference_ci(x0, x1, paired=False, resamples=5000, alpha=0.05,
+def difference_ci(x0, x1, is_paired=False, resamples=5000, alpha=0.05,
                  random_seed=12345):
     """
     Given an two array-likes x0 and x1, returns the unstandardized mean
@@ -277,7 +277,7 @@ def difference_ci(x0, x1, paired=False, resamples=5000, alpha=0.05,
     x0, x1: array-like
         These should be numerical iterables.
 
-    paired: boolean, default False
+    is_paired: boolean, default False
 
     resamples: int, default 5000
         The number of bootstrap resamples to be taken.
@@ -325,13 +325,13 @@ def difference_ci(x0, x1, paired=False, resamples=5000, alpha=0.05,
     from pandas import DataFrame, merge
     from . import effsize
 
-    md = effsize.two_group_difference(x0, x1, paired)
+    md = effsize.two_group_difference(x0, x1, is_paired)
 
-    jackknives = compute_meandiff_jackknife(x0, x1, paired)
+    jackknives = compute_meandiff_jackknife(x0, x1, is_paired)
     acceleration_value = compute_meandiff_acceleration(jackknives, md)
     del jackknives # for memory management
 
-    bootstraps = compute_mean_diff_bootstraps(x0, x1, paired,
+    bootstraps = compute_mean_diff_bootstraps(x0, x1, is_paired,
                                               resamples, random_seed)
     bias_correction = compute_meandiff_bias_correction(bootstraps, md)
 

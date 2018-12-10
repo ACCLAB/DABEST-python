@@ -13,7 +13,7 @@ A range of functions to compute various effect sizes.
 """
 
 
-def two_group_difference(control, test, paired=False):
+def two_group_difference(control, test, is_paired=False):
     """
     Computes the following metrics for control and test:
         - Unstandardized mean difference
@@ -30,7 +30,7 @@ def two_group_difference(control, test, paired=False):
     control, test: list, tuple, or ndarray.
         Accepts lists, tuples, or numpy ndarrays of numeric types.
 
-    paired: boolean, default False.
+    is_paired: boolean, default False.
         If True, returns the paired Cohen's d.
 
     Returns
@@ -70,14 +70,12 @@ def two_group_difference(control, test, paired=False):
     # Create dict for output.
     es_dict = {}
 
-    # es_dict["is_paired"] = paired
+    es_dict['mean_diff']   = func_difference(control, test, mean, is_paired)
+    es_dict['median_diff'] = func_difference(control, test, median, is_paired)
+    es_dict['cohens_d']    = cohens_d(control, test, is_paired)
+    es_dict['hedges_g']    = hedges_g(control, test, is_paired)
 
-    es_dict['mean_diff'] = func_difference(control, test, mean)
-    es_dict['median_diff'] = func_difference(control, test, median)
-    es_dict['cohens_d'] = cohens_d(control, test, paired)
-    es_dict['hedges_g'] = hedges_g(control, test, paired)
-
-    if paired is False:
+    if is_paired is False:
         es_dict['cliffs_delta'] = cliffs_delta(control, test)
 
     return es_dict
@@ -120,7 +118,7 @@ def _compute_standardizers(control, test):
 
 
 
-def cohens_d(control, test, paired=False):
+def cohens_d(control, test, is_paired=False):
     """
     Computes Cohen's d for test v.s. control.
     See https://en.wikipedia.org/wiki/Effect_size#Cohen's_d
@@ -129,16 +127,16 @@ def cohens_d(control, test, paired=False):
     --------
     control, test: List, tuple, or array.
 
-    paired: boolean, default False
+    is_paired: boolean, default False
         If True, the paired Cohen's d is returned.
 
     Returns
     -------
         d: float.
-            If paired is False, this is equivalent to:
+            If is_paired is False, this is equivalent to:
             (numpy.mean(test) - numpy.mean(control))  / pooled StDev
 
-            If paired is True, returns
+            If is_paired is True, returns
             (numpy.mean(test) - numpy.mean(control))  / average StDev
 
             The pooled standard deviation is equal to:
@@ -180,7 +178,7 @@ def cohens_d(control, test, paired=False):
     # two paired groups but accounting for the correlation between
     # the two groups.
 
-    if paired:
+    if is_paired:
         # Check control and test are same length.
         if len(control) != len(test):
             raise ValueError("`control` and `test` are not the same length.")
@@ -235,7 +233,7 @@ def _compute_hedges_correction_factor(n1, n2):
 
 
 
-def hedges_g(control, test, paired=False):
+def hedges_g(control, test, is_paired=False):
     """
     Computes Hedges' g for  for test v.s. control.
     It first computes Cohen's d, then calulates a correction factor based on
@@ -257,7 +255,7 @@ def hedges_g(control, test, paired=False):
     control = array(control)
     test = array(test)
 
-    d = cohens_d(control, test, paired)
+    d = cohens_d(control, test, is_paired)
     len_c = len(control)
     len_t = len(test)
     correction_factor = _compute_hedges_correction_factor(len_c, len_t)
@@ -307,24 +305,38 @@ def cliffs_delta(control, test):
 
 
 
-def func_difference(control, test, func):
+def func_difference(control, test, func, is_paired):
     """
     Applies func to `control` and `test`, and then returns the difference.
 
     Keywords:
     --------
         control, test: List, tuple, or array.
+            NaNs are automatically discarded.
+
+        func: summary function to apply.
+
+        is_paired: boolean.
+            If True, computes func(test - control).
+            If False, computes func(test) - func(control).
 
     Returns:
     --------
-        paired = False:
-            func(test) - func(control)
-        paired = True:
-            func(test - control)
+        diff: float.
     """
-    from numpy import ndarray, array
+    from numpy import array, isnan
 
-    # Convert to numpy arrays for speed
-    control = array(control)
-    test = array(test)
-    return func(test) - func(control)
+    # Convert to numpy arrays for speed.
+    # NaNs are automatically dropped.
+    control = [a for a in array(control) if ~isnan(a)]
+    test    = [a for a in array(test) if ~isnan(a)]
+
+    if is_paired:
+        if len(control) != len(test):
+            return func(test - control)
+        else:
+            err = "The two arrays supplied do not have the same length."
+            raise ValueError(err)
+
+    else:
+        return func(test) - func(control)
