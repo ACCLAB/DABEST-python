@@ -72,7 +72,8 @@ There is also a [Matlab version](https://github.com/ACCLAB/DABEST-Matlab) of DAB
 
 ## R version
 
-It is possible to use the R package `reticulate` to run Python code. Please take a look at this [tutorial](https://acclab.github.io/DABEST-python-docs/dabest-r.html) on how to use `reticulate` to analyse data in R.
+R users can install [dabestr](https://github.com/ACCLAB/dabestr).
+
 
 
 ## Testing
