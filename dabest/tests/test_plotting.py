@@ -14,8 +14,6 @@ import pytest
 from .. import _api
 
 
-# Fixtures.
-@pytest.fixture
 def create_dummy_dataset(seed=None, n=30, base_mean=0, expt_groups=6,
                          scale_means=2, scale_std=1.2):
     """
@@ -56,7 +54,6 @@ def create_dummy_dataset(seed=None, n=30, base_mean=0, expt_groups=6,
 
 
 
-@pytest.fixture
 def get_swarm_yspans(coll, round_result=False, decimals=12):
     """
     Given a matplotlib Collection, will obtain the y spans

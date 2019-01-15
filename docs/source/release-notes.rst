@@ -4,6 +4,10 @@
 Release Notes
 =============
 
+v0.1.7
+======
+The keyword `cumming_vertical_spacing` has been added to tweak the vertical spacing between the rawdata swarm axes and the contrast axes in Cumming estimation plots.
+
 
 v0.1.6
 ======
@@ -38,7 +42,7 @@ Aesthetic changes
 * add `tick_length` and `tick_pad` arguments to allow tweaking of the axes tick lengths, and padding of the tick labels, respectively.
 
 v0.1.3
-=====
+======
 Update dependencies to
 
 * pandas v0.23
