@@ -34,6 +34,7 @@ def plot(
         ci_linewidth=3,
         summary_linewidth=3,
         multiplot_horizontal_spacing=0.75,
+        cumming_vertical_spacing=0.1,
         font_scale=1,
         dpi=100,
         tick_length=10,
@@ -169,6 +170,12 @@ def plot(
             If the plot is a two-group multiplot with floating contrast axes,
             this determines the horizontal spacing between each plot. This
             number is a fraction of the axes width.
+
+        cumming_vertical_spacing: float, default 0.05
+            The amount of height reserved for space between the swarmplot and
+            the contrast plots, expressed as a fraction of the average axis
+            height.
+
 
         font_scale: float, default 1.
             The font size will be scaled by this number. This value is passed
@@ -529,6 +536,12 @@ def plot(
     else:
         ws = 0
 
+    # Set appropriate vertical spacing between subplots,
+    # based on whether the contrast is floating.
+    if float_contrast is False:
+        hs = cumming_vertical_spacing
+    else:
+        hs = 0
 
     # infer the figsize.
     if color_col is None:
@@ -553,7 +566,7 @@ def plot(
     if fig_size is None:
         fig_size = fsize
 
-    gridspecs = {'width_ratios': widthratio, 'wspace' : ws, 'hspace': 0}
+    gridspecs = {'width_ratios': widthratio, 'wspace' : ws, 'hspace': hs}
     subplots_args = {'ncols': ncols, 'figsize':fig_size, 'dpi':dpi,
                      'gridspec_kw': gridspecs}
 
