@@ -1,6 +1,11 @@
 from ._api import plot
-from ._stats_tools.confint_2group_diff import difference_ci
-from ._stats_tools.confint_1group import summary_ci_1group
-from ._stats_tools import effsize as effsize
+# from .stats_tools.confint_2group_diff import difference_ci
+from .stats_tools.confint_1group import summary_ci_1group
+from .stats_tools import effsize as effsize
+
+# DEV
+from .api2 import load
+from .classes import TwoGroupsEffectSize, EffectSizeDataFrame
+from .stats_tools import confint_2group_diff as ci2g
 
 __version__ = "0.1.9999"

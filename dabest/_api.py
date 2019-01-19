@@ -263,7 +263,7 @@ def plot(data, idx, x=None, y=None, ci=95, n_boot=5000, random_seed=12345,
     import seaborn as sns
     import pandas as pd
 
-    from ._stats_tools.confint_2group_diff import difference_ci
+    from .stats_tools.confint_2group_diff import difference_ci
 
     from .plot_tools import halfviolin, align_yaxis, rotate_ticks
     from .plot_tools import gapped_lines, get_swarm_spans

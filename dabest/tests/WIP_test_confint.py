@@ -1,45 +1,65 @@
 #! /usr/bin/env python
 import pytest
 import sys
-import numpy as np
-import scipy as sp
 
-# This filters out an innocuous warning when pandas is imported,
-# but the version has not been compiled against the newest numpy.
+# This filters out an innocuous warning.
 import warnings
-warnings.filterwarnings("ignore", message="numpy.dtype size changed")
-
-import pandas as pd
-from .._stats_tools import confint_1group as ci_1g
-from .._stats_tools import confint_2group_diff as ci_md
+warnings.filterwarnings("ignore", message="Using or importing the ABCs")
 
 
 
-def generate_two_groups():
-    pass
+# Functions to generate samples for testing.
+def generate_two_pops(diff, diff_type,
+                      populationN=10000,
+                      control_mean=100, sd=10,
+                      seed=12345):
+    import numpy as np
+    import scipy as sp
+    import pandas as pd
+
+    Ns = 20
+
+    # Determine the central measure of the test population.
+    if diff_type == "mean_diff":
+        test_pop_loc = control_mean + diff
+
+    elif diff_type == "cohens_d":
+        test_pop_loc = control_mean + (diff * sd)
+
+    # Create and return population.
+    np.random.seed(seed)
+    control_pop = sp.stats.norm.rvs(loc=control_mean,
+                                    scale=sd, size=populationN)
+    test_pop    = sp.stats.norm.rvs(loc=test_pop_loc,
+                                    scale=sd, size=populationN)
+    np.random.seed()
+
+    return control_pop, test_pop
+
+def sample_from_pops(c, t, sampleN=40, seed=12345):
+    import numpy as np
+
+    choice_kwargs = dict(size=sampleN, replace=False)
+
+    # Sample from the populations
+    np.random.seed(seed)
+    control = np.random.choice(c, **choice_kwargs)
+    test    = np.random.choice(t, **choice_kwargs)
+    np.random.seed()
+
+    return control, test
 
 
-# @pytest.fixture
-# def does_ci_capture_difference(control, expt, paired, nreps=100, alpha=0.05):
-#     if expt is None:
-#         mean_diff = control.mean()
-#     else:
-#         if paired is True:
-#             mean_diff = np.mean(expt - control)
-#         elif paired is False:
-#             mean_diff = expt.mean() - control.mean()
-#
-#     ERROR_THRESHOLD = nreps * alpha
-#     error_count_bca = 0
-#
-#     for i in range(1, nreps):
-#         results = bst.bootstrap(control, expt, paired=paired, alpha_level=alpha)
-#
-#         print("\n95CI BCa = {}, {}".format(results.bca_ci_low, results.bca_ci_high))
-#         try:
-#             test_mean_within_ci_bca(mean_diff, results)
-#         except AssertionError:
-#             error_count_bca += 1
-#
-#     print('\nNumber of BCa CIs not capturing the mean is {}'.format(error_count_bca))
-#     assert error_count_bca < ERROR_THRESHOLD
+
+# Test functions.
+def test_mean_diff_ci():
+    md        = np.random.randint(1, 15)
+    print("Testing mean difference confidence interval capture; \
+           current mean difference is {}".format(md))
+
+    c, t      = generate_two_pops(md, "mean_diff")
+    con, test = sample_from_pops(c, t)
+
+    result    = effsizes.loc['mean_diff', :]
+
+    assert result['bca_ci_low'] < md < result['bca_ci_high']
