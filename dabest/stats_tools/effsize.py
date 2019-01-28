@@ -216,9 +216,10 @@ def cliffs_delta(control, test):
 
     Returns
     -------
-        delta: float.
+        A single numeric float.
     """
     import numpy as np
+    from scipy.stats import mannwhitneyu
 
     # Convert to numpy arrays for speed.
     # NaNs are automatically dropped.
@@ -226,24 +227,30 @@ def cliffs_delta(control, test):
         control = np.array(control)
     if test.__class__ != np.ndarray:
         test    = np.array(test)
-    control = control[~np.isnan(control)]
-    test    = test[~np.isnan(test)]
 
-    # Create dominance matrix.
-    dominance_matrix = np.zeros((len(control),
-                                 len(test)))
+    c = control[~np.isnan(control)]
+    t = test[~np.isnan(test)]
 
-    for idx, i in np.ndenumerate(dominance_matrix):
-        c = control[idx[0]]
-        t = test[idx[1]]
+    control_n = len(c)
+    test_n = len(t)
 
-        if t > c:
-            dominance_matrix[idx] = 1
-        elif t < c:
-            dominance_matrix[idx] = -1
+    # Note the order of the control and test arrays.
+    U, _ = mannwhitneyu(t, c, alternative='two-sided')
+    cliffs_delta = ((2 * U) / (control_n * test_n)) - 1
 
-    # Compute the mean and return it.
-    return np.mean(dominance_matrix)
+    # more = 0
+    # less = 0
+    #
+    # for i, c in enumerate(control):
+    #     for j, t in enumerate(test):
+    #         if t > c:
+    #             more += 1
+    #         elif t < c:
+    #             less += 1
+    #
+    # cliffs_delta = (more - less) / (control_n * test_n)
+
+    return cliffs_delta
 
 
 
