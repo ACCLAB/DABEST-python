@@ -68,7 +68,7 @@ def check_dependencies():
 
 
     SCIPY_LATEST_MAJOR = 1
-    SCIPY_LATEST_MINOR = 1
+    SCIPY_LATEST_MINOR = 2
     TO_INSTALL = 'scipy=={}.{}'.format(SCIPY_LATEST_MAJOR,
                                        SCIPY_LATEST_MINOR)
     try:
