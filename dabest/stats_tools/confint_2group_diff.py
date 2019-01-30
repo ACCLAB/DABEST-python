@@ -198,7 +198,7 @@ def compute_interval_limits(bias, acceleration, n_boots, ci=95):
     high = _compute_quantile(z_high, **kws)
 
     if isnan(low) or isnan(high):
-        return nan, nan
+        return low, high
 
     else:
         low = int(norm.cdf(low) * n_boots)

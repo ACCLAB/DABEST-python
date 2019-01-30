@@ -325,18 +325,55 @@ class TwoGroupsEffectSize(object):
         self.__bias_correction = ci2g.compute_meandiff_bias_correction(
                                     self.__bootstraps, self.__difference)
 
-
-        self.__bca_interval_idx = ci2g.compute_interval_limits(
+        # Compute BCa intervals.
+        bca_idx_low, bca_idx_high = ci2g.compute_interval_limits(
             self.__bias_correction, self.__acceleration_value,
             self.__resamples, ci)
-        self.__bca_low  = self.__bootstraps[self.__bca_interval_idx[0]]
-        self.__bca_high = self.__bootstraps[self.__bca_interval_idx[1]]
 
-        self.__pct_interval_idx = (int((self.__alpha/2)     * resamples),
-                                   int((1-(self.__alpha/2)) * resamples)
-                                 )
-        self.__pct_low  = self.__bootstraps[self.__pct_interval_idx[0]]
-        self.__pct_high = self.__bootstraps[self.__pct_interval_idx[1]]
+        self.__bca_interval_idx = (bca_idx_low, bca_idx_high)
+
+        if ~isnan(bca_idx_low) and ~isnan(bca_idx_high):
+            self.__bca_low  = self.__bootstraps[bca_idx_low]
+            self.__bca_high = self.__bootstraps[bca_idx_high]
+
+            err1 = "The $lim_type limit of the interval"
+            err2 = "was in the $loc 10 values."
+            err3 = "The result should be considered unstable."
+            err_temp = Template(" ".join([err1, err2, err3]))
+
+            if bca_idx_low <= 10:
+                warnings.warn(err_temp.substitute(lim_type="lower",
+                                                  loc="bottom"),
+                              stacklevel=1)
+
+            if bca_idx_high >= resamples-9:
+                warnings.warn(err_temp.substitute(lim_type="upper",
+                                                  loc="top"),
+                              stacklevel=1)
+
+        else:
+            err1 = "The $lim_type limit of the BCa interval cannot be computed."
+            err2 = "It is set to the effect size itself."
+            err3 = "All bootstrap values were likely all the same."
+            err_temp = Template(" ".join([err1, err2, err3]))
+
+            if isnan(bca_idx_low):
+                self.__bca_low  = self.__difference
+                warnings.warn(err_temp.substitute(lim_type="lower"),
+                              stacklevel=0)
+
+            if isnan(bca_idx_high):
+                self.__bca_high  = self.__difference
+                warnings.warn(err_temp.substitute(lim_type="upper"),
+                              stacklevel=0)
+
+        # Compute percentile intervals.
+        pct_idx_low  = int((self.__alpha/2)     * resamples)
+        pct_idx_high = int((1-(self.__alpha/2)) * resamples)
+
+        self.__pct_interval_idx = (pct_idx_low, pct_idx_high)
+        self.__pct_low  = self.__bootstraps[pct_idx_low]
+        self.__pct_high = self.__bootstraps[pct_idx_high]
 
 
 
