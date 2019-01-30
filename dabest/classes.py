@@ -138,13 +138,21 @@ class Dabest:
                                            ordered=True)
         self.__plot_data = plot_data
 
-        self.mean_diff = EffectSizeDataFrame(self, "mean_diff", self.__is_paired)
 
-        self.median_diff = EffectSizeDataFrame(self, "median_diff", self.__is_paired)
+        self.mean_diff    = EffectSizeDataFrame(self, "mean_diff",
+                                             self.__is_paired)
 
-        self.cohens_d = EffectSizeDataFrame(self, "cohens_d", self.__is_paired)
+        self.median_diff  = EffectSizeDataFrame(self, "median_diff",
+                                               self.__is_paired)
 
-        self.hedges_g = EffectSizeDataFrame(self, "hedges_g", self.__is_paired)
+        self.cohens_d     = EffectSizeDataFrame(self, "cohens_d",
+                                            self.__is_paired)
+
+        self.hedges_g     = EffectSizeDataFrame(self, "hedges_g",
+                                            self.__is_paired)
+
+        self.cliffs_delta = EffectSizeDataFrame(self, "cliffs_delta",
+                                                self.__is_paired)
 
 
 
@@ -281,11 +289,15 @@ class TwoGroupsEffectSize(object):
         from .stats_tools import confint_2group_diff as ci2g
         from .stats_tools import effsize as es
 
+        from string import Template
+        import warnings
+
         self.__EFFECT_SIZE_DICT =  {"mean_diff" : "mean difference",
                                     "median_diff" : "median difference",
                                     "cohens_d" : "Cohen's d",
                                     "hedges_g" : "Hedges' g",
-                                    "cliffs_delta" : "Cliff's delta",}
+                                    "cliffs_delta" : "Cliff's delta"}
+
         kosher_es = [a for a in self.__EFFECT_SIZE_DICT.keys()]
         if effect_size not in kosher_es:
             err1 = "The effect size '{}'".format(effect_size)
