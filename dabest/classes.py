@@ -403,11 +403,13 @@ class TwoGroupsEffectSize(object):
             ci_width = base_string_fmt.format(self.__ci)
         else:
             ci_width = str(self.__ci)
+
         ci_out = {"es"       : base_string_fmt.format(self.__difference),
                   "ci"       : ci_width,
                   "bca_low"  : base_string_fmt.format(self.__bca_low),
                   "bca_high" : base_string_fmt.format(self.__bca_high)}
-        out2 = "is {es} [{ci}%CI {bca_low}, {bca_high}]".format(**ci_out)
+
+        out2 = "is {es} [{ci}%CI {bca_low}, {bca_high}].".format(**ci_out)
 
         out3 = "{} bootstrap samples were taken;".format(self.__resamples)
 
@@ -522,8 +524,8 @@ class TwoGroupsEffectSize(object):
 
 
 class EffectSizeDataFrame(object):
-    """A class to store the results of bootstrapped mean differences
-    for several comparisons."""
+    """A class that generates and stores the results of bootstrapped effect
+    sizes for several comparisons."""
 
     def __init__(self, dabest, effect_size,
                  is_paired, ci=95,
@@ -540,7 +542,7 @@ class EffectSizeDataFrame(object):
         """
 
         self.__idx         = dabest._idx_for_plotting
-        self.__data        = dabest._plot_data
+        self.__plot_data   = dabest._plot_data
         self.__xvar        = dabest._xvar
         self.__yvar        = dabest._yvar
         self.__effect_size = effect_size
@@ -554,7 +556,7 @@ class EffectSizeDataFrame(object):
     def __pre_calc(self):
         import pandas as pd
 
-        dat = self.__data
+        dat = self.__plot_data
         out = []
         reprs = []
 
@@ -618,8 +620,47 @@ class EffectSizeDataFrame(object):
 
     @property
     def results(self):
-        return self.__results
+        """Prints all pairwise comparisons nicely."""
+        try:
+            return self.__results
+        except AttributeError:
+            self.__pre_calc()
+            return self.__results
+
+
 
     @property
     def _for_print(self):
         return self.__for_print
+
+    @property
+    def _plot_data(self):
+        return self.__plot_data
+
+    @property
+    def _idx(self):
+        return self.__idx
+
+    @property
+    def _xvar(self):
+        return self.__xvar
+
+    @property
+    def _yvar(self):
+        return self.__yvar
+
+    @property
+    def _is_paired(self):
+        return self.__is_paired
+
+    @property
+    def _ci(self):
+        return self.__ci
+
+    @property
+    def _resamples(self):
+        return self.__resamples
+
+    @property
+    def _random_seed(self):
+        return self.__random_seed
