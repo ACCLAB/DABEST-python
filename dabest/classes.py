@@ -570,17 +570,27 @@ class EffectSizeDataFrame(object):
                 text_repr = result.__repr__().replace("is", to_replace, 1)
                 reprs.append(text_repr)
 
-        self.__results = pd.DataFrame(out)
         self.__for_print = "\n\n".join(reprs)
 
+        out_             = pd.DataFrame(out)
+
+        columns_in_order = ['control', 'test', 'effect_size', 'is_paired',
+                            'difference', 'ci',
+
+                            'bca_low', 'bca_high', 'bca_interval_idx',
+                            'pct_low', 'pct_high', 'pct_interval_idx',
+
+                            'bootstraps', 'resamples', 'random_seed']
+
+        self.__results   = out_.reindex(columns=columns_in_order)
 
 
     def __repr__(self):
         try:
-            return self._for_print
+            return self.__for_print
         except AttributeError:
             self.__pre_calc()
-            return self._for_print
+            return self.__for_print
 
 
 
