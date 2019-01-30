@@ -43,7 +43,8 @@ def need_to_install(library, desired_major_version, desired_minor_version):
     if LIB_INSTALLED_VERSION_MAJOR < desired_major_version:
         return True
 
-    elif LIB_INSTALLED_VERSION_MINOR < desired_minor_version:
+    elif LIB_INSTALLED_VERSION_MAJOR == desired_major_version and \
+         LIB_INSTALLED_VERSION_MINOR < desired_minor_version:
         return True
 
     else:
