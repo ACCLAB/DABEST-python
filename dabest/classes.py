@@ -42,31 +42,14 @@ class Dabest:
 
         # Determine the kind of estimation plot we need to produce.
         if all([isinstance(i, str) for i in idx]):
-            self.__plottype = "hubspoke"
-
-            # Set columns and width ratio.
-            ncols = 1
-            ngroups = len(idx)
-            widthratio = [1]
-
             # flatten out idx.
             all_plot_groups = pd.unique([t for t in idx]).tolist()
-            self.__all_plot_groups = all_plot_groups
-
-            self._idx_for_plotting = (idx,)
+            # We need to re-wrap this idx inside another tuple so as to
+            # easily loop thru each pairwise group later on.
+            self.__idx = (idx,)
 
         elif all([isinstance(i, (tuple, list)) for i in idx]):
-            self.__plottype = "multigroup"
-
-            all_plot_groups = np.unique([tt for t in idx for tt in t]).tolist()
-            self.__all_plot_groups = all_plot_groups
-
-            widthratio = [len(ii) for ii in idx]
-            # Set columns and width ratio.
-            ncols = len(idx)
-            ngroups = len(all_plot_groups)
-
-            self._idx_for_plotting = idx
+            all_plot_groups = pd.unique([tt for t in idx for tt in t]).tolist()
 
         else: # mix of string and tuple?
             err = 'There seems to be a problem with the idx you'
@@ -99,11 +82,11 @@ class Dabest:
                 raise ValueError(err)
 
             # check all the idx can be found in data_in[x]
-            for g in self.__all_plot_groups:
+            for g in all_plot_groups:
                 if g not in data_in[x].unique():
                     raise IndexError('{0} is not a group in `{1}`.'.format(g, x))
 
-            plot_data = data_in[data_in.loc[:, x].isin(self.__all_plot_groups)].copy()
+            plot_data = data_in[data_in.loc[:, x].isin(all_plot_groups)].copy()
             plot_data.drop("index", inplace=True, axis=1)
 
             # Assign attributes
@@ -121,35 +104,38 @@ class Dabest:
             self.__yvar = "value"
 
             # First, check we have all columns in the dataset.
-            for g in self.__all_plot_groups:
+            for g in all_plot_groups:
                 if g not in data_in.columns:
                     raise IndexError('{0} is not a column in `data`.'.format(g))
 
             # Extract only the columns being plotted.
-            plot_data = data_in.reindex(columns=self.__all_plot_groups).copy()
+            plot_data = data_in.reindex(columns=all_plot_groups).copy()
 
             plot_data = pd.melt(plot_data,
-                                value_vars=self.__all_plot_groups,
+                                value_vars=all_plot_groups,
                                 value_name=self.__yvar,
                                 var_name=self.__xvar)
 
         plot_data.loc[:, self.__xvar] = pd.Categorical(plot_data[self.__xvar],
-                                           categories=self.__all_plot_groups,
+                                           categories=all_plot_groups,
                                            ordered=True)
+
         self.__plot_data = plot_data
+
+        self.__all_plot_groups = all_plot_groups
 
 
         self.mean_diff    = EffectSizeDataFrame(self, "mean_diff",
-                                             self.__is_paired)
+                                                self.__is_paired)
 
         self.median_diff  = EffectSizeDataFrame(self, "median_diff",
                                                self.__is_paired)
 
         self.cohens_d     = EffectSizeDataFrame(self, "cohens_d",
-                                            self.__is_paired)
+                                                self.__is_paired)
 
         self.hedges_g     = EffectSizeDataFrame(self, "hedges_g",
-                                            self.__is_paired)
+                                                self.__is_paired)
 
         self.cliffs_delta = EffectSizeDataFrame(self, "cliffs_delta",
                                                 self.__is_paired)
@@ -221,6 +207,13 @@ class Dabest:
         """
         return self.__plot_data
 
+    @property
+    def _all_plot_groups(self):
+        """
+        Returns the all plot groups, as indicated via the `idx` keyword.
+        """
+        return self.__all_plot_groups
+
 
 
 
@@ -276,8 +269,8 @@ class TwoGroupsEffectSize(object):
             >>> test = sp.stats.norm.rvs(loc=0.5, size=30)
             >>> effsize = dabest.TwoGroupsEffectSize(control, test, "mean_diff")
             >>> effsize
-            The unpaired mean difference is -0.253 [95%CI -0.782, 0.241]
 
+            The unpaired mean difference is -0.253 [95%CI -0.782, 0.241]
             5000 bootstrap samples. The confidence interval is bias-corrected
             and accelerated.
         """
@@ -541,32 +534,37 @@ class EffectSizeDataFrame(object):
         --------
         """
 
-        self.__idx         = dabest._idx_for_plotting
-        self.__plot_data   = dabest._plot_data
-        self.__xvar        = dabest._xvar
-        self.__yvar        = dabest._yvar
-        self.__effect_size = effect_size
-        self.__is_paired   = is_paired
-        self.__ci          = ci
-        self.__resamples   = resamples
-        self.__random_seed = random_seed
+        self.__dabest_obj = dabest
+        # self.__idx          = dabest.idx
+        # self.__plot_data    = dabest._plot_data
+        # self.__xvar         = dabest._xvar
+        # self.__yvar         = dabest._yvar
+        self.__effect_size  = effect_size
+        self.__is_paired    = is_paired
+        self.__ci           = ci
+        self.__resamples    = resamples
+        self.__random_seed  = random_seed
 
 
 
     def __pre_calc(self):
         import pandas as pd
 
-        dat = self.__plot_data
+        idx  = self.__dabest_obj.idx
+        dat  = self.__dabest_obj._plot_data
+        xvar = self.__dabest_obj._xvar
+        yvar = self.__dabest_obj._yvar
+
         out = []
         reprs = []
 
-        for j, current_tuple in enumerate(self.__idx):
+        for j, current_tuple in enumerate(idx):
 
             cname = current_tuple[0]
-            control = dat[dat[self.__xvar] == cname][self.__yvar].copy()
+            control = dat[dat[xvar] == cname][yvar].copy()
 
             for ix, tname in enumerate(current_tuple[1:]):
-                test = dat[dat[self.__xvar] == tname][self.__yvar].copy()
+                test = dat[dat[xvar] == tname][yvar].copy()
 
                 result = TwoGroupsEffectSize(control, test,
                                              self.__effect_size,
@@ -608,14 +606,65 @@ class EffectSizeDataFrame(object):
 
 
 
+    def plot(self, color_col=None,
 
-    def plot(self):
-        if hasattr(self, "results"):
-            return "Plotting functions under DEVELOPMENT."
-        else:
-            return "first run precalc, then plot."
+            raw_marker_size=6, es_marker_size=9,
 
+            swarm_label="metric", contrast_label="delta metric",
+            swarm_ylim=None, contrast_ylim=None,
 
+            plot_context='talk',
+            font_scale=1.,
+
+            custom_palette=None,
+            float_contrast=True,
+            show_pairs=True,
+            show_group_count=True,
+            group_summaries="mean_sd",
+
+            ci_linewidth=3,
+            summary_linewidth=3,
+            multiplot_horizontal_spacing=0.75,
+            cumming_vertical_spacing=0.05,
+
+            fig_size=None,
+            dpi=100,
+            tick_length=10,
+            tick_pad=7,
+
+            swarmplot_kwargs=None,
+            violinplot_kwargs=None,
+            reflines_kwargs=None,
+            group_summary_kwargs=None,
+            legend_kwargs=None,
+            aesthetic_kwargs=None):
+        """
+        Creates an estimation plot for the effect size of interest.
+
+        Keywords
+        --------
+            ...
+
+        Returns
+        -------
+            ...
+
+        Examples
+        --------
+            ...
+        """
+
+        from .plotter import EffectSizeDataFrame_plotter
+
+        if hasattr(self, "results") is False:
+            self.__pre_calc()
+
+        all_kwargs = locals()
+        del all_kwargs["self"]
+
+        out = EffectSizeDataFrame_plotter(self, **all_kwargs)
+
+        return out
 
 
     @property
@@ -635,32 +684,40 @@ class EffectSizeDataFrame(object):
 
     @property
     def _plot_data(self):
-        return self.__plot_data
+        return self.__dabest_obj._plot_data
 
     @property
-    def _idx(self):
-        return self.__idx
+    def idx(self):
+        return self.__dabest_obj.idx
 
     @property
-    def _xvar(self):
-        return self.__xvar
+    def xvar(self):
+        return self.__dabest_obj._xvar
 
     @property
-    def _yvar(self):
-        return self.__yvar
+    def yvar(self):
+        return self.__dabest_obj._yvar
 
     @property
-    def _is_paired(self):
+    def is_paired(self):
         return self.__is_paired
 
     @property
-    def _ci(self):
+    def ci(self):
         return self.__ci
 
     @property
-    def _resamples(self):
+    def resamples(self):
         return self.__resamples
 
     @property
-    def _random_seed(self):
+    def random_seed(self):
         return self.__random_seed
+
+    @property
+    def dabest_obj(self):
+        """
+        Returns the `dabest` object that invoked the current EffectSizeDataFrame
+        class.
+        """
+        return self.__dabest_obj

@@ -80,7 +80,7 @@ def check_dependencies():
         to_install.append(TO_INSTALL)
 
     PANDAS_LATEST_MAJOR = 0
-    PANDAS_LATEST_MINOR = 23
+    PANDAS_LATEST_MINOR = 24
     TO_INSTALL = 'pandas=={}.{}'.format(PANDAS_LATEST_MAJOR,
                                         PANDAS_LATEST_MINOR)
     try:
@@ -91,8 +91,8 @@ def check_dependencies():
         to_install.append(TO_INSTALL)
 
 
-    MPL_LATEST_MAJOR = 2
-    MPL_LATEST_MINOR = 2
+    MPL_LATEST_MAJOR = 3
+    MPL_LATEST_MINOR = 0
     TO_INSTALL = 'matplotlib=={}.{}'.format(MPL_LATEST_MAJOR,
                                             MPL_LATEST_MINOR)
     try:
