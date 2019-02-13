@@ -624,6 +624,8 @@ class EffectSizeDataFrame(object):
 
             ci_linewidth=3,
             summary_linewidth=3,
+            halfviolin_alpha=0.75,
+
             multiplot_horizontal_spacing=0.75,
             cumming_vertical_spacing=0.05,
 
@@ -654,7 +656,7 @@ class EffectSizeDataFrame(object):
             ...
         """
 
-        from .plotter import EffectSizeDataFrame_plotter
+        from .plotter import EffectSizeDataFramePlotter
 
         if hasattr(self, "results") is False:
             self.__pre_calc()
@@ -662,7 +664,7 @@ class EffectSizeDataFrame(object):
         all_kwargs = locals()
         del all_kwargs["self"]
 
-        out = EffectSizeDataFrame_plotter(self, **all_kwargs)
+        out = EffectSizeDataFramePlotter(self, **all_kwargs)
 
         return out
 
@@ -713,6 +715,11 @@ class EffectSizeDataFrame(object):
     @property
     def random_seed(self):
         return self.__random_seed
+
+    @property
+    def effect_size(self):
+        """The type of effect size being computed."""
+        return self.__effect_size
 
     @property
     def dabest_obj(self):

@@ -9,7 +9,8 @@ from .misc_tools import merge_two_dicts
 
 
 
-def halfviolin(v, half='right', color='k'):
+def halfviolin(v, half='right', fill_color='k', alpha=1,
+                line_color='k', line_width=0):
     import numpy as np
 
     for b in v['bodies']:
@@ -27,8 +28,10 @@ def halfviolin(v, half='right', color='k'):
         if half is 'top':
             V[:, 1] = np.clip(V[:, 1], mean_horizontal, np.inf)
 
-        b.set_color(color)
-        b.set_linewidth(0)
+        b.set_color(fill_color)
+        b.set_alpha(alpha)
+        b.set_edgecolor(line_color)
+        b.set_linewidth(line_width)
 
 
 
