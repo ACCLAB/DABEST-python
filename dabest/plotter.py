@@ -225,10 +225,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     # Infer the figsize.
     fig_size = plot_kwargs["fig_size"]
     if fig_size is None:
-        if color_col is None:
-            legend_xspan = 0
-        else:
-            legend_xspan = 1.5
+        # if color_col is None:
+        #     legend_xspan = 0
+        # else:
+        #     legend_xspan = 1.5
 
         all_groups_count = np.sum([len(i) for i in dabest_obj.idx])
         if float_contrast is True:
@@ -238,16 +238,14 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             height_inches = 6
             each_group_width_inches = 1.5
 
-        width_inches = (each_group_width_inches * all_groups_count) + legend_xspan
-        fsize = (width_inches, height_inches)
-    else:
-        fsize = fig_size
+        width_inches = (each_group_width_inches * all_groups_count)# + legend_xspan
+        fig_size = (width_inches, height_inches)
 
 
 
     # Initialise the figure.
     # sns.set(context="talk", style='ticks')
-    init_fig_kwargs = dict(figsize=fsize, dpi=plot_kwargs["dpi"])
+    init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"])
 
     # Here, we hardcode some figure parameters.
     if float_contrast is True:
