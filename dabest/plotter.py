@@ -395,6 +395,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
     og_ylim_raw = rawdata_axes.get_ylim()
+
     if float_contrast is True:
         # For Gardner-Altman plots only.
 
@@ -411,16 +412,22 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             test_group_summary = plot_data.groupby(xvar)\
                                           .median().loc[current_group]
 
+        test_group_summary = float(test_group_summary)
+
         if swarm_ylim is None:
             swarm_ylim = rawdata_axes.get_ylim()
 
         _, contrast_xlim_max = contrast_axes.get_xlim()
 
-        min_check = float(swarm_ylim[0] - test_group_summary)
-        max_check = float(swarm_ylim[1] - test_group_summary)
-        difference = float(results.difference[0])
-        if min_check <= difference <= max_check:
+        if swarm_ylim[0] < swarm_ylim[1]:
+            swarm_ylim_low, swarm_ylim_high = swarm_ylim
+        else:
+            swarm_ylim_high, swarm_ylim_low = swarm_ylim
+
+        # DEBUG:
+        if swarm_ylim_low < test_group_summary < swarm_ylim_high:
             pass
+
         else:
             err1 = 'The mean of the reference group {} '.format(test_group_summary)
             err2 = 'does not fall in the specified `swarm_ylim` {}. '.format(swarm_ylim)
@@ -449,6 +456,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         contrast_axes.set_xlim(contrast_xlim_max-1, contrast_xlim_max)
 
         # Draw summary lines for control and test groups..
+        difference = float(results.difference[0])
         for jj, axx in enumerate([rawdata_axes, contrast_axes]):
 
             # Draw effect size line.
@@ -492,11 +500,19 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         # For Cumming Plots only.
 
+        # Set custom contrast_ylim, if it was specified.
+        if plot_kwargs['contrast_ylim'] is not None:
+            contrast_axes.set_ylim(plot_kwargs['contrast_ylim'])
+
         # If 0 lies within the ylim of the contrast axes,
         # draw a zero reference line.
         contrast_axes_ylim = contrast_axes.get_ylim()
-        if contrast_axes_ylim[0] < 0 < contrast_axes_ylim[1]:
-            contrast_axes.axhline(lw=0.75, color=ytick_color)
+        if contrast_axes_ylim[0] < contrast_axes_ylim[1]:
+            contrast_ylim_low, contrast_ylim_high = contrast_axes_ylim
+        else:
+            contrast_ylim_high, contrast_ylim_low = contrast_axes_ylim
+        if contrast_ylim_low < 0 < contrast_ylim_high:
+            contrast_axes.axhline(y=0, lw=0.75, color=ytick_color)
 
         # Set custom contrast_ylim, if it was specified.
         if plot_kwargs['contrast_ylim'] is not None:
