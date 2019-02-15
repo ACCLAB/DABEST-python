@@ -52,9 +52,16 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     from .misc_tools import merge_two_dicts
     from .plot_tools import halfviolin, align_yaxis
 
+    # Save rcParams that I will alter, so I can reset back.
+    original_rcParams = {}
+    _changed_rcParams = ['axes.grid']
+    for parameter in _changed_rcParams:
+        original_rcParams[parameter] = plt.rcParams[parameter]
+
+    plt.rcParams['axes.grid'] = False
 
 
-
+    ytick_color = plt.rcParams["ytick.color"]
 
     dabest_obj  = EffectSizeDataFrame.dabest_obj
     plot_data   = EffectSizeDataFrame._plot_data
@@ -62,8 +69,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     yvar        = EffectSizeDataFrame.yvar
     is_paired   = EffectSizeDataFrame.is_paired
 
+
     all_plot_groups = dabest_obj._all_plot_groups
     idx             = dabest_obj.idx
+
 
 
 
@@ -78,10 +87,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if effect_size_type not in ['mean_diff', 'median_diff']:
         float_contrast = False
 
+
+
     # Disable slopegraph plotting if any of the idxs comprise of more than
     # two groups.
     if np.all([len(i)==2 for i in idx]) is False:
         is_paired = False
+
 
 
     # Set default kwargs first, then merge with user-dictated ones.
@@ -91,6 +103,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         swarmplot_kwargs = merge_two_dicts(default_swarmplot_kwargs,
                                            plot_kwargs["swarmplot_kwargs"])
+
 
 
     # Violinplot kwargs.
@@ -103,9 +116,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                             plot_kwargs["violinplot_kwargs"])
 
 
+
     # Zero reference-line kwargs.
     default_reflines_kwargs = {'linestyle':'solid', 'linewidth':0.75,
-                               'color':'k'}
+                                'zorder': 2,
+                                'color': ytick_color}
     if plot_kwargs["reflines_kwargs"] is None:
         reflines_kwargs = default_reflines_kwargs
     else:
@@ -113,14 +128,16 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                           plot_kwargs["reflines_kwargs"])
 
 
+
     # Legend kwargs.
     default_legend_kwargs = {'loc': 'upper left', 'frameon': False,
-                             'bbox_to_anchor': (0.95, 1.), 'markerscale': 2}
+                             'markerscale': 1.5}
     if plot_kwargs["legend_kwargs"] is None:
         legend_kwargs = default_legend_kwargs
     else:
         legend_kwargs = merge_two_dicts(default_legend_kwargs,
                                         plot_kwargs["legend_kwargs"])
+
 
 
     # Aesthetic kwargs for sns.set().
@@ -135,6 +152,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                            plot_kwargs["aesthetic_kwargs"])
 
 
+
     # if paired is False, set show_pairs as False.
     show_pairs  = plot_kwargs["show_pairs"]
     if is_paired is False:
@@ -145,7 +163,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         raise ValueError('group_summaries must be one of'
         ' these: {}.'.format(gs_default) )
 
-    default_group_summary_kwargs = {'zorder': 5, 'lw': 2,
+    default_group_summary_kwargs = {'zorder': 3, 'lw': 2,
                                     'color': 'k','alpha': 1}
     if plot_kwargs["group_summary_kwargs"] is None:
         group_summary_kwargs = default_group_summary_kwargs
@@ -154,12 +172,17 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                                plot_kwargs["group_summary_kwargs"])
 
 
+
     # Create color palette that will be shared across subplots.
     color_col = plot_kwargs["color_col"]
     if color_col is None:
         color_groups = pd.unique(plot_data[xvar])
+        bootstraps_color_by_group = True
     else:
+        if color_col not in plot_data.columns:
+            raise KeyError("``{}`` is not a column in the data.".format(color_col))
         color_groups = pd.unique(plot_data[color_col])
+        bootstraps_color_by_group = False
 
     n_groups = len(color_groups)
 
@@ -198,6 +221,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 raise ValueError(err1 + err2)
 
 
+
     # Infer the figsize.
     fig_size = plot_kwargs["fig_size"]
     if fig_size is None:
@@ -222,9 +246,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
     # Initialise the figure.
-    sns.set(context="talk", style='ticks')
+    # sns.set(context="talk", style='ticks')
     init_fig_kwargs = dict(figsize=fsize, dpi=plot_kwargs["dpi"])
 
+    # Here, we hardcode some figure parameters.
     if float_contrast is True:
         fig, axx = plt.subplots(ncols=2,
                                 gridspec_kw={"width_ratios": [2.5, 1],
@@ -232,7 +257,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                 **init_fig_kwargs)
 
     else:
-        fig, axx = plt.subplots(nrows=2, **init_fig_kwargs)
+        fig, axx = plt.subplots(nrows=2,
+                                gridspec_kw={"hspace": 0.3},
+                                **init_fig_kwargs)
 
         # If the contrast axes are NOT floating, create lists to store raw ylims
         # and raw tick intervals, so that I can normalize their ylims later.
@@ -242,6 +269,12 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     rawdata_axes  = axx[0]
     contrast_axes = axx[1]
+
+    rawdata_axes.set_frame_on(False)
+    contrast_axes.set_frame_on(False)
+    redraw_axes_kwargs = {'color'   : ytick_color,
+                          'lw'      : 1,
+                          'clip_on' : False}
 
 
 
@@ -258,12 +291,21 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     sns.swarmplot(data=plot_data, x=xvar, y=yvar,
                   ax=rawdata_axes, order=all_plot_groups, hue=color_col,
-                  palette=plotPal, zorder=3, **swarmplot_kwargs)
+                  palette=plotPal, zorder=1, **swarmplot_kwargs)
+    rawdata_axes.set_xlabel("")
 
     # TODO:
     # Plot the gapped line summaries, if this is not a Cumming plot.
 
 
+
+
+    # Save the handles and labels for the legend.
+    handles, labels = rawdata_axes.get_legend_handles_labels()
+    legend_labels  = [l for l in labels]
+    legend_handles = [h for h in handles]
+    if bootstraps_color_by_group is False:
+        rawdata_axes.legend().set_visible(False)
 
 
 
@@ -289,7 +331,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     for j, tick in enumerate(ticks_to_plot):
         current_group     = results.test[j]
         current_control   = results.control[j]
-        current_color     = plotPal[current_group]
+        # current_color     = plotPal[current_group]
         current_bootstrap = results.bootstraps[j]
         current_effsize   = results.difference[j]
         current_ci_low    = results.bca_low[j]
@@ -300,17 +342,26 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                      positions=[tick],
                                      **violinplot_kwargs)
         # Turn the violinplot into half, and color it the same as the swarmplot.
+        # Do this only if the color column is not specified.
         # Ideally, the alpha (transparency) fo the violin plot should be
         # less than one so the effect size and CIs are visible.
-        halfviolin(v, fill_color=current_color, alpha=halfviolin_alpha)
+        if bootstraps_color_by_group is True:
+            fc = plotPal[current_group]
+        else:
+            fc = "grey"
+
+        halfviolin(v, fill_color=fc, alpha=halfviolin_alpha)
 
         # Plot the effect size.
-        contrast_axes.plot([tick], current_effsize, marker='o', color='k',
-                        markersize=es_marker_size)
+        contrast_axes.plot([tick], current_effsize, marker='o',
+                           color=ytick_color,
+                           markersize=es_marker_size)
         # Plot the confidence interval.
         contrast_axes.plot([tick, tick],
                            [current_ci_low, current_ci_high],
-                           'k-', linewidth=group_summary_kwargs['lw'])
+                           linestyle="-",
+                           color=ytick_color,
+                           linewidth=group_summary_kwargs['lw'])
 
         xtick_labels.append("{}\nminus\n{}".format(current_group,
                                                    current_control))
@@ -326,10 +377,26 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     contrast_axes.set_xticklabels(xtick_labels)
 
 
+    if bootstraps_color_by_group is False:
+        legend_labels_unique = np.unique(legend_labels)
+        unique_idx = np.unique(legend_labels, return_index=True)[1]
+        legend_handles_unique = (pd.Series(legend_handles).loc[unique_idx]).tolist()
+        if float_contrast is True:
+            axes_with_legend = contrast_axes
+            bta = (1.25, 1.)
+        else:
+            axes_with_legend = rawdata_axes
+            bta = (1., 1.)
+        leg = axes_with_legend.legend(legend_handles_unique,
+                                      legend_labels_unique,
+                                      bbox_to_anchor=bta,
+                                      **legend_kwargs)
 
 
 
 
+
+    og_ylim_raw = rawdata_axes.get_ylim()
     if float_contrast is True:
         # For Gardner-Altman plots only.
 
@@ -373,11 +440,14 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         elif current_effsize < 0:
             rightmin, rightmax = rawdata_ylims + current_effsize
 
-        contrast_axes.set_ylim(rightmin, rightmax)
+        contrast_axes.set_ybound(rightmin, rightmax)
+
 
         # align statfunc(exp) on rawdata_axes with the effect size on contrast_axes.
         align_yaxis(rawdata_axes, test_group_summary,
                     contrast_axes, current_effsize)
+        og_ylim_contrast = contrast_axes.get_ybound()
+
         contrast_axes.set_xlim(contrast_xlim_max-1, contrast_xlim_max)
 
         # Draw summary lines for control and test groups..
@@ -406,23 +476,120 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                        **reflines_kwargs)
 
         # Despine appropriately.
-        sns.despine(ax=rawdata_axes,
-                    trim=True)
-        sns.despine(ax=contrast_axes,
-                    left=True, right=False)
+        sns.despine(ax=rawdata_axes,  bottom=True)
+        sns.despine(ax=contrast_axes, left=True, right=False)
+
+        # Insert break between the rawdata axes and the contrast axes
+        # by re-drawing the x-spine.
+        rawdata_axes.hlines(og_ylim_raw[0],                  # yindex
+                            rawdata_axes.get_xlim()[0], 1.3, # xmin, xmax
+                            **redraw_axes_kwargs)
+        rawdata_axes.set_ylim(og_ylim_raw)
+
+        contrast_axes.hlines(og_ylim_contrast[0],
+                             contrast_xlim_max-0.8, contrast_xlim_max,
+                             **redraw_axes_kwargs)
+
 
     else:
         # For Cumming Plots only.
-        sns.despine(ax=rawdata_axes, trim=True)
-        sns.despine(ax=contrast_axes, trim=True)
+
+        # If 0 lies within the ylim of the contrast axes,
+        # draw a zero reference line.
+        contrast_axes_ylim = contrast_axes.get_ylim()
+        if contrast_axes_ylim[0] < 0 < contrast_axes_ylim[1]:
+            contrast_axes.axhline(lw=0.75, color=ytick_color)
+
+        # Set custom contrast_ylim, if it was specified.
+        if plot_kwargs['contrast_ylim'] is not None:
+            contrast_axes.set_ylim(plot_kwargs['contrast_ylim'])
+
+        # Compute the end of each x-axes line.
+        rightend_ticks = [len(i)-1 for i in idx][:-1]
+        rightend_ticks.insert(len(idx) - 1,
+                              len(all_plot_groups)-1)
+
+        for ax in fig.axes:
+            sns.despine(ax=ax, bottom=True)
+
+            ylim = ax.get_ylim()
+            xlim = ax.get_xlim()
+
+            redraw_axes_kwargs['y'] = ylim[0]
+
+            for k, start_tick in enumerate(ticks_to_skip):
+                end_tick = rightend_ticks[k]
+                ax.hlines(xmin=start_tick, xmax=end_tick,
+                          **redraw_axes_kwargs)
+
+            ax.set_ylim(ylim)
+            del redraw_axes_kwargs['y']
 
 
 
 
 
+    # Place raw axes y-label.
+    if plot_kwargs['swarm_label'] is not None:
+        swarm_label = plot_kwargs['swarm_label']
+    else:
+        swarm_label = yvar
+    rawdata_axes.set_ylabel(swarm_label)
 
-    # Reset plot settings.
-    sns.set()
+
+
+    # Place contrast axes y-label.
+    contrast_label_dict = {'mean_diff'    : "Mean difference",
+                           'median_diff'  : "Median difference",
+                           'cohens_d'     : "Cohen's d",
+                           'hedges_g'     : "Hedges' g",
+                           'cliffs_delta' : "Cliff's delta"}
+    if plot_kwargs['contrast_label'] is not None:
+        contrast_label = plot_kwargs['contrast_label']
+    else:
+        contrast_label = contrast_label_dict[EffectSizeDataFrame.effect_size]
+    contrast_axes.set_ylabel(contrast_label)
+    if float_contrast is True:
+        contrast_axes.yaxis.set_label_position("right")
+
+
+
+
+    # Because we turned the axes frame off, we also need to draw back
+    # the y-spine for both axes.
+    og_xlim_raw = rawdata_axes.get_xlim()
+    rawdata_axes.vlines(og_xlim_raw[0],
+                         og_ylim_raw[0], og_ylim_raw[1],
+                         **redraw_axes_kwargs)
+
+    og_xlim_contrast = contrast_axes.get_xlim()
+
+    if float_contrast is True:
+        xpos = og_xlim_contrast[1]
+    else:
+        xpos = og_xlim_contrast[0]
+
+    og_ylim_contrast = contrast_axes.get_ybound()
+    contrast_axes.vlines(xpos,
+                         og_ylim_contrast[0], og_ylim_contrast[1],
+                         **redraw_axes_kwargs)
+
+
+
+    # Make sure no stray ticks appear!
+    rawdata_axes.xaxis.set_ticks_position('bottom')
+    rawdata_axes.yaxis.set_ticks_position('left')
+    contrast_axes.xaxis.set_ticks_position('bottom')
+    if float_contrast is False:
+        contrast_axes.yaxis.set_ticks_position('left')
+
+
+
+    # Reset rcParams.
+    for parameter in _changed_rcParams:
+        plt.rcParams[parameter] = original_rcParams[parameter]
+
+
 
     # Return the figure.
     return fig

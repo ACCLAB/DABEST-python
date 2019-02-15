@@ -610,7 +610,7 @@ class EffectSizeDataFrame(object):
 
             raw_marker_size=6, es_marker_size=9,
 
-            swarm_label="metric", contrast_label="delta metric",
+            swarm_label=None, contrast_label=None,
             swarm_ylim=None, contrast_ylim=None,
 
             plot_context='talk',
