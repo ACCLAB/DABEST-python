@@ -334,7 +334,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
     results      = EffectSizeDataFrame.results
-    xtick_labels = []
+    contrast_xtick_labels = []
 
     for j, tick in enumerate(ticks_to_plot):
         current_group     = results.test[j]
@@ -371,7 +371,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                            color=ytick_color,
                            linewidth=group_summary_kwargs['lw'])
 
-        xtick_labels.append("{}\nminus\n{}".format(current_group,
+        contrast_xtick_labels.append("{}\nminus\n{}".format(current_group,
                                                    current_control))
 
 
@@ -381,8 +381,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Properly label the contrast ticks.
     for t in ticks_to_skip:
-        xtick_labels.insert(t, "")
-    contrast_axes.set_xticklabels(xtick_labels)
+        contrast_xtick_labels.insert(t, "")
+    contrast_axes.set_xticklabels(contrast_xtick_labels)
 
 
     if bootstraps_color_by_group is False:
