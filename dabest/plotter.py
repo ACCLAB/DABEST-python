@@ -295,6 +295,16 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     # TODO:
     # Plot the gapped line summaries, if this is not a Cumming plot.
 
+    # Add the counts to the rawdata axes xticks.
+    counts = plot_data.groupby(xvar).count()[yvar]
+    ticks_with_counts = []
+    for xticklab in rawdata_axes.xaxis.get_ticklabels():
+        t = xticklab.get_text()
+        N = str(counts.loc[t])
+
+        ticks_with_counts.append("{}\nN = {}".format(t, N))
+
+    rawdata_axes.set_xticklabels(ticks_with_counts)
 
 
 
