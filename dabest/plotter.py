@@ -542,7 +542,22 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         # Set custom contrast_ylim, if it was specified.
         if plot_kwargs['contrast_ylim'] is not None:
-            contrast_axes.set_ylim(plot_kwargs['contrast_ylim'])
+            custom_contrast_ylim = plot_kwargs['contrast_ylim']
+
+            if len(custom_contrast_ylim) != 2:
+                err1 = "Please check `contrast_ylim` consists of "
+                err2 = "exactly two numbers."
+                raise ValueError(err1 + err2)
+
+            if effect_size_type == "cliffs_delta":
+                # Ensure the ylims for a cliffs_delta plot never exceed [-1, 1].
+                l = plot_kwargs['contrast_ylim'][0]
+                h = plot_kwargs['contrast_ylim'][1]
+                low = -1 if l < -1 else l
+                high = 1 if h > 1 else h
+                contrast_axes.set_ylim(low, high)
+            else:
+                contrast_axes.set_ylim(custom_contrast_ylim)
 
         # If 0 lies within the ylim of the contrast axes,
         # draw a zero reference line.
@@ -553,10 +568,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_ylim_high, contrast_ylim_low = contrast_axes_ylim
         if contrast_ylim_low < 0 < contrast_ylim_high:
             contrast_axes.axhline(y=0, lw=0.75, color=ytick_color)
-
-        # Set custom contrast_ylim, if it was specified.
-        if plot_kwargs['contrast_ylim'] is not None:
-            contrast_axes.set_ylim(plot_kwargs['contrast_ylim'])
 
         # Compute the end of each x-axes line.
         rightend_ticks = [len(i)-1 for i in idx][:-1]
