@@ -493,7 +493,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             scaled_ylim = ((rawdata_axes.get_ylim() - control_group_summary) / pooled_sd).tolist()
 
             contrast_axes.set_ylim(scaled_ylim)
-            og_ylim_contrast = contrast_axes.get_ybound()
+            og_ylim_contrast = scaled_ylim
 
             contrast_axes.set_xlim(contrast_xlim_max-1, contrast_xlim_max)
 
@@ -537,7 +537,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                             **redraw_axes_kwargs)
         rawdata_axes.set_ylim(og_ylim_raw)
 
-        contrast_axes.hlines(og_ylim_contrast[0],
+        contrast_axes.hlines(contrast_axes.get_ylim()[0],
                              contrast_xlim_max-0.8, contrast_xlim_max,
                              **redraw_axes_kwargs)
 
@@ -584,7 +584,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
             ylim = ax.get_ylim()
             xlim = ax.get_xlim()
-
             redraw_axes_kwargs['y'] = ylim[0]
 
             for k, start_tick in enumerate(ticks_to_skip):
@@ -639,7 +638,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         xpos = og_xlim_contrast[0]
 
-    og_ylim_contrast = contrast_axes.get_ybound()
+    og_ylim_contrast = contrast_axes.get_ylim()
     contrast_axes.vlines(xpos,
                          og_ylim_contrast[0], og_ylim_contrast[1],
                          **redraw_axes_kwargs)
