@@ -456,14 +456,18 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             # If the effect size is negative, shift the contrast axis down.
             elif current_effsize < 0:
                 rightmin, rightmax = rawdata_ylims + current_effsize
-            contrast_axes.set_ybound(rightmin, rightmax)
+            contrast_axes.set_ylim(rightmin, rightmax)
 
             # align statfunc(exp) on rawdata_axes with the effect size on contrast_axes.
-            align_yaxis(rawdata_axes, test_group_summary,
-                        contrast_axes, current_effsize)
+            # align_yaxis(rawdata_axes, test_group_summary,
+            #             contrast_axes, current_effsize)
+            # og_ylim_contrast = contrast_axes.get_ylim()
 
-            og_ylim_contrast = contrast_axes.get_ybound()
+            og_ylim_contrast = rawdata_axes.get_ylim() - np.array(control_group_summary)
+
+            contrast_axes.set_ylim(og_ylim_contrast)
             contrast_axes.set_xlim(contrast_xlim_max-1, contrast_xlim_max)
+
             difference = float(results.difference[0])
 
         elif effect_size_type in ["cohens_d", "hedges_g"]:
