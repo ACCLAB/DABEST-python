@@ -282,6 +282,24 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Plot the raw data as a swarmplot.
     swarm_ylim = plot_kwargs["swarm_ylim"]
+
+    # if float_contrast:
+    #     if swarm_ylim[0] < swarm_ylim[1]:
+    #         swarm_ylim_low, swarm_ylim_high = swarm_ylim
+    #     else:
+    #         swarm_ylim_high, swarm_ylim_low = swarm_ylim
+    #
+    #     if swarm_ylim_low < test_group_summary < swarm_ylim_high:
+    #         pass
+    #
+    #     else:
+    #         err1 = 'The mean of the reference group {} '.format(test_group_summary)
+    #         err2 = 'does not fall in the specified `swarm_ylim` {}. '.format(swarm_ylim)
+    #         err3 = 'Please select a `swarm_ylim` that includes the '
+    #         err4 = 'reference mean, or set `float_contrast=False`.'
+    #         err = err1 + err2 + err3 + err4
+    #         raise ValueError(err)
+
     if swarm_ylim is not None:
         rawdata_axes.set_ylim(swarm_ylim)
 
@@ -428,23 +446,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             swarm_ylim = rawdata_axes.get_ylim()
 
         _, contrast_xlim_max = contrast_axes.get_xlim()
-
-        if swarm_ylim[0] < swarm_ylim[1]:
-            swarm_ylim_low, swarm_ylim_high = swarm_ylim
-        else:
-            swarm_ylim_high, swarm_ylim_low = swarm_ylim
-
-        if swarm_ylim_low < test_group_summary < swarm_ylim_high:
-            pass
-
-        else:
-            err1 = 'The mean of the reference group {} '.format(test_group_summary)
-            err2 = 'does not fall in the specified `swarm_ylim` {}. '.format(swarm_ylim)
-            err3 = 'Please select a `swarm_ylim` that includes the '
-            err4 = 'reference mean, or set `float_contrast=False`.'
-            err = err1 + err2 + err3 + err4
-            raise ValueError(err)
-
 
         if effect_size_type in ["mean_diff", "median_diff"]:
             # Align 0 of contrast_axes to reference group mean of rawdata_axes.
