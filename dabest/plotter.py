@@ -393,7 +393,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         legend_handles_unique = (pd.Series(legend_handles).loc[unique_idx]).tolist()
         if float_contrast is True:
             axes_with_legend = contrast_axes
-            bta = (1.25, 1.)
+            bta = (1.3, 1.02)
         else:
             axes_with_legend = rawdata_axes
             bta = (1., 1.)
