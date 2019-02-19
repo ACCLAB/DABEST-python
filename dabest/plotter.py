@@ -50,7 +50,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     import pandas as pd
 
     from .misc_tools import merge_two_dicts
-    from .plot_tools import halfviolin, align_yaxis
+    from .plot_tools import halfviolin, get_swarm_spans, gapped_lines
     from .stats_tools.effsize import _compute_standardizers, _compute_hedges_correction_factor
 
     # Save rcParams that I will alter, so I can reset back.
@@ -63,6 +63,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
     ytick_color = plt.rcParams["ytick.color"]
+    axes_facecolor = plt.rcParams['axes.facecolor']
 
     dabest_obj  = EffectSizeDataFrame.dabest_obj
     plot_data   = EffectSizeDataFrame._plot_data
@@ -160,13 +161,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if is_paired is False:
         show_pairs = False
 
-    gs_default = {'mean_sd', 'median_quartiles', 'None'}
+    gs_default = {'mean_sd', 'median_quartiles', None}
     if plot_kwargs["group_summaries"] not in gs_default:
         raise ValueError('group_summaries must be one of'
         ' these: {}.'.format(gs_default) )
 
     default_group_summary_kwargs = {'zorder': 3, 'lw': 2,
-                                    'color': 'k','alpha': 1}
+                                    'alpha': 1}
     if plot_kwargs["group_summary_kwargs"] is None:
         group_summary_kwargs = default_group_summary_kwargs
     else:
@@ -270,14 +271,14 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     rawdata_axes  = axx[0]
     contrast_axes = axx[1]
 
-    rawdata_axes.set_frame_on(False)
-    contrast_axes.set_frame_on(False)
-    redraw_axes_kwargs = {'color'   : ytick_color,
+    # rawdata_axes.set_frame_on(False)
+    # contrast_axes.set_frame_on(False)
+
+    redraw_axes_kwargs = {'colors'     : ytick_color,
+                          'facecolors' : ytick_color,
                           'lw'      : 1,
+                          'zorder'  : 10,
                           'clip_on' : False}
-
-
-
 
 
     # Plot the raw data as a swarmplot.
@@ -307,13 +308,43 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     rawdata_axes.set_ylabel(plot_kwargs["swarm_label"])
 
-    sns.swarmplot(data=plot_data, x=xvar, y=yvar,
+    swarm = sns.swarmplot(data=plot_data, x=xvar, y=yvar,
                   ax=rawdata_axes, order=all_plot_groups, hue=color_col,
                   palette=plotPal, zorder=1, **swarmplot_kwargs)
     rawdata_axes.set_xlabel("")
 
-    # TODO:
+
     # Plot the gapped line summaries, if this is not a Cumming plot.
+    group_summaries = plot_kwargs["group_summaries"]
+    if float_contrast is False and group_summaries is None:
+        group_summaries = "mean_sd"
+
+    if group_summaries is not None:
+        # Create list to gather xspans.
+        xspans = []
+        line_colors = []
+        for jj, c in enumerate(swarm.collections):
+            try:
+                _, x_max, _, _ = get_swarm_spans(c)
+                x_max_span = x_max - jj
+                xspans.append(x_max_span)
+            except TypeError:
+                # we have got a None, so skip and move on.
+                pass
+
+            if bootstraps_color_by_group is True:
+                line_colors.append(plotPal[all_plot_groups[jj]])
+
+        if len(line_colors) != len(all_plot_groups):
+            line_colors = ytick_color
+
+        gapped_lines(plot_data, x=xvar, y=yvar,
+                     # Hardcoded offset...
+                     offset=xspans + np.array(0.2),
+                     line_color=line_colors, gap_color=axes_facecolor,
+                     type=group_summaries, ax=rawdata_axes,
+                     **group_summary_kwargs)
+
 
     # Add the counts to the rawdata axes xticks.
     counts = plot_data.groupby(xvar).count()[yvar]

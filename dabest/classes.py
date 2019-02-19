@@ -620,7 +620,7 @@ class EffectSizeDataFrame(object):
             float_contrast=True,
             show_pairs=True,
             show_group_count=True,
-            group_summaries="mean_sd",
+            group_summaries=None,
 
             ci_linewidth=3,
             summary_linewidth=3,

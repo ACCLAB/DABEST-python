@@ -70,7 +70,9 @@ def get_swarm_spans(coll):
 
 
 
-def gapped_lines(data, x, y, type='mean_sd', offset=0.3, ax=None, **kwargs):
+def gapped_lines(data, x, y, type='mean_sd', offset=0.2, ax=None,
+                line_color="black", gap_color="white",
+                **kwargs):
     '''
     Convenience function to plot the standard devations as vertical
     errorbars. The mean is a gap defined by negative space.
@@ -92,8 +94,18 @@ def gapped_lines(data, x, y, type='mean_sd', offset=0.3, ax=None, **kwargs):
         If 'median_quantiles', then the median and 25th and 75th percentiles of
         each group is plotted instead.
 
-    offset: float, default 0.3
-        The x-offset of the mean-sd line.
+    offset: float (default 0.3) or iterable.
+        Give a single float (that will be used as the x-offset of all
+        gapped lines), or an iterable containing the list of x-offsets.
+
+    line_color: string (matplotlib color, default "black") or iterable of
+        matplotlib colors.
+
+        The color of the vertical line indicating the stadard deviations.
+
+    gap_color: string (matplotlib color), default "white".
+
+        The color of the summary measure.
 
     ax: matplotlib Axes object, default None
         If a matplotlib Axes object is specified, the gapped lines will be
@@ -103,6 +115,8 @@ def gapped_lines(data, x, y, type='mean_sd', offset=0.3, ax=None, **kwargs):
     kwargs: dict, default None
         Dictionary with kwargs passed to matplotlib.lines.Line2D
     '''
+    import numpy as np
+    import pandas as pd
     import matplotlib.pyplot as plt
     import matplotlib.lines as mlines
 
@@ -120,12 +134,11 @@ def gapped_lines(data, x, y, type='mean_sd', offset=0.3, ax=None, **kwargs):
     if 'lw' not in keys:
         kwargs['lw'] = 2.
 
-    if 'color' not in keys:
-        kwargs['color'] = 'black'
+    # Grab the order in which the groups appear.
+    group_order = pd.unique(data[x])
 
-    means = data.groupby(x)[y].mean()
-    sd = data.groupby(x)[y].std()
-    pooled_sd = sd.mean()
+    means    = data.groupby(x)[y].mean().reindex(index=group_order)
+    sd       = data.groupby(x)[y].std().reindex(index=group_order)
     lower_sd = means - sd
     upper_sd = means + sd
 
@@ -133,10 +146,13 @@ def gapped_lines(data, x, y, type='mean_sd', offset=0.3, ax=None, **kwargs):
     if (lower_sd < ax_ylims[0]).any() or (upper_sd > ax_ylims[1]).any():
         kwargs['clip_on'] = True
 
-    medians = data.groupby(x)[y].median()
-    quantiles = data.groupby(x)[y].quantile([0.25, 0.75]).unstack()
+    medians   = data.groupby(x)[y].median().reindex(index=group_order)
+    quantiles = data.groupby(x)[y].quantile([0.25, 0.75])\
+                                  .unstack()\
+                                  .reindex(index=group_order)
     lower_quartiles = quantiles[0.25]
     upper_quartiles = quantiles[0.75]
+
 
     if type == 'mean_sd':
         central_measures = means
@@ -147,25 +163,46 @@ def gapped_lines(data, x, y, type='mean_sd', offset=0.3, ax=None, **kwargs):
         lows = lower_quartiles
         highs = upper_quartiles
 
-    original_zorder = kwargs['zorder']
-    span_color = kwargs['color']
-    span_lw = kwargs['lw']
 
+    n_groups = len(central_measures)
+
+    if isinstance(line_color, str):
+        custom_palette = np.repeat(line_color, n_groups)
+    else:
+        if len(line_color) != n_groups:
+            err1 = "{} groups are being plotted, but ".format(n_groups)
+            err2 = "{} colors(s) were supplied in `line_color`.".format(len(line_color))
+            raise ValueError(err1 + err2)
+        custom_palette = line_color
+
+    try:
+        len_offset = len(offset)
+    except TypeError:
+        offset = np.repeat(offset, n_groups)
+        len_offset = len(offset)
+
+    if len_offset != n_groups:
+        err1 = "{} groups are being plotted, but ".format(n_groups)
+        err2 = "{} offset(s) were supplied in `offset`.".format(len_offset)
+        raise ValueError(err1 + err2)
+
+    span_lw = kwargs['lw']
     for xpos, cm in enumerate(central_measures):
         # add vertical span line.
-        kwargs['zorder'] = original_zorder
-        kwargs['color'] = span_color
+        kwargs['zorder'] = kwargs['zorder']
+        kwargs['color'] = custom_palette[xpos]
         kwargs['lw'] = span_lw
-        low_to_high = mlines.Line2D([xpos+offset, xpos+offset],
+        _xpos = xpos + offset[xpos]
+        low_to_high = mlines.Line2D([_xpos, _xpos],
                                     [lows[xpos], highs[xpos]],
                                       **kwargs)
         ax.add_line(low_to_high)
 
         # add horzontal central measure line.
         kwargs['zorder'] = 6
-        kwargs['color'] = 'white'
-        kwargs['lw'] = span_lw + 2
-        line_xpos = xpos + offset
-        mean_line = mlines.Line2D([line_xpos-0.01, line_xpos+0.01], [cm, cm],
-                                   **kwargs)
+        kwargs['color'] = gap_color
+        kwargs['lw'] = span_lw * 1.5
+        line_xpos = xpos + offset[xpos]
+        mean_line = mlines.Line2D([line_xpos-0.015, line_xpos+0.015],
+                                  [cm, cm], **kwargs)
         ax.add_line(mean_line)
