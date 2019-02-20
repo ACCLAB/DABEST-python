@@ -71,7 +71,7 @@ def get_swarm_spans(coll):
 
 
 def gapped_lines(data, x, y, type='mean_sd', offset=0.2, ax=None,
-                line_color="black", gap_color="white",
+                line_color="black", gap_width_percent=1,
                 **kwargs):
     '''
     Convenience function to plot the standard devations as vertical
@@ -103,9 +103,9 @@ def gapped_lines(data, x, y, type='mean_sd', offset=0.2, ax=None,
 
         The color of the vertical line indicating the stadard deviations.
 
-    gap_color: string (matplotlib color), default "white".
-
-        The color of the summary measure.
+    gap_width_percent: float, default 5
+        The width of the gap in the line (indicating the central measure),
+        expressed as a percentage of the y-span of the axes.
 
     ax: matplotlib Axes object, default None
         If a matplotlib Axes object is specified, the gapped lines will be
@@ -120,9 +120,14 @@ def gapped_lines(data, x, y, type='mean_sd', offset=0.2, ax=None,
     import matplotlib.pyplot as plt
     import matplotlib.lines as mlines
 
+    if gap_width_percent < 0 or gap_width_percent > 100:
+        raise ValueError("`gap_width_percent` must be between 0 and 100.")
+
     if ax is None:
         ax = plt.gca()
     ax_ylims = ax.get_ylim()
+    ax_yspan = np.abs(ax_ylims[1] - ax_ylims[0])
+    gap_width = ax_yspan * gap_width_percent/100
 
     keys = kwargs.keys()
     if 'clip_on' not in keys:
@@ -186,23 +191,33 @@ def gapped_lines(data, x, y, type='mean_sd', offset=0.2, ax=None,
         err2 = "{} offset(s) were supplied in `offset`.".format(len_offset)
         raise ValueError(err1 + err2)
 
-    span_lw = kwargs['lw']
-    for xpos, cm in enumerate(central_measures):
-        # add vertical span line.
-        kwargs['zorder'] = kwargs['zorder']
-        kwargs['color'] = custom_palette[xpos]
-        kwargs['lw'] = span_lw
-        _xpos = xpos + offset[xpos]
-        low_to_high = mlines.Line2D([_xpos, _xpos],
-                                    [lows[xpos], highs[xpos]],
-                                      **kwargs)
-        ax.add_line(low_to_high)
+    kwargs['zorder'] = kwargs['zorder']
 
-        # add horzontal central measure line.
-        kwargs['zorder'] = 6
-        kwargs['color'] = gap_color
-        kwargs['lw'] = span_lw * 1.5
-        line_xpos = xpos + offset[xpos]
-        mean_line = mlines.Line2D([line_xpos-0.015, line_xpos+0.015],
-                                  [cm, cm], **kwargs)
-        ax.add_line(mean_line)
+    for xpos, central_measure in enumerate(central_measures):
+        # add lower vertical span line.
+
+        kwargs['color'] = custom_palette[xpos]
+
+        _xpos = xpos + offset[xpos]
+        # add lower vertical span line.
+        low = lows[xpos]
+        low_to_mean = mlines.Line2D([_xpos, _xpos],
+                                    [low, central_measure-gap_width],
+                                      **kwargs)
+        ax.add_line(low_to_mean)
+
+        # add upper vertical span line.
+        high = highs[xpos]
+        mean_to_high = mlines.Line2D([_xpos, _xpos],
+                                     [central_measure+gap_width, high],
+                                      **kwargs)
+        ax.add_line(mean_to_high)
+
+        # # add horzontal central measure line.
+        # kwargs['zorder'] = 6
+        # kwargs['color'] = gap_color
+        # kwargs['lw'] = kwargs['lw'] * 1.5
+        # line_xpos = xpos + offset[xpos]
+        # mean_line = mlines.Line2D([line_xpos-0.015, line_xpos+0.015],
+        #                           [central_measure, central_measure], **kwargs)
+        # ax.add_line(mean_line)

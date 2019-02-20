@@ -271,8 +271,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     rawdata_axes  = axx[0]
     contrast_axes = axx[1]
 
-    # rawdata_axes.set_frame_on(False)
-    # contrast_axes.set_frame_on(False)
+    rawdata_axes.set_frame_on(False)
+    contrast_axes.set_frame_on(False)
 
     redraw_axes_kwargs = {'colors'     : ytick_color,
                           'facecolors' : ytick_color,
@@ -341,7 +341,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         gapped_lines(plot_data, x=xvar, y=yvar,
                      # Hardcoded offset...
                      offset=xspans + np.array(0.2),
-                     line_color=line_colors, gap_color=axes_facecolor,
+                     line_color=line_colors,
+                     gap_width_percent=1.5,
                      type=group_summaries, ax=rawdata_axes,
                      **group_summary_kwargs)
 
