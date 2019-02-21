@@ -41,7 +41,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             reflines_kwargs=None,
             group_summary_kwargs=None,
             legend_kwargs=None,
-            aesthetic_kwargs=None
     """
 
     import numpy as np
@@ -96,7 +95,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     # two groups.
     if np.all([len(i)==2 for i in idx]) is False:
         is_paired = False
-
+    # if paired is False, set show_pairs as False.
+    if is_paired is False:
+        show_pairs = False
+    else:
+        show_pairs = plot_kwargs["show_pairs"]
 
 
     # Set default kwargs first, then merge with user-dictated ones.
@@ -110,13 +113,23 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
     # Violinplot kwargs.
-    default_violinplot_kwargs={'widths':0.5, 'vert':True,
+    default_violinplot_kwargs = {'widths':0.5, 'vert':True,
                                'showextrema':False, 'showmedians':False}
     if plot_kwargs["violinplot_kwargs"] is None:
         violinplot_kwargs = default_violinplot_kwargs
     else:
         violinplot_kwargs = merge_two_dicts(default_violinplot_kwargs,
                                             plot_kwargs["violinplot_kwargs"])
+
+
+    # slopegraph kwargs.
+    default_slopegraph_kwargs = {'lw':1, 'alpha':0.5}
+    if plot_kwargs["slopegraph_kwargs"] is None:
+        slopegraph_kwargs = default_slopegraph_kwargs
+    else:
+        slopegraph_kwargs = merge_two_dicts(slopegraph_kwargs,
+                                            plot_kwargs["slopegraph_kwargs"])
+
 
 
 
@@ -133,33 +146,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
     # Legend kwargs.
-    default_legend_kwargs = {'loc': 'upper left', 'frameon': False,
-                             'markerscale': 1.5}
+    default_legend_kwargs = {'loc': 'upper left', 'frameon': False}
     if plot_kwargs["legend_kwargs"] is None:
         legend_kwargs = default_legend_kwargs
     else:
         legend_kwargs = merge_two_dicts(default_legend_kwargs,
                                         plot_kwargs["legend_kwargs"])
 
-
-
-    # Aesthetic kwargs for sns.set().
-    default_aesthetic_kwargs={'context': plot_kwargs["plot_context"],
-                               'style': 'ticks',
-                              'font_scale': plot_kwargs["font_scale"],
-                              'rc': {'axes.linewidth': 1}}
-    if plot_kwargs["aesthetic_kwargs"] is None:
-        aesthetic_kwargs = default_aesthetic_kwargs
-    else:
-        aesthetic_kwargs = merge_two_dicts(default_aesthetic_kwargs,
-                                           plot_kwargs["aesthetic_kwargs"])
-
-
-
-    # if paired is False, set show_pairs as False.
-    show_pairs  = plot_kwargs["show_pairs"]
-    if is_paired is False:
-        show_pairs = False
 
     gs_default = {'mean_sd', 'median_quartiles', None}
     if plot_kwargs["group_summaries"] not in gs_default:
@@ -226,22 +219,21 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
     # Infer the figsize.
-    fig_size = plot_kwargs["fig_size"]
+    fig_size   = plot_kwargs["fig_size"]
     if fig_size is None:
-        # if color_col is None:
-        #     legend_xspan = 0
-        # else:
-        #     legend_xspan = 1.5
-
         all_groups_count = np.sum([len(i) for i in dabest_obj.idx])
+        if is_paired is True and show_pairs is True:
+            frac = 0.75
+        else:
+            frac = 1
         if float_contrast is True:
             height_inches = 4
-            each_group_width_inches = 2.5
+            each_group_width_inches = 2.5 * frac
         else:
             height_inches = 6
-            each_group_width_inches = 1.5
+            each_group_width_inches = 1.5 * frac
 
-        width_inches = (each_group_width_inches * all_groups_count)# + legend_xspan
+        width_inches = (each_group_width_inches * all_groups_count)
         fig_size = (width_inches, height_inches)
 
 
@@ -280,71 +272,89 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                           'zorder'  : 10,
                           'clip_on' : False}
 
-
-    # Plot the raw data as a swarmplot.
     swarm_ylim = plot_kwargs["swarm_ylim"]
-
-    # if float_contrast:
-    #     if swarm_ylim[0] < swarm_ylim[1]:
-    #         swarm_ylim_low, swarm_ylim_high = swarm_ylim
-    #     else:
-    #         swarm_ylim_high, swarm_ylim_low = swarm_ylim
-    #
-    #     if swarm_ylim_low < test_group_summary < swarm_ylim_high:
-    #         pass
-    #
-    #     else:
-    #         err1 = 'The mean of the reference group {} '.format(test_group_summary)
-    #         err2 = 'does not fall in the specified `swarm_ylim` {}. '.format(swarm_ylim)
-    #         err3 = 'Please select a `swarm_ylim` that includes the '
-    #         err4 = 'reference mean, or set `float_contrast=False`.'
-    #         err = err1 + err2 + err3 + err4
-    #         raise ValueError(err)
 
     if swarm_ylim is not None:
         rawdata_axes.set_ylim(swarm_ylim)
 
-    rawdata_axes.set_xlabel("")
+    if show_pairs is True:
+        # Plot the raw data as a slopegraph.
+        # Pivot the long (melted) data.
+        if color_col is None:
+            pivot_values = yvar
+        else:
+            pivot_values = [yvar, color_col]
+        pivoted_plot_data = pd.pivot(data=plot_data, index=dabest_obj.id_col,
+                                     columns=xvar, values=pivot_values)
 
-    rawdata_axes.set_ylabel(plot_kwargs["swarm_label"])
+        for ii, current_tuple in enumerate(idx):
+            # Select only the data for the current tuple.
+            if color_col is None:
+                current_pair = pivoted_plot_data.reindex(columns=current_tuple)
+            else:
+                current_pair = pivoted_plot_data[yvar].reindex(columns=current_tuple)
 
-    swarm = sns.swarmplot(data=plot_data, x=xvar, y=yvar,
-                  ax=rawdata_axes, order=all_plot_groups, hue=color_col,
-                  palette=plotPal, zorder=1, **swarmplot_kwargs)
-    rawdata_axes.set_xlabel("")
+            # Iterate through the data for the current tuple.
+            for ID, observation in current_pair.iterrows():
+                x_start  = (ii * 2)
+                x_points = [x_start, x_start+1]
+                y_points = observation.tolist()
+
+                if color_col is None:
+                    slopegraph_kwargs['color'] = ytick_color
+                else:
+                    color_key = pivoted_plot_data[color_col,
+                                                  current_tuple[0]].loc[ID]
+                    slopegraph_kwargs['color'] = plotPal[color_key]
+                    slopegraph_kwargs['label']  = color_key
+
+                rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
+
+        # Set the tick labels, because the slopegraph plotting doesn't.
+        rawdata_axes.set_xticks(np.arange(0, len(all_plot_groups)))
+        rawdata_axes.set_xticklabels(all_plot_groups)
 
 
-    # Plot the gapped line summaries, if this is not a Cumming plot.
-    group_summaries = plot_kwargs["group_summaries"]
-    if float_contrast is False and group_summaries is None:
-        group_summaries = "mean_sd"
+    else:
+        # Plot the raw data as a swarmplot.
+        rawdata_plot = sns.swarmplot(data=plot_data, x=xvar, y=yvar,
+                                     ax=rawdata_axes,
+                                     order=all_plot_groups, hue=color_col,
+                                     palette=plotPal, zorder=1,
+                                     **swarmplot_kwargs)
 
-    if group_summaries is not None:
-        # Create list to gather xspans.
-        xspans = []
-        line_colors = []
-        for jj, c in enumerate(swarm.collections):
-            try:
-                _, x_max, _, _ = get_swarm_spans(c)
-                x_max_span = x_max - jj
-                xspans.append(x_max_span)
-            except TypeError:
-                # we have got a None, so skip and move on.
-                pass
+        # Plot the gapped line summaries, if this is not a Cumming plot.
+        # Also, we will not plot gapped lines for paired plots. For now.
+        group_summaries = plot_kwargs["group_summaries"]
+        if float_contrast is False and group_summaries is None:
+            group_summaries = "mean_sd"
 
-            if bootstraps_color_by_group is True:
-                line_colors.append(plotPal[all_plot_groups[jj]])
+        if group_summaries is not None:
+            # Create list to gather xspans.
+            xspans = []
+            line_colors = []
+            for jj, c in enumerate(rawdata_axes.collections):
+                try:
+                    _, x_max, _, _ = get_swarm_spans(c)
+                    x_max_span = x_max - jj
+                    xspans.append(x_max_span)
+                except TypeError:
+                    # we have got a None, so skip and move on.
+                    pass
 
-        if len(line_colors) != len(all_plot_groups):
-            line_colors = ytick_color
+                if bootstraps_color_by_group is True:
+                    line_colors.append(plotPal[all_plot_groups[jj]])
 
-        gapped_lines(plot_data, x=xvar, y=yvar,
-                     # Hardcoded offset...
-                     offset=xspans + np.array(0.2),
-                     line_color=line_colors,
-                     gap_width_percent=1.5,
-                     type=group_summaries, ax=rawdata_axes,
-                     **group_summary_kwargs)
+            if len(line_colors) != len(all_plot_groups):
+                line_colors = ytick_color
+
+            gapped_lines(plot_data, x=xvar, y=yvar,
+                         # Hardcoded offset...
+                         offset=xspans + np.array(0.2),
+                         line_color=line_colors,
+                         gap_width_percent=1.5,
+                         type=group_summaries, ax=rawdata_axes,
+                         **group_summary_kwargs)
 
 
     # Add the counts to the rawdata axes xticks.
@@ -429,7 +439,14 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Make sure the contrast_axes x-lims match the rawdata_axes xlims.
     contrast_axes.set_xticks(rawdata_axes.get_xticks())
-    contrast_axes.set_xlim(rawdata_axes.get_xlim())
+    if show_pairs is True:
+        max_x = contrast_axes.get_xlim()[1]
+        rawdata_axes.set_xlim(-0.375, max_x)
+
+    if float_contrast is True:
+        contrast_axes.set_xlim(0.5, 1.5)
+    else:
+        contrast_axes.set_xlim(rawdata_axes.get_xlim())
 
     # Properly label the contrast ticks.
     for t in ticks_to_skip:
@@ -443,14 +460,23 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         legend_handles_unique = (pd.Series(legend_handles).loc[unique_idx]).tolist()
         if float_contrast is True:
             axes_with_legend = contrast_axes
-            bta = (1.3, 1.02)
+            if show_pairs is True:
+                bta = (1.75, 1.02)
+            else:
+                bta = (1.5, 1.02)
         else:
             axes_with_legend = rawdata_axes
-            bta = (1., 1.)
+            if show_pairs is True:
+                bta = (1.02, 1.)
+            else:
+                bta = (1.,1.)
         leg = axes_with_legend.legend(legend_handles_unique,
                                       legend_labels_unique,
                                       bbox_to_anchor=bta,
                                       **legend_kwargs)
+        if show_pairs is True:
+            for line in leg.get_lines():
+                line.set_linewidth(3.0)
 
 
 
@@ -640,19 +666,30 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
     # Place contrast axes y-label.
-    contrast_label_dict = {'mean_diff'    : "Mean difference",
-                           'median_diff'  : "Median difference",
+    contrast_label_dict = {'mean_diff'    : "mean difference",
+                           'median_diff'  : "median difference",
                            'cohens_d'     : "Cohen's d",
                            'hedges_g'     : "Hedges' g",
                            'cliffs_delta' : "Cliff's delta"}
-    if plot_kwargs['contrast_label'] is not None:
-        contrast_label = plot_kwargs['contrast_label']
+    default_contrast_label = contrast_label_dict[EffectSizeDataFrame.effect_size]
+
+    if plot_kwargs['contrast_label'] is None:
+        if is_paired is True:
+            contrast_label = "paired\n{}".format(default_contrast_label)
+        else:
+            contrast_label = default_contrast_label
+        contrast_label = contrast_label.capitalize()
     else:
-        contrast_label = contrast_label_dict[EffectSizeDataFrame.effect_size]
+        contrast_label = plot_kwargs['contrast_label']
+
     contrast_axes.set_ylabel(contrast_label)
     if float_contrast is True:
         contrast_axes.yaxis.set_label_position("right")
 
+
+    # Set the rawdata axes labels appropriately
+    rawdata_axes.set_ylabel(plot_kwargs["swarm_label"])
+    rawdata_axes.set_xlabel("")
 
 
 

@@ -4,7 +4,7 @@
 # Email : joseshowh@gmail.com
 
 
-def load(data, idx, x=None, y=None, paired=False):
+def load(data, idx, x=None, y=None, paired=False, id_col=None):
     '''
     Create a specialised object for estimation statistics.
     This is designed to work with pandas DataFrames.
@@ -30,4 +30,4 @@ def load(data, idx, x=None, y=None, paired=False):
     '''
     from .classes import Dabest
 
-    return Dabest(data, idx, x, y, paired)
+    return Dabest(data, idx, x, y, paired, id_col)

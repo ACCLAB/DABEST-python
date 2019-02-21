@@ -37,6 +37,7 @@ def compute_1group_bootstraps(x, func, resamples=5000, random_seed=12345,
     return out
 
 
+
 def compute_1group_bias_correction(x, bootstraps, func, *args, **kwargs):
     from scipy.stats import norm
     metric = func(x, *args, **kwargs)
@@ -97,7 +98,7 @@ def summary_ci_1group(x, func, resamples=5000, alpha=0.05, random_seed=12345,
             was True.
 
     """
-    from . import confint_meandiff as ci_md
+    from . import confint_2group_diff as ci2g
     from numpy import sort as npsort
 
     boots = compute_1group_bootstraps(x, func)
@@ -107,7 +108,7 @@ def summary_ci_1group(x, func, resamples=5000, alpha=0.05, random_seed=12345,
     accel = compute_1group_acceleration(jk)
     del jk
 
-    ci_idx = ci_md.compute_interval_limits(bias, accel, resamples, alpha)
+    ci_idx = ci2g.compute_interval_limits(bias, accel, resamples, alpha)
 
     boots_sorted = npsort(boots)
 

@@ -103,7 +103,7 @@ def _calc_accel(jack_dist):
 
 
 
-def compute_mean_diff_bootstraps(x0, x1, is_paired, effect_size,
+def compute_bootstrapped_diff(x0, x1, is_paired, effect_size,
                                 resamples=5000, random_seed=12345):
     """Bootstraps the effect_size for 2 groups."""
     from . import effsize as __es
@@ -299,7 +299,7 @@ def compute_interval_limits(bias, acceleration, n_boots, ci=95):
 #     acceleration_value = _calc_accel(jackknives)
 #     del jackknives # for memory management
 #
-#     bootstraps = compute_mean_diff_bootstraps(x0, x1, is_paired, effect_size,
+#     bootstraps = compute_bootstrapped_diff(x0, x1, is_paired, effect_size,
 #                                               resamples, random_seed)
 #     bias_correction = compute_meandiff_bias_correction(bootstraps, es)
 #

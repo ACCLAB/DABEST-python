@@ -8,7 +8,7 @@ class Dabest:
     Class for estimation statistics and plots.
     '''
 
-    def __init__(self, data, idx, x=None, y=None, paired=False):
+    def __init__(self, data, idx, x=None, y=None, paired=False, id_col=None):
         """
         Create a Dabest object.
         This is designed to work with pandas DataFrames.
@@ -24,6 +24,13 @@ class Dabest:
 
         x, y: strings, default None.
             Column names for data to be plotted on the x-axis and y-axis.
+
+        paired: boolean, default True.
+
+        id_col: default None.
+            Required if paired data is supplied, and the dataframe is long.
+            If the dataframe is wide (ie each column is a group), the row index
+            is taken as the ID column.
         """
 
         # Import standard data science libraries.
@@ -31,12 +38,14 @@ class Dabest:
         import pandas as pd
         import seaborn as sns
 
-        self.__data  = data
-        self.__idx   = idx
+        self.__data      = data
+        self.__idx       = idx
+        self.__id_col    = id_col
         self.__is_paired = paired
 
         # Make a copy of the data, so we don't make alterations to it.
         data_in = data.copy()
+        data_in_index_name = data_in.index.name
         data_in.reset_index(inplace=True)
 
 
@@ -56,6 +65,15 @@ class Dabest:
             'entered--{}.'.format(idx)
             raise ValueError(err)
 
+        # Having parsed the idx, check if it is a kosher paired plot,
+        # if so stated.
+        if paired is True:
+            all_idx_lengths = [len(t) for t in self.__idx]
+            if (np.array(all_idx_lengths) != 2).any():
+                err1 = "`is_paired` is True, but some idx "
+                err2 = "in {} does not consist only of two groups.".format(idx)
+                raise ValueError(err1 + err2)
+
 
         # Sanity checks.
         if x is None and y is not None:
@@ -66,6 +84,7 @@ class Dabest:
             err = 'You have only specified `x`. Please also specify `y`.'
             raise ValueError(err)
 
+        # Identify the type of data that was passed in.
         elif x is not None and y is not None:
             # Assume we have a long dataset.
             # check both x and y are column names in data.
@@ -108,10 +127,20 @@ class Dabest:
                 if g not in data_in.columns:
                     raise IndexError('{0} is not a column in `data`.'.format(g))
 
-            # Extract only the columns being plotted.
-            plot_data = data_in.reindex(columns=all_plot_groups).copy()
+            # Automatically assume the index is the id col
+            # since this is a wide dataset.
+            if paired is True and id_col is None:
+                if data_in_index_name is None:
+                    id_col = 'index'
+                else:
+                    id_col = data_in_index_name
 
-            plot_data = pd.melt(plot_data,
+            set_all_columns     = set(data_in.columns.tolist())
+            set_all_plot_groups = set(all_plot_groups)
+            id_vars = set_all_columns.difference(set_all_plot_groups)
+
+            plot_data = pd.melt(data_in,
+                                id_vars=id_vars,
                                 value_vars=all_plot_groups,
                                 value_name=self.__yvar,
                                 var_name=self.__xvar)
@@ -123,6 +152,16 @@ class Dabest:
         self.__plot_data = plot_data
 
         self.__all_plot_groups = all_plot_groups
+
+        # Sanity check that all idxs are paired, if so desired.
+        if paired is True:
+            if id_col is None:
+                err = "`id_col` must be specified if `is_paired` is set to True."
+                raise IndexError(err)
+            elif id_col not in plot_data.columns:
+                err = "{} is not a column in `data`. ".format(id_col)
+                raise IndexError(err)
+
 
 
         self.mean_diff    = EffectSizeDataFrame(self, "mean_diff",
@@ -168,9 +207,17 @@ class Dabest:
     @property
     def is_paired(self):
         """
-        Returns True if the dataset was declared as paired to `Dabest.load()`.
+        Returns True if the dataset was declared as paired to `dabest.load()`.
         """
         return self.__is_paired
+
+    @property
+    def id_col(self):
+        """
+        Returns the ic column declared to `dabest.load()`.
+        """
+        return self.__id_col
+
 
     @property
     def x(self):
@@ -322,7 +369,7 @@ class TwoGroupsEffectSize(object):
 
         self.__acceleration_value = ci2g._calc_accel(self.__jackknives)
 
-        bootstraps = ci2g.compute_mean_diff_bootstraps(
+        bootstraps = ci2g.compute_bootstrapped_diff(
                             control, test, is_paired, effect_size,
                             resamples, random_seed)
         self.__bootstraps = npsort(bootstraps)
@@ -535,10 +582,6 @@ class EffectSizeDataFrame(object):
         """
 
         self.__dabest_obj = dabest
-        # self.__idx          = dabest.idx
-        # self.__plot_data    = dabest._plot_data
-        # self.__xvar         = dabest._xvar
-        # self.__yvar         = dabest._yvar
         self.__effect_size  = effect_size
         self.__is_paired    = is_paired
         self.__ci           = ci
@@ -626,9 +669,6 @@ class EffectSizeDataFrame(object):
             summary_linewidth=3,
             halfviolin_alpha=0.75,
 
-            multiplot_horizontal_spacing=0.75,
-            cumming_vertical_spacing=0.05,
-
             fig_size=None,
             dpi=100,
             tick_length=10,
@@ -636,10 +676,10 @@ class EffectSizeDataFrame(object):
 
             swarmplot_kwargs=None,
             violinplot_kwargs=None,
+            slopegraph_kwargs=None,
             reflines_kwargs=None,
             group_summary_kwargs=None,
-            legend_kwargs=None,
-            aesthetic_kwargs=None):
+            legend_kwargs=None):
         """
         Creates an estimation plot for the effect size of interest.
 
