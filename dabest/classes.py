@@ -8,7 +8,8 @@ class Dabest:
     Class for estimation statistics and plots.
     '''
 
-    def __init__(self, data, idx, x=None, y=None, paired=False, id_col=None):
+    def __init__(self, data, idx, x=None, y=None, paired=False, id_col=None,
+                 ci=95, random_seed=12345):
         """
         Create a Dabest object.
         This is designed to work with pandas DataFrames.
@@ -31,6 +32,11 @@ class Dabest:
             Required if paired data is supplied, and the dataframe is long.
             If the dataframe is wide (ie each column is a group), the row index
             is taken as the ID column.
+
+        random_seed: int, default 12345
+            `random_seed` is used to seed the random number generator during
+            bootstrap resampling. This ensures that the confidence intervals
+            reported are replicable.
         """
 
         # Import standard data science libraries.
@@ -38,10 +44,12 @@ class Dabest:
         import pandas as pd
         import seaborn as sns
 
+        self.__ci        = ci
         self.__data      = data
         self.__idx       = idx
         self.__id_col    = id_col
         self.__is_paired = paired
+        self.__random_seed = random_seed
 
         # Make a copy of the data, so we don't make alterations to it.
         data_in = data.copy()
@@ -163,21 +171,23 @@ class Dabest:
                 raise IndexError(err)
 
 
+        EffectSizeDataFrame_kwargs = dict(is_paired=paired,
+                                          random_seed=random_seed)
 
         self.mean_diff    = EffectSizeDataFrame(self, "mean_diff",
-                                                self.__is_paired)
+                                                **EffectSizeDataFrame_kwargs)
 
         self.median_diff  = EffectSizeDataFrame(self, "median_diff",
-                                               self.__is_paired)
+                                               **EffectSizeDataFrame_kwargs)
 
         self.cohens_d     = EffectSizeDataFrame(self, "cohens_d",
-                                                self.__is_paired)
+                                                **EffectSizeDataFrame_kwargs)
 
         self.hedges_g     = EffectSizeDataFrame(self, "hedges_g",
-                                                self.__is_paired)
+                                                **EffectSizeDataFrame_kwargs)
 
         self.cliffs_delta = EffectSizeDataFrame(self, "cliffs_delta",
-                                                self.__is_paired)
+                                                **EffectSizeDataFrame_kwargs)
 
 
 
@@ -217,6 +227,22 @@ class Dabest:
         Returns the ic column declared to `dabest.load()`.
         """
         return self.__id_col
+
+    @property
+    def ci(self):
+        """
+        The width of the desired confidence interval.
+        """
+        return self.__ci
+
+
+    @property
+    def random_seed(self):
+        """
+        The number used to initialise the numpy random seed generator, ie.
+        `seed_value` from `numpy.random.seed(seed_value)` is returned.
+        """
+        return self.__random_seed
 
 
     @property
