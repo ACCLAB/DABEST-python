@@ -64,18 +64,22 @@ def test_median_diff_unpaired_ci(reps=100, ci=95):
 
     df = pd.DataFrame({'Control' : skewsample1, 'Test': skewsample2})
 
+
+    # Create several CIs and see if the true population difference lies within.
+    error_count = 0
+
     for i in range(0, reps):
-    # pick a random seed
-    rnd_sd = np.random.randint(0, 999999)
+        # pick a random seed
+        rnd_sd = np.random.randint(0, 999999)
 
-    two_groups_unpaired = dabest.load(data=df, idx=("Control", "Test"),
-                                      ci=ci, random_seed=rnd_sd)
+        two_groups_unpaired = load(data=df, idx=("Control", "Test"),
+                                   ci=ci, random_seed=rnd_sd)
 
-    median_d = two_groups_unpaired.median_diff.results
-    low, high = float(median_d.bca_low), float(median_d.bca_high)
+        median_d = two_groups_unpaired.median_diff.results
+        low, high = float(median_d.bca_low), float(median_d.bca_high)
 
-    if low < DIFFERENCE < high is False:
-        error_count += 1
+        if low < DIFFERENCE < high is False:
+            error_count += 1
 
 
 
