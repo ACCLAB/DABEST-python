@@ -37,4 +37,5 @@ install:
   - pip install pytest==3.7
   - pip install .
 
-script: pytest
+
+script: pytest dabest
