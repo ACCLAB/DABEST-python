@@ -46,6 +46,43 @@ def test_mean_diff_unpaired_ci(reps=100, ci=95):
 
 
 
+def test_median_diff_unpaired_ci(reps=100, ci=95):
+    from scipy.stats import skewnorm
+
+    DIFFERENCE = np.random.randint(-5, 5)
+    A = np.random.randint(-7, 7)
+    N = 10000
+
+    skew_kwargs = dict(a=A, scale=5, size=N)
+    skewpop1 = skewnorm.rvs(**skew_kwargs, loc=100)
+    skewpop2 = skewnorm.rvs(**skew_kwargs, loc=100+DIFFERENCE)
+
+    n = 10
+    sample_kwargs = dict(size=n, replace=False)
+    skewsample1 = np.random.choice(skewpop1, **sample_kwargs)
+    skewsample2 = np.random.choice(skewpop2, **sample_kwargs)
+
+    df = pd.DataFrame({'Control' : skewsample1, 'Test': skewsample2})
+
+    for i in range(0, reps):
+    # pick a random seed
+    rnd_sd = np.random.randint(0, 999999)
+
+    two_groups_unpaired = dabest.load(data=df, idx=("Control", "Test"),
+                                      ci=ci, random_seed=rnd_sd)
+
+    median_d = two_groups_unpaired.median_diff.results
+    low, high = float(median_d.bca_low), float(median_d.bca_high)
+
+    if low < DIFFERENCE < high is False:
+        error_count += 1
+
+
+
+    assert error_count <= reps * (100 - ci) / 100
+
+
+
 
 
 def test_standardized_diff_unpaired_ci(reps=100, ci=95):
