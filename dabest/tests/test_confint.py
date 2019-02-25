@@ -23,7 +23,6 @@ def test_mean_diff_unpaired_ci(reps=100, ci=95):
     df = pd.DataFrame({'Control' : c1, 'Test': t1})
 
 
-
     # Create several CIs and see if the true population difference lies within.
     error_count = 0
 
@@ -48,6 +47,7 @@ def test_mean_diff_unpaired_ci(reps=100, ci=95):
 
 
 
+
 def test_standardized_diff_unpaired_ci(reps=100, ci=95):
     # Create data for hedges g and cohens d
     N = 10
@@ -64,7 +64,6 @@ def test_standardized_diff_unpaired_ci(reps=100, ci=95):
     t1 = norm.rvs(loc=CONTROL_MEAN+TRUE_DIFFERENCE, **norm_rvs_kwargs)
 
     df = pd.DataFrame({'Control' : c1, 'Test': t1})
-
 
 
     # Create several CIs and see if the true population difference lies within.
@@ -94,3 +93,46 @@ def test_standardized_diff_unpaired_ci(reps=100, ci=95):
     max_errors = reps * (100 - ci) / 100
     assert error_count_cohens_d <= max_errors
     assert error_count_hedges_g <= max_errors
+
+
+
+
+
+
+def test_cliffs_delta_ci(reps=100, ci=95):
+    # Create two populations with a 50% overlap.
+    DIFFERENCE = np.random.randint(1, 10)
+    SD = np.abs(DIFFERENCE)
+
+    N = 10000
+    pop_kwargs = dict(scale=SD, size=N)
+    pop1 = norm.rvs(loc=100, **pop_kwargs)
+    pop2 = norm.rvs(loc=100+DIFFERENCE, **pop_kwargs)
+
+    n = 20
+    sample_kwargs = dict(size=n, replace=False)
+    sample1 = np.random.choice(pop1, **sample_kwargs)
+    sample2 = np.random.choice(pop2, **sample_kwargs)
+
+    df = pd.DataFrame({'Control' : sample1, 'Test': sample2})
+
+
+    # Create several CIs and see if the true overlap of 50% lies within.
+    error_count = 0
+
+    for i in range(0, reps):
+        # pick a random seed
+        rnd_sd = np.random.randint(0, 999999)
+
+        two_groups_unpaired = load(data=df, idx=("Control", "Test"),
+                                   ci=ci, random_seed=rnd_sd)
+
+        cd = two_groups_unpaired.cliffs_delta.results
+        low, high = float(cd.bca_low), float(cd.bca_high)
+
+        if low < 0.5 < high is False:
+            error_count += 1
+
+
+
+    assert error_count <= reps * (100 - ci) / 100
