@@ -383,7 +383,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Plot effect sizes and bootstraps.
     # Take note of where the `control` groups are.
-    ticks_to_skip   = [len(i) for i in idx][:-1]
+    ticks_to_skip   = np.cumsum([len(t) for t in idx])[:-1].tolist()
     ticks_to_skip.insert(0, 0)
 
     # Then obtain the ticks where we have to plot the effect sizes.
