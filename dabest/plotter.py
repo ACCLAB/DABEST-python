@@ -288,11 +288,17 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                      columns=xvar, values=pivot_values)
 
         for ii, current_tuple in enumerate(idx):
-            # Select only the data for the current tuple.
-            if color_col is None:
-                current_pair = pivoted_plot_data.reindex(columns=current_tuple)
+            if len(idx) > 1:
+                # Select only the data for the current tuple.
+                if color_col is None:
+                    current_pair = pivoted_plot_data.reindex(columns=current_tuple)
+                else:
+                    current_pair = pivoted_plot_data[yvar].reindex(columns=current_tuple)
             else:
-                current_pair = pivoted_plot_data[yvar].reindex(columns=current_tuple)
+                if color_col is None:
+                    current_pair = pivoted_plot_data
+                else:
+                    current_pair = pivoted_plot_data[yvar]
 
             # Iterate through the data for the current tuple.
             for ID, observation in current_pair.iterrows():
@@ -305,7 +311,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 else:
                     color_key = pivoted_plot_data[color_col,
                                                   current_tuple[0]].loc[ID]
-                    slopegraph_kwargs['color'] = plotPal[color_key]
+                    slopegraph_kwargs['color']  = plotPal[color_key]
                     slopegraph_kwargs['label']  = color_key
 
                 rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
