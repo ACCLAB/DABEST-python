@@ -7,40 +7,33 @@
 def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     """
+    Custom function that creates an estimation plot from an EffectSizeDataFrame.
+
     Keywords
     --------
-        EffectSizeDataFrame: A `dabest` EffectSizeDataFrame object.
+    EffectSizeDataFrame: A `dabest` EffectSizeDataFrame object.
 
-        **kwargs:
-            color_col=None,
+    **plot_kwargs:
+        color_col=None,
 
-            raw_marker_size=6, es_marker_size=9,
+        raw_marker_size=6, es_marker_size=9,
 
-            swarm_label="metric", contrast_label="delta metric",
-            swarm_ylim=None, contrast_ylim=None,
+        swarm_label=None, contrast_label=None,
+        swarm_ylim=None, contrast_ylim=None,
 
-            plot_context='talk',
-            font_scale=1.,
+        custom_palette=None,
+        float_contrast=True,
+        show_pairs=True,
+        group_summaries="mean_sd",
 
-            custom_palette=None,
-            float_contrast=True,
-            show_pairs=True,
-            show_group_count=True,
-            group_summaries="mean_sd",
+        fig_size=None,
+        dpi=100,
 
-            ci_linewidth=3,
-            summary_linewidth=3,
-
-            fig_size=None,
-            dpi=100,
-            tick_length=10,
-            tick_pad=7,
-
-            swarmplot_kwargs=None,
-            violinplot_kwargs=None,
-            reflines_kwargs=None,
-            group_summary_kwargs=None,
-            legend_kwargs=None,
+        swarmplot_kwargs=None,
+        violinplot_kwargs=None,
+        reflines_kwargs=None,
+        group_summary_kwargs=None,
+        legend_kwargs=None,
     """
 
     import numpy as np
