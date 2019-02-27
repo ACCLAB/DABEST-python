@@ -4,39 +4,17 @@
 # Email : joseshowh@gmail.com
 
 class Dabest:
-    '''
+
+    """
     Class for estimation statistics and plots.
-    '''
+    """
 
     def __init__(self, data, idx, x=None, y=None, paired=False, id_col=None,
                  ci=95, random_seed=12345):
+
         """
-        Create a Dabest object.
-        This is designed to work with pandas DataFrames.
-
-        Keywords
-        --------
-        data: pandas DataFrame.
-
-        idx: tuple.
-            List of column names (if 'x' is not supplied) or of category names
-            (if 'x' is supplied). This can be expressed as a tuple of tuples,
-            with each individual tuple producing its own contrast plot.
-
-        x, y: strings, default None.
-            Column names for data to be plotted on the x-axis and y-axis.
-
-        paired: boolean, default True.
-
-        id_col: default None.
-            Required if paired data is supplied, and the dataframe is long.
-            If the dataframe is wide (ie each column is a group), the row index
-            is taken as the ID column.
-
-        random_seed: int, default 12345
-            `random_seed` is used to seed the random number generator during
-            bootstrap resampling. This ensures that the confidence intervals
-            reported are replicable.
+        Parses and stores pandas DataFrames in preparation for estimation
+        statistics.
         """
 
         # Import standard data science libraries.
@@ -287,8 +265,10 @@ class Dabest:
 
 class TwoGroupsEffectSize(object):
 
-    """A class to compute and store the results of bootstrapped
-    mean differences between two groups."""
+    """
+    A class to compute and store the results of bootstrapped
+    mean differences between two groups.
+    """
 
     def __init__(self, control, test, effect_size,
                  is_paired=False, ci=95,
@@ -299,46 +279,46 @@ class TwoGroupsEffectSize(object):
 
         Keywords
         --------
-            control, test: array-like
-                These should be numerical iterables.
+        control, test: array-like
+            These should be numerical iterables.
 
-            effect_size: string.
-                Any one of the following are accepted inputs:
-                'mean_diff', 'median_diff', 'cohens_d', 'hedges_g', or 'cliffs_delta'
+        effect_size: string.
+            Any one of the following are accepted inputs:
+            'mean_diff', 'median_diff', 'cohens_d', 'hedges_g', or 'cliffs_delta'
 
-            is_paired: boolean, default False
+        is_paired: boolean, default False
 
-            resamples: int, default 5000
-                The number of bootstrap resamples to be taken.
+        resamples: int, default 5000
+            The number of bootstrap resamples to be taken.
 
-            ci: float, default 95
-                Denotes the likelihood that the confidence interval produced
-                _does not_ include the true imean difference. When alpha = 0.05,
-                a 95% confidence interval is produced.
+        ci: float, default 95
+            The confidence interval width. The default of 95 produces 95%
+            confidence intervals.
 
-            random_seed: int, default 12345
-                `random_seed` is used to seed the random number generator during
-                bootstrap resampling. This ensures that the confidence intervals
-                reported are replicable.
+        random_seed: int, default 12345
+            `random_seed` is used to seed the random number generator during
+            bootstrap resampling. This ensures that the confidence intervals
+            reported are replicable.
+
 
         Returns
         -------
-            A `TwoGroupEffectSize` object.
+        A `TwoGroupEffectSize` object.
+
 
         Examples
         --------
-            >>> import numpy as np
-            >>> import scipy as sp
-            >>> import dabest
-            >>> np.random.seed(12345)
-            >>> control = sp.stats.norm.rvs(loc=0, size=30)
-            >>> test = sp.stats.norm.rvs(loc=0.5, size=30)
-            >>> effsize = dabest.TwoGroupsEffectSize(control, test, "mean_diff")
-            >>> effsize
-
-            The unpaired mean difference is -0.253 [95%CI -0.782, 0.241]
-            5000 bootstrap samples. The confidence interval is bias-corrected
-            and accelerated.
+        >>> import numpy as np
+        >>> import scipy as sp
+        >>> import dabest
+        >>> np.random.seed(12345)
+        >>> control = sp.stats.norm.rvs(loc=0, size=30)
+        >>> test = sp.stats.norm.rvs(loc=0.5, size=30)
+        >>> effsize = dabest.TwoGroupsEffectSize(control, test, "mean_diff")
+        >>> effsize
+        The unpaired mean difference is -0.253 [95%CI -0.782, 0.241]
+        5000 bootstrap samples. The confidence interval is bias-corrected
+        and accelerated.
         """
 
         from numpy import array, isnan
@@ -515,7 +495,7 @@ class TwoGroupsEffectSize(object):
     @property
     def ci(self):
         """
-        Returns the width of the confidence interval.
+        Returns the width of the confidence interval, in percent
         """
         return self.__ci
 
@@ -590,14 +570,8 @@ class EffectSizeDataFrame(object):
                  is_paired, ci=95,
                  resamples=5000, random_seed=12345):
         """
-        Takes the data parsed from a Dabest object, and gives a plotting and
-        printing capability.
-
-        Keywords
-        --------
-
-        Examples
-        --------
+        Parses the data from a Dabest object, enabling plotting and printing
+        capability for the effect size of interest.
         """
 
         self.__dabest_obj = dabest
@@ -675,23 +649,13 @@ class EffectSizeDataFrame(object):
             swarm_label=None, contrast_label=None,
             swarm_ylim=None, contrast_ylim=None,
 
-            plot_context='talk',
-            font_scale=1.,
-
             custom_palette=None,
             float_contrast=True,
             show_pairs=True,
-            show_group_count=True,
             group_summaries=None,
-
-            ci_linewidth=3,
-            summary_linewidth=3,
-            halfviolin_alpha=0.75,
 
             fig_size=None,
             dpi=100,
-            tick_length=10,
-            tick_pad=7,
 
             swarmplot_kwargs=None,
             violinplot_kwargs=None,
@@ -704,15 +668,142 @@ class EffectSizeDataFrame(object):
 
         Keywords
         --------
-            ...
+        color_col: string, default None
+            Column to be used for colors.
+
+        raw_marker_size: float, default 6
+            The diameter (in points) of the marker dots plotted in the
+            swarmplot.
+
+        es_marker_size: float, default 9
+            The size (in points) of the effect size points on the difference
+            axes.
+
+        swarm_label, contrast_label: strings, default None
+            Set labels for the y-axis of the swarmplot and the contrast plot,
+            respectively. If `swarm_label` is not specified, it defaults to
+            "value", unless a column name was passed to `y`. If
+            `contrast_label` is not specified, it defaults to the effect size
+            being plotted.
+
+        swarm_ylim, contrast_ylim: tuples, default None
+            The desired y-limits of the raw data (swarmplot) axes and the
+            difference axes respectively, as a tuple. These will be autoscaled
+            to sensible values if they are not specified.
+
+        custom_palette: dict, list, or matplotlib color palette, default None
+            This keyword accepts a dictionary with {'group':'color'} pairings,
+            a list of RGB colors, or a specified matplotlib palette. This
+            palette will be used to color the swarmplot. If `color_col` is not
+            specified, then each group will be colored in sequence according
+            to the default palette currently used by matplotlib.
+
+            Please take a look at the seaborn commands `sns.color_palette`
+            and `sns.cubehelix_palette` to generate a custom palette. Both
+            these functions generate a list of RGB colors.
+            https://seaborn.pydata.org/generated/seaborn.color_palette.html
+            https://seaborn.pydata.org/generated/seaborn.cubehelix_palette.html
+            The named colors of matplotlib can be found here:
+            https://matplotlib.org/examples/color/named_colors.html
+
+        float_contrast: boolean, default True
+            Whether or not to display the halfviolin bootstrapped difference
+            distribution alongside the raw data.
+
+        show_pairs: boolean, default True
+            If the data is paired, whether or not to show the raw data as a
+            swarmplot, or as slopegraph, with a line joining each pair of
+            observations.
+
+        group_summaries: ['mean_sd', 'median_quartiles', 'None'], default None.
+            Plots the summary statistics for each group. If 'mean_sd', then
+            the mean and standard deviation of each group is plotted as a
+            notched line beside each group. If 'median_quantiles', then the
+            median and 25th and 75th percentiles of each group is plotted
+            instead. If 'None', the summaries are not shown.
+
+        fig_size: tuple, default None
+            The desired dimensions of the figure as a (length, width) tuple.
+
+        dpi: int, default 100
+            The dots per inch of the resulting figure.
+
+        swarmplot_kwargs: dict, default None
+            Pass any keyword arguments accepted by the seaborn `swarmplot`
+            command here, as a dict. If None, the following keywords are
+            passed to sns.swarmplot: {'size':`raw_marker_size`}.
+
+        violinplot_kwargs: dict, default None
+            Pass any keyword arguments accepted by the matplotlib `
+            pyplot.violinplot` command here, as a dict. If None, the following
+            keywords are passed to violinplot: {'widths':0.5, 'vert':True,
+            'showextrema':False, 'showmedians':False}.
+
+        reflines_kwargs: dict, default None
+            This will change the appearance of the zero reference lines. Pass
+            any keyword arguments accepted by the matplotlib Axes `hlines`
+            command here, as a dict. If None, the following keywords are
+            passed to Axes.hlines: {'linestyle':'solid', 'linewidth':0.75,
+            'zorder':2, 'color': default y-tick color}.
+
+        group_summary_kwargs: dict, default None
+            Pass any keyword arguments accepted by the matplotlib.lines.Line2D
+            command here, as a dict. This will change the appearance of the
+            vertical summary lines for each group, if `group_summaries` is not
+            'None'. If None, the following keywords are passed to
+            matplotlib.lines.Line2D: {'lw':2, 'alpha':1, 'zorder':3}.
+
+        legend_kwargs: dict, default None
+            Pass any keyword arguments accepted by the matplotlib Axes
+            `legend` command here, as a dict. If None, the following keywords
+            are passed to matplotlib.Axes.legend: {'loc':'upper left',
+            'frameon':False}.
+
 
         Returns
         -------
-            ...
+        A matplotlib Figure :class:`matplotlib.figure.Figure` with 2 Axes.
+
+        The first axes (accessible with `FigName.axes()[0]`) contains the
+        rawdata swarmplot; the second axes (accessible with
+        `FigName.axes()[1]`) has the bootstrap distributions and effect sizes
+        (with confidence intervals) plotted on it.
 
         Examples
         --------
-            ...
+        Create a Gardner-Altman estimation plot for the mean difference.
+
+        >>> my_data = dabest.load(df, idx=("Control 1", "Test 1"))
+        >>> fig1 = my_data.mean_diff.plot()
+
+        Create a Gardner-Altman plot for the Hedges' g effect size.
+
+        >>> fig2 = my_data.hedges_g.plot()
+
+        Create a Cumming estimation plot for the mean difference.
+
+        >>> fig3 = my_data.mean_diff.plot(float_contrast=True)
+
+        Create a paired Gardner-Altman plot.
+
+        >>> my_data_paired = dabest.load(df, idx=("Control 1", "Test 1"),
+        ...                              paired=True)
+        >>> fig4 = my_data_paired.mean_diff.plot()
+
+        Create a multi-group Cumming plot.
+
+        >>> my_multi_groups = dabest.load(df, idx=(("Control 1", "Test 1"),
+        ...                                        ("Control 2", "Test 2"))
+        ...                               )
+        >>> fig5 = my_multi_groups.mean_diff.plot()
+
+        Create a shared control Cumming plot.
+
+        >>> my_shared_control = dabest.load(df, idx=("Control 1", "Test 1",
+        ...                                          "Test 2", "Test 3")
+        ...                                 )
+        >>> fig6 = my_shared_control.mean_diff.plot()
+
         """
 
         from .plotter import EffectSizeDataFramePlotter
@@ -765,14 +856,23 @@ class EffectSizeDataFrame(object):
 
     @property
     def ci(self):
+        """
+        The width of the confidence interval being produced, in percent.
+        """
         return self.__ci
 
     @property
     def resamples(self):
+        """
+        The number of resamples (with replacement) during bootstrap resampling."
+        """
         return self.__resamples
 
     @property
     def random_seed(self):
+        """
+        The seed used by `numpy.seed()` for bootstrap resampling.
+        """
         return self.__random_seed
 
     @property
