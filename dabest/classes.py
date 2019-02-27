@@ -345,8 +345,8 @@ class TwoGroupsEffectSize(object):
         from numpy import sort as npsort
         from numpy.random import choice, seed
 
-        from .stats_tools import confint_2group_diff as ci2g
-        from .stats_tools import effsize as es
+        from ._stats_tools import confint_2group_diff as ci2g
+        from ._stats_tools import effsize as es
 
         from string import Template
         import warnings

@@ -50,7 +50,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     from .misc_tools import merge_two_dicts
     from .plot_tools import halfviolin, get_swarm_spans, gapped_lines
-    from .stats_tools.effsize import _compute_standardizers, _compute_hedges_correction_factor
+    from ._stats_tools.effsize import _compute_standardizers, _compute_hedges_correction_factor
 
     # Save rcParams that I will alter, so I can reset back.
     original_rcParams = {}

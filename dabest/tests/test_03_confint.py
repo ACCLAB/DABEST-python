@@ -5,7 +5,7 @@ from scipy.stats import norm
 from scipy.stats import skewnorm
 import pandas as pd
 
-from ..api import load
+from .._api import load
 
 
 np.random.seed(88888)

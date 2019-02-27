@@ -14,7 +14,7 @@ import numpy as np
 import scipy as sp
 import pytest
 import pandas as pd
-from ..stats_tools import effsize
+from .._stats_tools import effsize
 
 
 
