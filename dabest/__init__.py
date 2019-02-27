@@ -9,4 +9,4 @@ from .classes import TwoGroupsEffectSize, EffectSizeDataFrame
 from .stats_tools import confint_2group_diff as ci2g
 from .plot_tools import halfviolin
 
-__version__ = "0.1.9999"
+__version__ = "0.2.0"
