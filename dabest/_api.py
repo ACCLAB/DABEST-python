@@ -4,10 +4,12 @@
 # Email : joseshowh@gmail.com
 
 
-def load(data, idx, x=None, y=None, paired=False, id_col=None, **kwargs):
+def load(data, idx, x=None, y=None, paired=False, id_col=None,
+        ci=95, random_seed=12345):
     '''
     Loads data in preparation for estimation statistics.
     This is designed to work with pandas DataFrames.
+
 
     Keywords
     --------
@@ -23,15 +25,24 @@ def load(data, idx, x=None, y=None, paired=False, id_col=None, **kwargs):
 
     paired: boolean, default False.
 
+    id_col: default None.
+        Required if `paired` is True.
+
+    random_seed: int, default 12345
+        This integer is used to seed the random number generator during
+        bootstrap resampling, ensuring that the confidence intervals
+        reported are replicable.
+
+
     Example
     --------
-    1. Load libraries.
+    Load libraries.
 
     >>> import numpy as np
     >>> import pandas as pd
     >>> import dabest
 
-    2. Create dummy data for demonstration.
+    Create dummy data for demonstration.
 
     >>> np.random.seed(88888)
     >>> N = 10
@@ -39,11 +50,11 @@ def load(data, idx, x=None, y=None, paired=False, id_col=None, **kwargs):
     >>> t1 = sp.stats.norm.rvs(loc=115, scale=5, size=N)
     >>> df = pd.DataFrame({'Control 1' : c1, 'Test 1': t1})
 
-    3. Load the data.
+    Load the data.
 
     >>> my_data = dabest.load(df, idx=("Control 1", "Test 1"))
-    
-    '''
-    from .classes import Dabest
 
-    return Dabest(data, idx, x, y, paired, id_col, **kwargs)
+    '''
+    from ._classes import Dabest
+
+    return Dabest(data, idx, x, y, paired, id_col, ci, random_seed)
