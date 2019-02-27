@@ -1,5 +1,6 @@
-def create_dummy_dataset(seed=None, n=30, base_mean=0, expt_groups=6,
-                         scale_means=2, scale_std=1.2):
+def create_dummy_dataset(seed=None, n=30, base_mean=0,
+                         plus_minus=5, expt_groups=7,
+                         scale_means=1., scale_std=1.):
     """
     Creates a dummy dataset for plotting.
     Returns the seed used to generate the random numbers,
@@ -22,19 +23,20 @@ def create_dummy_dataset(seed=None, n=30, base_mean=0, expt_groups=6,
     # Generate a set of random means
     np.random.seed(random_seed)
     MEANS = np.repeat(base_mean, expt_groups) + \
-            np.random.uniform(base_mean-5, base_mean+5, expt_groups) * scale_means
+            np.random.uniform(base_mean-plus_minus, base_mean+plus_minus,
+                              expt_groups) * scale_means
     SCALES = np.random.random(size=expt_groups) * scale_std
 
     max_mean_diff = np.ptp(MEANS)
 
     dataset = list()
     for i, m in enumerate(MEANS):
-        sample = sp.stats.norm.rvs(loc=m, scale=SCALES[i], size=n)
-        # sample = np.random.choice(pop, size=n, replace=False)
+        pop = sp.stats.norm.rvs(loc=m, scale=SCALES[i], size=10000)
+        sample = np.random.choice(pop, size=n, replace=False)
         dataset.append(sample)
 
     df = pd.DataFrame(dataset).T
-    df["idcol"] = pd.Series(range(1, n))
+    df["idcol"] = pd.Series(range(1, n+1))
     df.columns = [str(c) for c in df.columns]
 
     return random_seed, max_mean_diff, df

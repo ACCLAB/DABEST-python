@@ -70,7 +70,7 @@ def test_gardner_altman_unpaired():
 
 
 def test_cummings_unpaired():
-    base_mean = np.random.randint(10, 101)
+    base_mean = np.random.randint(-5, 5)
     seed, ptp, df = create_dummy_dataset(base_mean=base_mean, expt_groups=7)
     print('\nSeed = {}; base mean = {}'.format(seed, base_mean))
 
@@ -116,20 +116,20 @@ def test_cummings_unpaired():
 
 
 def test_gardner_altman_paired():
-    base_mean = np.random.randint(10, 101)
+    base_mean = np.random.randint(-5, 5)
     seed, ptp, df = create_dummy_dataset(base_mean=base_mean)
 
-    two_group_unpaired = load(df, idx=(df.columns[0], c))
 
-    rand_swarm_ylim = (np.random.uniform(base_mean-10, base_mean, 1),
-                       np.random.uniform(base_mean, base_mean+10, 1))
-                       
-    f1 = two_group_unpaired.mean_diff.plot(swarm_ylim=rand_swarm_ylim,
-                                           swarm_label="Raw swarmplot...",
-                                           contrast_label="Contrast!")
-
+    # Check that the plot data matches the raw data.
+    two_group_paired = load(df, idx=("1", "2"), id_col="idcol", paired=True)
+    f1 = two_group_paired.mean_diff.plot()
     rawswarm_axes = f1.axes[0]
     contrast_axes = f1.axes[1]
+    assert df['1'].tolist() == [l.get_ydata()[0] for l in rawswarm_axes.lines]
+    assert df['2'].tolist() == [l.get_ydata()[1] for l in rawswarm_axes.lines]
 
-    # assert df['0'].tolist() == [l.get_ydata()[0] for l in rawswarm_axes.lines]
-    # assert df['1'].tolist() == [l.get_ydata()[1] for l in rawswarm_axes.lines]
+
+    # Check that id_col must be specified.
+    err_to_catch = "`id_col` must be specified if `is_paired` is set to True."
+    with pytest.raises(IndexError, match=err_to_catch):
+        this_will_not_work = load(df, idx=("1", "2"), paired=True)
