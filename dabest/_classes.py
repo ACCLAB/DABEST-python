@@ -656,6 +656,7 @@ class EffectSizeDataFrame(object):
 
             fig_size=None,
             dpi=100,
+            halfviolin_alpha=0.8,
 
             swarmplot_kwargs=None,
             violinplot_kwargs=None,
@@ -727,6 +728,10 @@ class EffectSizeDataFrame(object):
 
         dpi: int, default 100
             The dots per inch of the resulting figure.
+
+        halfviolin_alpha: float, default 0.8
+            The alpha level (transparency) of the half-violinplot used to
+            depict the bootstrapped distribution of the effect size(s).
 
         swarmplot_kwargs: dict, default None
             Pass any keyword arguments accepted by the seaborn `swarmplot`

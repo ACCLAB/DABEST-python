@@ -28,6 +28,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         fig_size=None,
         dpi=100,
+        halfviolin_alpha=0.8,
 
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
