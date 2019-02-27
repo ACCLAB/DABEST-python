@@ -53,8 +53,9 @@ class Dabest:
 
         # Make a copy of the data, so we don't make alterations to it.
         data_in = data.copy()
-        data_in_index_name = data_in.index.name
-        data_in.reset_index(inplace=True)
+        # data_in.reset_index(inplace=True)
+        # data_in_index_name = data_in.index.name
+
 
 
         # Determine the kind of estimation plot we need to produce.
@@ -83,7 +84,7 @@ class Dabest:
                 raise ValueError(err1 + err2)
 
 
-        # Sanity checks.
+        # Determine the type of data: wide or long.
         if x is None and y is not None:
             err = 'You have only specified `y`. Please also specify `x`.'
             raise ValueError(err)
@@ -114,7 +115,7 @@ class Dabest:
                     raise IndexError('{0} is not a group in `{1}`.'.format(g, x))
 
             plot_data = data_in[data_in.loc[:, x].isin(all_plot_groups)].copy()
-            plot_data.drop("index", inplace=True, axis=1)
+            # plot_data.drop("index", inplace=True, axis=1)
 
             # Assign attributes
             self.__x = x
@@ -134,14 +135,6 @@ class Dabest:
             for g in all_plot_groups:
                 if g not in data_in.columns:
                     raise IndexError('{0} is not a column in `data`.'.format(g))
-
-            # Automatically assume the index is the id col
-            # since this is a wide dataset.
-            if paired is True and id_col is None:
-                if data_in_index_name is None:
-                    id_col = 'index'
-                else:
-                    id_col = data_in_index_name
 
             set_all_columns     = set(data_in.columns.tolist())
             set_all_plot_groups = set(all_plot_groups)
