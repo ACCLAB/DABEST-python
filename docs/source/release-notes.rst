@@ -25,7 +25,7 @@ This creates a ``dabest`` object with effect sizes as instances.
 
     my_data.mean_diff
 
-This prints out:
+which prints out:
 
 .. parsed-literal::
     The unpaired mean difference between Control and Test is 14.8 [95%CI 12.4, 17.1].
@@ -55,17 +55,20 @@ See the :doc:`tutorial`  and :doc:`api` for more details, including keyword opti
 v0.1.7
 ======
 
-The keyword cumming_vertical_spacing has been added to tweak the vertical spacing between the rawdata swarm axes and the contrast axes in Cumming estimation plots.
+The keyword ``cumming_vertical_spacing`` has been added to tweak the vertical spacing between the rawdata swarm axes and the contrast axes in Cumming estimation plots.
 
 v0.1.6
 ======
 
 Several keywords have been added to allow more fine-grained control over a selection of plot elements.
 
-swarm_dotsize
-difference_dotsize
-ci_linewidth
-summary_linewidth
+.. code-block:: python
+
+    swarm_dotsize
+    difference_dotsize
+    ci_linewidth
+    summary_linewidth
+
 The new keyword context allows you to set the plotting context as defined by seaborn’s `plotting_context() <https://seaborn.pydata.org/generated/seaborn.plotting_context.html>`_.
 
 Now, if paired=True, you will need to supply an id_col, which is a column in the DataFrame which specifies which sample the datapoint belongs to.
