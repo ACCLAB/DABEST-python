@@ -4,6 +4,71 @@
 Release Notes
 =============
 
+v0.2.0
+======
+
+We have redesigned the interface from the ground up. This allows speed and flexibility to compute different effect sizes (including Cohen's *d*, Hedges' *g*, and Cliff's delta). Statistical arguments are now parsed differently from graphical arguments.
+
+In short, any code relying on v0.1.x will **not work with v0.2.0, and must be upgraded.**
+
+Now, every analysis session begins with ``dabest.load()``.
+
+.. code-block:: python
+    :linenos:
+
+    my_data = dabest.load(my_dataframe, idx=("Control", "Test"))
+
+This creates a ``dabest`` object with effect sizes as instances.
+
+.. code-block:: python
+    :linenos:
+
+    my_data.mean_diff
+
+This prints out:
+
+.. parsed-literal::
+    The unpaired mean difference between Control and Test is 14.8 [95%CI 12.4, 17.1].
+    5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+
+The following are valid effect sizes:
+
+.. code-block:: python
+    :linenos:
+
+    my_data.mean_diff
+    my_data.median_diff
+    my_data.cohens_d
+    my_data.hedges_g
+    my_data.cliffs_delta
+
+To produce an estimation plot, each effect size instance has a ``plot()`` method.
+
+.. code-block:: python
+    :linenos:
+
+    my_data.mean_diff.plot()
+
+See the :doc:`tutorial`  and :doc:`api` for more details, including keyword options for the ``load()`` and ``plot()`` methods.
+
+
+v0.1.7
+======
+
+The keyword cumming_vertical_spacing has been added to tweak the vertical spacing between the rawdata swarm axes and the contrast axes in Cumming estimation plots.
+
+v0.1.6
+======
+
+Several keywords have been added to allow more fine-grained control over a selection of plot elements.
+
+swarm_dotsize
+difference_dotsize
+ci_linewidth
+summary_linewidth
+The new keyword context allows you to set the plotting context as defined by seaborn’s `plotting_context() <https://seaborn.pydata.org/generated/seaborn.plotting_context.html>`_.
+
+Now, if paired=True, you will need to supply an id_col, which is a column in the DataFrame which specifies which sample the datapoint belongs to.
 
 v0.1.5
 ======
@@ -24,7 +89,7 @@ Aesthetic changes
 * add `tick_length` and `tick_pad` arguments to allow tweaking of the axes tick lengths, and padding of the tick labels, respectively.
 
 v0.1.3
-=====
+======
 Update dependencies to
 
 * pandas v0.23

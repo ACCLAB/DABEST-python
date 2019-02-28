@@ -1,4 +1,4 @@
-.. _getting-started:
+.. _Getting Started:
 
 ===============
 Getting Started
@@ -8,14 +8,14 @@ Getting Started
 Requirements
 ------------
 
-Python 3.6 is strongly recommended. ``dabest`` has also been tested with Python 2.7, 3.5, and 3.7.
+Python 3.7 is strongly recommended. ``dabest`` has also been tested with Python 3.5, 3.6, and 3.8.
 
 In addition, the following packages are also required:
 
 * `numpy 1.15 <https://www.numpy.org>`_
-* `scipy 1.1 <https://www.scipy.org>`_
-* `matplotlib 2.2 <https://www.matplotlib.org>`_
-* `pandas 0.23 <https://pandas.pydata.org>`_
+* `scipy 1.2 <https://www.scipy.org>`_
+* `matplotlib 3.0 <https://www.matplotlib.org>`_
+* `pandas 0.24 <https://pandas.pydata.org>`_
 * `seaborn 0.9 <https://seaborn.pydata.org>`_
 
 To obtain these package dependencies easily, it is highly recommended to download the `Anaconda <https://www.continuum.io/downloads>`_ distribution of Python.

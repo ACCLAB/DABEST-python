@@ -1,6 +1,10 @@
+.. _The Estimation Plot:
 
-Background
-==========
+===================
+The Estimation Plot
+===================
+
+*IMAGES TO BE UPDATED*
 
 DABEST provides you with plots from an `estimation
 statistics <https://en.wikipedia.org/wiki/Estimation_statistics>`__
