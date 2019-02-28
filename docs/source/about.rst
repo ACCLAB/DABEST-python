@@ -7,7 +7,7 @@ About
 
 Authors
 --------
-`dabest` is written in Python by `Joses W. Ho <https://twitter.com/jacuzzijo>`_ (with design and input from `Adam Claridge-Chang <https://twitter.com/adamcchang>`_ and other lab members.
+`dabest` is written in Python by `Joses W. Ho <https://twitter.com/jacuzzijo>`_, with design and input from `Adam Claridge-Chang <https://twitter.com/adamcchang>`_ and other lab members.
 
 To find out more about the authors’ research, please visit the `Claridge-Chang lab webpage <http://www.claridgechang.net/>`_.
 
