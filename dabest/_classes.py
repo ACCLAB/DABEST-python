@@ -699,11 +699,14 @@ class EffectSizeDataFrame(object):
             specified, then each group will be colored in sequence according
             to the default palette currently used by matplotlib.
 
-            Please take a look at the seaborn commands `sns.color_palette`
-            and `sns.cubehelix_palette` to generate a custom palette. Both
+            Please take a look at the seaborn commands `color_palette`
+            and `cubehelix_palette` to generate a custom palette. Both
             these functions generate a list of RGB colors.
+
+            See:
             https://seaborn.pydata.org/generated/seaborn.color_palette.html
             https://seaborn.pydata.org/generated/seaborn.cubehelix_palette.html
+
             The named colors of matplotlib can be found here:
             https://matplotlib.org/examples/color/named_colors.html
 
@@ -769,9 +772,9 @@ class EffectSizeDataFrame(object):
         -------
         A matplotlib Figure :class:`matplotlib.figure.Figure` with 2 Axes.
 
-        The first axes (accessible with `FigName.axes()[0]`) contains the
+        The first axes (accessible with ``FigName.axes()[0]``) contains the
         rawdata swarmplot; the second axes (accessible with
-        `FigName.axes()[1]`) has the bootstrap distributions and effect sizes
+        ``FigName.axes()[1]``) has the bootstrap distributions and effect sizes
         (with confidence intervals) plotted on it.
 
         Examples

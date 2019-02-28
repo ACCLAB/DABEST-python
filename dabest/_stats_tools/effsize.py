@@ -43,12 +43,12 @@ def two_group_difference(control, test, is_paired=False,
 
         cohens_d:       This is the mean of control subtracted from the
                         mean of test, divided by the pooled standard deviation
-                        of control and test. The pooled SD is computed as:
+                        of control and test. The pooled SD is the square as:
 
-                          ------------------------------------------
-                         / (n1 - 1) * var(control) + (n2 - 1) * var(test)
-                        /  ----------------------------------------
-                       V                (n1 + n2 - 2)
+
+                               (n1 - 1) * var(control) + (n2 - 1) * var(test)
+                        sqrt (   -------------------------------------------  )
+                                                 (n1 + n2 - 2)
 
                         where n1 and n2 are the sizes of control and test
                         respectively.
@@ -165,18 +165,17 @@ def cohens_d(control, test, is_paired=False):
 
             The pooled standard deviation is equal to:
 
-              ------------------------------------------------
-             / (n1 - 1) * var(control) + (n2 - 1) * var (test)
-            /  ----------------------------------------
-           V                (n1 + n2 - 2)
+                   (n1 - 1) * var(control) + (n2 - 1) * var (test)
+            sqrt(  ---------------------------------------------- )
+                           (n1 + n2 - 2)
 
 
             The average standard deviation is equal to:
 
-              ---------------------------
-             / var(control) + var(test)
-            / -------------------------
-           V              2
+
+                  var(control) + var(test)
+            sqrt( ------------------------- )
+                             2
 
     Notes
     -----
