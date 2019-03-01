@@ -142,7 +142,7 @@ class Dabest:
                 raise IndexError(err)
 
 
-        EffectSizeDataFrame_kwargs = dict(is_paired=paired,
+        EffectSizeDataFrame_kwargs = dict(ci=ci, is_paired=paired,
                                           random_seed=random_seed)
 
         self.mean_diff    = EffectSizeDataFrame(self, "mean_diff",
