@@ -32,3 +32,26 @@ def unpack_and_add(l, c):
     t = [a for a in l]
     t.append(c)
     return(t)
+
+
+
+def print_greeting():
+    from .__init__ import __version__
+    import datetime as dt
+    import numpy as np
+
+    line1 = "DABEST v{}".format(__version__)
+    header = "".join(np.repeat("=", len(line1)))
+    spacer = "".join(np.repeat(" ", len(line1)))
+
+    now = dt.datetime.now()
+    if 0 < now.hour < 12:
+        greeting = "Good morning!"
+    elif 12 < now.hour < 18:
+        greeting = "Good afternoon!"
+    else:
+        greeting = "Good evening!"
+
+    current_time = "The current time is {}.".format(now.ctime())
+
+    return "\n".join([line1, header, spacer, greeting, current_time])

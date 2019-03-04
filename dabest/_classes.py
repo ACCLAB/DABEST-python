@@ -9,8 +9,8 @@ class Dabest:
     Class for estimation statistics and plots.
     """
 
-    def __init__(self, data, idx, x=None, y=None, paired=False, id_col=None,
-                 ci=95, random_seed=12345):
+    def __init__(self, data, idx, x, y, paired, id_col, ci, resamples,
+                random_seed):
 
         """
         Parses and stores pandas DataFrames in preparation for estimation
@@ -22,11 +22,12 @@ class Dabest:
         import pandas as pd
         import seaborn as sns
 
-        self.__ci        = ci
-        self.__data      = data
-        self.__idx       = idx
-        self.__id_col    = id_col
-        self.__is_paired = paired
+        self.__ci          = ci
+        self.__data        = data
+        self.__idx         = idx
+        self.__id_col      = id_col
+        self.__is_paired   = paired
+        self.__resamples   = resamples
         self.__random_seed = random_seed
 
         # Make a copy of the data, so we don't make alterations to it.
@@ -143,7 +144,8 @@ class Dabest:
 
 
         EffectSizeDataFrame_kwargs = dict(ci=ci, is_paired=paired,
-                                          random_seed=random_seed)
+                                          random_seed=random_seed,
+                                          resamples=resamples)
 
         self.mean_diff    = EffectSizeDataFrame(self, "mean_diff",
                                                 **EffectSizeDataFrame_kwargs)
@@ -164,10 +166,42 @@ class Dabest:
 
 
     def __repr__(self):
-        repr1 = "UNDER DEVELOPMENT. Ideally, this should return a nice summary"
-        repr2 = " of the data, along with the comparisons to be done."
+        from .__init__ import __version__
+        import datetime as dt
+        import numpy as np
 
-        return repr1 + repr2
+        from .misc_tools import print_greeting
+
+        if self.__is_paired:
+            es = "Paired e"
+        else:
+            es = "E"
+
+        greeting_header = print_greeting()
+
+        s1 = "{}ffect size(s) ".format(es)
+        s2 = "with {}% confidence intervals will be computed for:".format(self.__ci)
+        desc_line = s1 + s2
+
+        out = [greeting_header + "\n\n" + desc_line]
+
+        comparisons = []
+
+        for j, current_tuple in enumerate(self.__idx):
+            control_name = current_tuple[0]
+
+            for ix, test_name in enumerate(current_tuple[1:]):
+                comparisons.append("{} minus {}".format(test_name, control_name))
+
+        for j, g in enumerate(comparisons):
+            out.append("{}. {}".format(j+1, g))
+
+        resamples_line1 = "\n{} resamples ".format(self.__resamples)
+        resamples_line2 = "will be used to generate the effect size bootstraps."
+        out.append(resamples_line1 + resamples_line2)
+
+        return "\n".join(out)
+
 
 
 
@@ -206,6 +240,12 @@ class Dabest:
         """
         return self.__ci
 
+    @property
+    def resamples(self):
+        """
+        The number of resamples used to generate the bootstrap.
+        """
+        return self.__resamples
 
     @property
     def random_seed(self):
@@ -428,7 +468,7 @@ class TwoGroupsEffectSize(object):
 
 
 
-    def __repr__(self, sigfig=3):
+    def __repr__(self, show_resample_count=True, sigfig=3):
 
         PAIRED_STATUS = {True: 'paired', False: 'unpaired'}
 
@@ -454,9 +494,10 @@ class TwoGroupsEffectSize(object):
 
         out4 = "the confidence interval is bias-corrected and accelerated."
 
-        return "{} {}\n{} {}".format(out1, out2, out3, out4)
-
-
+        if show_resample_count:
+            return "{} {}\n\n{} {}".format(out1, out2, out3, out4)
+        else:
+            return "{} {}".format(out1, out2)
 
     def to_dict(self):
         """
@@ -585,6 +626,7 @@ class EffectSizeDataFrame(object):
 
     def __pre_calc(self):
         import pandas as pd
+        from .misc_tools import print_greeting
 
         idx  = self.__dabest_obj.idx
         dat  = self.__dabest_obj._plot_data
@@ -614,9 +656,19 @@ class EffectSizeDataFrame(object):
                 r_dict["test"] = tname
                 out.append(r_dict)
 
+                if j == len(idx)-1 and ix == len(current_tuple)-2:
+                    resamp_count = True
+                else:
+                    resamp_count = False
+
+                text_repr = result.__repr__(show_resample_count=resamp_count)
+
                 to_replace = "between {} and {} is".format(cname, tname)
-                text_repr = result.__repr__().replace("is", to_replace, 1)
+                text_repr = text_repr.replace("is", to_replace, 1)
+
                 reprs.append(text_repr)
+
+        reprs.insert(0, print_greeting())
 
         self.__for_print = "\n\n".join(reprs)
 
