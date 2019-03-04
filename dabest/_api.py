@@ -5,7 +5,7 @@
 
 
 def load(data, idx, x=None, y=None, paired=False, id_col=None,
-        ci=95, random_seed=12345):
+        ci=95, resamples=5000, random_seed=12345):
     '''
     Loads data in preparation for estimation statistics.
     This is designed to work with pandas DataFrames.
@@ -27,6 +27,14 @@ def load(data, idx, x=None, y=None, paired=False, id_col=None,
 
     id_col: default None.
         Required if `paired` is True.
+
+    ci: integer, default 95
+        The confidence interval width. The default of 95 produces 95%
+        confidence intervals.
+
+    resamples: integer, default 5000.
+        The number of resamples taken to generate the bootstraps which are used
+        to generate the confidence intervals.
 
     random_seed: int, default 12345
         This integer is used to seed the random number generator during
@@ -57,4 +65,4 @@ def load(data, idx, x=None, y=None, paired=False, id_col=None,
     '''
     from ._classes import Dabest
 
-    return Dabest(data, idx, x, y, paired, id_col, ci, random_seed)
+    return Dabest(data, idx, x, y, paired, id_col, ci, resamples, random_seed)
