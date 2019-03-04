@@ -16,10 +16,10 @@ Plotting Data
 .. autofunction:: dabest._classes.EffectSizeDataFrame.plot
 
 
-.. Computing Effect Sizes
-.. ----------------------
-..
-.. .. autofunction:: dabest._stats_tools.effsize.two_group_difference
+Computing Effect Sizes
+----------------------
+
+.. autofunction:: dabest._classes.TwoGroupsEffectSize
 ..
 .. .. autofunction:: dabest._stats_tools.effsize.func_difference
 ..
