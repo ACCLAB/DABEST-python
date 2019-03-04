@@ -28,7 +28,15 @@ This creates a ``dabest`` object with effect sizes as instances.
 which prints out:
 
 .. parsed-literal::
-    The unpaired mean difference between Control and Test is 14.8 [95%CI 12.4, 17.1].
+    
+    DABEST v0.2.0
+    =============
+
+    Good afternoon!
+    The current time is Mon Mar  4 17:03:29 2019.
+
+    The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.205, 0.774].
+
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
 
 The following are valid effect sizes:
