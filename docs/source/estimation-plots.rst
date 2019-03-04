@@ -72,6 +72,8 @@ x-axes. Thus, while a jitter plot displays all datapoints (implicitly
 indicating the sample size visually), it might not accurately depict the
 underlying distribution of the data.
 
+.. _intro-estimation-plot:
+
 Introducing the Estimation Plot
 -------------------------------
 
