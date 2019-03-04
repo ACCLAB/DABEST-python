@@ -34,7 +34,7 @@ install:
   - conda update conda --yes
   - conda create -n testenv --yes pip python=$PYTHON matplotlib
   - source activate testenv
-  - pip install pytest==3.7
+  - pip install pytest==4.0
   - pip install .
 
 script: pytest

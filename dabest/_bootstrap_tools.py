@@ -30,7 +30,7 @@ class bootstrap:
 
         alpha: float, default 0.05
             Denotes the likelihood that the confidence interval produced
-            _does not_ include the true summary statistic. When alpha = 0.05,
+            does not include the true summary statistic. When alpha = 0.05,
             a 95% confidence interval is produced.
 
         reps: int, default 5000
