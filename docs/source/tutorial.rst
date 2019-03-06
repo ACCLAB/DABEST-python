@@ -5,7 +5,7 @@ Tutorial
 ========
 
 Load libraries
-==============
+--------------
 
 .. code:: ipython3
 
@@ -22,7 +22,7 @@ Load libraries
 
 
 Create dataset for demo
-=======================
+-----------------------
 
 Here, we create a dataset to illustrate how ``dabest`` functions. In
 this dataset, each column corresponds to a group of observations.
@@ -74,7 +74,7 @@ for more details.
 
 .. code:: ipython3
 
-    >>> df.head()
+    >>> df.head() # Shows the first five rows.
 
 
 
@@ -190,7 +190,7 @@ for more details.
 
 
 Loading data
-============
+------------
 
 Before we create estimation plots and obtain confidence intervals for
 our effect sizes, we need to load the data and the relevant groups.
@@ -229,7 +229,7 @@ the comparisons that can be computed.
 
 
 Changing statistical parameters
-===============================
+-------------------------------
 
 If the dataset contains paired data (ie. repeated observations), specify
 this with the ``paired`` keyword. You must also pass a column in the
@@ -294,7 +294,7 @@ produced.
 
 
 Effect sizes
-============
+------------
 
 ``dabest`` now features a range of effect sizes:
 
@@ -334,7 +334,7 @@ The confidence interval is reported as:
 
 [*confidenceIntervalWidth* *LowerBound*, *UpperBound*]
 
-This confidence interval is generated through bootstrap resampling. See :ref:`intro-estimation-plot`.
+This confidence interval is generated through bootstrap resampling. See :ref:`Bootstrap Confidence Intervals` for more details.
 
 
 You can access the results as a pandas DataFrame as well.
@@ -434,11 +434,11 @@ Let's compute the Hedges' g for our comparison.
 
 
 Producing estimation plots
-==========================
+--------------------------
 
 To produce a **Gardner-Altman estimation plot**, simply use the
 ``.plot()`` method. You can read more about its genesis and design
-inspiration here.
+inspiration at :ref:`Robust and Beautiful Visualization`.
 
 Every effect size instance has access to the ``.plot()`` method. This
 means you can quickly create plots for different effect sizes easily.
@@ -737,7 +737,7 @@ complex visualizations and statistics.
 
 
 Using long (aka 'melted') data frames
-=====================================
+--------------------------------------
 
 ``dabest.plot`` can also work with 'melted' or 'long' data. This term is
 so used because each row will now correspond to a single datapoint, with
@@ -879,7 +879,7 @@ When your data is in this format, you will need to specify the ``x`` and
 
 
 Controlling plot aesthetics
-===========================
+---------------------------
 
 Changing the y-axes labels.
 

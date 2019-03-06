@@ -14,7 +14,7 @@ To find out more about the authors’ research, please visit the `Claridge-Chang
 Typography
 ----------
 
-This documentation uses `Lora <hhttp://www.cyreal.org/2012/07/lora/>`_ for the body text, `Merriweather Sans <https://ebensorkin.wordpress.com/>`_ for the side bar and titles, and `IBM Plex Mono <https://github.com/IBM/plex>`_ for the monospace code font.
+This documentation uses `Spectral <https://spectral.prototypo.io/>`_ for the body text, `Merriweather Sans <https://ebensorkin.wordpress.com/>`_ for the side bar and titles, and `IBM Plex Mono <https://github.com/IBM/plex>`_ for the monospace code font.
 
 
 License

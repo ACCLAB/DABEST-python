@@ -1,11 +1,11 @@
 
 @import url("basic.css");
-@import url('https://fonts.googleapis.com/css?family=IBM+Plex+Mono|Lora:400,400i|Merriweather+Sans:400,400i');
+@import url('https://fonts.googleapis.com/css?family=IBM+Plex+Mono|Spectral:500,500i|Merriweather+Sans:400,400i');
 
 /* -- page layout ----------------------------------------------------------- */
 
 body {
-    font-family: 'Lora', 'Garamond';
+    font-family: 'Spectral', 'Garamond';
     font-size: 19px;
     background-color: #fff;
     color: #000;
@@ -31,7 +31,7 @@ div.bodywrapper {
 div.sphinxsidebar {
     font-family: 'Merriweather Sans', sans-serif;
     width: 220px;
-    font-size: 14px;
+    font-size: 12px;
     line-height: 1.5;
 }
 
@@ -349,7 +349,9 @@ img.screenshot {
     box-shadow: 2px 2px 4px #EEE;
 }
 
-table.docutils {
+table.docutils, table.dataframe {
+    width: 100%;
+    overflow: auto;
     border: 1px solid #888;
     -moz-box-shadow: 2px 2px 4px #EEE;
     -webkit-box-shadow: 2px 2px 4px #EEE;

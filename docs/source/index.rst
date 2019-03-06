@@ -6,6 +6,7 @@
 ======
 DABEST
 ======
+
 -----------------------------------------------
 Data Analysis with Bootstrap-coupled ESTimation
 -----------------------------------------------
@@ -43,7 +44,8 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   estimation-plots
+   robust-beautiful
+   bootstraps
    getting-started
    tutorial
    release-notes

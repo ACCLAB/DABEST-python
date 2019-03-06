@@ -119,3 +119,4 @@ fontList.py3k.cache
 
 # tex folders
 tex.cache/
+.Rproj.user

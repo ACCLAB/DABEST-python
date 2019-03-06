@@ -5,7 +5,7 @@ Release Notes
 =============
 
 v0.2.0
-======
+------
 
 We have redesigned the interface from the ground up. This allows speed and flexibility to compute different effect sizes (including Cohen's *d*, Hedges' *g*, and Cliff's delta). Statistical arguments are now parsed differently from graphical arguments.
 
@@ -28,7 +28,7 @@ This creates a ``dabest`` object with effect sizes as instances.
 which prints out:
 
 .. parsed-literal::
-    
+
     DABEST v0.2.0
     =============
 
@@ -61,12 +61,12 @@ See the :doc:`tutorial`  and :doc:`api` for more details, including keyword opti
 
 
 v0.1.7
-======
+------
 
 The keyword ``cumming_vertical_spacing`` has been added to tweak the vertical spacing between the rawdata swarm axes and the contrast axes in Cumming estimation plots.
 
 v0.1.6
-======
+------
 
 Several keywords have been added to allow more fine-grained control over a selection of plot elements.
 
@@ -82,12 +82,12 @@ The new keyword context allows you to set the plotting context as defined by sea
 Now, if paired=True, you will need to supply an id_col, which is a column in the DataFrame which specifies which sample the datapoint belongs to.
 
 v0.1.5
-======
+------
 Fix bug that wasn't updating the seaborn version upon setup and install.
 
 
 v0.1.4
-======
+------
 Update dependencies to
 
 * numpy 1.15
@@ -100,7 +100,7 @@ Aesthetic changes
 * add `tick_length` and `tick_pad` arguments to allow tweaking of the axes tick lengths, and padding of the tick labels, respectively.
 
 v0.1.3
-======
+------
 Update dependencies to
 
 * pandas v0.23
@@ -112,7 +112,7 @@ Bugfixes
 
 
 v0.1.2
-======
+------
 Update dependencies to
 
 * numpy v1.13
@@ -122,5 +122,5 @@ Update dependencies to
 
 
 v0.1.1
-=======
+------
 `Update LICENSE to BSD-3 Clear. <https://github.com/ACCLAB/DABEST-python/commit/615c4cbb9145cf7b9451bf1840a20475ebcb2e99>`_
