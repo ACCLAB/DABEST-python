@@ -173,15 +173,16 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             raise KeyError("``{}`` is not a column in the data.".format(color_col))
         color_groups = pd.unique(plot_data[color_col])
         bootstraps_color_by_group = False
+    if show_pairs:
+        bootstraps_color_by_group = False
 
     n_groups = len(color_groups)
 
     custom_pal = plot_kwargs["custom_palette"]
     if custom_pal is None:
-        plotPal = dict(zip(color_groups,
+        plot_palette = dict(zip(color_groups,
                            sns.color_palette(n_colors=len(color_groups))
-                           )
-                       )
+                           ))
     else:
         if isinstance(custom_pal, dict):
             # check that all the keys in custom_pal are found in the
@@ -194,21 +195,25 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 err2 = 'are not found in `{}`. Please check.'.format(color_col)
                 errstring = (err1 + err2)
                 raise IndexError(errstring)
-            plotPal = custom_pal
+            plot_palette = custom_pal
 
         elif isinstance(custom_pal, list):
-            plotPal = dict(zip(color_groups, custom_pal[0: n_groups]))
+            plot_palette = dict(zip(color_groups, custom_pal[0: n_groups]))
 
         elif isinstance(custom_pal, str):
             # check it is in the list of matplotlib palettes.
             if custom_pal in plt.colormaps():
-                plotPal = dict(zip(color_groups,
+                plot_palette = dict(zip(color_groups,
                                    sns.color_palette(custom_pal, n_groups))
                                )
             else:
                 err1 = 'The specified `custom_palette` {}'.format(custom_pal)
                 err2 = ' is not a matplotlib palette. Please check.'
                 raise ValueError(err1 + err2)
+    plot_palette_desat = dict(zip(color_groups,
+                              [sns.desaturate(c, 0.5)
+                              for c in plot_palette.values()]
+                           ))
 
 
 
@@ -305,7 +310,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 else:
                     color_key = pivoted_plot_data[color_col,
                                                   current_tuple[0]].loc[ID]
-                    slopegraph_kwargs['color']  = plotPal[color_key]
+                    slopegraph_kwargs['color']  = plot_palette[color_key]
                     slopegraph_kwargs['label']  = color_key
 
                 rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
@@ -320,7 +325,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         rawdata_plot = sns.swarmplot(data=plot_data, x=xvar, y=yvar,
                                      ax=rawdata_axes,
                                      order=all_plot_groups, hue=color_col,
-                                     palette=plotPal, zorder=1,
+                                     palette=plot_palette, zorder=1,
                                      **swarmplot_kwargs)
 
         # Plot the gapped line summaries, if this is not a Cumming plot.
@@ -343,7 +348,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                     pass
 
                 if bootstraps_color_by_group is True:
-                    line_colors.append(plotPal[all_plot_groups[jj]])
+                    line_colors.append(plot_palette[all_plot_groups[jj]])
 
             if len(line_colors) != len(all_plot_groups):
                 line_colors = ytick_color
@@ -401,7 +406,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     for j, tick in enumerate(ticks_to_plot):
         current_group     = results.test[j]
         current_control   = results.control[j]
-        # current_color     = plotPal[current_group]
+        # current_color     = plot_palette[current_group]
         current_bootstrap = results.bootstraps[j]
         current_effsize   = results.difference[j]
         current_ci_low    = results.bca_low[j]
@@ -416,7 +421,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         # Ideally, the alpha (transparency) fo the violin plot should be
         # less than one so the effect size and CIs are visible.
         if bootstraps_color_by_group is True:
-            fc = plotPal[current_group]
+            fc = plot_palette_desat[current_group]
         else:
             fc = "grey"
 
