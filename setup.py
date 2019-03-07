@@ -57,11 +57,12 @@ def need_to_install(module, version):
 def check_dependencies():
     from importlib import import_module
 
-    modules = {'numpy'     : '1.15',
-               'scipy'     : '1.2',
-               'pandas'    : '0.24',
-               'matplotlib': '3.0',
-               'seaborn'   : '0.9'}
+    modules = {'numpy'      : '1.15',
+               'scipy'      : '1.2',
+               'statsmodels': '0.9', 
+               'pandas'     : '0.24',
+               'matplotlib' : '3.0',
+               'seaborn'    : '0.9'}
     to_install = []
 
     for module, version in modules.items():
