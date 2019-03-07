@@ -317,25 +317,20 @@ class TwoGroupsEffectSize(object):
         """
         Compute the effect size between two groups.
 
-        Keywords
-        --------
-        control, test: array-like
+        Parameters
+        ----------
+        control, test : array-like
             These should be numerical iterables.
-
-        effect_size: string.
+        effect_size : string.
             Any one of the following are accepted inputs:
             'mean_diff', 'median_diff', 'cohens_d', 'hedges_g', or 'cliffs_delta'
-
-        is_paired: boolean, default False
-
-        resamples: int, default 5000
+        is_paired : boolean, default False
+        resamples : int, default 5000
             The number of bootstrap resamples to be taken.
-
-        ci: float, default 95
+        ci : float, default 95
             The confidence interval width. The default of 95 produces 95%
             confidence intervals.
-
-        random_seed: int, default 12345
+        random_seed : int, default 12345
             `random_seed` is used to seed the random number generator during
             bootstrap resampling. This ensures that the confidence intervals
             reported are replicable.
@@ -719,115 +714,93 @@ class EffectSizeDataFrame(object):
         """
         Creates an estimation plot for the effect size of interest.
 
-        Keywords
-        --------
-        color_col: string, default None
+        Parameters
+        ----------
+        color_col : string, default None
             Column to be used for colors.
-
-        raw_marker_size: float, default 6
+        raw_marker_size : float, default 6
             The diameter (in points) of the marker dots plotted in the
             swarmplot.
-
-        es_marker_size: float, default 9
+        es_marker_size : float, default 9
             The size (in points) of the effect size points on the difference
             axes.
-
-        swarm_label, contrast_label: strings, default None
+        swarm_label, contrast_label : strings, default None
             Set labels for the y-axis of the swarmplot and the contrast plot,
             respectively. If `swarm_label` is not specified, it defaults to
             "value", unless a column name was passed to `y`. If
             `contrast_label` is not specified, it defaults to the effect size
             being plotted.
-
-        swarm_ylim, contrast_ylim: tuples, default None
+        swarm_ylim, contrast_ylim : tuples, default None
             The desired y-limits of the raw data (swarmplot) axes and the
             difference axes respectively, as a tuple. These will be autoscaled
             to sensible values if they are not specified.
-
-        custom_palette: dict, list, or matplotlib color palette, default None
+        custom_palette : dict, list, or matplotlib color palette, default None
             This keyword accepts a dictionary with {'group':'color'} pairings,
             a list of RGB colors, or a specified matplotlib palette. This
             palette will be used to color the swarmplot. If `color_col` is not
             specified, then each group will be colored in sequence according
             to the default palette currently used by matplotlib.
-
             Please take a look at the seaborn commands `color_palette`
             and `cubehelix_palette` to generate a custom palette. Both
             these functions generate a list of RGB colors.
-
             See:
             https://seaborn.pydata.org/generated/seaborn.color_palette.html
             https://seaborn.pydata.org/generated/seaborn.cubehelix_palette.html
-
             The named colors of matplotlib can be found here:
             https://matplotlib.org/examples/color/named_colors.html
-
-        float_contrast: boolean, default True
+        float_contrast : boolean, default True
             Whether or not to display the halfviolin bootstrapped difference
             distribution alongside the raw data.
-
-        show_pairs: boolean, default True
+        show_pairs : boolean, default True
             If the data is paired, whether or not to show the raw data as a
             swarmplot, or as slopegraph, with a line joining each pair of
             observations.
-
-        group_summaries: ['mean_sd', 'median_quartiles', 'None'], default None.
+        group_summaries : ['mean_sd', 'median_quartiles', 'None'], default None.
             Plots the summary statistics for each group. If 'mean_sd', then
             the mean and standard deviation of each group is plotted as a
             notched line beside each group. If 'median_quantiles', then the
             median and 25th and 75th percentiles of each group is plotted
             instead. If 'None', the summaries are not shown.
-
-        fig_size: tuple, default None
+        fig_size : tuple, default None
             The desired dimensions of the figure as a (length, width) tuple.
-
-        dpi: int, default 100
+        dpi : int, default 100
             The dots per inch of the resulting figure.
-
-        halfviolin_alpha: float, default 0.8
+        halfviolin_alpha : float, default 0.8
             The alpha level (transparency) of the half-violinplot used to
             depict the bootstrapped distribution of the effect size(s).
-
-        swarmplot_kwargs: dict, default None
+        swarmplot_kwargs : dict, default None
             Pass any keyword arguments accepted by the seaborn `swarmplot`
             command here, as a dict. If None, the following keywords are
-            passed to sns.swarmplot: {'size':`raw_marker_size`}.
-
-        violinplot_kwargs: dict, default None
+            passed to sns.swarmplot : {'size':`raw_marker_size`}.
+        violinplot_kwargs : dict, default None
             Pass any keyword arguments accepted by the matplotlib `
             pyplot.violinplot` command here, as a dict. If None, the following
-            keywords are passed to violinplot: {'widths':0.5, 'vert':True,
+            keywords are passed to violinplot : {'widths':0.5, 'vert':True,
             'showextrema':False, 'showmedians':False}.
-
-        reflines_kwargs: dict, default None
+        reflines_kwargs : dict, default None
             This will change the appearance of the zero reference lines. Pass
             any keyword arguments accepted by the matplotlib Axes `hlines`
             command here, as a dict. If None, the following keywords are
-            passed to Axes.hlines: {'linestyle':'solid', 'linewidth':0.75,
-            'zorder':2, 'color': default y-tick color}.
-
-        group_summary_kwargs: dict, default None
+            passed to Axes.hlines : {'linestyle':'solid', 'linewidth':0.75,
+            'zorder':2, 'color' : default y-tick color}.
+        group_summary_kwargs : dict, default None
             Pass any keyword arguments accepted by the matplotlib.lines.Line2D
             command here, as a dict. This will change the appearance of the
             vertical summary lines for each group, if `group_summaries` is not
             'None'. If None, the following keywords are passed to
-            matplotlib.lines.Line2D: {'lw':2, 'alpha':1, 'zorder':3}.
-
-        legend_kwargs: dict, default None
+            matplotlib.lines.Line2D : {'lw':2, 'alpha':1, 'zorder':3}.
+        legend_kwargs : dict, default None
             Pass any keyword arguments accepted by the matplotlib Axes
             `legend` command here, as a dict. If None, the following keywords
-            are passed to matplotlib.Axes.legend: {'loc':'upper left',
+            are passed to matplotlib.Axes.legend : {'loc':'upper left',
             'frameon':False}.
 
 
         Returns
         -------
-        A matplotlib Figure :class:`matplotlib.figure.Figure` with 2 Axes.
+        A :class:`matplotlib.figure.Figure` with 2 Axes.
 
-        The first axes (accessible with ``FigName.axes()[0]``) contains the
-        rawdata swarmplot; the second axes (accessible with
-        ``FigName.axes()[1]``) has the bootstrap distributions and effect sizes
-        (with confidence intervals) plotted on it.
+        The first axes (accessible with ``FigName.axes()[0]``) contains the rawdata swarmplot; the second axes (accessible with ``FigName.axes()[1]``) has the bootstrap distributions and effect sizes (with confidence intervals) plotted on it.
 
         Examples
         --------

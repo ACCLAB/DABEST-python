@@ -8,39 +8,35 @@ def load(data, idx, x=None, y=None, paired=False, id_col=None,
         ci=95, resamples=5000, random_seed=12345):
     '''
     Loads data in preparation for estimation statistics.
+
     This is designed to work with pandas DataFrames.
 
-
-    Keywords
-    --------
-    data: pandas DataFrame
-
-    idx: tuple
+    Parameters
+    ----------
+    data : pandas DataFrame
+    idx : tuple
         List of column names (if 'x' is not supplied) or of category names
         (if 'x' is supplied). This can be expressed as a tuple of tuples,
-        with each individual tuple producing its own contrast plot.
-
-    x, y: strings, default None
+        with each individual tuple producing its own contrast plot
+    x, y : strings, default None
         Column names for data to be plotted on the x-axis and y-axis.
-
-    paired: boolean, default False.
-
-    id_col: default None.
+    paired : boolean, default False.
+    id_col : default None.
         Required if `paired` is True.
-
-    ci: integer, default 95
+    ci : integer, default 95
         The confidence interval width. The default of 95 produces 95%
         confidence intervals.
-
-    resamples: integer, default 5000.
+    resamples : integer, default 5000.
         The number of resamples taken to generate the bootstraps which are used
         to generate the confidence intervals.
-
-    random_seed: int, default 12345
+    random_seed : int, default 12345
         This integer is used to seed the random number generator during
         bootstrap resampling, ensuring that the confidence intervals
         reported are replicable.
 
+    Returns
+    -------
+    A `Dabest` object.
 
     Example
     --------

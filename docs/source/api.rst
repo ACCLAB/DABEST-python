@@ -19,7 +19,7 @@ Plotting Data
 Computing Effect Sizes
 ----------------------
 
-.. autofunction:: dabest._classes.TwoGroupsEffectSize
+.. autoclass:: dabest._classes.TwoGroupsEffectSize
 ..
 .. .. autofunction:: dabest._stats_tools.effsize.func_difference
 ..

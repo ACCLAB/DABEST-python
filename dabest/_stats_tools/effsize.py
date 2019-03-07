@@ -26,8 +26,8 @@ def two_group_difference(control, test, is_paired=False,
 
     See the Wikipedia entry here: https://bit.ly/2LzWokf
 
-    Keywords
-    --------
+    Parameters
+    ----------
     control, test: list, tuple, or ndarray.
         Accepts lists, tuples, or numpy ndarrays of numeric types.
 
@@ -84,7 +84,11 @@ def two_group_difference(control, test, is_paired=False,
         return hedges_g(control, test, is_paired)
 
     elif effect_size == "cliffs_delta":
-        return cliffs_delta(control, test)
+        if is_paired is True:
+            err1 = "`is_paired` is True; therefore Cliff's delta is not defined."
+            raise ValueError(err1)
+        else:
+            return cliffs_delta(control, test)
 
 
 
