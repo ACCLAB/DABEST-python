@@ -142,7 +142,6 @@ class Dabest:
                 err = "{} is not a column in `data`. ".format(id_col)
                 raise IndexError(err)
 
-
         EffectSizeDataFrame_kwargs = dict(ci=ci, is_paired=paired,
                                           random_seed=random_seed,
                                           resamples=resamples)
@@ -159,8 +158,11 @@ class Dabest:
         self.hedges_g     = EffectSizeDataFrame(self, "hedges_g",
                                                 **EffectSizeDataFrame_kwargs)
 
-        self.cliffs_delta = EffectSizeDataFrame(self, "cliffs_delta",
-                                                **EffectSizeDataFrame_kwargs)
+        if paired is False:
+            self.cliffs_delta = EffectSizeDataFrame(self, "cliffs_delta",
+                                                    **EffectSizeDataFrame_kwargs)
+        else:
+            self.cliffs_delta = "The data is paired; Cliff's delta is therefore undefined."
 
 
 
@@ -360,11 +362,17 @@ class TwoGroupsEffectSize(object):
         from numpy import sort as npsort
         from numpy.random import choice, seed
 
-        from ._stats_tools import confint_2group_diff as ci2g
-        from ._stats_tools import effsize as es
+        import scipy.stats as spstats
+
+        import statsmodels.stats.power as power
 
         from string import Template
         import warnings
+
+        from ._stats_tools import confint_2group_diff as ci2g
+        from ._stats_tools import effsize as es
+
+
 
         self.__EFFECT_SIZE_DICT =  {"mean_diff" : "mean difference",
                                     "median_diff" : "median difference",
@@ -377,6 +385,10 @@ class TwoGroupsEffectSize(object):
             err1 = "The effect size '{}'".format(effect_size)
             err2 = "is not one of {}".format(kosher_es)
             raise ValueError(" ".join([err1, err2]))
+
+        if effect_size == "cliffs_delta" and is_paired is True:
+            err1 = "`paired` is True; therefore Cliff's delta is not defined."
+            raise ValueError(err1)
 
         # Convert to numpy arrays for speed.
         # NaNs are automatically dropped.
@@ -461,6 +473,78 @@ class TwoGroupsEffectSize(object):
         self.__pct_low  = self.__bootstraps[pct_idx_low]
         self.__pct_high = self.__bootstraps[pct_idx_high]
 
+        # Perform statistical tests.
+        if is_paired is True:
+            # Wilcoxon, a non-parametric version of the paired T-test.
+            wilcoxon = spstats.wilcoxon(control, test)
+            self.__pvalue_wilcoxon = wilcoxon.pvalue
+            self.__statistic_wilcoxon = wilcoxon.statistic
+
+            if effect_size != "median_diff":
+                # Paired Student's t-test.
+                paired_t = spstats.ttest_rel(control, test, nan_policy='omit')
+                self.__pvalue_paired_students_t = paired_t.pvalue
+                self.__statistic_paired_students_t = paired_t.statistic
+
+                standardized_es = es.cohens_d(control, test, is_paired=True)
+                self.__power = power.tt_solve_power(standardized_es,
+                                                    len(control),
+                                                    alpha=self.__alpha)
+
+
+        elif effect_size == "cliffs_delta":
+            # Let's go with Brunner-Munzel!
+            brunner_munzel = spstats.brunner_munzel(control, test,
+                                                     nan_policy='omit')
+            self.__pvalue_brunner_munzel = brunner_munzel.pvalue
+            self.__statistic_brunner_munzel = brunner_munzel.statistic
+
+
+        elif effect_size == "median_diff":
+            # According to scipy's documentation of the function,
+            # "The Kruskal-Wallis H-test tests the null hypothesis
+            # that the population median of all of the groups are equal."
+            kruskal = spstats.kruskal(control, test, nan_policy='omit')
+            self.__pvalue_kruskal = kruskal.pvalue
+            self.__statistic_kruskal = kruskal.statistic
+            self.__power = np.nan
+
+        else: # for mean difference, Cohen's d, and Hedges' g.
+            # Welch's t-test, assumes normality of distributions,
+            # but does not assume equal variances.
+            welch = spstats.ttest_ind(control, test, equal_var=False,
+                                       nan_policy='omit')
+            self.__pvalue_welch = welch.pvalue
+            self.__statistic_welch = welch.statistic
+
+            # Student's t-test, assumes normality of distributions,
+            # as well as assumption of equal variances.
+            students_t = spstats.ttest_ind(control, test, equal_var=True,
+                                            nan_policy='omit')
+            self.__pvalue_students_t = students_t.pvalue
+            self.__statistic_students_t = students_t.statistic
+
+            # Mann-Whitney test: Non parametric,
+            # does not assume normality of distributions
+            try:
+                mann_whitney = spstats.mannwhitneyu(control, test)
+                self.__pvalue_mann_whitney = mann_whitney.pvalue
+                self.__statistic_mann_whitney = mann_whitney.statistic
+            except ValueError:
+                # Occurs when the control and test are exactly identical
+                # in terms of rank (eg. all zeros.)
+                pass
+
+            standardized_es = es.cohens_d(control, test, is_paired=False)
+            self.__power = power.tt_ind_solve_power(standardized_es,
+                                                    len(control),
+                                                    alpha=self.__alpha,
+                                                    ratio=len(test)/len(control)
+                                                    )
+
+
+
+
 
 
     def __repr__(self, show_resample_count=True, sigfig=3):
@@ -493,6 +577,8 @@ class TwoGroupsEffectSize(object):
             return "{} {}\n\n{} {}".format(out1, out2, out3, out4)
         else:
             return "{} {}".format(out1, out2)
+
+
 
     def to_dict(self):
         """
@@ -531,9 +617,17 @@ class TwoGroupsEffectSize(object):
     @property
     def ci(self):
         """
-        Returns the width of the confidence interval, in percent
+        Returns the width of the confidence interval, in percent.
         """
         return self.__ci
+
+    @property
+    def alpha(self):
+        """
+        Returns the significance level of the statistical test as a float
+        between 0 and 1.
+        """
+        return self.__alpha
 
     @property
     def resamples(self):
@@ -593,6 +687,143 @@ class TwoGroupsEffectSize(object):
         """
         return self.__pct_high
 
+
+
+    @property
+    def pvalue_brunner_munzel(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_brunner_munzel
+        except AttributeError:
+            return npnan
+
+    @property
+    def statistic_brunner_munzel(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_brunner_munzel
+        except AttributeError:
+            return npnan
+
+
+
+    @property
+    def pvalue_wilcoxon(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_wilcoxon
+        except AttributeError:
+            return npnan
+
+    @property
+    def statistic_wilcoxon(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_wilcoxon
+        except AttributeError:
+            return npnan
+
+
+
+    @property
+    def pvalue_paired_students_t(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_paired_students_t
+        except AttributeError:
+            return npnan
+
+    @property
+    def statistic_paired_students_t(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_paired_students_t
+        except AttributeError:
+            return npnan
+
+
+
+    @property
+    def pvalue_kruskal(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_kruskal
+        except AttributeError:
+            return npnan
+
+    @property
+    def statistic_kruskal(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_kruskal
+        except AttributeError:
+            return npnan
+
+
+
+    @property
+    def pvalue_welch(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_welch
+        except AttributeError:
+            return npnan
+
+    @property
+    def statistic_welch(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_welch
+        except AttributeError:
+            return npnan
+
+
+
+    @property
+    def pvalue_students_t(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_students_t
+        except AttributeError:
+            return npnan
+
+    @property
+    def statistic_students_t(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_students_t
+        except AttributeError:
+            return npnan
+
+
+
+    @property
+    def pvalue_mann_whitney(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_mann_whitney
+        except AttributeError:
+            return npnan
+
+
+
+    @property
+    def statistic_mann_whitney(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_mann_whitney
+        except AttributeError:
+            return npnan
+
+
+
+    @property
+    def power(self):
+        from numpy import nan as npnan
+        try:
+            return self.__power
+        except AttributeError:
+            return npnan
 
 
 
@@ -675,9 +906,34 @@ class EffectSizeDataFrame(object):
                             'bca_low', 'bca_high', 'bca_interval_idx',
                             'pct_low', 'pct_high', 'pct_interval_idx',
 
-                            'bootstraps', 'resamples', 'random_seed']
+                            'bootstraps', 'resamples', 'random_seed',
+
+                            'power',
+
+                            'pvalue_welch',
+                            'statistic_welch',
+
+                            'pvalue_students_t',
+                            'statistic_students_t',
+
+                            'pvalue_mann_whitney',
+                            'statistic_mann_whitney',
+
+                            'pvalue_brunner_munzel',
+                            'statistic_brunner_munzel',
+
+                            'pvalue_wilcoxon',
+                            'statistic_wilcoxon',
+
+                            'pvalue_paired_students_t',
+                            'statistic_paired_students_t',
+
+                            'pvalue_kruskal',
+                            'statistic_kruskal']
 
         self.__results   = out_.reindex(columns=columns_in_order)
+        self.__results.dropna(axis="columns", how="all", inplace=True)
+
 
 
     def __repr__(self):
