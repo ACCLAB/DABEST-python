@@ -12,7 +12,7 @@ np.random.seed(88888)
 
 
 
-def test_unpaired_ci(reps=100, ci=95):
+def test_unpaired_ci(reps=50, ci=95):
     n = 10
     N = 10000
 
