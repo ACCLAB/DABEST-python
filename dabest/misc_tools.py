@@ -55,3 +55,11 @@ def print_greeting():
     current_time = "The current time is {}.".format(now.ctime())
 
     return "\n".join([line1, header, spacer, greeting, current_time])
+
+
+def get_varname(obj):
+    matching_vars = [k for k,v in globals().items() if v is obj]
+    if len(matching_vars) > 0:
+        return matching_vars[0]
+    else:
+        return ""

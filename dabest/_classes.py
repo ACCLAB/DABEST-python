@@ -3,7 +3,7 @@
 # Author: Joses Ho
 # Email : joseshowh@gmail.com
 
-class Dabest:
+class Dabest(object):
 
     """
     Class for estimation statistics and plots.
@@ -165,8 +165,6 @@ class Dabest:
             self.cliffs_delta = "The data is paired; Cliff's delta is therefore undefined."
 
 
-
-
     def __repr__(self):
         from .__init__ import __version__
         import datetime as dt
@@ -205,6 +203,12 @@ class Dabest:
         return "\n".join(out)
 
 
+    # def __variable_name(self):
+    #     return [k for k,v in locals().items() if v is self]
+    #
+    # @property
+    # def variable_name(self):
+    #     return self.__variable_name()
 
 
     @property
@@ -870,7 +874,7 @@ class EffectSizeDataFrame(object):
         capability for the effect size of interest.
         """
 
-        self.__dabest_obj = dabest
+        self.__dabest_obj   = dabest
         self.__effect_size  = effect_size
         self.__is_paired    = is_paired
         self.__ci           = ci
@@ -878,10 +882,9 @@ class EffectSizeDataFrame(object):
         self.__random_seed  = random_seed
 
 
-
     def __pre_calc(self):
         import pandas as pd
-        from .misc_tools import print_greeting
+        from .misc_tools import print_greeting, get_varname
 
         idx  = self.__dabest_obj.idx
         dat  = self.__dabest_obj._plot_data
@@ -925,6 +928,11 @@ class EffectSizeDataFrame(object):
                 text_repr = text_repr.replace("is", to_replace, 1)
 
                 reprs.append(text_repr)
+
+        varname = get_varname(self.__dabest_obj)
+        lastline = "To get the results of all valid statistical tests, " +\
+        "use `{}.{}.statistical_tests`".format(varname, self.__effect_size)
+        reprs.append(lastline)
 
         reprs.insert(0, print_greeting())
 
@@ -1154,6 +1162,22 @@ class EffectSizeDataFrame(object):
             self.__pre_calc()
             return self.__results
 
+
+
+    @property
+    def statistical_tests(self):
+        results_df = self.results
+
+        # Select only the statistics and p-values.
+        stats_columns = [c for c in results_df.columns
+                         if c.startswith("statistic") or c.startswith("pvalue")]
+
+        default_cols = ['control', 'test', 'effect_size', 'is_paired',
+                        'difference', 'ci', 'bca_low', 'bca_high']
+
+        cols_of_interest = default_cols + stats_columns
+
+        return results_df[cols_of_interest]
 
 
     @property
