@@ -380,6 +380,7 @@ class TwoGroupsEffectSize(object):
                                     "hedges_g" : "Hedges' g",
                                     "cliffs_delta" : "Cliff's delta"}
 
+
         kosher_es = [a for a in self.__EFFECT_SIZE_DICT.keys()]
         if effect_size not in kosher_es:
             err1 = "The effect size '{}'".format(effect_size)
@@ -494,7 +495,7 @@ class TwoGroupsEffectSize(object):
 
         elif effect_size == "cliffs_delta":
             # Let's go with Brunner-Munzel!
-            brunner_munzel = spstats.brunner_munzel(control, test,
+            brunner_munzel = spstats.brunnermunzel(control, test,
                                                      nan_policy='omit')
             self.__pvalue_brunner_munzel = brunner_munzel.pvalue
             self.__statistic_brunner_munzel = brunner_munzel.statistic
@@ -507,7 +508,7 @@ class TwoGroupsEffectSize(object):
             kruskal = spstats.kruskal(control, test, nan_policy='omit')
             self.__pvalue_kruskal = kruskal.pvalue
             self.__statistic_kruskal = kruskal.statistic
-            self.__power = np.nan
+            # self.__power = np.nan
 
         else: # for mean difference, Cohen's d, and Hedges' g.
             # Welch's t-test, assumes normality of distributions,
@@ -547,14 +548,24 @@ class TwoGroupsEffectSize(object):
 
 
 
-    def __repr__(self, show_resample_count=True, sigfig=3):
+    def __repr__(self, show_resample_count=True, define_pval=True, sigfig=3):
+        UNPAIRED_ES_TO_TEST = {"mean_diff"    : "Mann-Whitney",
+                               "median_diff"  : "Kruskal",
+                               "cohens_d"     : "Mann-Whitney",
+                               "hedges_g"     : "Mann-Whitney",
+                               "cliffs_delta" : "Brunner-Munzel"}
+
+        TEST_TO_PVAL_ATTR = {"Mann-Whitney"    : "pvalue_mann_whitney",
+                             "Kruskal"        :  "pvalue_kruskal",
+                             "Brunner-Munzel" :  "pvalue_brunner_munzel",
+                             "Wilcoxon"       :  "pvalue_wilcoxon"}
 
         PAIRED_STATUS = {True: 'paired', False: 'unpaired'}
 
         first_line = {"is_paired": PAIRED_STATUS[self.__is_paired],
                       "es"       : self.__EFFECT_SIZE_DICT[self.__effect_size]}
 
-        out1 = "The {is_paired} {es}".format(**first_line)
+        out1 = "The {is_paired} {es} ".format(**first_line)
 
         base_string_fmt = "{:." + str(sigfig) + "}"
         if "." in str(self.__ci):
@@ -568,15 +579,33 @@ class TwoGroupsEffectSize(object):
                   "bca_high" : base_string_fmt.format(self.__bca_high)}
 
         out2 = "is {es} [{ci}%CI {bca_low}, {bca_high}].".format(**ci_out)
+        out = out1 + out2
 
-        out3 = "{} bootstrap samples were taken;".format(self.__resamples)
-
-        out4 = "the confidence interval is bias-corrected and accelerated."
-
-        if show_resample_count:
-            return "{} {}\n\n{} {}".format(out1, out2, out3, out4)
+        if self.__is_paired:
+            stats_test = "Wilcoxon"
         else:
-            return "{} {}".format(out1, out2)
+            stats_test = UNPAIRED_ES_TO_TEST[self.__effect_size]
+        pval_rounded = base_string_fmt.format(getattr(self,
+                                                     TEST_TO_PVAL_ATTR[stats_test])
+                                              )
+        pvalue = "The two-sided p-value of the {} test is {}.".format(stats_test,
+                                                                pval_rounded)
+
+        bs1 = "{} bootstrap samples were taken; ".format(self.__resamples)
+        bs2 = "the confidence interval is bias-corrected and accelerated."
+        bs = bs1 + bs2
+
+        defined = "The p-value(s) reported are the likelihood(s) of observing the " + \
+                  "effect size(s),\nif the null hypothesis of zero difference is true."
+
+        if show_resample_count and define_pval:
+            return "{}\n{}\n\n{}\n{}".format(out, pvalue, bs, defined)
+        elif show_resample_count is False and define_pval is True:
+            return "{}\n{}\n\n{}".format(out, pvalue, defined)
+        elif show_resample_count is True and define_pval is False:
+            return "{}\n{}\n\n{}".format(out, pvalue, bs)
+        else:
+            return "{}\n{}".format(out, pvalue)
 
 
 
@@ -884,10 +913,13 @@ class EffectSizeDataFrame(object):
 
                 if j == len(idx)-1 and ix == len(current_tuple)-2:
                     resamp_count = True
+                    def_pval     = True
                 else:
                     resamp_count = False
+                    def_pval     = False
 
-                text_repr = result.__repr__(show_resample_count=resamp_count)
+                text_repr = result.__repr__(show_resample_count=resamp_count,
+                                            define_pval=def_pval)
 
                 to_replace = "between {} and {} is".format(cname, tname)
                 text_repr = text_repr.replace("is", to_replace, 1)
