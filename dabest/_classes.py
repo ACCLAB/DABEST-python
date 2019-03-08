@@ -908,8 +908,6 @@ class EffectSizeDataFrame(object):
 
                             'bootstraps', 'resamples', 'random_seed',
 
-                            'power',
-
                             'pvalue_welch',
                             'statistic_welch',
 
@@ -952,15 +950,15 @@ class EffectSizeDataFrame(object):
             swarm_label=None, contrast_label=None,
             swarm_ylim=None, contrast_ylim=None,
 
-            custom_palette=None,
+            custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
+            halfviolin_alpha=0.8,
+
             float_contrast=True,
             show_pairs=True,
             group_summaries=None,
 
             fig_size=None,
             dpi=100,
-            halfviolin_desat=0.5,
-            halfviolin_alpha=0.8,
 
             swarmplot_kwargs=None,
             violinplot_kwargs=None,
@@ -1005,6 +1003,15 @@ class EffectSizeDataFrame(object):
             https://seaborn.pydata.org/generated/seaborn.cubehelix_palette.html
             The named colors of matplotlib can be found here:
             https://matplotlib.org/examples/color/named_colors.html
+        swarm_desat : float, default 1
+            Decreases the saturation of the colors in the swarmplot by the
+            desired proportion. Uses `seaborn.desaturate()` to acheive this.
+        halfviolin_desat : float, default 0.5
+            Decreases the saturation of the colors of the half-violin bootstrap
+            curves by the desired proportion. Uses `seaborn.desaturate()` to
+            acheive this.
+        halfviolin_alpha : float, default 0.8
+            The alpha (transparency) level of the half-violin bootstrap curves.
         float_contrast : boolean, default True
             Whether or not to display the halfviolin bootstrapped difference
             distribution alongside the raw data.
@@ -1022,12 +1029,6 @@ class EffectSizeDataFrame(object):
             The desired dimensions of the figure as a (length, width) tuple.
         dpi : int, default 100
             The dots per inch of the resulting figure.
-        halfviolin_desat : float, default 0.5
-            The amount to desaturate the half-violin curves by. Uses
-            `seaborn.desaturate()` to acheive this.
-        halfviolin_alpha : float, default 0.8
-            The alpha level (transparency) of the half-violinplot used to
-            depict the bootstrapped distribution of the effect size(s).
         swarmplot_kwargs : dict, default None
             Pass any keyword arguments accepted by the seaborn `swarmplot`
             command here, as a dict. If None, the following keywords are

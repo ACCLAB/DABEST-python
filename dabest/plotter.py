@@ -14,25 +14,26 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     EffectSizeDataFrame: A `dabest` EffectSizeDataFrame object.
 
     **plot_kwargs:
-        color_col=None,
+        color_col=None
 
         raw_marker_size=6, es_marker_size=9,
 
         swarm_label=None, contrast_label=None,
         swarm_ylim=None, contrast_ylim=None,
 
-        custom_palette=None,
+        custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
+        halfviolin_alpha=0.8,
+
         float_contrast=True,
         show_pairs=True,
-        group_summaries="mean_sd",
+        group_summaries=None,
 
         fig_size=None,
         dpi=100,
-        halfviolin_desat=0.5,
-        halfviolin_alpha=0.8,
 
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
+        slopegraph_kwargs=None,
         reflines_kwargs=None,
         group_summary_kwargs=None,
         legend_kwargs=None,
@@ -177,14 +178,17 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if show_pairs:
         bootstraps_color_by_group = False
 
+    # Handle the color palette.
+    names = color_groups
     n_groups = len(color_groups)
-
     custom_pal = plot_kwargs["custom_palette"]
+    swarm_desat = plot_kwargs["swarm_desat"]
+    contrast_desat = plot_kwargs["halfviolin_desat"]
+
     if custom_pal is None:
-        plot_palette = dict(zip(color_groups,
-                           sns.color_palette(n_colors=len(color_groups))
-                           ))
+        unsat_colors = sns.color_palette(n_colors=n_groups)
     else:
+
         if isinstance(custom_pal, dict):
             # check that all the keys in custom_pal are found in the
             # color column.
@@ -196,28 +200,26 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 err2 = 'are not found in `{}`. Please check.'.format(color_col)
                 errstring = (err1 + err2)
                 raise IndexError(errstring)
-            plot_palette = custom_pal
+            names = custom_pal.keys
+            unsat_colors = custom_pal.values()
 
         elif isinstance(custom_pal, list):
-            plot_palette = dict(zip(color_groups, custom_pal[0: n_groups]))
+            unsat_colors = custom_pal[0: n_groups]
 
         elif isinstance(custom_pal, str):
             # check it is in the list of matplotlib palettes.
             if custom_pal in plt.colormaps():
-                plot_palette = dict(zip(color_groups,
-                                   sns.color_palette(custom_pal, n_groups))
-                               )
+                unsat_colors = sns.color_palette(custom_pal, n_groups)
             else:
                 err1 = 'The specified `custom_palette` {}'.format(custom_pal)
                 err2 = ' is not a matplotlib palette. Please check.'
                 raise ValueError(err1 + err2)
 
-    desat = kwargs["halfviolin_desat"]
-    plot_palette_desat = dict(zip(color_groups,
-                              [sns.desaturate(c, desat)
-                              for c in plot_palette.values()]
-                           ))
+    swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
+    plot_palette_raw = dict(zip(names, swarm_colors))
 
+    contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
+    plot_palette_contrast = dict(zip(names, contrast_colors))
 
 
     # Infer the figsize.
@@ -313,7 +315,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 else:
                     color_key = pivoted_plot_data[color_col,
                                                   current_tuple[0]].loc[ID]
-                    slopegraph_kwargs['color']  = plot_palette[color_key]
+                    slopegraph_kwargs['color']  = plot_palette_raw[color_key]
                     slopegraph_kwargs['label']  = color_key
 
                 rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
@@ -328,7 +330,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         rawdata_plot = sns.swarmplot(data=plot_data, x=xvar, y=yvar,
                                      ax=rawdata_axes,
                                      order=all_plot_groups, hue=color_col,
-                                     palette=plot_palette, zorder=1,
+                                     palette=plot_palette_raw, zorder=1,
                                      **swarmplot_kwargs)
 
         # Plot the gapped line summaries, if this is not a Cumming plot.
@@ -351,7 +353,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                     pass
 
                 if bootstraps_color_by_group is True:
-                    line_colors.append(plot_palette[all_plot_groups[jj]])
+                    line_colors.append(plot_palette_raw[all_plot_groups[jj]])
 
             if len(line_colors) != len(all_plot_groups):
                 line_colors = ytick_color
@@ -409,7 +411,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     for j, tick in enumerate(ticks_to_plot):
         current_group     = results.test[j]
         current_control   = results.control[j]
-        # current_color     = plot_palette[current_group]
         current_bootstrap = results.bootstraps[j]
         current_effsize   = results.difference[j]
         current_ci_low    = results.bca_low[j]
@@ -424,7 +425,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         # Ideally, the alpha (transparency) fo the violin plot should be
         # less than one so the effect size and CIs are visible.
         if bootstraps_color_by_group is True:
-            fc = plot_palette_desat[current_group]
+            fc = plot_palette_contrast[current_group]
         else:
             fc = "grey"
 
