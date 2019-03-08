@@ -28,6 +28,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         fig_size=None,
         dpi=100,
+        halfviolin_desat=0.5,
         halfviolin_alpha=0.8,
 
         swarmplot_kwargs=None,
@@ -210,8 +211,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 err1 = 'The specified `custom_palette` {}'.format(custom_pal)
                 err2 = ' is not a matplotlib palette. Please check.'
                 raise ValueError(err1 + err2)
+
+    desat = kwargs["halfviolin_desat"]
     plot_palette_desat = dict(zip(color_groups,
-                              [sns.desaturate(c, 0.5)
+                              [sns.desaturate(c, desat)
                               for c in plot_palette.values()]
                            ))
 

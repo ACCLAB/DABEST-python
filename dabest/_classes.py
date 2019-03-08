@@ -959,6 +959,7 @@ class EffectSizeDataFrame(object):
 
             fig_size=None,
             dpi=100,
+            halfviolin_desat=0.5,
             halfviolin_alpha=0.8,
 
             swarmplot_kwargs=None,
@@ -1021,6 +1022,9 @@ class EffectSizeDataFrame(object):
             The desired dimensions of the figure as a (length, width) tuple.
         dpi : int, default 100
             The dots per inch of the resulting figure.
+        halfviolin_desat : float, default 0.5
+            The amount to desaturate the half-violin curves by. Uses
+            `seaborn.desaturate()` to acheive this.
         halfviolin_alpha : float, default 0.8
             The alpha level (transparency) of the half-violinplot used to
             depict the bootstrapped distribution of the effect size(s).
