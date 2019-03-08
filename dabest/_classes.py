@@ -364,7 +364,7 @@ class TwoGroupsEffectSize(object):
 
         import scipy.stats as spstats
 
-        import statsmodels.stats.power as power
+        # import statsmodels.stats.power as power
 
         from string import Template
         import warnings
@@ -487,9 +487,9 @@ class TwoGroupsEffectSize(object):
                 self.__statistic_paired_students_t = paired_t.statistic
 
                 standardized_es = es.cohens_d(control, test, is_paired=True)
-                self.__power = power.tt_solve_power(standardized_es,
-                                                    len(control),
-                                                    alpha=self.__alpha)
+                # self.__power = power.tt_solve_power(standardized_es,
+                #                                     len(control),
+                #                                     alpha=self.__alpha)
 
 
         elif effect_size == "cliffs_delta":
@@ -536,11 +536,11 @@ class TwoGroupsEffectSize(object):
                 pass
 
             standardized_es = es.cohens_d(control, test, is_paired=False)
-            self.__power = power.tt_ind_solve_power(standardized_es,
-                                                    len(control),
-                                                    alpha=self.__alpha,
-                                                    ratio=len(test)/len(control)
-                                                    )
+            # self.__power = power.tt_ind_solve_power(standardized_es,
+            #                                         len(control),
+            #                                         alpha=self.__alpha,
+            #                                         ratio=len(test)/len(control)
+            #                                         )
 
 
 
@@ -817,13 +817,13 @@ class TwoGroupsEffectSize(object):
 
 
 
-    @property
-    def power(self):
-        from numpy import nan as npnan
-        try:
-            return self.__power
-        except AttributeError:
-            return npnan
+    # @property
+    # def power(self):
+    #     from numpy import nan as npnan
+    #     try:
+    #         return self.__power
+    #     except AttributeError:
+    #         return npnan
 
 
 
