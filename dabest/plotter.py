@@ -48,6 +48,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     from .plot_tools import halfviolin, get_swarm_spans, gapped_lines
     from ._stats_tools.effsize import _compute_standardizers, _compute_hedges_correction_factor
 
+    import logging
+    # Have to disable logging of warning when get_legend_handles_labels()
+    # tries to get from slopegraph.
+    logging.disable(logging.WARNING)
+
     # Save rcParams that I will alter, so I can reset back.
     original_rcParams = {}
     _changed_rcParams = ['axes.grid']
@@ -190,18 +195,22 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
 
         if isinstance(custom_pal, dict):
-            # check that all the keys in custom_pal are found in the
-            # color column.
-            col_grps = {k for k in color_groups}
-            pal_grps = {k for k in custom_pal.keys()}
-            not_in_pal = pal_grps.difference(col_grps)
-            if len(not_in_pal) > 0:
-                err1 = 'The custom palette keys {} '.format(not_in_pal)
-                err2 = 'are not found in `{}`. Please check.'.format(color_col)
-                errstring = (err1 + err2)
-                raise IndexError(errstring)
-            names = custom_pal.keys()
-            unsat_colors = custom_pal.values()
+            groups_in_palette = {k: v for k,v in custom_pal.items()
+                                 if k in color_groups}
+
+            # # check that all the keys in custom_pal are found in the
+            # # color column.
+            # col_grps = {k for k in color_groups}
+            # pal_grps = {k for k in custom_pal.keys()}
+            # not_in_pal = pal_grps.difference(col_grps)
+            # if len(not_in_pal) > 0:
+            #     err1 = 'The custom palette keys {} '.format(not_in_pal)
+            #     err2 = 'are not found in `{}`. Please check.'.format(color_col)
+            #     errstring = (err1 + err2)
+            #     raise IndexError(errstring)
+
+            names = groups_in_palette.keys()
+            unsat_colors = groups_in_palette.values()
 
         elif isinstance(custom_pal, list):
             unsat_colors = custom_pal[0: n_groups]
@@ -387,10 +396,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if bootstraps_color_by_group is False:
         rawdata_axes.legend().set_visible(False)
 
-
-
-
-
     # Plot effect sizes and bootstraps.
     # Take note of where the `control` groups are.
     ticks_to_skip   = np.cumsum([len(t) for t in idx])[:-1].tolist()
@@ -467,25 +472,27 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         legend_labels_unique = np.unique(legend_labels)
         unique_idx = np.unique(legend_labels, return_index=True)[1]
         legend_handles_unique = (pd.Series(legend_handles).loc[unique_idx]).tolist()
-        if float_contrast is True:
-            axes_with_legend = contrast_axes
-            if show_pairs is True:
-                bta = (1.75, 1.02)
+
+        if len(legend_handles_unique) > 0:
+            if float_contrast is True:
+                axes_with_legend = contrast_axes
+                if show_pairs is True:
+                    bta = (1.75, 1.02)
+                else:
+                    bta = (1.5, 1.02)
             else:
-                bta = (1.5, 1.02)
-        else:
-            axes_with_legend = rawdata_axes
+                axes_with_legend = rawdata_axes
+                if show_pairs is True:
+                    bta = (1.02, 1.)
+                else:
+                    bta = (1.,1.)
+            leg = axes_with_legend.legend(legend_handles_unique,
+                                          legend_labels_unique,
+                                          bbox_to_anchor=bta,
+                                          **legend_kwargs)
             if show_pairs is True:
-                bta = (1.02, 1.)
-            else:
-                bta = (1.,1.)
-        leg = axes_with_legend.legend(legend_handles_unique,
-                                      legend_labels_unique,
-                                      bbox_to_anchor=bta,
-                                      **legend_kwargs)
-        if show_pairs is True:
-            for line in leg.get_lines():
-                line.set_linewidth(3.0)
+                for line in leg.get_lines():
+                    line.set_linewidth(3.0)
 
 
 
