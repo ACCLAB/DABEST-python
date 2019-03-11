@@ -200,7 +200,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 err2 = 'are not found in `{}`. Please check.'.format(color_col)
                 errstring = (err1 + err2)
                 raise IndexError(errstring)
-            names = custom_pal.keys
+            names = custom_pal.keys()
             unsat_colors = custom_pal.values()
 
         elif isinstance(custom_pal, list):
