@@ -92,9 +92,15 @@ def test_cummings_unpaired():
     # Check ylims match the desired ones.
     assert rawswarm_axes.get_ylim()[0] == pytest.approx(rand_swarm_ylim[0])
     assert rawswarm_axes.get_ylim()[1] == pytest.approx(rand_swarm_ylim[1])
+    
     # This needs to be rounded, because if the base mean is 0,
     # the ylim might be -0.001, which will not match 0.
-    assert np.round(contrast_axes.get_ylim()[0]) == pytest.approx(rand_contrast_ylim[0])
+    if base_mean == 0:
+        ylim_low = np.round(contrast_axes.get_ylim()[0])
+    else:
+        ylim_low = contrast_axes.get_ylim()[0]
+    assert ylim_low == pytest.approx(rand_contrast_ylim[0])
+    
     assert contrast_axes.get_ylim()[1] == pytest.approx(rand_contrast_ylim[1])
 
     # Check xtick labels.
