@@ -1,26 +1,26 @@
-.. _getting-started:
+.. _Getting Started:
 
 ===============
 Getting Started
 ===============
 
-------------
+
 Requirements
 ------------
 
-Python 3.6 is strongly recommended. ``dabest`` has also been tested with Python 2.7, 3.5, and 3.7.
+Python 3.7 is strongly recommended. ``dabest`` has also been tested with Python 3.5, 3.6, and 3.8.
 
 In addition, the following packages are also required:
 
 * `numpy 1.15 <https://www.numpy.org>`_
-* `scipy 1.1 <https://www.scipy.org>`_
-* `matplotlib 2.2 <https://www.matplotlib.org>`_
-* `pandas 0.23 <https://pandas.pydata.org>`_
+* `scipy 1.2 <https://www.scipy.org>`_
+* `matplotlib 3.0 <https://www.matplotlib.org>`_
+* `pandas 0.24 <https://pandas.pydata.org>`_
 * `seaborn 0.9 <https://seaborn.pydata.org>`_
 
 To obtain these package dependencies easily, it is highly recommended to download the `Anaconda <https://www.continuum.io/downloads>`_ distribution of Python.
 
-------------
+
 Installation
 ------------
 
@@ -43,7 +43,7 @@ Then, navigate to the cloned repo in the command line and run
   $ pip install .
 
 
--------
+
 Testing
 -------
 
@@ -51,12 +51,12 @@ To test ``dabest``, you will need to install `pytest <https://docs.pytest.org/en
 
 Run ``pytest`` in the root directory of the source distribution. This runs the test suite in ``dabest/tests`` folder. The test suite will ensure that the bootstrapping functions and the plotting functions perform as expected.
 
-----
+
 Bugs
 ----
 Please report any bugs on the `Github issue tracker <https://github.com/ACCLAB/DABEST-python/issues/new>`_ for DABEST-python.
 
-------------
+
 Contributing
 ------------
 All contributions are welcome. Please fork the `Github repo <https://github.com/ACCLAB/DABEST-python/>`_ and open a pull request.

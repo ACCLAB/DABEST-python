@@ -20,7 +20,7 @@ DABEST powers [estimationstats.com](https://www.estimationstats.com/), allowing 
 
 ## Requirements
 
-DABEST has been tested on Python 2.7, 3.5, 3.6, and 3.7.
+DABEST has been tested on Python 3.5, 3.6, and 3.7.
 
 _Python 2.7 will no longer be supported from dabest v0.2.0 onwards, as [Python 2.7 will no longer be supported after January 1 2020](https://python3statement.org/)._ dabest v.0.2.0 is under development, and will be released before the end of 2019.
 
