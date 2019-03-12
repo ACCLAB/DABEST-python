@@ -1,12 +1,7 @@
-# coding: utf-8
-#! /usr/bin/env python
-
-
- # This filters out an innocuous warning when pandas is imported,
-# # but the version has not been compiled against the newest numpy.
-# import warnings
-# warnings.filterwarnings("ignore", message="numpy.dtype size changed")
-
+#!/usr/bin/python
+# -*-coding: utf-8 -*-
+# Author: Joses Ho
+# Email : joseshowh@gmail.com
 
 
 import sys
@@ -15,9 +10,7 @@ import scipy as sp
 import pytest
 import pandas as pd
 from .._stats_tools import effsize
-
-
-
+from .._classes import TwoGroupsEffectSize
 
 
 
@@ -95,9 +88,6 @@ def test_median_diff_paired():
 
 
 
-
-
-
 def test_cohens_d_unpaired():
     import numpy as np
     cohens_d = effsize.cohens_d(wellbeing.control, wellbeing.expt,
@@ -130,12 +120,60 @@ def test_hedges_g_paired():
 
 
 
-
-
-
 def test_cliffs_delta():
     likert_delta = effsize.cliffs_delta(likert_treatment, likert_control)
     assert likert_delta == pytest.approx(-0.25)
 
     scores_delta = effsize.cliffs_delta(b_scores, a_scores)
     assert scores_delta == pytest.approx(0.65)
+    
+    
+    
+def test_unpaired_stats():
+    c = wellbeing.control
+    t = wellbeing.expt
+    
+    unpaired_es = TwoGroupsEffectSize(c, t, "mean_diff", is_paired=False)
+    
+    p1 = sp.stats.mannwhitneyu(c, t).pvalue
+    assert unpaired_es.pvalue_mann_whitney == pytest.approx(p1)
+    
+    p2 = sp.stats.ttest_ind(c, t, nan_policy='omit').pvalue
+    assert unpaired_es.pvalue_students_t == pytest.approx(p2)
+    
+    p3 = sp.stats.ttest_ind(c, t, equal_var=False, nan_policy='omit').pvalue
+    assert unpaired_es.pvalue_welch == pytest.approx(p3)
+    
+    
+    
+def test_paired_stats():
+    before = paired_wellbeing.pre
+    after = paired_wellbeing.post
+    
+    paired_es = TwoGroupsEffectSize(before, after, "mean_diff", is_paired=True)
+    
+    p1 = sp.stats.ttest_rel(before, after, nan_policy='omit').pvalue
+    assert paired_es.pvalue_paired_students_t == pytest.approx(p1)
+    
+    p2 = sp.stats.wilcoxon(before, after).pvalue
+    assert paired_es.pvalue_wilcoxon == pytest.approx(p2)
+    
+    
+
+def test_median_diff_stats():
+    c = wellbeing.control
+    t = wellbeing.expt
+    
+    es = TwoGroupsEffectSize(c, t, "median_diff", is_paired=False)
+    
+    p1 = sp.stats.kruskal(c, t, nan_policy='omit').pvalue
+    assert es.pvalue_kruskal == pytest.approx(p1)
+    
+    
+    
+def test_ordinal_dominance():
+    es = TwoGroupsEffectSize(likert_control, likert_treatment, 
+                             "cliffs_delta", is_paired=False)
+                             
+    p1 = sp.stats.brunnermunzel(likert_control, likert_treatment).pvalue
+    assert es.pvalue_brunner_munzel == pytest.approx(p1)
