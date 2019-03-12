@@ -1,25 +1,11 @@
 language: python
 
-# matrix:
-#     include:
-#         - python: 2.7
-#           dist: trusty
-#           sudo: false
-#         - python: 3.5
-#           dist: trusty
-#           sudo: false
-#         - python: 3.6
-#           dist: trusty
-#           sudo: false
-#         - python: 3.7
-#           dist: xenial
-#           sudo: true
 
 env:
-  - PYTHON=2.7 BACKEND=agg
   - PYTHON=3.5 BACKEND=agg
   - PYTHON=3.6 BACKEND=agg
   - PYTHON=3.7 BACKEND=agg
+
 
 before_install:
   - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
@@ -30,11 +16,13 @@ before_install:
   - conda update -q conda
   - conda info -a
 
+
 install:
   - conda update conda --yes
   - conda create -n testenv --yes pip python=$PYTHON matplotlib
   - source activate testenv
-  - pip install pytest==3.7
+  - pip install pytest==4.3
   - pip install .
 
-script: pytest
+
+script: pytest dabest

@@ -35,15 +35,18 @@ except ImportError:
 
 
 
-def need_to_install(library, desired_major_version, desired_minor_version):
-    LIB_INSTALLED_VERSION = library.__version__
-    LIB_INSTALLED_VERSION_MAJOR = int(LIB_INSTALLED_VERSION.split('.')[0])
-    LIB_INSTALLED_VERSION_MINOR = int(LIB_INSTALLED_VERSION.split('.')[1])
+def need_to_install(module, version):
+    desired_major_version = int(version.split('.')[0])
+    desired_minor_version = int(version.split('.')[1])
 
-    if LIB_INSTALLED_VERSION_MAJOR < desired_major_version:
+    INSTALLED_VERSION_MAJOR = int(module.__version__.split('.')[0])
+    INSTALLED_VERSION_MINOR = int(module.__version__.split('.')[1])
+
+    if INSTALLED_VERSION_MAJOR < desired_major_version:
         return True
 
-    elif LIB_INSTALLED_VERSION_MINOR < desired_minor_version:
+    elif INSTALLED_VERSION_MAJOR == desired_major_version and \
+         INSTALLED_VERSION_MINOR < desired_minor_version:
         return True
 
     else:
@@ -52,66 +55,25 @@ def need_to_install(library, desired_major_version, desired_minor_version):
 
 
 def check_dependencies():
+    from importlib import import_module
+
+    modules = {'numpy'      : '1.15',
+               'scipy'      : '1.2',
+               'statsmodels': '0.9', 
+               'pandas'     : '0.24',
+               'matplotlib' : '3.0',
+               'seaborn'    : '0.9'}
     to_install = []
 
+    for module, version in modules.items():
+        try:
+            my_module = import_module(module)
 
-    NUMPY_LATEST_MAJOR = 1
-    NUMPY_LATEST_MINOR = 15
-    TO_INSTALL = 'numpy=={}.{}'.format(NUMPY_LATEST_MAJOR,
-                                       NUMPY_LATEST_MINOR)
-    try:
-        import numpy
-        if need_to_install(numpy, NUMPY_LATEST_MAJOR, NUMPY_LATEST_MINOR):
-            to_install.append(TO_INSTALL)
-    except ImportError:
-        to_install.append(TO_INSTALL)
+            if need_to_install(my_module, version):
+                to_install.append("{}=={}".format(module, version))
 
-
-    SCIPY_LATEST_MAJOR = 1
-    SCIPY_LATEST_MINOR = 1
-    TO_INSTALL = 'scipy=={}.{}'.format(SCIPY_LATEST_MAJOR,
-                                       SCIPY_LATEST_MINOR)
-    try:
-        import scipy
-        if need_to_install(scipy, SCIPY_LATEST_MAJOR, SCIPY_LATEST_MINOR):
-            to_install.append(TO_INSTALL)
-    except ImportError:
-        to_install.append(TO_INSTALL)
-
-    PANDAS_LATEST_MAJOR = 0
-    PANDAS_LATEST_MINOR = 23
-    TO_INSTALL = 'pandas=={}.{}'.format(PANDAS_LATEST_MAJOR,
-                                        PANDAS_LATEST_MINOR)
-    try:
-        import pandas
-        if need_to_install(pandas, PANDAS_LATEST_MAJOR, PANDAS_LATEST_MINOR):
-            to_install.append(TO_INSTALL)
-    except ImportError:
-        to_install.append(TO_INSTALL)
-
-
-    MPL_LATEST_MAJOR = 2
-    MPL_LATEST_MINOR = 2
-    TO_INSTALL = 'matplotlib=={}.{}'.format(MPL_LATEST_MAJOR,
-                                            MPL_LATEST_MINOR)
-    try:
-        import matplotlib as mpl
-        if need_to_install(mpl, MPL_LATEST_MAJOR, MPL_LATEST_MINOR):
-            to_install.append(TO_INSTALL)
-    except ImportError:
-        to_install.append(TO_INSTALL)
-
-
-    SNS_LATEST_MAJOR = 0
-    SNS_LATEST_MINOR = 9
-    TO_INSTALL = 'seaborn=={}.{}'.format(SNS_LATEST_MAJOR,
-                                        SNS_LATEST_MINOR)
-    try:
-        import seaborn
-        if need_to_install(seaborn, SNS_LATEST_MAJOR, SNS_LATEST_MINOR):
-            to_install.append(TO_INSTALL)
-    except ImportError:
-        to_install.append(TO_INSTALL)
+        except ImportError:
+            to_install.append("{}=={}".format(module, version))
 
     return to_install
 
@@ -127,7 +89,7 @@ if __name__ == "__main__":
         author_email='joseshowh@gmail.com',
         maintainer='Joses W. Ho',
         maintainer_email='joseshowh@gmail.com',
-        version='0.1.6',
+        version='0.2.0',
         description=DESCRIPTION,
         long_description=LONG_DESCRIPTION,
         packages=find_packages(),

@@ -1,11 +1,11 @@
 
 @import url("basic.css");
-@import url('https://fonts.googleapis.com/css?family=IBM+Plex+Mono|Lora:400,400i|Merriweather+Sans:400,400i');
+@import url('https://fonts.googleapis.com/css?family=IBM+Plex+Mono|Spectral:500,500i|Merriweather+Sans:400,400i');
 
 /* -- page layout ----------------------------------------------------------- */
 
 body {
-    font-family: 'Lora', 'Garamond';
+    font-family: 'Spectral', 'Garamond';
     font-size: 19px;
     background-color: #fff;
     color: #000;
@@ -31,7 +31,7 @@ div.bodywrapper {
 div.sphinxsidebar {
     font-family: 'Merriweather Sans', sans-serif;
     width: 220px;
-    font-size: 14px;
+    font-size: 12px;
     line-height: 1.5;
 }
 
@@ -350,11 +350,45 @@ img.screenshot {
 }
 
 table.docutils {
+    width: 100%;
+    overflow-x: auto;
     border: 1px solid #888;
     -moz-box-shadow: 2px 2px 4px #EEE;
     -webkit-box-shadow: 2px 2px 4px #EEE;
     box-shadow: 2px 2px 4px #EEE;
 }
+
+table.dataframe {
+  /* Added by Joses. */
+  width: 100%;
+  display: block;
+  border: 0px;
+  overflow-x: scroll;
+  border-collapse: collapse;
+  font-family: "IBM Plex Mono";
+  font-size: 15px;
+ }
+
+/* Added by Joses. */
+table.dataframe tbody tr th:only-of-type {
+    vertical-align: middle;
+}
+
+table.dataframe thead th {
+  background-color: #fdf6e3;
+  color: #657b83;
+  text-align: left;
+}
+
+table.dataframe th, td {
+  padding: 5px;
+}
+    
+table.dataframe tbody tr th {
+  vertical-align: top;
+}
+
+table tr:hover {background-color: #f5f5f5;}
 
 table.docutils td, table.docutils th {
     border: 1px solid #888;
@@ -497,7 +531,6 @@ a:hover tt, a:hover code {
 
     div.document {
        width: 100%;
-
     }
 
     div.documentwrapper {

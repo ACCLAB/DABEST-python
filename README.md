@@ -20,7 +20,7 @@ DABEST powers [estimationstats.com](https://www.estimationstats.com/), allowing 
 
 ## Requirements
 
-DABEST has been tested on Python 2.7, 3.5, 3.6, and 3.7.
+DABEST has been tested on Python 3.5, 3.6, and 3.7.
 
 In addition, the following packages are also required:
 - [numpy](https://www.numpy.org) (1.15)

@@ -7,14 +7,14 @@ About
 
 Authors
 --------
-`dabest` is written in Python by `Joses W. Ho <https://twitter.com/jacuzzijo>`_ (with design and input from `Adam Claridge-Chang <https://twitter.com/adamcchang>`_ and other lab members.
+`dabest` is written in Python by `Joses W. Ho <https://twitter.com/jacuzzijo>`_, with design and input from `Adam Claridge-Chang <https://twitter.com/adamcchang>`_ and other lab members.
 
 To find out more about the authors’ research, please visit the `Claridge-Chang lab webpage <http://www.claridgechang.net/>`_.
 
 Typography
 ----------
 
-This documentation uses `Lora <hhttp://www.cyreal.org/2012/07/lora/>`_ for the body text, `Merriweather Sans <https://ebensorkin.wordpress.com/>`_ for the side bar and titles, and `IBM Plex Mono <https://github.com/IBM/plex>`_ for the monospace code font.
+This documentation uses `Spectral <https://spectral.prototypo.io/>`_ for the body text, `Merriweather Sans <https://ebensorkin.wordpress.com/>`_ for the side bar and titles, and `IBM Plex Mono <https://github.com/IBM/plex>`_ for the monospace code font.
 
 
 License
@@ -22,7 +22,7 @@ License
 
 The `dabest` package in Python is licenced under the `BSD 3-clause Clear License <https://choosealicense.com/licenses/bsd-3-clause-clear/>`_.
 
-Copyright (c) 2016-2018, Joses W. Ho
+Copyright (c) 2016-2019, Joses W. Ho
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
