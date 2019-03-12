@@ -349,14 +349,46 @@ img.screenshot {
     box-shadow: 2px 2px 4px #EEE;
 }
 
-table.docutils, table.dataframe {
+table.docutils {
     width: 100%;
-    overflow: auto;
+    overflow-x: auto;
     border: 1px solid #888;
     -moz-box-shadow: 2px 2px 4px #EEE;
     -webkit-box-shadow: 2px 2px 4px #EEE;
     box-shadow: 2px 2px 4px #EEE;
 }
+
+table.dataframe {
+  /* Added by Joses. */
+  width: 100%;
+  display: block;
+  border: 0px;
+  overflow-x: scroll;
+  border-collapse: collapse;
+  font-family: "IBM Plex Mono";
+  font-size: 15px;
+ }
+
+/* Added by Joses. */
+table.dataframe tbody tr th:only-of-type {
+    vertical-align: middle;
+}
+
+table.dataframe thead th {
+  background-color: #fdf6e3;
+  color: #657b83;
+  text-align: left;
+}
+
+table.dataframe th, td {
+  padding: 5px;
+}
+    
+table.dataframe tbody tr th {
+  vertical-align: top;
+}
+
+table tr:hover {background-color: #f5f5f5;}
 
 table.docutils td, table.docutils th {
     border: 1px solid #888;
@@ -499,7 +531,6 @@ a:hover tt, a:hover code {
 
     div.document {
        width: 100%;
-
     }
 
     div.documentwrapper {
