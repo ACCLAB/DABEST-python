@@ -5,13 +5,26 @@
 API
 ===
 
-Plotting
---------
+Loading Data
+-------------
 
-.. autofunction:: plot
+.. autofunction:: load
 
-Bootstrap Confidence Intervals
-------------------------------
+Plotting Data
+-------------
 
-.. autoclass:: bootstrap
-   :members:
+.. autofunction:: dabest._classes.EffectSizeDataFrame.plot
+
+
+Computing Effect Sizes
+----------------------
+
+.. autoclass:: dabest._classes.TwoGroupsEffectSize
+..
+.. .. autofunction:: dabest._stats_tools.effsize.func_difference
+..
+.. .. autofunction:: dabest._stats_tools.effsize.cohens_d
+..
+.. .. autofunction:: dabest._stats_tools.effsize.hedges_g
+..
+.. .. autofunction:: dabest._stats_tools.effsize.cliffs_delta

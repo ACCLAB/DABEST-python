@@ -1,91 +1,76 @@
 .. _Tutorial:
-.. highlight:: python
-  :linenothreshold: 2
 
 ========
 Tutorial
 ========
 
---------------
 Load Libraries
 --------------
 
 .. code:: ipython3
 
-    import numpy as np
-    import pandas as pd
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import dabest
 
-    import dabest
-    %matplotlib inline
+    >>> print("We're using DABEST v{}".format(dabest.__version__))
 
-    print("We're using DABEST v{}".format(dabest.__version__))
 
 .. parsed-literal::
 
-    We're using DABEST v0.1.7
+    We're using DABEST v0.2.0
 
---------------------
-Create dummy dataset
---------------------
 
-Here, we create a dummy dataset to illustrate how ``dabest`` functions.
-In this dataset, each column corresponds to a group of observations, and
-each row is simply an index number referring to an observation.
+Create dataset for demo
+-----------------------
+
+Here, we create a dataset to illustrate how :keyword:`dabest` functions. In
+this dataset, each column corresponds to a group of observations.
+
+.. code:: ipython3
+
+    >>> from scipy.stats import norm # Used in generation of populations.
+
+    >>> np.random.seed(9999) # Fix the seed so the results are replicable.
+    >>> Ns = 20 # The number of samples taken from each population
+
+    >>> # Create samples
+    >>> c1 = norm.rvs(loc=3, scale=0.4, size=Ns)
+    >>> c2 = norm.rvs(loc=3.5, scale=0.75, size=Ns)
+    >>> c3 = norm.rvs(loc=3.25, scale=0.4, size=Ns)
+
+    >>> t1 = norm.rvs(loc=3.5, scale=0.5, size=Ns)
+    >>> t2 = norm.rvs(loc=2.5, scale=0.6, size=Ns)
+    >>> t3 = norm.rvs(loc=3, scale=0.75, size=Ns)
+    >>> t4 = norm.rvs(loc=3.5, scale=0.75, size=Ns)
+    >>> t5 = norm.rvs(loc=3.25, scale=0.4, size=Ns)
+    >>> t6 = norm.rvs(loc=3.25, scale=0.4, size=Ns)
+
+
+    >>> # Add a `gender` column for coloring the data.
+    >>> females = np.repeat('Female', Ns/2).tolist()
+    >>> males = np.repeat('Male', Ns/2).tolist()
+    >>> gender = females + males
+
+    >>> # Add an `id` column for paired data plotting.
+    >>> id_col = pd.Series(range(1, Ns+1))
+
+    >>> # Combine samples and gender into a DataFrame.
+    >>> df = pd.DataFrame({'Control 1' : c1,  'Test 1' : t1,
+    ...                   'Control 2'  : c2,  'Test 2' : t2,
+    ...                   'Control 3'  : c3,  'Test 3' : t3,
+    ...                   'Test 4'     : t4,  'Test 5' : t5,  
+    ...                   'Test 6'     : t6,
+    ...                   'Gender'    : gender, 'ID'  : id_col
+    ...                  })
+
+Note that we have 9 samples (3 Control samples and 6 Test samples). Our
+dataset also has a non-numerical column indicating gender, and another
+column indicating the identity of each observation.
 
 This is known as a 'wide' dataset. See this
 `writeup <https://sejdemyr.github.io/r-tutorials/basics/wide-and-long/>`__
 for more details.
-
-.. code:: ipython3
-
-    from scipy.stats import norm # Used in generation of populations.
-
-    np.random.seed(9999) # Fix the seed so the results are replicable.
-    pop_size = 10000 # Size of each population.
-    Ns = 20 # The number of samples taken from each population
-
-    # Create populations
-    pop1 = norm.rvs(loc=3, scale=0.4, size=pop_size)
-    pop2 = norm.rvs(loc=3.5, scale=0.5, size=pop_size)
-    pop3 = norm.rvs(loc=2.5, scale=0.6, size=pop_size)
-    pop4 = norm.rvs(loc=3, scale=0.75, size=pop_size)
-    pop5 = norm.rvs(loc=3.5, scale=0.75, size=pop_size)
-    pop6 = norm.rvs(loc=3.25, scale=0.4, size=pop_size)
-
-
-    # Sample from the populations
-    sampling_kwargs = dict(size=Ns, replace=False)
-
-    g1 = np.random.choice(pop1, **sampling_kwargs)
-    g2 = np.random.choice(pop2, **sampling_kwargs)
-    g3 = np.random.choice(pop3, **sampling_kwargs)
-    g4 = np.random.choice(pop4, **sampling_kwargs)
-    g5 = np.random.choice(pop5, **sampling_kwargs)
-    g6 = np.random.choice(pop6, **sampling_kwargs)
-
-    # Add a `gender` column for coloring the data.
-    females = np.repeat('Female', Ns/2).tolist()
-    males = np.repeat('Male', Ns/2).tolist()
-    gender = females + males
-
-    # Add an `id` column for paired data plotting.
-    # More info below!
-    id_col = pd.Series(range(1, Ns+1))
-
-    # Combine samples and gender into a DataFrame.
-    df = pd.DataFrame({'Control' : g1,
-                       'Group 1' : g2,
-                       'Group 2' : g3,
-                       'Group 3' : g4,
-                       'Group 4' : g5,
-                       'Group 5' : g6,
-                       'Gender'  : gender,
-                       'ID'      : id_col
-                      })
-
-Note that we have 6 groups of observations, with an additional
-non-numerical column indicating gender, and a column indicating the
-identity of each observation.
 
 .. code:: ipython3
 
@@ -97,86 +82,105 @@ identity of each observation.
 .. raw:: html
 
     <div>
-    <style scoped>
-        .dataframe tbody tr th:only-of-type {
+    <style scoped>        
+        /* .dataframe tbody tr th:only-of-type {
             vertical-align: middle;
         }
-
-        .dataframe tbody tr th {
-            vertical-align: top;
-        }
-
+        
         .dataframe thead th {
-            text-align: right;
+          background-color: #fdf6e3;
+          color: #657b83;
+          text-align: left;
         }
+        
+        .dataframe th, td {
+          padding: 5px;
+        }
+            
+        .dataframe tbody tr th {
+          vertical-align: top;
+        } */
+    
     </style>
     <table border="1" class="dataframe">
       <thead>
-        <tr style="text-align: right;">
-          <th></th>
-          <th>Control</th>
-          <th>Group 1</th>
-          <th>Group 2</th>
-          <th>Group 3</th>
-          <th>Group 4</th>
-          <th>Group 5</th>
+        <tr>
+          <th>Control 1</th>
+          <th>Test 1</th>
+          <th>Control 2</th>
+          <th>Test 2</th>
+          <th>Control 3</th>
+          <th>Test 3</th>
+          <th>Test 4</th>
+          <th>Test 5</th>
+          <th>Test 6</th>
           <th>Gender</th>
           <th>ID</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <th>0</th>
-          <td>2.742313</td>
-          <td>3.737751</td>
-          <td>2.703766</td>
-          <td>3.933794</td>
-          <td>2.138557</td>
-          <td>2.997997</td>
+          <td>2.793984</td>
+          <td>3.420875</td>
+          <td>3.324661</td>
+          <td>1.707467</td>
+          <td>3.816940</td>
+          <td>1.796581</td>
+          <td>4.440050</td>
+          <td>2.937284</td>
+          <td>3.486127</td>
           <td>Female</td>
           <td>1</td>
         </tr>
         <tr>
-          <th>1</th>
-          <td>2.681590</td>
-          <td>2.954575</td>
-          <td>3.158262</td>
-          <td>2.983600</td>
-          <td>3.377651</td>
-          <td>3.699350</td>
+          <td>3.236759</td>
+          <td>3.467972</td>
+          <td>3.685186</td>
+          <td>1.121846</td>
+          <td>3.750358</td>
+          <td>3.944566</td>
+          <td>3.723494</td>
+          <td>2.837062</td>
+          <td>2.338094</td>
           <td>Female</td>
           <td>2</td>
         </tr>
         <tr>
-          <th>2</th>
-          <td>3.180724</td>
-          <td>2.531722</td>
-          <td>2.474184</td>
-          <td>2.286611</td>
-          <td>3.450214</td>
-          <td>2.507875</td>
+          <td>3.019149</td>
+          <td>4.377179</td>
+          <td>5.616891</td>
+          <td>3.301381</td>
+          <td>2.945397</td>
+          <td>2.832188</td>
+          <td>3.214014</td>
+          <td>3.111950</td>
+          <td>3.270897</td>
           <td>Female</td>
           <td>3</td>
         </tr>
         <tr>
-          <th>3</th>
-          <td>1.961873</td>
-          <td>2.629912</td>
-          <td>2.431826</td>
-          <td>1.985591</td>
-          <td>3.565215</td>
-          <td>3.251389</td>
+          <td>2.804638</td>
+          <td>4.564780</td>
+          <td>2.773152</td>
+          <td>2.534018</td>
+          <td>3.575179</td>
+          <td>3.048267</td>
+          <td>4.968278</td>
+          <td>3.743378</td>
+          <td>3.151188</td>
           <td>Female</td>
           <td>4</td>
         </tr>
         <tr>
-          <th>4</th>
-          <td>2.867556</td>
-          <td>3.335618</td>
-          <td>2.454033</td>
-          <td>3.887869</td>
-          <td>2.841621</td>
-          <td>3.513511</td>
+          <td>2.858019</td>
+          <td>3.220058</td>
+          <td>2.550361</td>
+          <td>2.796365</td>
+          <td>3.692138</td>
+          <td>3.276575</td>
+          <td>2.662104</td>
+          <td>2.977341</td>
+          <td>2.328601</td>
           <td>Female</td>
           <td>5</td>
         </tr>
@@ -185,44 +189,170 @@ identity of each observation.
     </div>
 
 
----------------
-Producing Plots
----------------
 
-Independant two-group estimation plot
--------------------------------------
+Loading Data
+------------
 
-The simplest estimation plot can be generated with ``dabest.plot()``.
-Supply the DataFrame; supply the two groups you want to compare in the
-``idx`` argument as a tuple or list.
+Before we create estimation plots and obtain confidence intervals for
+our effect sizes, we need to load the data and the relevant groups.
 
-.. code:: ipython3
-
-    fig1, results1 = dabest.plot(df, idx=('Control','Group 1'))
-
-
-
-.. image:: _images/tutorial_8_0.png
-
-
-The ``dabest.plot()`` function will return 2 objects: a matplotlib
-``Figure`` and a pandas ``DataFrame``.
-
-In the Jupyter Notebook, with ``%matplotlib inline``, the figure should
-automatically appear.
-
-``dabest.plot()`` will automatically drop any NaNs in the data. Note how
-the Ns (appended to the group names in the xtick labels) indicate the
-number of datapoints being plotted, and used to calculate the contrasts.
-
-The pandas ``DataFrame`` returned by ``dabest.plot()`` contains the
-statistics computed in the course of generating the plot, with
-confidence intervals (95% by default) and relevant p-values.
+We simply supply the DataFrame to :keyword:`dabest.load()`. We also must supply
+the two groups you want to compare in the :keyword:`idx` argument as a tuple or
+list.
 
 .. code:: ipython3
 
-    # prints out the DataFrame returned by `dabest.plot()`.
-    results1
+    >>> two_groups_unpaired = dabest.load(df, idx=("Control 1", "Test 1"), 
+    ...                                   resamples=5000)
+
+Calling this `Dabest` object gives you a gentle greeting, as well as
+the comparisons that can be computed.
+
+.. code:: ipython3
+
+    >>> two_groups_unpaired
+
+
+
+
+.. parsed-literal::
+
+    DABEST v0.2.0
+    =============
+                 
+    Good afternoon!
+    The current time is Mon Mar 11 16:19:24 2019.
+    
+    Effect size(s) with 95% confidence intervals will be computed for:
+    1. Test 1 minus Control 1
+    
+    5000 resamples will be used to generate the effect size bootstraps.
+
+
+
+Changing statistical parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the dataset contains paired data (ie. repeated observations), specify
+this with the :keyword:`paired` keyword. You must also pass a column in the
+dataset that indicates the identity of each observation, using the
+:keyword:`id_col` keyword.
+
+.. code:: ipython3
+
+    >>> two_groups_paired = dabest.load(df, idx=("Control 1", "Test 1"), 
+    ...                                 paired=True, id_col="ID")
+
+.. code:: ipython3
+
+    >>> two_groups_paired
+
+
+
+
+.. parsed-literal::
+
+    DABEST v0.2.0
+    =============
+                 
+    Good afternoon!
+    The current time is Mon Mar 11 16:19:25 2019.
+    
+    Paired effect size(s) with 95% confidence intervals will be computed for:
+    1. Test 1 minus Control 1
+    
+    5000 resamples will be used to generate the effect size bootstraps.
+
+
+
+You can also change the width of the confidence interval that will be
+produced.
+
+.. code:: ipython3
+
+    >>> two_groups_unpaired_ci90 = dabest.load(df, 
+    ...                                        idx=("Control 1", "Test 1"), 
+    ...                                        ci=90)
+
+.. code:: ipython3
+
+    >>> two_groups_unpaired_ci90
+
+
+
+
+.. parsed-literal::
+
+    DABEST v0.2.0
+    =============
+                 
+    Good afternoon!
+    The current time is Mon Mar 11 16:19:25 2019.
+    
+    Effect size(s) with 90% confidence intervals will be computed for:
+    1. Test 1 minus Control 1
+    
+    5000 resamples will be used to generate the effect size bootstraps.
+
+
+
+Effect sizes
+------------
+
+:keyword:`dabest` now features a range of effect sizes: 
+
+- the mean difference (:keyword:`mean_diff`) 
+- the median difference (:keyword:`median_diff`) 
+- `Cohen's *d* <https://en.wikipedia.org/wiki/Effect_size#Cohen's_d>`__ (:keyword:`cohens_d`) 
+- `Hedges' *g* <https://en.wikipedia.org/wiki/Effect_size#Hedges'_g>`__ (:keyword:`hedges_g`) 
+- `Cliff's delta <https://en.wikipedia.org/wiki/Effect_size#Effect_size_for_ordinal_data>`__ (:keyword:`cliffs_delta`)
+
+Each of these are attributes of the `Dabest` object.
+
+.. code:: ipython3
+
+    >>> two_groups_unpaired.mean_diff
+
+
+
+
+.. parsed-literal::
+
+    DABEST v0.2.0
+    =============
+                 
+    Good afternoon!
+    The current time is Mon Mar 11 16:19:25 2019.
+    
+    The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.205, 0.774].
+    The two-sided p-value of the Mann-Whitney test is 0.000813.
+    
+    5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+    The p-value(s) reported are the likelihood(s) of observing the effect size(s),
+    if the null hypothesis of zero difference is true.
+    
+    To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
+
+
+
+For each comparison, the type of effect size is reported (here, it's the
+"unpaired mean difference").
+
+The confidence interval is reported as: [*confidenceIntervalWidth*
+*LowerBound*, *UpperBound*], and is generated through bootstrap resampling. 
+See :ref:`Bootstrap Confidence Intervals` for more details.
+
+By default, DABEST will report the two-sided p-value of the most
+conservative test that is appropriate for the effect size. This is the
+statistical test that does not assume normality of the
+underlying populations, and does not assume that both of them do not
+share the same variance (ie. heteroscadacity).
+
+You can access the results as a ``pandas DataFrame``.
+
+.. code:: ipython3
+
+    >>> two_groups_unpaired.mean_diff.results
 
 
 
@@ -231,47 +361,127 @@ confidence intervals (95% by default) and relevant p-values.
 
     <div>
     <style scoped>
-        .dataframe tbody tr th:only-of-type {
+    </style>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>control</th>
+          <th>test</th>
+          <th>effect_size</th>
+          <th>is_paired</th>
+          <th>difference</th>
+          <th>ci</th>
+          <th>bca_low</th>
+          <th>bca_high</th>
+          <th>bca_interval_idx</th>
+          <th>pct_low</th>
+          <th>pct_high</th>
+          <th>pct_interval_idx</th>
+          <th>bootstraps</th>
+          <th>resamples</th>
+          <th>random_seed</th>
+          <th>pvalue_welch</th>
+          <th>statistic_welch</th>
+          <th>pvalue_students_t</th>
+          <th>statistic_students_t</th>
+          <th>pvalue_mann_whitney</th>
+          <th>statistic_mann_whitney</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>0</th>
+          <td>Control 1</td>
+          <td>Test 1</td>
+          <td>mean difference</td>
+          <td>False</td>
+          <td>0.48029</td>
+          <td>95</td>
+          <td>0.205161</td>
+          <td>0.773647</td>
+          <td>(145, 4893)</td>
+          <td>0.197427</td>
+          <td>0.758752</td>
+          <td>(125, 4875)</td>
+          <td>[-0.05989473868674011, -0.018608309424335, 0.0...</td>
+          <td>5000</td>
+          <td>12345</td>
+          <td>0.002094</td>
+          <td>-3.308806</td>
+          <td>0.002057</td>
+          <td>-3.308806</td>
+          <td>0.000813</td>
+          <td>83.0</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+
+
+You can use ``.mean_diff.statistical_tests`` to
+obtain the p-values and test statistics for all relavant statistical
+tests. 
+    
+.. code:: ipython3
+
+    >>> two_groups_unpaired.mean_diff.statistical_tests
+
+
+.. raw:: html
+
+    <div>
+    <style scoped>
+        /* .dataframe tbody tr th:only-of-type {
             vertical-align: middle;
         }
-
+    
         .dataframe tbody tr th {
             vertical-align: top;
         }
-
+    
         .dataframe thead th {
             text-align: right;
-        }
+        } */
     </style>
     <table border="1" class="dataframe">
       <thead>
         <tr style="text-align: right;">
           <th></th>
-          <th>reference_group</th>
-          <th>experimental_group</th>
-          <th>stat_summary</th>
-          <th>bca_ci_low</th>
-          <th>bca_ci_high</th>
-          <th>ci</th>
-          <th>is_difference</th>
+          <th>control</th>
+          <th>test</th>
+          <th>effect_size</th>
           <th>is_paired</th>
-          <th>pvalue_2samp_ind_ttest</th>
+          <th>difference</th>
+          <th>ci</th>
+          <th>bca_low</th>
+          <th>bca_high</th>
+          <th>pvalue_welch</th>
+          <th>statistic_welch</th>
+          <th>pvalue_students_t</th>
+          <th>statistic_students_t</th>
           <th>pvalue_mann_whitney</th>
+          <th>statistic_mann_whitney</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <th>0</th>
-          <td>Control</td>
-          <td>Group 1</td>
-          <td>0.564092</td>
-          <td>0.251295</td>
-          <td>0.900291</td>
-          <td>95.0</td>
-          <td>True</td>
+          <td>Control 1</td>
+          <td>Test 1</td>
+          <td>mean difference</td>
           <td>False</td>
-          <td>0.001811</td>
-          <td>0.004703</td>
+          <td>0.48029</td>
+          <td>95</td>
+          <td>0.205161</td>
+          <td>0.773647</td>
+          <td>0.002094</td>
+          <td>-3.308806</td>
+          <td>0.002057</td>
+          <td>-3.308806</td>
+          <td>0.000813</td>
+          <td>83.0</td>
         </tr>
       </tbody>
     </table>
@@ -279,48 +489,37 @@ confidence intervals (95% by default) and relevant p-values.
 
 
 
-You can color the dots with any column in the DataFrame, using the
-``color_col`` keyword.
+Let's compute the Hedges' g for our comparison.
 
 .. code:: ipython3
 
-    f2, results2 = dabest.plot(df, idx=('Control','Group 1'),
-                               color_col='Gender')
+    >>> two_groups_unpaired.hedges_g
 
 
 
-.. image:: _images/tutorial_12_0.png
 
-Paired two-group estimation plot
---------------------------------
+.. parsed-literal::
 
-DABEST can also produce estimation plots for paired observations
-(repeated measures). This is done by setting the ``paired`` option to
-``True``. You will also have to tell ``dabest.plot()`` which column
-contains the identity of the each datum with the ``id_col`` keyword.
+    DABEST v0.2.0
+    =============
+                 
+    Good afternoon!
+    The current time is Mon Mar 11 16:19:26 2019.
+    
+    The unpaired Hedges' g between Control 1 and Test 1 is 1.03 [95%CI 0.317, 1.62].
+    The two-sided p-value of the Mann-Whitney test is 0.000813.
+    
+    5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+    The p-value(s) reported are the likelihood(s) of observing the effect size(s),
+    if the null hypothesis of zero difference is true.
+    
+    To get the results of all valid statistical tests, use `.hedges_g.statistical_tests`
 
-The estimation plot uses lines to indicate the pairs of observations.
-This is known as a `slopegraph <https://www.edwardtufte.com/bboard/q-and-a-fetch-msg?msg_id=0003nk>`_. The combined visual effect of the slopes
-of these lines serves to give the viewer an intuitive sense of the effect
-size between the two groups of repeated observations.
+
 
 .. code:: ipython3
 
-    f3, results3 = dabest.plot(df, idx=('Control','Group 1'),
-                               color_col='Gender',
-                               paired=True, id_col="ID")
-
-
-
-.. image:: _images/tutorial_15_0.png
-
-
-Note that the statistical output records that the difference is a paired
-one, in the ``is_paired`` column.
-
-.. code:: ipython3
-
-    results3
+    >>> two_groups_unpaired.hedges_g.results
 
 
 
@@ -329,518 +528,414 @@ one, in the ``is_paired`` column.
 
     <div>
     <style scoped>
-      .dataframe {
-        display: block;
-        overflow-x: scroll;
-        border-collapse: collapse;
-      }
-
-      .dataframe thead th {
-        text-align: centre;
-        background-color: #586e75;
-        color: #eee8d5;
-      }
-
-      .dataframe td {
-        padding:10px 25px 10px 1px;
-        border-left: 1px solid #000;
-        border-right: 1px solid #000;
-      }
-
-      .dataframe th td {
-        border-bottom: 1px solid #ddd;
-      }
-
-      .dataframe tbody tr:nth-child(even) {
-        background-color: #f2f2f2;
-      }
-
-      .dataframe tbody tr td {
-        vertical-align: centre;
-        text-align: right;
-      }
-
-      .dataframe tbody tr:hover {
-        background-color: #eee8d5;
-      }
     </style>
     <table border="1" class="dataframe">
       <thead>
         <tr style="text-align: right;">
           <th></th>
-          <th>reference_group</th>
-          <th>experimental_group</th>
-          <th>stat_summary</th>
-          <th>bca_ci_low</th>
-          <th>bca_ci_high</th>
-          <th>ci</th>
-          <th>is_difference</th>
+          <th>control</th>
+          <th>test</th>
+          <th>effect_size</th>
           <th>is_paired</th>
-          <th>pvalue_2samp_paired_ttest</th>
-          <th>pvalue_wilcoxon</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th>0</th>
-          <td>Control</td>
-          <td>Group 1</td>
-          <td>0.564092</td>
-          <td>0.262493</td>
-          <td>0.842903</td>
-          <td>95.0</td>
-          <td>True</td>
-          <td>True</td>
-          <td>0.001285</td>
-          <td>0.003185</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-
-
-
-If you want to plot the raw swarmplot instead of the paired lines, use
-the ``show_pairs`` flag to set this. The contrasts computed will still
-be paired, as indicated by the DataFrame produced.
-
-.. code:: ipython3
-
-    f4, results4 = dabest.plot(df, idx=('Control','Group 1'),
-                               color_col='Gender',
-                               paired=True, id_col="ID",
-                               show_pairs=False)
-
-
-
-.. image:: _images/tutorial_19_0.png
-
-
-Multi two-group estimation plot
--------------------------------
-
-In a multi-group design, you can horizontally tile two or more two-group
-floating-contrasts. This is designed to meet data visualization and
-presentation paradigms that are predominant in academic biomedical
-research, where several two-group experiments are presented together.
-
-This is done mainly through the ``idx`` option. You can nest two or more
-tuples or lists within a single tuple/list to create a seperate subplot
-for that contrast.
-
-The effect sizes and confidence intervals for each two-group plot will
-be computed.
-
-.. code:: ipython3
-
-    f5, results5 = dabest.plot(df, idx=(('Control','Group 1'),
-                                        ('Group 2','Group 3'),
-                                        ('Group 4','Group 5'))
-                              )
-
-    results5
-
-
-
-
-.. raw:: html
-
-    <div>
-    <style scoped>
-        .dataframe tbody tr th:only-of-type {
-            vertical-align: middle;
-        }
-
-        .dataframe tbody tr th {
-            vertical-align: top;
-        }
-
-        .dataframe thead th {
-            text-align: right;
-        }
-    </style>
-    <table border="1" class="dataframe">
-      <thead>
-        <tr style="text-align: right;">
-          <th></th>
-          <th>reference_group</th>
-          <th>experimental_group</th>
-          <th>stat_summary</th>
-          <th>bca_ci_low</th>
-          <th>bca_ci_high</th>
+          <th>difference</th>
           <th>ci</th>
-          <th>is_difference</th>
-          <th>is_paired</th>
-          <th>pvalue_2samp_ind_ttest</th>
+          <th>bca_low</th>
+          <th>bca_high</th>
+          <th>bca_interval_idx</th>
+          <th>pct_low</th>
+          <th>...</th>
+          <th>pct_interval_idx</th>
+          <th>bootstraps</th>
+          <th>resamples</th>
+          <th>random_seed</th>
+          <th>pvalue_welch</th>
+          <th>statistic_welch</th>
+          <th>pvalue_students_t</th>
+          <th>statistic_students_t</th>
           <th>pvalue_mann_whitney</th>
+          <th>statistic_mann_whitney</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <th>0</th>
-          <td>Control</td>
-          <td>Group 1</td>
-          <td>0.564092</td>
-          <td>0.256753</td>
-          <td>0.892652</td>
-          <td>95.0</td>
-          <td>True</td>
+          <td>Control 1</td>
+          <td>Test 1</td>
+          <td>Hedges' g</td>
           <td>False</td>
-          <td>0.001811</td>
-          <td>0.004703</td>
-        </tr>
-        <tr>
-          <th>1</th>
-          <td>Group 2</td>
-          <td>Group 3</td>
-          <td>0.253319</td>
-          <td>-0.112335</td>
-          <td>0.616018</td>
-          <td>95.0</td>
-          <td>True</td>
-          <td>False</td>
-          <td>0.190823</td>
-          <td>0.155570</td>
-        </tr>
-        <tr>
-          <th>2</th>
-          <td>Group 4</td>
-          <td>Group 5</td>
-          <td>-0.278511</td>
-          <td>-0.551978</td>
-          <td>0.019770</td>
-          <td>95.0</td>
-          <td>True</td>
-          <td>False</td>
-          <td>0.070806</td>
-          <td>0.041124</td>
+          <td>1.025525</td>
+          <td>95</td>
+          <td>0.316506</td>
+          <td>1.616235</td>
+          <td>(42, 4725)</td>
+          <td>0.44486</td>
+          <td>...</td>
+          <td>(125, 4875)</td>
+          <td>[-0.1491709040527835, -0.0504066101302326, 0.0...</td>
+          <td>5000</td>
+          <td>12345</td>
+          <td>0.002094</td>
+          <td>-3.308806</td>
+          <td>0.002057</td>
+          <td>-3.308806</td>
+          <td>0.000813</td>
+          <td>83.0</td>
         </tr>
       </tbody>
     </table>
+    <p>1 rows × 21 columns</p>
     </div>
 
 
 
+Producing estimation plots
+--------------------------
 
-.. image:: _images/tutorial_21_1.png
+To produce a **Gardner-Altman estimation plot**, simply use the
+:keyword:`.plot()` method. You can read more about its genesis and design
+inspiration here.
 
-
-Each two-group experiment has its own floating contrast axes. Another
-way to present this is to place all the effect sizes (and their
-bootstrap distributions) on a common axes, beneath the raw data. This is
-controlled with the ``float_contrast`` option.
-
-.. code:: ipython3
-
-    f6, results6 = dabest.plot(df, idx=(('Control','Group 1'),
-                                        ('Group 2','Group 3'),
-                                        ('Group 4','Group 5')),
-                               float_contrast=False
-                              )
-
-
-
-.. image:: _images/tutorial_23_0.png
-
+Every effect size instance has access to the :keyword:`.plot()` method. This
+means you can quickly create plots for different effect sizes easily.
 
 .. code:: ipython3
 
-    f6_paired, results6_paired = dabest.plot(df, idx=(('Control','Group 1'),
-                                                      ('Group 2','Group 3'),
-                                                      ('Group 4','Group 5')),
-                                             float_contrast=False,
-                                             color_col='Gender',
-                                             paired=True, id_col='ID'
-                                            )
-
-
-
-.. image:: _images/tutorial_24_0.png
-
-
-Shared-control estimation plot
-------------------------------
-
-A common experimental setup seen in contemporary biomedical research is
-a shared-control design (also known as a 'hub-and-spoke' design), where
-two or more experimental groups are compared to a common control group.
-
-A hub-and-spoke plot implements estimation statistics and aesthetics on
-such an experimental design.
-
-If more than 2 columns/groups are directly passed to ``idx``, then
-``dabest.plot()`` will produce a shared-control estimation plot, where
-the first group in the tuple/list is considered the control group. The
-mean difference and confidence intervals of each subsequent group will
-be computed against the first control group.
-
-.. code:: ipython3
-
-    f7, results7 = dabest.plot(df, idx=('Control', 'Group 2', 'Group 4'),
-                       color_col='Gender')
-
-    results7
+    >>> two_groups_unpaired.mean_diff.plot()
 
 
 
 
-.. raw:: html
-
-    <div>
-    <style scoped>
-        .dataframe tbody tr th:only-of-type {
-            vertical-align: middle;
-        }
-
-        .dataframe tbody tr th {
-            vertical-align: top;
-        }
-
-        .dataframe thead th {
-            text-align: right;
-        }
-    </style>
-    <table border="1" class="dataframe">
-      <thead>
-        <tr style="text-align: right;">
-          <th></th>
-          <th>reference_group</th>
-          <th>experimental_group</th>
-          <th>stat_summary</th>
-          <th>bca_ci_low</th>
-          <th>bca_ci_high</th>
-          <th>ci</th>
-          <th>is_difference</th>
-          <th>is_paired</th>
-          <th>pvalue_2samp_ind_ttest</th>
-          <th>pvalue_mann_whitney</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th>0</th>
-          <td>Control</td>
-          <td>Group 2</td>
-          <td>-0.049862</td>
-          <td>-0.318671</td>
-          <td>0.231657</td>
-          <td>95.0</td>
-          <td>True</td>
-          <td>False</td>
-          <td>0.734693</td>
-          <td>0.714980</td>
-        </tr>
-        <tr>
-          <th>1</th>
-          <td>Control</td>
-          <td>Group 4</td>
-          <td>0.698509</td>
-          <td>0.409364</td>
-          <td>0.969665</td>
-          <td>95.0</td>
-          <td>True</td>
-          <td>False</td>
-          <td>0.000028</td>
-          <td>0.000093</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
+.. image:: _images/tutorial_26_0.png
 
 
-
-
-.. image:: _images/tutorial_26_1.png
-
-
-In a shared control plot, the effect sizes and bootstrap 95CIs are shown
-on the lower panel for all comparisons. By default, a summary line is
-plotted for each group. The mean (indicated by the gap) and the standard
-deviation is plotted as a gapped line.
-
-One can display the median with the 25th and 75th percentiles (a
-Tufte-style boxplot) using the ``group_summaries`` keyword argument in
-the function.
-
-.. code:: ipython3
-
-    f8, results8 = dabest.plot(df, idx=('Control', 'Group 2', 'Group 4'),
-                               color_col='Gender',
-                               group_summaries='median_quartiles')
-
-
-
-.. image:: _images/tutorial_28_0.png
-
-----------------------
-Controlling Aesthetics
-----------------------
-
-Below we run through ways of customizing various aesthetic features.
-
-.. code:: ipython3
-
-    # Changing the contrast y-limits.
-
-    f9, results9 = dabest.plot(df, idx=('Control','Group 1','Group 2'),
-                               color_col='Gender',
-                               contrast_ylim=(-2,2))
-
-
-
-.. image:: _images/tutorial_30_0.png
 
 
 .. code:: ipython3
 
-    # Changing the swarmplot y-limits.
+    >>> two_groups_unpaired.hedges_g.plot()
 
-    f10, results10 = dabest.plot(df, idx=('Control', 'Group 1', 'Group 2'),
-                                 color_col='Gender',
-                                 swarm_ylim=(-10, 10))
+
+
+
+.. image:: _images/tutorial_27_0.png
+
+
+
+
+Instead of a Gardner-Altman plot, you can produce a **Cumming estimation
+plot** by setting :keyword:`float_contrast=False` in the :keyword:`plot()` 
+method. This will plot the bootstrap effect sizes below the raw data.
+
+The mean (gap) and ± standard deviation of each group
+(vertical ends) is plotted as a gapped line, an inspiration from Edward
+Tufte's dictum to maximise 
+`data-ink ratio <https://infovis-wiki.net/wiki/Data-Ink_Ratio>`__.
+
+.. code:: ipython3
+
+    >>> two_groups_unpaired.hedges_g.plot(float_contrast=False)
+
+
+
+
+.. image:: _images/tutorial_29_0.png
+
+
+
+
+For paired data, we use
+`slopegraphs <https://www.edwardtufte.com/bboard/q-and-a-fetch-msg?msg_id=0003nk>`__
+(another innovation from Edward Tufte) to connect paired observations.
+
+
+.. code:: ipython3
+
+    >>> two_groups_paired.mean_diff.plot()
+
 
 
 
 .. image:: _images/tutorial_31_0.png
 
 
+
+
 .. code:: ipython3
 
-    # Changing the figure size.
-    # The default figure size has been tweaked for
-    # optimal visual harmony and proportion in most use cases.
-    # You can, however, tweak the figure size.
+    >>> two_groups_paired.mean_diff.plot(float_contrast=False)
 
-    f11, results11 = dabest.plot(df, idx=('Control','Group 1','Group 2'),
-                                 color_col='Gender',
-                                 fig_size=(10, 4) # xy dimensions in inches.
-                                )
 
 
 
 .. image:: _images/tutorial_32_0.png
 
 
+
+
+The :keyword:`dabest` package also implements a range of estimation plot
+designs aimed at depicting common experimental designs.
+
+The **multi-two-group estimation plot** tiles two or more Cumming plots
+horizontally, and is created by passing a *nested tuple* to `idx` when
+:keyword:`dabest.load()` is first invoked.
+
+Thus, the lower axes in the Cumming plot is effectively a `forest
+plot <https://en.wikipedia.org/wiki/Forest_plot>`__, used in
+meta-analyses to aggregate and compare data from different experiments.
+
 .. code:: ipython3
 
-    # Changing the size of the dots in the swarmplot.
+    >>> multi_2group = dabest.load(df, idx=(("Control 1", "Test 1",),
+    ...                                     ("Control 2", "Test 2")
+    ...                                   ))
+    
+    >>> multi_2group.mean_diff.plot()
 
-    f12, results12 = dabest.plot(df, idx=('Control','Group 1','Group 2'),
-                                 color_col='Gender', swarm_dotsize=13,
-                                )
-
-
-
-.. image:: _images/tutorial_33_0.png
-
-
-.. code:: ipython3
-
-    # Custom y-axis labels.
-    f13, results13 = dabest.plot(df, idx=('Control','Group 1','Group 2'),
-                                 color_col='Gender',
-                                 # Insert line breaks manually with `\n`.
-                                 swarm_label='My Custom\nSwarm Label',
-                                 contrast_label='This is the\nEstimation Plot'
-                                )
 
 
 
 .. image:: _images/tutorial_34_0.png
 
 
-.. code:: ipython3
-
-    # Any of matplotlib's named colors will work.
-    # See https://matplotlib.org/examples/color/named_colors.html
-
-    f14, results14 = dabest.plot(df, idx=('Control','Group 1','Group 2'),
-                                 color_col='Gender',
-                                 # The categories in `color_col` will be
-                                 # assigned alphabetically according
-                                 # to the order of colors below.
-                                 custom_palette=['darkorange', 'slategrey']
-                                )
 
 
 
-.. image:: _images/tutorial_35_0.png
-
+The multi-two-group design also accomodates paired comparisons.
 
 .. code:: ipython3
 
-    # You can also pass colors in the RGB tuple form (r, g, b),
-    # or in hexadecimal form (if you're more familiar with HTML color codes).
+    >>> multi_2group_paired = dabest.load(df, idx=(("Control 1", "Test 1",),
+    ...                                           ("Control 2", "Test 2")
+    ...                                          ),
+    ...                                  paired=True, id_col="ID"
+    ...                                 )
+    
+    >>> multi_2group_paired.mean_diff.plot()
 
-    f15, results15 = dabest.plot(df, idx=('Control','Group 1','Group 2'),
-                                 color_col='Gender',
-                                 # Below I pass darkorange in RGB,
-                                 # and slategrey in hexadecimal.
-                                 custom_palette=[(1.0, 0.549, 0.0), '#708090']
-                                )
 
 
 
 .. image:: _images/tutorial_36_0.png
 
 
-.. code:: ipython3
-
-    # Passing a dictionary as a custom palette.
-    f16, results16 = dabest.plot(df, idx=('Control','Group 1','Group 2'),
-                                 color_col='Gender',
-                                 custom_palette={'Male'   : 'slategrey',
-                                                 'Female' : 'darkorange'}
-                                )
 
 
+The **shared control plot** displays another common experimental
+paradigm, where several test samples are compared against a common
+reference sample.
 
-.. image:: _images/tutorial_37_0.png
-
+This type of Cumming plot is automatically generated if the tuple passed
+to :keyword:`idx` has more than two data columns.
 
 .. code:: ipython3
 
-    # Tweaking the tick length and padding between tick and label.
-
-    f17, results17 = dabest.plot(df, idx=('Control','Group 1','Group 2'),
-                                 color_col='Gender',
-                                 tick_length=5, tick_pad=5
-                                )
-
-
-
-.. image:: _images/tutorial_38_0.png
-
-----------------------------------------------
-Appendix: On working with 'melted' DataFrames.
-----------------------------------------------
-
-``dabest.plot`` can also work with 'melted' or 'longform' data. This
-term is so used because each row will now correspond to a single
-datapoint, with one column carrying the value (``value``) and other
-columns carrying 'metadata' describing that datapoint (in this case,
-``group`` and ``Gender``).
-
-For more details on wide vs long or 'melted' data, see
-https://en.wikipedia.org/wiki/Wide\_and\_narrow\_data
-
-To read more about melting a dataframe,see
-https://pandas.pydata.org/pandas-docs/stable/generated/pandas.melt.html
+    >>> shared_control = dabest.load(df, idx=("Control 1", "Test 1",
+    ...                                      "Test 2", "Test 3",
+    ...                                      "Test 4", "Test 5", "Test 6")
+    ...                             )
 
 .. code:: ipython3
 
-    x='group'
-    y='my_metric'
-    color_col='Gender'
-    value_cols = df.columns[:-2] # select all but the 'Gender' and 'ID' columns.
+    >>> shared_control
 
-    df_melt=pd.melt(df,
-                    id_vars=['ID',color_col],
-                    value_vars=value_cols,
-                    value_name=y,
-                    var_name=x)
 
-    df_melt.head() # Gives the first five rows of `df_melt`.
+
+
+.. parsed-literal::
+
+    DABEST v0.2.0
+    =============
+                 
+    Good afternoon!
+    The current time is Mon Mar 11 16:19:31 2019.
+    
+    Effect size(s) with 95% confidence intervals will be computed for:
+    1. Test 1 minus Control 1
+    2. Test 2 minus Control 1
+    3. Test 3 minus Control 1
+    4. Test 4 minus Control 1
+    5. Test 5 minus Control 1
+    6. Test 6 minus Control 1
+    
+    5000 resamples will be used to generate the effect size bootstraps.
+
+
+
+.. code:: ipython3
+
+    shared_control.mean_diff
+
+
+
+
+.. parsed-literal::
+
+    DABEST v0.2.0
+    =============
+                 
+    Good afternoon!
+    The current time is Mon Mar 11 16:19:32 2019.
+    
+    The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.205, 0.774].
+    The two-sided p-value of the Mann-Whitney test is 0.000813.
+    
+    The unpaired mean difference between Control 1 and Test 2 is -0.542 [95%CI -0.915, -0.206].
+    The two-sided p-value of the Mann-Whitney test is 0.00572.
+    
+    The unpaired mean difference between Control 1 and Test 3 is 0.174 [95%CI -0.273, 0.647].
+    The two-sided p-value of the Mann-Whitney test is 0.205.
+    
+    The unpaired mean difference between Control 1 and Test 4 is 0.79 [95%CI 0.325, 1.33].
+    The two-sided p-value of the Mann-Whitney test is 0.0266.
+    
+    The unpaired mean difference between Control 1 and Test 5 is 0.265 [95%CI 0.0115, 0.497].
+    The two-sided p-value of the Mann-Whitney test is 0.0206.
+    
+    The unpaired mean difference between Control 1 and Test 6 is 0.288 [95%CI 0.00913, 0.524].
+    The two-sided p-value of the Mann-Whitney test is 0.0137.
+    
+    5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+    The p-value(s) reported are the likelihood(s) of observing the effect size(s),
+    if the null hypothesis of zero difference is true.
+    
+    To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
+
+
+
+.. code:: ipython3
+
+    >>> shared_control.mean_diff.plot()
+
+
+
+
+.. image:: _images/tutorial_41_0.png
+
+
+
+
+:keyword:`dabest` thus empowers you to robustly perform and elegantly present
+complex visualizations and statistics.
+
+.. code:: ipython3
+
+    >>> multi_groups = dabest.load(df, 
+    ...                            idx=(("Control 1", "Test 1",),
+    ...                                 ("Control 2", "Test 2", "Test 3"),
+    ...                                 ("Control 3", "Test 4", "Test 5", "Test 6")
+    ...                                 )
+    ...                             )
+
+
+.. code:: ipython3
+
+    >>> multi_groups
+
+
+
+
+.. parsed-literal::
+
+    DABEST v0.2.0
+    =============
+                 
+    Good afternoon!
+    The current time is Mon Mar 11 16:19:33 2019.
+    
+    Effect size(s) with 95% confidence intervals will be computed for:
+    1. Test 1 minus Control 1
+    2. Test 2 minus Control 2
+    3. Test 3 minus Control 2
+    4. Test 4 minus Control 3
+    5. Test 5 minus Control 3
+    6. Test 6 minus Control 3
+    
+    5000 resamples will be used to generate the effect size bootstraps.
+
+
+
+.. code:: ipython3
+
+    >>> multi_groups.mean_diff
+
+
+
+
+.. parsed-literal::
+
+    DABEST v0.2.0
+    =============
+                 
+    Good afternoon!
+    The current time is Mon Mar 11 16:19:35 2019.
+    
+    The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.205, 0.774].
+    The two-sided p-value of the Mann-Whitney test is 0.000813.
+    
+    The unpaired mean difference between Control 2 and Test 2 is -1.38 [95%CI -1.93, -0.905].
+    The two-sided p-value of the Mann-Whitney test is 1.3e-05.
+    
+    The unpaired mean difference between Control 2 and Test 3 is -0.666 [95%CI -1.29, -0.0788].
+    The two-sided p-value of the Mann-Whitney test is 0.0219.
+    
+    The unpaired mean difference between Control 3 and Test 4 is 0.362 [95%CI -0.111, 0.901].
+    The two-sided p-value of the Mann-Whitney test is 0.182.
+    
+    The unpaired mean difference between Control 3 and Test 5 is -0.164 [95%CI -0.398, 0.0747].
+    The two-sided p-value of the Mann-Whitney test is 0.0778.
+    
+    The unpaired mean difference between Control 3 and Test 6 is -0.14 [95%CI -0.4, 0.0937].
+    The two-sided p-value of the Mann-Whitney test is 0.22.
+    
+    5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+    The p-value(s) reported are the likelihood(s) of observing the effect size(s),
+    if the null hypothesis of zero difference is true.
+    
+    To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
+
+
+
+.. code:: ipython3
+
+    >>> multi_groups.mean_diff.plot()
+
+
+
+
+.. image:: _images/tutorial_46_0.png
+
+
+
+
+Using long (aka 'melted') data frames
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:keyword:`dabest` can also work with 'melted' or 'long' data. 
+This term isso used because each row will now correspond to a single datapoint, 
+with one column carrying the value and other columns carrying 'metadata'
+describing that datapoint.
+
+More details on wide vs long or 'melted' data can be found in this
+`Wikipedia article <https://en.wikipedia.org/wiki/Wide_and_narrow_data>`__. 
+The `pandas documentation <https://pandas.pydata.org/pandas-docs/stable/generated/pandas.melt.html>`__
+gives recipes for melting dataframes.
+
+.. code:: ipython3
+
+    >>> x = 'group'
+    >>> y = 'metric'
+    
+    >>> value_cols = df.columns[:-2] # select all but the "Gender" and "ID" columns.
+    
+    >>> df_melted = pd.melt(df.reset_index(),
+    ...                    id_vars=["Gender", "ID"],
+    ...                    value_vars=value_cols,
+    ...                    value_name=y,
+    ...                    var_name=x)
+    
+    >>> df_melted.head() # Gives the first five rows of `df_melted`.
+
+
 
 
 
@@ -849,63 +944,52 @@ https://pandas.pydata.org/pandas-docs/stable/generated/pandas.melt.html
 
     <div>
     <style scoped>
-        .dataframe tbody tr th:only-of-type {
-            vertical-align: middle;
-        }
-
-        .dataframe tbody tr th {
-            vertical-align: top;
-        }
-
-        .dataframe thead th {
-            text-align: right;
-        }
     </style>
     <table border="1" class="dataframe">
       <thead>
         <tr style="text-align: right;">
           <th></th>
-          <th>ID</th>
           <th>Gender</th>
+          <th>ID</th>
           <th>group</th>
-          <th>my_metric</th>
+          <th>metric</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <th>0</th>
-          <td>1</td>
           <td>Female</td>
-          <td>Control</td>
-          <td>2.742313</td>
+          <td>1</td>
+          <td>Control 1</td>
+          <td>2.793984</td>
         </tr>
         <tr>
           <th>1</th>
-          <td>2</td>
           <td>Female</td>
-          <td>Control</td>
-          <td>2.681590</td>
+          <td>2</td>
+          <td>Control 1</td>
+          <td>3.236759</td>
         </tr>
         <tr>
           <th>2</th>
-          <td>3</td>
           <td>Female</td>
-          <td>Control</td>
-          <td>3.180724</td>
+          <td>3</td>
+          <td>Control 1</td>
+          <td>3.019149</td>
         </tr>
         <tr>
           <th>3</th>
-          <td>4</td>
           <td>Female</td>
-          <td>Control</td>
-          <td>1.961873</td>
+          <td>4</td>
+          <td>Control 1</td>
+          <td>2.804638</td>
         </tr>
         <tr>
           <th>4</th>
-          <td>5</td>
           <td>Female</td>
-          <td>Control</td>
-          <td>2.867556</td>
+          <td>5</td>
+          <td>Control 1</td>
+          <td>2.858019</td>
         </tr>
       </tbody>
     </table>
@@ -913,74 +997,274 @@ https://pandas.pydata.org/pandas-docs/stable/generated/pandas.melt.html
 
 
 
-If you are using a melted DataFrame, you will need to specify the ``x``
-(containing the categorical group names) and ``y`` (containing the
-numerical values for plotting) columns.
+When your data is in this format, you will need to specify the :keyword:`x` and
+:keyword:`y` columns in :keyword:`dabest.load()`.
 
 .. code:: ipython3
 
-    f17, results17 = dabest.plot(df_melt,
-                                 x='group',
-                                 y='my_metric',
-                                 idx=('Control','Group 1'),
-                                 color_col='Gender'
-                                )
-    results17
+    >>> analysis_of_long_df = dabest.load(df_melted, 
+    ...                                   idx=("Control 1", "Test 1"),
+    ...                                   x="group", y="metric")
+    
+    >>> analysis_of_long_df
 
 
 
 
-.. raw:: html
+.. parsed-literal::
 
-    <div>
-    <style scoped>
-        .dataframe tbody tr th:only-of-type {
-            vertical-align: middle;
-        }
+    DABEST v0.2.0
+    =============
+                 
+    Good afternoon!
+    The current time is Mon Mar 11 16:19:36 2019.
+    
+    Effect size(s) with 95% confidence intervals will be computed for:
+    1. Test 1 minus Control 1
+    
+    5000 resamples will be used to generate the effect size bootstraps.
 
-        .dataframe tbody tr th {
-            vertical-align: top;
-        }
 
-        .dataframe thead th {
-            text-align: right;
-        }
-    </style>
-    <table border="1" class="dataframe">
-      <thead>
-        <tr style="text-align: right;">
-          <th></th>
-          <th>reference_group</th>
-          <th>experimental_group</th>
-          <th>stat_summary</th>
-          <th>bca_ci_low</th>
-          <th>bca_ci_high</th>
-          <th>ci</th>
-          <th>is_difference</th>
-          <th>is_paired</th>
-          <th>pvalue_2samp_ind_ttest</th>
-          <th>pvalue_mann_whitney</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th>0</th>
-          <td>Control</td>
-          <td>Group 1</td>
-          <td>0.564092</td>
-          <td>0.244049</td>
-          <td>0.881805</td>
-          <td>95.0</td>
-          <td>True</td>
-          <td>False</td>
-          <td>0.001811</td>
-          <td>0.004703</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
+
+.. code:: ipython3
+
+    >>> analysis_of_long_df.mean_diff.plot()
 
 
 
 
-.. image:: _images/tutorial_42_1.png
+.. image:: _images/tutorial_52_0.png
+
+
+
+
+Controlling plot aesthetics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Changing the y-axes labels.
+
+.. code:: ipython3
+
+    >>> two_groups_unpaired.mean_diff.plot(swarm_label="This is my\nrawdata",  
+                                       contrast_label="The bootstrap\ndistribtions!")
+
+
+
+
+.. image:: _images/tutorial_55_0.png
+
+
+
+
+Color the rawdata according to another column in the dataframe.
+
+.. code:: ipython3
+
+    >>> multi_2group.mean_diff.plot(color_col="Gender")
+
+
+
+
+.. image:: _images/tutorial_57_0.png
+
+
+
+
+.. code:: ipython3
+
+    >>> two_groups_paired.mean_diff.plot(color_col="Gender")
+
+
+
+
+.. image:: _images/tutorial_58_0.png
+
+
+
+
+Changing the palette used with :keyword:`custom_palette`. Any valid matplotlib
+or seaborn color palette is accepted.
+
+.. code:: ipython3
+
+    >>> multi_2group.mean_diff.plot(color_col="Gender", 
+    ...                             custom_palette="Dark2")
+
+
+
+
+.. image:: _images/tutorial_60_0.png
+
+
+
+
+.. code:: ipython3
+
+    >>> multi_2group.mean_diff.plot(custom_palette="Paired")
+
+
+
+
+.. image:: _images/tutorial_61_0.png
+
+
+
+
+
+You can also create your own color palette. Create a dictionary where
+the keys are group names, and the values are valid matplotlib colors.
+
+You can specify matplotlib colors in a `variety of
+ways <https://matplotlib.org/users/colors.html>`__. Here, I demonstrate
+using named colors, hex strings (commonly used on the web), and RGB
+tuples.
+
+.. code:: ipython3
+
+    >>> my_color_palette = {"Control 1" : "blue",    
+    ...                    "Test 1"    : "purple",
+    ...                    "Control 2" : "#cb4b16",     # This is a hex string.
+    ...                    "Test 2"    : (0., 0.7, 0.2) # This is a RGB tuple.
+    ...                   }
+    
+    >>> multi_2group.mean_diff.plot(custom_palette=my_color_palette)
+
+
+
+
+.. image:: _images/tutorial_63_0.png
+
+
+
+By default, :keyword:`dabest` will 
+`desaturate <https://en.wikipedia.org/wiki/Colorfulness#Saturation>`__
+the color of the dots in the swarmplot by 50%. 
+This draws attention to the effect size bootstrap curves. 
+
+You can alter the default values with the :keyword:`swarm_desat` and 
+:keyword:`halfviolin_desat` keywords.
+
+
+.. code:: ipython3
+
+    >>> multi_2group.mean_diff.plot(custom_palette=my_color_palette, 
+    ...                             swarm_desat=0.75, 
+    ...                             halfviolin_desat=0.25)
+
+
+.. image:: _images/tutorial_64.png
+
+
+
+You can also change the sizes of the dots used in the rawdata swarmplot,
+and those used to indicate the effect sizes.
+
+.. code:: ipython3
+
+    >>> multi_2group.mean_diff.plot(raw_marker_size=3, es_marker_size=12)
+
+
+
+
+.. image:: _images/tutorial_65_0.png
+
+
+
+
+Changing the y-limits for the rawdata axes, and for the contrast axes.
+
+.. code:: ipython3
+
+    >>> multi_2group.mean_diff.plot(swarm_ylim=(0, 5), 
+    ...                             contrast_ylim=(-2, 2))
+
+
+
+
+.. image:: _images/tutorial_67_0.png
+
+
+
+
+If your effect size is qualitatively inverted (ie. a smaller value is a
+better outcome), you can simply invert the tuple passed to
+:keyword:`contrast_ylim`.
+
+.. code:: ipython3
+
+    >>> multi_2group.mean_diff.plot(contrast_ylim=(2, -2), 
+    >>>                             contrast_label="More negative is better!")
+
+
+
+
+.. image:: _images/tutorial_69_0.png
+
+
+
+
+You can add minor ticks and also change the tick frequency by accessing
+the axes directly.
+
+Each estimation plot produced by :keyword:`dabest` has 2 axes. The first one
+contains the rawdata swarmplot; the second one contains the bootstrap
+effect size differences.
+
+.. code:: ipython3
+
+    >>> import matplotlib.ticker as Ticker
+    
+    >>> f = two_groups_unpaired.mean_diff.plot()
+    
+    >>> rawswarm_axes = f.axes[0]
+    >>> contrast_axes = f.axes[1]
+    
+    >>> rawswarm_axes.yaxis.set_major_locator(Ticker.MultipleLocator(1))
+    >>> rawswarm_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(0.5))
+    
+    >>> contrast_axes.yaxis.set_major_locator(Ticker.MultipleLocator(0.5))
+    >>> contrast_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(0.25))
+
+
+
+.. image:: _images/tutorial_71_0.png
+
+
+.. code:: ipython3
+
+    >>> f = multi_2group.mean_diff.plot(swarm_ylim=(0,6),
+                                   contrast_ylim=(-3, 1))
+    
+    >>> rawswarm_axes = f.axes[0]
+    >>> contrast_axes = f.axes[1]
+    
+    >>> rawswarm_axes.yaxis.set_major_locator(Ticker.MultipleLocator(2))
+    >>> rawswarm_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(1))
+    
+    >>> contrast_axes.yaxis.set_major_locator(Ticker.MultipleLocator(0.5))
+    >>> contrast_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(0.25))
+
+
+
+.. image:: _images/tutorial_72_0.png
+
+
+With v0.2.0, :keyword:`dabest` can now apply `matplotlib style
+sheets <https://matplotlib.org/tutorials/introductory/customizing.html>`__
+to estimation plots. You can refer to this
+`gallery <https://matplotlib.org/3.0.3/gallery/style_sheets/style_sheets_reference.html>`__
+of style sheets for reference.
+
+.. code:: ipython3
+
+    >>> import matplotlib.pyplot as plt
+    >>> plt.style.use("dark_background")
+
+.. code:: ipython3
+
+    >>> multi_2group.mean_diff.plot()
+
+
+
+.. image:: _images/tutorial_75_0.png
+
