@@ -16,7 +16,6 @@ Load Libraries
     >>> print("We're using DABEST v{}".format(dabest.__version__))
 
 
-
 .. parsed-literal::
 
     We're using DABEST v0.2.0
@@ -935,6 +934,8 @@ gives recipes for melting dataframes.
     ...                    var_name=x)
     
     >>> df_melted.head() # Gives the first five rows of `df_melted`.
+
+
 
 
 
