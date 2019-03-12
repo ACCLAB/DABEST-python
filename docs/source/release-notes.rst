@@ -38,6 +38,8 @@ which prints out:
     The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.205, 0.774].
 
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+    The p-value(s) reported are the likelihood(s) of observing the effect size(s),
+    if the null hypothesis of zero difference is true.
 
 The following are valid effect sizes:
 
