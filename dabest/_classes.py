@@ -532,7 +532,8 @@ class TwoGroupsEffectSize(object):
             # Mann-Whitney test: Non parametric,
             # does not assume normality of distributions
             try:
-                mann_whitney = spstats.mannwhitneyu(control, test)
+                mann_whitney = spstats.mannwhitneyu(control, test, 
+                                                    alternative='two-sided')
                 self.__pvalue_mann_whitney = mann_whitney.pvalue
                 self.__statistic_mann_whitney = mann_whitney.statistic
             except ValueError:
