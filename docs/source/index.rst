@@ -9,7 +9,7 @@ DABEST
 -----------------------------------------------
 Data Analysis with Bootstrap-coupled ESTimation
 -----------------------------------------------
-*version 0.2.0*
+*version 0.2.1*
 
 Analyze your data with estimation statistics!
 ---------------------------------------------
@@ -19,8 +19,10 @@ Analyze your data with estimation statistics!
 News
 ----
 March 2019:
-  - Release of v0.2.0. This is a major update that makes several breaking changes to the API. See the :doc:`release-notes`.
-
+  - v0.2.1 released. This is a minor bugfix that addressed an issue in gapped line plotting. See the :doc:`release-notes`.
+  
+  - Release of v0.2.0. This is a major update that makes several breaking changes to the API. 
+  
 January 2019:
   - Release of v0.1.7. Added `cumming_vertical_spacing` option.
 

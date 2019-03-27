@@ -18,7 +18,7 @@ Load Libraries
 
 .. parsed-literal::
 
-    We're using DABEST v0.2.0
+    We're using DABEST v0.2.1
 
 
 Create dataset for demo
@@ -217,7 +217,7 @@ the comparisons that can be computed.
 
 .. parsed-literal::
 
-    DABEST v0.2.0
+    DABEST v0.2.1
     =============
                  
     Good afternoon!
@@ -252,7 +252,7 @@ dataset that indicates the identity of each observation, using the
 
 .. parsed-literal::
 
-    DABEST v0.2.0
+    DABEST v0.2.1
     =============
                  
     Good afternoon!
@@ -283,7 +283,7 @@ produced.
 
 .. parsed-literal::
 
-    DABEST v0.2.0
+    DABEST v0.2.1
     =============
                  
     Good afternoon!
@@ -318,7 +318,7 @@ Each of these are attributes of the `Dabest` object.
 
 .. parsed-literal::
 
-    DABEST v0.2.0
+    DABEST v0.2.1
     =============
                  
     Good afternoon!
@@ -500,7 +500,7 @@ Let's compute the Hedges' g for our comparison.
 
 .. parsed-literal::
 
-    DABEST v0.2.0
+    DABEST v0.2.1
     =============
                  
     Good afternoon!
@@ -743,7 +743,7 @@ to :keyword:`idx` has more than two data columns.
 
 .. parsed-literal::
 
-    DABEST v0.2.0
+    DABEST v0.2.1
     =============
                  
     Good afternoon!
@@ -770,7 +770,7 @@ to :keyword:`idx` has more than two data columns.
 
 .. parsed-literal::
 
-    DABEST v0.2.0
+    DABEST v0.2.1
     =============
                  
     Good afternoon!
@@ -836,7 +836,7 @@ complex visualizations and statistics.
 
 .. parsed-literal::
 
-    DABEST v0.2.0
+    DABEST v0.2.1
     =============
                  
     Good afternoon!
@@ -863,7 +863,7 @@ complex visualizations and statistics.
 
 .. parsed-literal::
 
-    DABEST v0.2.0
+    DABEST v0.2.1
     =============
                  
     Good afternoon!
@@ -1013,7 +1013,7 @@ When your data is in this format, you will need to specify the :keyword:`x` and
 
 .. parsed-literal::
 
-    DABEST v0.2.0
+    DABEST v0.2.1
     =============
                  
     Good afternoon!
@@ -1249,7 +1249,7 @@ effect size differences.
 .. image:: _images/tutorial_72_0.png
 
 
-With v0.2.0, :keyword:`dabest` can now apply `matplotlib style
+With v0.2.1, :keyword:`dabest` can now apply `matplotlib style
 sheets <https://matplotlib.org/tutorials/introductory/customizing.html>`__
 to estimation plots. You can refer to this
 `gallery <https://matplotlib.org/3.0.3/gallery/style_sheets/style_sheets_reference.html>`__
