@@ -4,6 +4,13 @@
 Release Notes
 =============
 
+
+
+v0.2.1
+------
+
+This release fixes a bug that misplotted the gapped summary lines in Cumming plots when the *x*-variable was a :py:mod:`pandas` :py:class:`Categorical` object.
+
 v0.2.0
 ------
 

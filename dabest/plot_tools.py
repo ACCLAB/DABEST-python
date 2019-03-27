@@ -139,8 +139,15 @@ def gapped_lines(data, x, y, type='mean_sd', offset=0.2, ax=None,
     if 'lw' not in keys:
         kwargs['lw'] = 2.
 
-    # Grab the order in which the groups appear.
-    group_order = pd.unique(data[x])
+    # # Grab the order in which the groups appear.
+    # group_order = pd.unique(data[x])
+    
+    # Grab the order in which the groups appear,
+    # depending on whether the x-column is categorical.
+    if isinstance(data[x].dtype, pd.CategoricalDtype):
+        group_order = pd.unique(data[x]).categories
+    else:
+        group_order = pd.unique(data[x])
 
     means    = data.groupby(x)[y].mean().reindex(index=group_order)
     sd       = data.groupby(x)[y].std().reindex(index=group_order)

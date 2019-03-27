@@ -325,7 +325,8 @@ class TwoGroupsEffectSize(object):
 
         Parameters
         ----------
-        control, test : array-like
+        control : array-like
+        test : array-like
             These should be numerical iterables.
         effect_size : string.
             Any one of the following are accepted inputs:
@@ -344,9 +345,43 @@ class TwoGroupsEffectSize(object):
 
         Returns
         -------
-        A `TwoGroupEffectSize` object.
+        A :py:class:`TwoGroupEffectSize` object.
+        
+        difference : float
+            The effect size of the difference between the control and the test.
+        
+        effect_size : string
+            The type of effect size reported.
+        
+        is_paired : boolean
+            Whether or not the difference is paired (ie. repeated measures).
+            
+        ci : float
+            Returns the width of the confidence interval, in percent.
+            
+        alpha : float
+            Returns the significance level of the statistical test as a float
+            between 0 and 1.
+            
+        resamples : int
+            The number of resamples performed during the bootstrap procedure.
 
-
+        bootstraps : nmupy ndarray
+            The generated bootstraps of the effect size.
+            
+        random_seed : int
+            The number used to initialise the numpy random seed generator, ie.
+            `seed_value` from `numpy.random.seed(seed_value)` is returned.
+            
+        bca_low, bca_high : float
+            The bias-corrected and accelerated confidence interval lower limit
+            and upper limits, respectively.
+            
+        pct_low, pct_high : float
+            The percentile confidence interval lower limit and upper limits, 
+            respectively.
+            
+            
         Examples
         --------
         >>> import numpy as np
@@ -360,6 +395,36 @@ class TwoGroupsEffectSize(object):
         The unpaired mean difference is -0.253 [95%CI -0.782, 0.241]
         5000 bootstrap samples. The confidence interval is bias-corrected
         and accelerated.
+        >>> effsize.to_dict() 
+        {'alpha': 0.05,
+         'bca_high': 0.2413346581369784,
+         'bca_interval_idx': (109, 4858),
+         'bca_low': -0.7818088458343655,
+         'bootstraps': array([-1.09875628, -1.08840014, -1.08258695, ...,  0.66675324,
+                 0.75814087,  0.80848265]),
+         'ci': 95,
+         'difference': -0.25315417702752846,
+         'effect_size': 'mean difference',
+         'is_paired': False,
+         'pct_high': 0.25135646125431527,
+         'pct_interval_idx': (125, 4875),
+         'pct_low': -0.763588353717278,
+         'pvalue_brunner_munzel': nan,
+         'pvalue_kruskal': nan,
+         'pvalue_mann_whitney': 0.2600723060808019,
+         'pvalue_paired_students_t': nan,
+         'pvalue_students_t': 0.34743913903372836,
+         'pvalue_welch': 0.3474493875548965,
+         'pvalue_wilcoxon': nan,
+         'random_seed': 12345,
+         'resamples': 5000,
+         'statistic_brunner_munzel': nan,
+         'statistic_kruskal': nan,
+         'statistic_mann_whitney': 406.0,
+         'statistic_paired_students_t': nan,
+         'statistic_students_t': 0.9472545159069105,
+         'statistic_welch': 0.9472545159069105,
+         'statistic_wilcoxon': nan}
         """
 
         from numpy import array, isnan
@@ -532,7 +597,8 @@ class TwoGroupsEffectSize(object):
             # Mann-Whitney test: Non parametric,
             # does not assume normality of distributions
             try:
-                mann_whitney = spstats.mannwhitneyu(control, test)
+                mann_whitney = spstats.mannwhitneyu(control, test, 
+                                                    alternative='two-sided')
                 self.__pvalue_mann_whitney = mann_whitney.pvalue
                 self.__statistic_mann_whitney = mann_whitney.statistic
             except ValueError:
