@@ -24,10 +24,10 @@ DABEST has been tested on Python 3.5, 3.6, and 3.7.
 
 In addition, the following packages are also required:
 - [numpy](https://www.numpy.org) (1.15)
-- [scipy](https://www.scipy.org) (1.1)
-- [matplotlib](https://www.matplotlib.org) (2.2)
+- [scipy](https://www.scipy.org) (1.2)
+- [matplotlib](https://www.matplotlib.org) (3.0)
 - [seaborn](https://seaborn.pydata.org) (0.9)
-- [pandas](https://pandas.pydata.org) (0.23).
+- [pandas](https://pandas.pydata.org) (0.24).
 
 To obtain these package dependencies easily, it is highly recommended to download the [Anaconda distribution](https://www.continuum.io/downloads) of Python.
 
