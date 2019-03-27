@@ -14,7 +14,6 @@ from .. import _bootstrap_tools as bst
 
 
 
-@pytest.fixture
 def create_dummy_dataset(seed=None, n=30, base_mean=0, expt_groups=6,
                          scale_means=2, scale_std=1.2):
     """
@@ -53,58 +52,39 @@ def create_dummy_dataset(seed=None, n=30, base_mean=0, expt_groups=6,
     return random_seed, max_mean_diff, df
 
 
-@pytest.fixture
 def is_difference(result):
     assert result.is_difference == True
 
-
-@pytest.fixture
 def is_paired(result):
     assert result.is_paired == True
 
-
-@pytest.fixture
 def check_pvalue_1samp(result):
     assert result.pvalue_1samp_ttest != 'NIL'
 
-
-@pytest.fixture
 def check_pvalue_2samp_unpaired(result):
     assert result.pvalue_2samp_ind_ttest != 'NIL'
 
-
-@pytest.fixture
 def check_pvalue_2samp_paired(result):
     assert result.pvalue_2samp_related_ttest != 'NIL'
 
-
-@pytest.fixture
 def check_mann_whitney(result):
     """Nonparametric unpaired"""
     assert result.pvalue_mann_whitney != 'NIL'
     assert result.pvalue_wilcoxon == 'NIL'
 
-
-@pytest.fixture
 def check_wilcoxon(result):
     """Nonparametric Paired"""
     assert result.pvalue_wilcoxon != 'NIL'
     assert result.pvalue_mann_whitney == 'NIL'
 
+# def test_mean_within_ci_bca(mean, result):
+#     assert mean >= result.bca_ci_low
+#     assert mean <= result.bca_ci_high
+#
+# def test_mean_within_ci_pct(mean, result):
+#     assert mean >= result.pct_ci_low
+#     assert mean <= result.pct_ci_high
 
-@pytest.fixture
-def test_mean_within_ci_bca(mean, result):
-    assert mean >= result.bca_ci_low
-    assert mean <= result.bca_ci_high
-
-
-@pytest.fixture
-def test_mean_within_ci_pct(mean, result):
-    assert mean >= result.pct_ci_low
-    assert mean <= result.pct_ci_high
-
-
-@pytest.fixture
 def single_samp_stat_tests(sample, result):
 
     assert result.is_difference == False
@@ -113,8 +93,6 @@ def single_samp_stat_tests(sample, result):
     ttest_result = sp.stats.ttest_1samp(sample, 0).pvalue
     assert result.pvalue_1samp_ttest == pytest.approx(ttest_result)
 
-
-@pytest.fixture
 def unpaired_stat_tests(control, expt, result):
     is_difference(result)
     check_pvalue_2samp_unpaired(result)
@@ -130,8 +108,6 @@ def unpaired_stat_tests(control, expt, result):
                                                 alternative='two-sided').pvalue
     assert result.pvalue_mann_whitney == pytest.approx(mann_whitney_result)
 
-
-@pytest.fixture
 def paired_stat_tests(control, expt, result):
     is_difference(result)
     is_paired(result)
@@ -146,9 +122,7 @@ def paired_stat_tests(control, expt, result):
     wilcoxon_result = sp.stats.wilcoxon(control, expt).pvalue
     assert result.pvalue_wilcoxon == pytest.approx(wilcoxon_result)
 
-
-@pytest.fixture
-def does_ci_captures_mean_diff(control, expt, paired, nreps=100, alpha=0.05):
+def does_ci_capture_mean_diff(control, expt, paired, nreps=100, alpha=0.05):
     if expt is None:
         mean_diff = control.mean()
     else:
@@ -206,7 +180,7 @@ def test_single_sample_bootstrap(mean=100, sd=10, n=25, nreps=100, alpha=0.05):
     results = bst.bootstrap(sample, alpha_level=alpha)
     single_samp_stat_tests(sample, results)
 
-    does_ci_captures_mean_diff(sample, None, False, nreps, alpha)
+    does_ci_capture_mean_diff(sample, None, False, nreps, alpha)
 
 
 
@@ -225,7 +199,7 @@ def test_unpaired_difference(mean=100, sd=10, n=25, nreps=100, alpha=0.05):
     results = bst.bootstrap(sample1, sample2, paired=False, alpha_level=alpha)
     unpaired_stat_tests(sample1, sample2, results)
 
-    does_ci_captures_mean_diff(sample1, sample2, False, nreps, alpha)
+    does_ci_capture_mean_diff(sample1, sample2, False, nreps, alpha)
 
 
 
@@ -248,4 +222,4 @@ def test_paired_difference(mean=100, sd=10, n=25, nreps=100, alpha=0.05):
     results = bst.bootstrap(sample1, sample2, alpha_level=alpha, paired=True)
     paired_stat_tests(sample1, sample2, results)
 
-    does_ci_captures_mean_diff(sample1, sample2, True, nreps, alpha)
+    does_ci_capture_mean_diff(sample1, sample2, True, nreps, alpha)
