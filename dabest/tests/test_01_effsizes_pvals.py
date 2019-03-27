@@ -135,7 +135,7 @@ def test_unpaired_stats():
     
     unpaired_es = TwoGroupsEffectSize(c, t, "mean_diff", is_paired=False)
     
-    p1 = sp.stats.mannwhitneyu(c, t).pvalue
+    p1 = sp.stats.mannwhitneyu(c, t, alternative="two-sided").pvalue
     assert unpaired_es.pvalue_mann_whitney == pytest.approx(p1)
     
     p2 = sp.stats.ttest_ind(c, t, nan_policy='omit').pvalue
