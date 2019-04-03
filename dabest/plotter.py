@@ -530,6 +530,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             # If the effect size is negative, shift the contrast axis down.
             elif current_effsize < 0:
                 rightmin, rightmax = rawdata_ylims + current_effsize
+            else:
+                rightmin, rightmax = rawdata_ylims
+
             contrast_axes.set_ylim(rightmin, rightmax)
 
             # align statfunc(exp) on rawdata_axes with the effect size on contrast_axes.
