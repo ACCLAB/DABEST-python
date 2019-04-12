@@ -16,6 +16,12 @@ After cloning the repo, run
 sphinx-autobuild docs/source docs/build/_html
 ```
 
+## Creating the build
+
+```shell
+sphinx-build -b html sourcedir builddir
+```
+
 ## Adding custom CSS
 
 See the official [docs](https://docs.readthedocs.io/en/latest/guides/adding-custom-css.html), as well as this Stack Overflow [thread](https://stackoverflow.com/questions/23462494/how-to-add-custom-css-file-to-sphinx) to assign a custom CSS to the Sphinx template.

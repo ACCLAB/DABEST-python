@@ -4,12 +4,17 @@
 Release Notes
 =============
 
+v0.2.2
+------
+
+This release fixes a `bug <https://github.com/ACCLAB/DABEST-python/pull/30>`_ that has a mean difference or median difference of exactly 0.
 
 
 v0.2.1
 ------
 
 This release fixes a bug that misplotted the gapped summary lines in Cumming plots when the *x*-variable was a :py:mod:`pandas` :py:class:`Categorical` object.
+
 
 v0.2.0
 ------
@@ -79,21 +84,6 @@ v0.1.6
 
 Several keywords have been added to allow more fine-grained control over a selection of plot elements.
 
-.. code-block:: python
-
-    swarm_dotsize
-    difference_dotsize
-    ci_linewidth
-    summary_linewidth
-
-The new keyword context allows you to set the plotting context as defined by seaborn’s `plotting_context() <https://seaborn.pydata.org/generated/seaborn.plotting_context.html>`_.
-
-Now, if paired=True, you will need to supply an id_col, which is a column in the DataFrame which specifies which sample the datapoint belongs to.
-
-v0.1.6
-======
-Several keywords have been added to allow more fine-grained control over a selection of plot elements.
-
 * `swarm_dotsize`
 * `difference_dotsize`
 * `ci_linewidth`
@@ -121,6 +111,7 @@ Update dependencies to
 Aesthetic changes
 
 * add `tick_length` and `tick_pad` arguments to allow tweaking of the axes tick lengths, and padding of the tick labels, respectively.
+
 
 v0.1.3
 ------

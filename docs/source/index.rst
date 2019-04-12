@@ -9,7 +9,7 @@ DABEST
 -----------------------------------------------
 Data Analysis with Bootstrap-coupled ESTimation
 -----------------------------------------------
-*version 0.2.1*
+*version 0.2.2*
 
 Analyze your data with estimation statistics!
 ---------------------------------------------
@@ -19,6 +19,9 @@ Analyze your data with estimation statistics!
 
 News
 ----
+April 2019:
+  - v0.2.2 released. This is a minor bugfix that addressed an issue for an edge case where the mean or median difference was exactly zero. See the :doc:`release-notes`.
+
 March 2019:
   - v0.2.1 released. This is a minor bugfix that addressed an issue in gapped line plotting. See the :doc:`release-notes`.
   
