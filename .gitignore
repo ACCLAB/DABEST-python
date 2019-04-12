@@ -116,6 +116,7 @@ dev*
 # font list
 fontList.json
 fontList.py3k.cache
+fontList-v300.json
 
 # tex folders
 tex.cache/
