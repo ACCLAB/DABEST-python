@@ -7,7 +7,7 @@ Release Notes
 v0.2.2
 ------
 
-This release fixes a `bug <https://github.com/ACCLAB/DABEST-python/pull/30>`_ that has an mean difference or median difference of exactly 0.
+This release fixes a `bug <https://github.com/ACCLAB/DABEST-python/pull/30>`_ that has a mean difference or median difference of exactly 0.
 
 
 v0.2.1
