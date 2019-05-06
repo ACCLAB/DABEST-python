@@ -7,6 +7,12 @@ Release Notes
 v0.2.2
 ------
 
+This release fixes a bug that did not handle when the supplied ``x`` was a :py:mod:`pandas` :py:class:`Categorical` object, but the ``idx`` did not include all the original categories.
+
+
+v0.2.2
+------
+
 This release fixes a `bug <https://github.com/ACCLAB/DABEST-python/pull/30>`_ that has a mean difference or median difference of exactly 0.
 
 
