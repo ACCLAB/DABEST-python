@@ -124,14 +124,26 @@ class Dabest(object):
                                 value_vars=all_plot_groups,
                                 value_name=self.__yvar,
                                 var_name=self.__xvar)
+        
+        # Lines 131 to 140 added in v0.2.3.
+        # Fixes a bug that jammed up when the xvar column was already 
+        # a pandas Categorical. Now we check for this and act appropriately.
+        if isinstance(plot_data[self.__xvar].dtype, 
+                      pd.CategoricalDtype) is True:
+            plot_data[self.__xvar].cat.remove_unused_categories(inplace=True)
+            plot_data[self.__xvar].cat.reorder_categories(all_plot_groups, 
+                                                          ordered=True, 
+                                                          inplace=True)
+        else:
+            plot_data.loc[:, self.__xvar] = pd.Categorical(plot_data[self.__xvar],
+                                               categories=all_plot_groups,
+                                               ordered=True)
 
-        plot_data.loc[:, self.__xvar] = pd.Categorical(plot_data[self.__xvar],
-                                           categories=all_plot_groups,
-                                           ordered=True)
 
         self.__plot_data = plot_data
-
+        
         self.__all_plot_groups = all_plot_groups
+
 
         # Sanity check that all idxs are paired, if so desired.
         if paired is True:
