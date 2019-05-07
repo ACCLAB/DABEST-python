@@ -79,7 +79,13 @@ def test_cummings_unpaired():
 
     rand_swarm_ylim = (np.random.uniform(base_mean-10, base_mean, 1),
                        np.random.uniform(base_mean, base_mean+10, 1))
-    rand_contrast_ylim = (-base_mean/3, base_mean/3)
+                       
+    if base_mean == 0:
+        # Have to set the contrast ylim, because the way I dynamically generate
+        # the contrast ylims will flunk out with base_mean = 0.
+        rand_contrast_ylim = (-0.5, 0.5)
+    else:
+        rand_contrast_ylim = (-base_mean/3, base_mean/3)
 
     f1 = multi_2group_unpaired.mean_diff.plot(swarm_ylim=rand_swarm_ylim,
                                               contrast_ylim=rand_contrast_ylim,
@@ -89,18 +95,12 @@ def test_cummings_unpaired():
     rawswarm_axes = f1.axes[0]
     contrast_axes = f1.axes[1]
 
-    # Check ylims match the desired ones.
+    # Check swarm ylims match the desired ones.
     assert rawswarm_axes.get_ylim()[0] == pytest.approx(rand_swarm_ylim[0])
     assert rawswarm_axes.get_ylim()[1] == pytest.approx(rand_swarm_ylim[1])
-    
-    # This needs to be rounded, because if the base mean is 0,
-    # the ylim might be -0.001, which will not match 0.
-    if base_mean == 0:
-        ylim_low = np.round(contrast_axes.get_ylim()[0])
-    else:
-        ylim_low = contrast_axes.get_ylim()[0]
-    assert ylim_low == pytest.approx(rand_contrast_ylim[0])
-    
+
+    # Check contrast ylims match the desired ones.
+    assert contrast_axes.get_ylim()[0] == pytest.approx(rand_contrast_ylim[0])
     assert contrast_axes.get_ylim()[1] == pytest.approx(rand_contrast_ylim[1])
 
     # Check xtick labels.
