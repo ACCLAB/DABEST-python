@@ -4,7 +4,7 @@
 Release Notes
 =============
 
-v0.2.2
+v0.2.3
 ------
 
 This release fixes a bug that did not handle when the supplied ``x`` was a :py:mod:`pandas` :py:class:`Categorical` object, but the ``idx`` did not include all the original categories.

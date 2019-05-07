@@ -9,7 +9,6 @@ DABEST
 -----------------------------------------------
 Data Analysis with Bootstrap-coupled ESTimation
 -----------------------------------------------
-*version 0.2.3*
 
 Analyze your data with estimation statistics!
 ---------------------------------------------
