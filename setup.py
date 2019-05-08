@@ -89,7 +89,7 @@ if __name__ == "__main__":
         author_email='joseshowh@gmail.com',
         maintainer='Joses W. Ho',
         maintainer_email='joseshowh@gmail.com',
-        version='0.2.3',
+        version='0.2.4',
         description=DESCRIPTION,
         long_description=LONG_DESCRIPTION,
         packages=find_packages(),
