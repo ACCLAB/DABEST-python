@@ -1179,7 +1179,7 @@ class EffectSizeDataFrame(object):
         -------
         A :class:`matplotlib.figure.Figure` with 2 Axes.
 
-        The first axes (accessible with ``FigName.axes()[0]``) contains the rawdata swarmplot; the second axes (accessible with ``FigName.axes()[1]``) has the bootstrap distributions and effect sizes (with confidence intervals) plotted on it.
+        The first axes (accessible with ``FigName.axes[0]``) contains the rawdata swarmplot; the second axes (accessible with ``FigName.axes[1]``) has the bootstrap distributions and effect sizes (with confidence intervals) plotted on it.
 
         Examples
         --------
