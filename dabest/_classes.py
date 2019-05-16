@@ -1071,11 +1071,12 @@ class EffectSizeDataFrame(object):
             swarm_ylim=None, contrast_ylim=None,
 
             custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
-            halfviolin_alpha=0.8,
+            halfviolin_alpha=0.8, 
 
             float_contrast=True,
             show_pairs=True,
             group_summaries=None,
+            group_summaries_offset=0.1,
 
             fig_size=None,
             dpi=100,
@@ -1131,7 +1132,7 @@ class EffectSizeDataFrame(object):
             curves by the desired proportion. Uses `seaborn.desaturate()` to
             acheive this.
         halfviolin_alpha : float, default 0.8
-            The alpha (transparency) level of the half-violin bootstrap curves.
+            The alpha (transparency) level of the half-violin bootstrap curves.            
         float_contrast : boolean, default True
             Whether or not to display the halfviolin bootstrapped difference
             distribution alongside the raw data.
@@ -1145,6 +1146,9 @@ class EffectSizeDataFrame(object):
             notched line beside each group. If 'median_quantiles', then the
             median and 25th and 75th percentiles of each group is plotted
             instead. If 'None', the summaries are not shown.
+        group_summaries_offset : float, default 0.1
+            If group summaries are displayed, they will be offset from the raw
+            data swarmplot groups by this value. 
         fig_size : tuple, default None
             The desired dimensions of the figure as a (length, width) tuple.
         dpi : int, default 100

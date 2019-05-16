@@ -22,11 +22,12 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         swarm_ylim=None, contrast_ylim=None,
 
         custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
-        halfviolin_alpha=0.8,
+        halfviolin_alpha=0.8, 
 
         float_contrast=True,
         show_pairs=True,
         group_summaries=None,
+        group_summaries_offset=0.1,
 
         fig_size=None,
         dpi=100,
@@ -369,7 +370,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
             gapped_lines(plot_data, x=xvar, y=yvar,
                          # Hardcoded offset...
-                         offset=xspans + np.array(0.2),
+                         offset=xspans + np.array(plot_kwargs["group_summaries_offset"]),
                          line_color=line_colors,
                          gap_width_percent=1.5,
                          type=group_summaries, ax=rawdata_axes,
