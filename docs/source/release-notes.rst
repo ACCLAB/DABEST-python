@@ -4,6 +4,14 @@
 Release Notes
 =============
 
+0.2.4
+------
+
+This release fixes the following issues:
+  - Misalignment of Gardner-Altman plots when the dataset loaded is wide, but has NaNs in a column. (`Issue #40 <https://github.com/ACCLAB/DABEST-python/issues/40>`_)
+  - Misalignment of Hedges' g Gardner Altman plots (Also Issue #40).
+  - Add ``groups_summaries_offset`` argument for better control over gapped Tufte line plotting. The default offset is now set at 0.1 as well. (`Issue #35 <https://github.com/ACCLAB/DABEST-python/issues/35>`_
+
 v0.2.3
 ------
 

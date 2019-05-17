@@ -18,7 +18,8 @@ def load(data, idx, x=None, y=None, paired=False, id_col=None,
         List of column names (if 'x' is not supplied) or of category names
         (if 'x' is supplied). This can be expressed as a tuple of tuples,
         with each individual tuple producing its own contrast plot
-    x, y : strings, default None
+    x : string, default None
+    y : string, default None
         Column names for data to be plotted on the x-axis and y-axis.
     paired : boolean, default False.
     id_col : default None.
