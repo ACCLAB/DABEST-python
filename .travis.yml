@@ -1,3 +1,4 @@
+dist: xenial
 language: python
 
 
@@ -5,6 +6,7 @@ env:
   - PYTHON=3.5 BACKEND=agg
   - PYTHON=3.6 BACKEND=agg
   - PYTHON=3.7 BACKEND=agg
+  - PYTHON=3.8 BACKEND=agg
 
 
 before_install:
