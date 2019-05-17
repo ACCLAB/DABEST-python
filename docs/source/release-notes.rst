@@ -4,7 +4,7 @@
 Release Notes
 =============
 
-0.2.4
+v0.2.4
 ------
 
 This release fixes the following issues:
