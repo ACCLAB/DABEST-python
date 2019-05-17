@@ -22,11 +22,12 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         swarm_ylim=None, contrast_ylim=None,
 
         custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
-        halfviolin_alpha=0.8,
+        halfviolin_alpha=0.8, 
 
         float_contrast=True,
         show_pairs=True,
         group_summaries=None,
+        group_summaries_offset=0.1,
 
         fig_size=None,
         dpi=100,
@@ -369,7 +370,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
             gapped_lines(plot_data, x=xvar, y=yvar,
                          # Hardcoded offset...
-                         offset=xspans + np.array(0.2),
+                         offset=xspans + np.array(plot_kwargs["group_summaries_offset"]),
                          line_color=line_colors,
                          gap_width_percent=1.5,
                          type=group_summaries, ax=rawdata_axes,
@@ -496,8 +497,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
 
-
-
     og_ylim_raw = rawdata_axes.get_ylim()
 
     if float_contrast is True:
@@ -521,6 +520,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         _, contrast_xlim_max = contrast_axes.get_xlim()
 
+        difference = float(results.difference[0])
+        
         if effect_size_type in ["mean_diff", "median_diff"]:
             # Align 0 of contrast_axes to reference group mean of rawdata_axes.
             # If the effect size is positive, shift the contrast axis up.
@@ -535,39 +536,38 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
             contrast_axes.set_ylim(rightmin, rightmax)
 
-            # align statfunc(exp) on rawdata_axes with the effect size on contrast_axes.
-            # align_yaxis(rawdata_axes, test_group_summary,
-            #             contrast_axes, current_effsize)
-            # og_ylim_contrast = contrast_axes.get_ylim()
-
             og_ylim_contrast = rawdata_axes.get_ylim() - np.array(control_group_summary)
 
             contrast_axes.set_ylim(og_ylim_contrast)
             contrast_axes.set_xlim(contrast_xlim_max-1, contrast_xlim_max)
 
-            difference = float(results.difference[0])
-
         elif effect_size_type in ["cohens_d", "hedges_g"]:
-
-            if effect_size_type == 'hedges_g':
-                len_control = plot_data.groupby(xvar).count().loc[current_control, yvar]
-                len_test    = plot_data.groupby(xvar).count().loc[current_group, yvar]
-
-                hg_correction_factor = _compute_hedges_correction_factor(len_control, len_test)
-                difference           = float(results.difference[0]) * 1/hg_correction_factor
-
-            else: #effect_size_type == 'cohens_d':
-                difference = float(results.difference[0])
-
             if is_paired:
                 which_std = 1
             else:
                 which_std = 0
             temp_control = plot_data[plot_data[xvar] == current_control][yvar]
             temp_test    = plot_data[plot_data[xvar] == current_group][yvar]
-            pooled_sd = _compute_standardizers(temp_control, temp_test)[which_std]
-
-            scaled_ylim = ((rawdata_axes.get_ylim() - control_group_summary) / pooled_sd).tolist()
+            
+            stds = _compute_standardizers(temp_control, temp_test)
+            if is_paired:
+                pooled_sd = stds[1]
+            else:
+                pooled_sd = stds[0]
+            
+            if effect_size_type == 'hedges_g':
+                gby_count   = plot_data.groupby(xvar).count()
+                len_control = gby_count.loc[current_control, yvar]
+                len_test    = gby_count.loc[current_group, yvar]
+                            
+                hg_correction_factor = _compute_hedges_correction_factor(len_control, len_test)
+                            
+                ylim_scale_factor = pooled_sd / hg_correction_factor
+                
+            else:
+                ylim_scale_factor = pooled_sd
+                
+            scaled_ylim = ((rawdata_axes.get_ylim() - control_group_summary) / ylim_scale_factor).tolist()
 
             contrast_axes.set_ylim(scaled_ylim)
             og_ylim_contrast = scaled_ylim
@@ -576,8 +576,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
 
-
-        # difference = float(results.difference[0])
         # Draw summary lines for control and test groups..
         for jj, axx in enumerate([rawdata_axes, contrast_axes]):
 
@@ -589,7 +587,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
             elif jj == 1:
                 ref = 0
-                diff = difference
+                diff = ref + difference
                 effsize_line_start = contrast_xlim_max-1.1
 
             xlimlow, xlimhigh = axx.get_xlim()
@@ -598,7 +596,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             axx.hlines(ref,            # y-coordinates
                        0, xlimhigh,  # x-coordinates, start and end.
                        **reflines_kwargs)
-
+                        
             # Draw effect size line.
             axx.hlines(diff, effsize_line_start, xlimhigh,
                        **reflines_kwargs)

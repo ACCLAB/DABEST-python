@@ -14,6 +14,8 @@ Plotting Data
 -------------
 
 .. autofunction:: dabest._classes.EffectSizeDataFrame.plot
+.. .. autoclass:: dabest._classes.EffectSizeDataFrame
+..    :members: plot
 
 
 Computing Effect Sizes
