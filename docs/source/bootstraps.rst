@@ -41,7 +41,7 @@ The bootstrap in action
 
 The bootstrap [1]_ is a simple but powerful technique. It was `first described <https://projecteuclid.org/euclid.aos/1176344552>`__ by `Bradley Efron <https://statistics.stanford.edu/people/bradley-efron>`__.
 
-It creates multiple _resamples_ (with replacement) from a single set of
+It creates multiple *resamples* (with replacement) from a single set of
 observations, and computes the effect size of interest on each of these
 resamples. The bootstrap resamples of the effect size can then be used to
 determine the 95% CI.

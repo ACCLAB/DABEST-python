@@ -1,5 +1,5 @@
+dist: xenial
 language: python
-
 
 env:
   - PYTHON=3.5 BACKEND=agg
@@ -19,6 +19,7 @@ before_install:
 
 install:
   - conda update conda --yes
+  - conda config --add channels conda-forge
   - conda create -n testenv --yes pip python=$PYTHON matplotlib
   - source activate testenv
   - pip install pytest==4.3

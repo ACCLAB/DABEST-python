@@ -18,7 +18,7 @@ Load Libraries
 
 .. parsed-literal::
 
-    We're using DABEST v0.2.1
+    We're using DABEST v0.2.4
 
 
 Create dataset for demo
@@ -74,7 +74,7 @@ for more details.
 
 .. code:: ipython3
 
-    df.head()
+    df.head() # Displays the first 5 rows of our dataset.
 
 
 
@@ -202,8 +202,7 @@ list.
 
 .. code:: ipython3
 
-    >>> two_groups_unpaired = dabest.load(df, idx=("Control 1", "Test 1"), 
-    ...                                   resamples=5000)
+    >>> two_groups_unpaired = dabest.load(df, idx=("Control 1", "Test 1"))
 
 Calling this `Dabest` object gives you a gentle greeting, as well as
 the comparisons that can be computed.
@@ -1249,11 +1248,10 @@ effect size differences.
 .. image:: _images/tutorial_72_0.png
 
 
-With v0.2.1, :keyword:`dabest` can now apply `matplotlib style
-sheets <https://matplotlib.org/tutorials/introductory/customizing.html>`__
-to estimation plots. You can refer to this
+You can apply `matplotlib style sheets <https://matplotlib.org/tutorials/introductory/customizing.html>`__
+to estimation plots. Refer to this
 `gallery <https://matplotlib.org/3.0.3/gallery/style_sheets/style_sheets_reference.html>`__
-of style sheets for reference.
+for the range of style sheets available.
 
 .. code:: ipython3
 

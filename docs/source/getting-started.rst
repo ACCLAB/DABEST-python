@@ -8,7 +8,7 @@ Getting Started
 Requirements
 ------------
 
-Python 3.7 is strongly recommended. ``dabest`` has also been tested with Python 3.5, 3.6, and 3.8.
+Python 3.7 is strongly recommended. ``dabest`` has also been tested with Python 3.5 and 3.6.
 
 In addition, the following packages are also required:
 
