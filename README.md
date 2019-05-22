@@ -85,12 +85,6 @@ To test DABEST, you will need to install [pytest](https://docs.pytest.org/en/lat
 Run `pytest` in the root directory of the source distribution. This runs the test suite in the folder `dabest/tests`. The test suite will ensure that the bootstrapping functions and the plotting functions perform as expected.
 
 
-## Matlab version
+## DABEST in other languages
 
-There is also a [Matlab version](https://github.com/ACCLAB/DABEST-Matlab) of DABEST.
-
-
-## R version
-
-R users can install [dabestr](https://github.com/ACCLAB/dabestr).
-
+DABEST is also available in R ([dabestr](https://github.com/ACCLAB/dabestr)) and Matlab ([DABEST-Matlab](https://github.com/ACCLAB/DABEST-Matlab)).
