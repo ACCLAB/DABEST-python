@@ -1,4 +1,4 @@
-# DABEST (Python)
+# DABEST-Python
 [![Travis CI](https://travis-ci.org/ACCLAB/DABEST-python.svg?branch=master)](https://travis-ci.org/ACCLAB/DABEST-python)
 [![PyPI version](https://badge.fury.io/py/dabest.svg)](https://badge.fury.io/py/dabest)
 
