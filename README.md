@@ -44,7 +44,7 @@ or -->
 ```shell
 pip install --upgrade dabest
 ```
-You can also clone this repo locally (see intstructions [here](https://help.github.com/articles/cloning-a-repository)).
+You can also [clone](https://help.github.com/articles/cloning-a-repository) this repo locally.
 
 Then, navigate to the cloned repo in the command line and run
 
