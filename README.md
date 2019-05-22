@@ -56,6 +56,7 @@ pip install .
 
 Please refer to the [documentation](https://acclab.github.io/DABEST-python-docs).
 
+
 ## How to cite
 
 **Moving beyond P values: Everyday data analysis with estimation plots**
@@ -63,6 +64,25 @@ Please refer to the [documentation](https://acclab.github.io/DABEST-python-docs)
 *Joses Ho, Tayfun Tumkaya, Sameer Aryal, Hyungwon Choi, Adam Claridge-Chang*
 
 [https://doi.org/10.1101/377978](https://doi.org/10.1101/377978)
+
+
+## Bugs
+
+Please report any bugs on the [Github issue tracker](https://github.com/ACCLAB/DABEST-python/issues/new).
+
+
+## Contributing
+
+All contributions are welcome; please read the [Guidelines for contributing](https://github.com/ACCLAB/DABEST-python/blob/master/CONTRIBUTING.md) first.
+
+We also have a [Code of Conduct](https://github.com/ACCLAB/DABEST-python/blob/master/CODE_OF_CONDUCT.md) to foster an inclusive and productive space.
+
+
+## Testing
+
+To test DABEST, you will need to install [pytest](https://docs.pytest.org/en/latest).
+
+Run `pytest` in the root directory of the source distribution. This runs the test suite in the folder `dabest/tests`. The test suite will ensure that the bootstrapping functions and the plotting functions perform as expected.
 
 
 ## Matlab version
@@ -74,20 +94,3 @@ There is also a [Matlab version](https://github.com/ACCLAB/DABEST-Matlab) of DAB
 
 R users can install [dabestr](https://github.com/ACCLAB/dabestr).
 
-
-
-## Testing
-
-To test DABEST, you will need to install [pytest](https://docs.pytest.org/en/latest).
-
-Run `pytest` in the root directory of the source distribution. This runs the test suite in the folder `dabest/tests`. The test suite will ensure that the bootstrapping functions and the plotting functions perform as expected.
-
-
-## Bugs
-
-Please report any bugs on the [Github issue tracker](https://github.com/ACCLAB/DABEST-python/issues/new).
-
-
-## Contributing
-
-All contributions are welcome. Please fork the [Github repo](https://github.com/ACCLAB/DABEST-python) and open a pull request.
