@@ -54,7 +54,22 @@ pip install .
 
 ## Usage
 
-Please refer to the [documentation](https://acclab.github.io/DABEST-python-docs).
+```python3
+import pandas as pd
+import dabest
+
+# Load the iris dataset. Requires internet access.
+iris = pd.read_csv("https://github.com/mwaskom/seaborn-data/raw/master/iris.csv")
+
+# Load the above data into `dabest`.
+iris_dabest = dabest.load(data=iris, x="species", y="petal_width",
+                          idx=("setosa", "versicolor", "virginica"))
+
+# Produce a Cumming estimation plot.
+iris_dabest.mean_diff.plot();
+```
+
+Please refer to the official [tutorial](https://acclab.github.io/DABEST-python-docs/tutorial.html) for more useful code snippets.
 
 
 ## How to cite
