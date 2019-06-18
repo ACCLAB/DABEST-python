@@ -23,4 +23,4 @@ from ._api import load
 from ._stats_tools import effsize as effsize
 from ._classes import TwoGroupsEffectSize 
 
-__version__ = "0.2.3"
+__version__ = "0.2.5"
