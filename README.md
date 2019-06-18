@@ -58,11 +58,12 @@ Please refer to the [documentation](https://acclab.github.io/DABEST-python-docs)
 
 ## How to cite
 
-**Moving beyond P values: Everyday data analysis with estimation plots**
+**Moving beyond P values: data analysis with estimation graphics**
+_Nature Methods June 2019_
+[https://dx.doi.org/0.1038/s41592-019-0470-3](https://dx.doi.org/0.1038/s41592-019-0470-3)
 
 *Joses Ho, Tayfun Tumkaya, Sameer Aryal, Hyungwon Choi, Adam Claridge-Chang*
 
-[https://doi.org/10.1101/377978](https://doi.org/10.1101/377978)
 
 
 ## Matlab version
