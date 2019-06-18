@@ -93,7 +93,10 @@ class Dabest(object):
                 if g not in data_in[x].unique():
                     raise IndexError('{0} is not a group in `{1}`.'.format(g, x))
 
+            # Select only rows where the value in the `x` column 
+            # is found in `idx`.
             plot_data = data_in[data_in.loc[:, x].isin(all_plot_groups)].copy()
+            
             # plot_data.drop("index", inplace=True, axis=1)
 
             # Assign attributes
