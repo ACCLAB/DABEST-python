@@ -80,7 +80,9 @@ Please refer to the official [tutorial](https://acclab.github.io/DABEST-python-d
 
 *Joses Ho, Tayfun Tumkaya, Sameer Aryal, Hyungwon Choi, Adam Claridge-Chang*
 
-[https://doi.org/10.1101/377978](https://doi.org/10.1101/377978)
+Nature Methods 2019, 1548-7105
+
+[Paywalled publisher site](https://www.nature.com/articles/s41592-019-0470-3); [Free-to-view PDF](https://rdcu.be/bHhJ4)
 
 
 ## Bugs
