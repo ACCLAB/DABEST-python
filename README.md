@@ -1,7 +1,7 @@
 # DABEST-Python
-[![Travis CI](https://travis-ci.org/ACCLAB/DABEST-python.svg?branch=master)](https://travis-ci.org/ACCLAB/DABEST-python)
+[![Travis CI build status](https://travis-ci.org/ACCLAB/DABEST-python.svg?branch=master)](https://travis-ci.org/ACCLAB/DABEST-python)
 [![PyPI version](https://badge.fury.io/py/dabest.svg)](https://badge.fury.io/py/dabest)
-[![https://rdcu.be/bHhJ4](https://zenodo.org/badge/DOI/10.1038/s41592-019-0470-3.svg)](https://zenodo.org/badge/DOI/10.1038/s41592-019-0470-3.svg)
+[![Free-to-view citation](https://zenodo.org/badge/DOI/10.1038/s41592-019-0470-3.svg)](https://rdcu.be/bHhJ4)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause--Clear-orange.svg)](https://spdx.org/licenses/BSD-3-Clause-Clear.html)
 
 ## About
