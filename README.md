@@ -99,6 +99,10 @@ All contributions are welcome; please read the [Guidelines for contributing](htt
 
 We also have a [Code of Conduct](https://github.com/ACCLAB/DABEST-python/blob/master/CODE_OF_CONDUCT.md) to foster an inclusive and productive space.
 
+## Acknowledgements
+
+We would like to thank alpha testers from the [Claridge-Chang lab](https://www.claridgechang.net/): [Sangyu Xu](https://github.com/sangyu), [Xianyuan Zhang](https://github.com/XYZfar), [Farhan Mohammad](https://github.com/farhan8igib), Jurga Mituzaitė, and Stanislav Ott.
+
 
 ## Testing
 
