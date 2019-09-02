@@ -13,9 +13,12 @@ An estimation plot has two key features. Firstly, it presents all datapoints as 
 **dabest** creates estimation plots for mean differences, median differences, standardized effect sizes (Cohen's _d_ and Hedges' _g_), and ordinal effect sizes (Cliff's delta).
 
 Please cite this work as:
+
 Moving beyond P values: Everyday data analysis with estimation plots
+Nat Methods. 2019 Jul; 16(7):565-566.
 Joses Ho, Tayfun Tumkaya, Sameer Aryal, Hyungwon Choi, Adam Claridge-Chang
-https://doi.org/10.1101/377978
+
+https://rdcu.be/bHhJ4
 """
 
 
