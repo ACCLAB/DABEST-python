@@ -1007,8 +1007,11 @@ class EffectSizeDataFrame(object):
                                              self.__random_seed)
                 r_dict = result.to_dict()
 
-                r_dict["control"] = cname
-                r_dict["test"] = tname
+                r_dict["control"]   = cname
+                r_dict["test"]      = tname
+                r_dict["control_N"] = int(len(control))
+                r_dict["test_N"]    = int(len(test))
+                
                 out.append(r_dict)
 
                 if j == len(idx)-1 and ix == len(current_tuple)-2:
@@ -1037,7 +1040,8 @@ class EffectSizeDataFrame(object):
 
         out_             = pd.DataFrame(out)
 
-        columns_in_order = ['control', 'test', 'effect_size', 'is_paired',
+        columns_in_order = ['control', 'test', 'control_N', 'test_N',
+                            'effect_size', 'is_paired',
                             'difference', 'ci',
 
                             'bca_low', 'bca_high', 'bca_interval_idx',
