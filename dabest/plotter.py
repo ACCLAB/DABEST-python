@@ -672,16 +672,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
 
-
-    # Place raw axes y-label.
-    if plot_kwargs['swarm_label'] is not None:
-        swarm_label = plot_kwargs['swarm_label']
-    else:
+    # Set raw axes y-label.
+    swarm_label = plot_kwargs['swarm_label']
+    if swarm_label is None and yvar is None:
+        swarm_label = "value"
+    elif swarm_label is None and yvar is not None:
         swarm_label = yvar
-    rawdata_axes.set_ylabel(swarm_label)
-
-
-
+        
     # Place contrast axes y-label.
     contrast_label_dict = {'mean_diff'    : "mean difference",
                            'median_diff'  : "median difference",
@@ -704,8 +701,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         contrast_axes.yaxis.set_label_position("right")
 
 
-    # Set the rawdata axes labels appropriately
-    rawdata_axes.set_ylabel(plot_kwargs["swarm_label"])
+    # Set the rawdata axes labels appropriately        
+    rawdata_axes.set_ylabel(swarm_label)
     rawdata_axes.set_xlabel("")
 
 
