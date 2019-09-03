@@ -19,7 +19,9 @@ Analyze your data with estimation statistics!
 News
 ----
 May 2019:
-  - v0.2.3 released. This is a fix for a bug that did not properly handle x-columns which were pandas Categorical objects. See the :doc:`release-notes`.
+  - v0.2.4 released. This is a patch for a set of bugs that mis-aligned Gardner-Altman plots, and also adds the capability to tweak the x-position of the Tufte gapped lines. See the :doc:`release-notes`.
+
+  - v0.2.3 released. This is a fix for a bug that did not properly handle x-columns which were pandas Categorical objects.
 
 April 2019:
   - v0.2.2 released. This is a minor bugfix that addressed an issue for an edge case where the mean or median difference was exactly zero.

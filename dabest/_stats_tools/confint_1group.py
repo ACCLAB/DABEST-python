@@ -47,12 +47,21 @@ def compute_1group_bootstraps(x, func, resamples=5000, random_seed=12345,
                              *args, **kwargs):
     """Bootstraps func(x), with the number of specified resamples."""
 
+    import numpy as np
+    
+    # Instantiate random seed.
+    np.random.seed(random_seed)
+    
     # Create bootstrap indexes.
     boot_indexes = create_bootstrap_indexes(x, resamples=resamples,
                                             random_seed=random_seed)
 
     out = [func(x[b], *args, **kwargs) for b in boot_indexes]
+    
     del boot_indexes
+    
+    np.random.seed()
+    
     return out
 
 
@@ -87,14 +96,13 @@ def summary_ci_1group(x, func, resamples=5000, alpha=0.05, random_seed=12345,
         Denotes the likelihood that the confidence interval produced
         _does not_ include the true summary statistic. When alpha = 0.05,
         a 95% confidence interval is produced.
-
     random_seed: int, default 12345
         `random_seed` is used to seed the random number generator during
         bootstrap resampling. This ensures that the confidence intervals
         reported are replicable.
-
+        
     sort_bootstraps: boolean, default True
-
+    
 
 
     Returns

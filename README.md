@@ -1,6 +1,10 @@
-# DABEST (Python)
-[![Travis CI](https://travis-ci.org/ACCLAB/DABEST-python.svg?branch=master)](https://travis-ci.org/ACCLAB/DABEST-python)
+# DABEST-Python
+[![Travis CI build status](https://travis-ci.org/ACCLAB/DABEST-python.svg?branch=master)](https://travis-ci.org/ACCLAB/DABEST-python)
+[![minimal Python version](https://img.shields.io/badge/Python%3E%3D-3.5-6666ff.svg)](https://www.anaconda.com/distribution/)
 [![PyPI version](https://badge.fury.io/py/dabest.svg)](https://badge.fury.io/py/dabest)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/dabest?color=bright-green)](https://pypistats.org/packages/dabest)
+[![Free-to-view citation](https://zenodo.org/badge/DOI/10.1038/s41592-019-0470-3.svg)](https://rdcu.be/bHhJ4)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause--Clear-orange.svg)](https://spdx.org/licenses/BSD-3-Clause-Clear.html)
 
 ## About
 
@@ -44,7 +48,7 @@ or -->
 ```shell
 pip install --upgrade dabest
 ```
-You can also clone this repo locally (see intstructions [here](https://help.github.com/articles/cloning-a-repository)).
+You can also [clone](https://help.github.com/articles/cloning-a-repository) this repo locally.
 
 Then, navigate to the cloned repo in the command line and run
 
@@ -54,7 +58,24 @@ pip install .
 
 ## Usage
 
-Please refer to the [documentation](https://acclab.github.io/DABEST-python-docs).
+```python3
+import pandas as pd
+import dabest
+
+# Load the iris dataset. Requires internet access.
+iris = pd.read_csv("https://github.com/mwaskom/seaborn-data/raw/master/iris.csv")
+
+# Load the above data into `dabest`.
+iris_dabest = dabest.load(data=iris, x="species", y="petal_width",
+                          idx=("setosa", "versicolor", "virginica"))
+
+# Produce a Cumming estimation plot.
+iris_dabest.mean_diff.plot();
+```
+![A Cumming estimation plot of petal width from the iris dataset](https://github.com/ACCLAB/DABEST-python/blob/master/iris.png)
+
+Please refer to the official [tutorial](https://acclab.github.io/DABEST-python-docs/tutorial.html) for more useful code snippets.
+
 
 ## How to cite
 
@@ -63,18 +84,24 @@ _Nature Methods June 2019_
 [https://dx.doi.org/0.1038/s41592-019-0470-3](https://dx.doi.org/0.1038/s41592-019-0470-3)
 
 *Joses Ho, Tayfun Tumkaya, Sameer Aryal, Hyungwon Choi, Adam Claridge-Chang*
+Nature Methods 2019, 1548-7105. [10.1038/s41592-019-0470-3](http://dx.doi.org/10.1038/s41592-019-0470-3)
+
+[Paywalled publisher site](https://www.nature.com/articles/s41592-019-0470-3); [Free-to-view PDF](https://rdcu.be/bHhJ4)
 
 
-
-## Matlab version
-
-There is also a [Matlab version](https://github.com/ACCLAB/DABEST-Matlab) of DABEST.
+## Bugs
+Please report any bugs on the [Github issue tracker](https://github.com/ACCLAB/DABEST-python/issues/new).
 
 
-## R version
+## Contributing
 
-R users can install [dabestr](https://github.com/ACCLAB/dabestr).
+All contributions are welcome; please read the [Guidelines for contributing](https://github.com/ACCLAB/DABEST-python/blob/master/CONTRIBUTING.md) first.
 
+We also have a [Code of Conduct](https://github.com/ACCLAB/DABEST-python/blob/master/CODE_OF_CONDUCT.md) to foster an inclusive and productive space.
+
+## Acknowledgements
+
+We would like to thank alpha testers from the [Claridge-Chang lab](https://www.claridgechang.net/): [Sangyu Xu](https://github.com/sangyu), [Xianyuan Zhang](https://github.com/XYZfar), [Farhan Mohammad](https://github.com/farhan8igib), Jurga Mituzaitė, and Stanislav Ott.
 
 
 ## Testing
@@ -84,11 +111,6 @@ To test DABEST, you will need to install [pytest](https://docs.pytest.org/en/lat
 Run `pytest` in the root directory of the source distribution. This runs the test suite in the folder `dabest/tests`. The test suite will ensure that the bootstrapping functions and the plotting functions perform as expected.
 
 
-## Bugs
+## DABEST in other languages
 
-Please report any bugs on the [Github issue tracker](https://github.com/ACCLAB/DABEST-python/issues/new).
-
-
-## Contributing
-
-All contributions are welcome. Please fork the [Github repo](https://github.com/ACCLAB/DABEST-python) and open a pull request.
+DABEST is also available in R ([dabestr](https://github.com/ACCLAB/dabestr)) and Matlab ([DABEST-Matlab](https://github.com/ACCLAB/DABEST-Matlab)).
