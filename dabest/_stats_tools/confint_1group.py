@@ -2,8 +2,28 @@
 # -*-coding: utf-8 -*-
 # Author: Joses Ho
 # Email : joseshowh@gmail.com
+"""
+A range of functions to compute bootstraps for a single sample.
+"""
 
+def create_bootstrap_indexes(array, resamples=5000, random_seed=12345):
+    """Given an array-like, returns a generator of bootstrap indexes
+    to be used for resampling.
+    """
+    import numpy as np
+    
+    # Set seed.
+    np.random.seed(random_seed)
+    
+    indexes = range(0, len(array))
 
+    out = (np.random.choice(indexes, len(indexes), replace=True)
+            for i in range(0, resamples))
+    
+    # Reset seed
+    np.random.seed()
+    
+    return out
 
 def compute_1group_jackknife(x, func, *args, **kwargs):
     """
@@ -20,22 +40,6 @@ def compute_1group_jackknife(x, func, *args, **kwargs):
 def compute_1group_acceleration(jack_dist):
     from . import confint_2group_diff as ci_2g
     return ci_2g._calc_accel(jack_dist)
-    
-    
-    
-def _create_bootstrap_indexes(array, resamples=5000):
-    """Given an array-like, returns a generator of bootstrap indexes
-    to be used for resampling.
-    """
-    import numpy as np
-    
-    indexes = range(0, len(array))
-
-    out = (np.random.choice(indexes, len(indexes), replace=True)
-            for i in range(0, resamples))
-    
-    return out
-
 
 
 
@@ -49,8 +53,9 @@ def compute_1group_bootstraps(x, func, resamples=5000, random_seed=12345,
     np.random.seed(random_seed)
     
     # Create bootstrap indexes.
-    boot_indexes = _create_bootstrap_indexes(x, resamples)
-    
+    boot_indexes = create_bootstrap_indexes(x, resamples=resamples,
+                                            random_seed=random_seed)
+
     out = [func(x[b], *args, **kwargs) for b in boot_indexes]
     
     del boot_indexes
@@ -123,11 +128,13 @@ def summary_ci_1group(x, func, resamples=5000, alpha=0.05, random_seed=12345,
     from . import confint_2group_diff as ci2g
     from numpy import sort as npsort
 
-    boots = compute_1group_bootstraps(x, func, resamples, random_seed) 
-    bias  = compute_1group_bias_correction(x, boots, func)
+    boots = compute_1group_bootstraps(x, func, resamples=resamples,
+                                      random_seed=random_seed,
+                                      *args, **kwargs)
+    bias = compute_1group_bias_correction(x, boots, func)
 
-    jk = compute_1group_jackknife(x, func)
-    accel = ci2g._calc_accel(jk)
+    jk = compute_1group_jackknife(x, func, *args, **kwargs)
+    accel = compute_1group_acceleration(jk)
     del jk
 
     ci_idx = ci2g.compute_interval_limits(bias, accel, resamples, alpha)
