@@ -41,12 +41,24 @@ class Dabest(object):
         if all([isinstance(i, str) for i in idx]):
             # flatten out idx.
             all_plot_groups = pd.unique([t for t in idx]).tolist()
+            if len(idx) > len(all_plot_groups):
+                err0 = '`idx` contains duplicated groups. Please remove any duplicates and try again.'
+                raise ValueError(err0)
+                
             # We need to re-wrap this idx inside another tuple so as to
             # easily loop thru each pairwise group later on.
             self.__idx = (idx,)
 
         elif all([isinstance(i, (tuple, list)) for i in idx]):
             all_plot_groups = pd.unique([tt for t in idx for tt in t]).tolist()
+            
+            actual_groups_given = sum([len(i) for i in idx])
+            
+            if actual_groups_given > len(all_plot_groups):
+                err0 = 'Groups are repeated across tuples,'
+                err1 = ' or a tuple has repeated groups in it.'
+                err2 = ' Please remove any duplicates and try again.'
+                raise ValueError(err0 + err1 + err2)
 
         else: # mix of string and tuple?
             err = 'There seems to be a problem with the idx you'
@@ -91,9 +103,14 @@ class Dabest(object):
             # check all the idx can be found in data_in[x]
             for g in all_plot_groups:
                 if g not in data_in[x].unique():
-                    raise IndexError('{0} is not a group in `{1}`.'.format(g, x))
+                    err0 = '"{0}" is not a group in the column `{1}`.'.format(g, x)
+                    err1 = " Please check `idx` and try again."
+                    raise IndexError(err0 + err1)
 
+            # Select only rows where the value in the `x` column 
+            # is found in `idx`.
             plot_data = data_in[data_in.loc[:, x].isin(all_plot_groups)].copy()
+            
             # plot_data.drop("index", inplace=True, axis=1)
 
             # Assign attributes
@@ -113,8 +130,10 @@ class Dabest(object):
             # First, check we have all columns in the dataset.
             for g in all_plot_groups:
                 if g not in data_in.columns:
-                    raise IndexError('{0} is not a column in `data`.'.format(g))
-
+                    err0 = '"{0}" is not a column in `data`.'.format(g)
+                    err1 = " Please check `idx` and try again."
+                    raise IndexError(err0 + err1)
+                    
             set_all_columns     = set(data_in.columns.tolist())
             set_all_plot_groups = set(all_plot_groups)
             id_vars = set_all_columns.difference(set_all_plot_groups)
