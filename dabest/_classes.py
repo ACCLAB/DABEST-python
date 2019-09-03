@@ -139,8 +139,8 @@ class Dabest(object):
                                                categories=all_plot_groups,
                                                ordered=True)
         
-        # Line 143 added in v0.2.4. 
-        plot_data.dropna(inplace=True)
+        # # The line below was added in v0.2.4, removed in v0.2.5.
+        # plot_data.dropna(inplace=True)
         
         self.__plot_data = plot_data
         
