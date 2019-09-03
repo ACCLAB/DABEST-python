@@ -14,7 +14,7 @@ A range of functions to compute various effect sizes.
 
 
 def two_group_difference(control, test, is_paired=False,
-                        effect_size="mean_diff"):
+                         effect_size="mean_diff"):
     """
     Computes the following metrics for control and test:
         - Unstandardized mean difference
