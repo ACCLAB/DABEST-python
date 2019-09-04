@@ -18,8 +18,11 @@ Analyze your data with estimation statistics!
 
 News
 ----
+September 2019:
+  - v0.2.5 released. This release addresses two feature requests, and also patches two bugs: one affecting the paired difference CIs, and one involving NaNs in unused/irrelevant columns. See the :doc:`release-notes`.
+
 May 2019:
-  - v0.2.4 released. This is a patch for a set of bugs that mis-aligned Gardner-Altman plots, and also adds the capability to tweak the x-position of the Tufte gapped lines. See the :doc:`release-notes`.
+  - v0.2.4 released. This is a patch for a set of bugs that mis-aligned Gardner-Altman plots, and also adds the capability to tweak the x-position of the Tufte gapped lines. 
 
   - v0.2.3 released. This is a fix for a bug that did not properly handle x-columns which were pandas Categorical objects.
 
