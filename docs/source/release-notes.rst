@@ -4,6 +4,20 @@
 Release Notes
 =============
 
+v0.2.5
+------
+
+This release addresses a number of bugs and feature improvements. There are no known breaking changes to the API; hence **all users are strongly encouraged to upgrade to the latest version**.
+
+Feature additions:
+  - Adding Ns of each group to the results DataFrame. (`Issue #45 <https://github.com/ACCLAB/DABEST-python/issues/45>`_)
+  - Auto-labelling the swarmplot rawdata axes y-label. (`Issue #51 <https://github.com/ACCLAB/DABEST-python/issues/51>`_)
+
+Bug-fixes: 
+  - Bug affecting calculation of paired difference confidence intervals. (`Issue #48 in ACCLAB/dabestr <https://github.com/ACCLAB/dabestr/issues/48>`_)
+  - NaNs in unused/unrelated columns would result in null results (`Issue #44 <https://github.com/ACCLAB/DABEST-python/issues/44>`_)
+
+
 v0.2.4
 ------
 
