@@ -1279,7 +1279,8 @@ class EffectSizeDataFrame(object):
         stats_columns = [c for c in results_df.columns
                          if c.startswith("statistic") or c.startswith("pvalue")]
 
-        default_cols = ['control', 'test', 'effect_size', 'is_paired',
+        default_cols = ['control', 'test', 'control_N', 'test_N',
+                        'effect_size', 'is_paired',
                         'difference', 'ci', 'bca_low', 'bca_high']
 
         cols_of_interest = default_cols + stats_columns
