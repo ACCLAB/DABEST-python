@@ -22,7 +22,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         swarm_ylim=None, contrast_ylim=None,
 
         custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
-        halfviolin_alpha=0.8, 
+        halfviolin_alpha=0.8,
 
         float_contrast=True,
         show_pairs=True,
@@ -258,10 +258,16 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Here, we hardcode some figure parameters.
     if float_contrast is True:
-        fig, axx = plt.subplots(ncols=2,
-                                gridspec_kw={"width_ratios": [2.5, 1],
-                                             "wspace": 0},
-                                **init_fig_kwargs)
+#        fig, axx = plt.subplots(ncols=2,
+#                                gridspec_kw={"width_ratios": [2.5, 1],
+#                                             "wspace": 0},
+#                                **init_fig_kwargs)
+        #  Bbox(x0=0.125, y0=0.125, x1=0.6785714285714286, y1=0.88)
+        fig, rawdata_axes = plt.subplots(**init_fig_kwargs)
+        axins = rawdata_axes.inset_axes([1, 0, 0.4, 1])
+        rawdata_axes.set_position([0.125, 0.125, 0.55, 0.75])
+        contrast_axes = axins
+        # TODO: implement check for user input axes instead of new fig
 
     else:
         fig, axx = plt.subplots(nrows=2,
@@ -273,9 +279,12 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         contrast_ax_ylim_low = list()
         contrast_ax_ylim_high = list()
         contrast_ax_ylim_tickintervals = list()
+        rawdata_axes  = axx[0]
+        contrast_axes = axx[1]
+        # TODO: implement inset axes for plots with two rows
 
-    rawdata_axes  = axx[0]
-    contrast_axes = axx[1]
+#    rawdata_axes  = axx[0]
+#    contrast_axes = axx[1]
 
     rawdata_axes.set_frame_on(False)
     contrast_axes.set_frame_on(False)
@@ -521,7 +530,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         _, contrast_xlim_max = contrast_axes.get_xlim()
 
         difference = float(results.difference[0])
-        
+
         if effect_size_type in ["mean_diff", "median_diff"]:
             # Align 0 of contrast_axes to reference group mean of rawdata_axes.
             # If the effect size is positive, shift the contrast axis up.
@@ -548,25 +557,25 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 which_std = 0
             temp_control = plot_data[plot_data[xvar] == current_control][yvar]
             temp_test    = plot_data[plot_data[xvar] == current_group][yvar]
-            
+
             stds = _compute_standardizers(temp_control, temp_test)
             if is_paired:
                 pooled_sd = stds[1]
             else:
                 pooled_sd = stds[0]
-            
+
             if effect_size_type == 'hedges_g':
                 gby_count   = plot_data.groupby(xvar).count()
                 len_control = gby_count.loc[current_control, yvar]
                 len_test    = gby_count.loc[current_group, yvar]
-                            
+
                 hg_correction_factor = _compute_hedges_correction_factor(len_control, len_test)
-                            
+
                 ylim_scale_factor = pooled_sd / hg_correction_factor
-                
+
             else:
                 ylim_scale_factor = pooled_sd
-                
+
             scaled_ylim = ((rawdata_axes.get_ylim() - control_group_summary) / ylim_scale_factor).tolist()
 
             contrast_axes.set_ylim(scaled_ylim)
@@ -596,7 +605,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             axx.hlines(ref,            # y-coordinates
                        0, xlimhigh,  # x-coordinates, start and end.
                        **reflines_kwargs)
-                        
+
             # Draw effect size line.
             axx.hlines(diff, effsize_line_start, xlimhigh,
                        **reflines_kwargs)
@@ -676,7 +685,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         swarm_label = "value"
     elif swarm_label is None and yvar is not None:
         swarm_label = yvar
-        
+
     # Place contrast axes y-label.
     contrast_label_dict = {'mean_diff'    : "mean difference",
                            'median_diff'  : "median difference",
@@ -699,7 +708,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         contrast_axes.yaxis.set_label_position("right")
 
 
-    # Set the rawdata axes labels appropriately        
+    # Set the rawdata axes labels appropriately
     rawdata_axes.set_ylabel(swarm_label)
     rawdata_axes.set_xlabel("")
 
