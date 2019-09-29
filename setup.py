@@ -35,54 +35,10 @@ except ImportError:
 
 
 
-def need_to_install(module, version):
-    desired_major_version = int(version.split('.')[0])
-    desired_minor_version = int(version.split('.')[1])
-
-    INSTALLED_VERSION_MAJOR = int(module.__version__.split('.')[0])
-    INSTALLED_VERSION_MINOR = int(module.__version__.split('.')[1])
-
-    if INSTALLED_VERSION_MAJOR < desired_major_version:
-        return True
-
-    elif INSTALLED_VERSION_MAJOR == desired_major_version and \
-         INSTALLED_VERSION_MINOR < desired_minor_version:
-        return True
-
-    else:
-        return False
-
-
-
-def check_dependencies():
-    from importlib import import_module
-
-    modules = {'numpy'      : '1.15',
-               'scipy'      : '1.2',
-               'statsmodels': '0.9', 
-               'pandas'     : '0.24',
-               'matplotlib' : '3.0',
-               'seaborn'    : '0.9'}
-    to_install = []
-
-    for module, version in modules.items():
-        try:
-            my_module = import_module(module)
-
-            if need_to_install(my_module, version):
-                to_install.append("{}=={}".format(module, version))
-
-        except ImportError:
-            to_install.append("{}=={}".format(module, version))
-
-    return to_install
 
 
 
 if __name__ == "__main__":
-
-    installs = check_dependencies()
-
     setup(
         name='dabest',
         author='Joses W. Ho',
@@ -93,7 +49,14 @@ if __name__ == "__main__":
         description=DESCRIPTION,
         long_description=LONG_DESCRIPTION,
         packages=find_packages(),
-        install_requires=installs,
+        install_requires=[
+            'numpy~=1.15',
+            'scipy~=1.2',
+            # 'statsmodels~=0.9',
+            'pandas<0.25',
+            'matplotlib~=3.0',
+            'seaborn~=0.9'
+        ],
         url='https://acclab.github.io/DABEST-python-docs',
         download_url='https://www.github.com/ACCLAB/DABEST-python',
         license='BSD 3-clause Clear License'
