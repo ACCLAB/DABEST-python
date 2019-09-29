@@ -6,6 +6,7 @@
 [![Free-to-view citation](https://zenodo.org/badge/DOI/10.1038/s41592-019-0470-3.svg)](https://rdcu.be/bHhJ4)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause--Clear-orange.svg)](https://spdx.org/licenses/BSD-3-Clause-Clear.html)
 
+
 ## About
 
 DABEST is a package for **D**ata **A**nalysis using **B**ootstrap-Coupled **EST**imation.
@@ -22,20 +23,11 @@ An estimation plot has two key features.
 
 DABEST powers [estimationstats.com](https://www.estimationstats.com/), allowing everyone access to high-quality estimation plots.
 
-## Requirements
-
-DABEST has been tested on Python 3.5, 3.6, and 3.7.
-
-In addition, the following packages are also required:
-- [numpy](https://www.numpy.org) (1.15)
-- [scipy](https://www.scipy.org) (1.2)
-- [matplotlib](https://www.matplotlib.org) (3.0)
-- [seaborn](https://seaborn.pydata.org) (0.9)
-- [pandas](https://pandas.pydata.org) (0.24).
-
-To obtain these package dependencies easily, it is highly recommended to download the [Anaconda distribution](https://www.continuum.io/downloads) of Python.
 
 ## Installation
+
+This package is tested on Python 3.5, 3.6, and 3.7.
+It is highly recommended to download the [Anaconda distribution](https://www.continuum.io/downloads) of Python in order to obtain the dependencies easily.
 
 You can install this package via `pip`.
 
@@ -55,6 +47,7 @@ Then, navigate to the cloned repo in the command line and run
 ```shell
 pip install .
 ```
+
 
 ## Usage
 
@@ -98,6 +91,7 @@ Please report any bugs on the [Github issue tracker](https://github.com/ACCLAB/D
 All contributions are welcome; please read the [Guidelines for contributing](https://github.com/ACCLAB/DABEST-python/blob/master/CONTRIBUTING.md) first.
 
 We also have a [Code of Conduct](https://github.com/ACCLAB/DABEST-python/blob/master/CODE_OF_CONDUCT.md) to foster an inclusive and productive space.
+
 
 ## Acknowledgements
 
