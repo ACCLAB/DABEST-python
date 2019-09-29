@@ -27,17 +27,6 @@ https://doi.org/10.1101/377978
 """
 
 
-# Modified from from setup.py in seaborn.
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
-
-
-
-
-
-
 if __name__ == "__main__":
     setup(
         name='dabest',
