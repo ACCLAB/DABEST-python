@@ -258,6 +258,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"])
 
     # TODO: double check that everything is working!
+    width_ratios_ga = [2.5, 1]
+    h_scpace_cummings = 0.3
     if plot_kwargs["ax"] is not None:
         ax = plot_kwargs["ax"]
         fig = ax.get_figure()
@@ -266,49 +268,55 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         if float_contrast is True:
 
 #            fig, rawdata_axes = plt.subplots(**init_fig_kwargs)
-            axins = rawdata_axes.inset_axes([1, 0, 0.4, 1])
-#            rawdata_axes.set_position([0.125, 0.125, 0.55, 0.75])
+            axins = rawdata_axes.inset_axes(
+                    [1, 0,
+                     width_ratios_ga[1]/width_ratios_ga[0], 1])
             rawdata_axes.set_position( # [l, b, w, h]
                     [ax_position.x0,
                      ax_position.y0,
-                     (ax_position.x1 - ax_position.x0) * 0.55,
-                     (ax_position.y1 - ax_position.y0) * 0.75])
+                     (ax_position.x1 - ax_position.x0)*(width_ratios_ga[0]/
+                                                        sum(width_ratios_ga)),
+                     (ax_position.y1 - ax_position.y0)])
 
             contrast_axes = axins
 
         else:
 #            fig, rawdata_axes = plt.subplots(**init_fig_kwargs)
-            axins = rawdata_axes.inset_axes([0, -1.3, 1, 1])
+            axins = rawdata_axes.inset_axes([0, -1 - h_scpace_cummings, 1, 1])
 #            rawdata_axes.set_position([0.125, 0.55, 0.775, 0.33])
+            plot_height = ((ax_position.y1 - ax_position.y0) /
+                           (2 + h_scpace_cummings))
             rawdata_axes.set_position(
                     [ax_position.x0,
-                     ax_position.y0 + 0.55 * (ax_position.y1 - ax_position.y0),
-                     (ax_position.x1 - ax_position.x0), #  * 0.775,
-                     (ax_position.y1 - ax_position.y0) * 0.33])
+                     ax_position.y0 + (1 + h_scpace_cummings) * plot_height,
+                     (ax_position.x1 - ax_position.x0),
+                     plot_height])
 
-    #        Bbox(x0=0.125, y0=0.12499999999999989, x1=0.9, y1=0.45326086956521733)
-
-            # If the contrast axes are NOT floating, create lists to store raw ylims
-            # and raw tick intervals, so that I can normalize their ylims later.
+            # If the contrast axes are NOT floating, create lists to store
+            # raw ylims and raw tick intervals, so that I can normalize
+            # their ylims later.
             contrast_ax_ylim_low = list()
             contrast_ax_ylim_high = list()
             contrast_ax_ylim_tickintervals = list()
         contrast_axes = axins
+        ax.contrast_axes = axins
 
     else:
         # Here, we hardcode some figure parameters.
         if float_contrast is True:
-            fig, axx = plt.subplots(ncols=2,
-                                    gridspec_kw={"width_ratios": [2.5, 1],
-                                                 "wspace": 0},
-                                    **init_fig_kwargs)
+            fig, axx = plt.subplots(
+                    ncols=2,
+                    gridspec_kw={"width_ratios": width_ratios_ga,
+                                 "wspace": 0},
+                                 **init_fig_kwargs)
 
         else:
             fig, axx = plt.subplots(nrows=2,
                                     gridspec_kw={"hspace": 0.3},
                                     **init_fig_kwargs)
-            # If the contrast axes are NOT floating, create lists to store raw ylims
-            # and raw tick intervals, so that I can normalize their ylims later.
+            # If the contrast axes are NOT floating, create lists to store
+            # raw ylims and raw tick intervals, so that I can normalize
+            # their ylims later.
             contrast_ax_ylim_low = list()
             contrast_ax_ylim_high = list()
             contrast_ax_ylim_tickintervals = list()
@@ -440,7 +448,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     # Take note of where the `control` groups are.
     ticks_to_skip   = np.cumsum([len(t) for t in idx])[:-1].tolist()
     ticks_to_skip.insert(0, 0)
-    # TODO: fix x-axis skip bug in inset axes
 
     # Then obtain the ticks where we have to plot the effect sizes.
     ticks_to_plot = [t for t in range(0, len(all_plot_groups))
@@ -692,7 +699,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         # Compute the end of each x-axes line.
         rightend_ticks = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
 
-        for ax in fig.axes:
+        for ax in [rawdata_axes, contrast_axes]:
             sns.despine(ax=ax, bottom=True)
 
             ylim = ax.get_ylim()
