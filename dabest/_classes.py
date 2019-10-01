@@ -44,16 +44,16 @@ class Dabest(object):
             if len(idx) > len(all_plot_groups):
                 err0 = '`idx` contains duplicated groups. Please remove any duplicates and try again.'
                 raise ValueError(err0)
-
+                
             # We need to re-wrap this idx inside another tuple so as to
             # easily loop thru each pairwise group later on.
             self.__idx = (idx,)
 
         elif all([isinstance(i, (tuple, list)) for i in idx]):
             all_plot_groups = pd.unique([tt for t in idx for tt in t]).tolist()
-
+            
             actual_groups_given = sum([len(i) for i in idx])
-
+            
             if actual_groups_given > len(all_plot_groups):
                 err0 = 'Groups are repeated across tuples,'
                 err1 = ' or a tuple has repeated groups in it.'
@@ -107,10 +107,10 @@ class Dabest(object):
                     err1 = " Please check `idx` and try again."
                     raise IndexError(err0 + err1)
 
-            # Select only rows where the value in the `x` column
+            # Select only rows where the value in the `x` column 
             # is found in `idx`.
             plot_data = data_in[data_in.loc[:, x].isin(all_plot_groups)].copy()
-
+            
             # plot_data.drop("index", inplace=True, axis=1)
 
             # Assign attributes
@@ -133,7 +133,7 @@ class Dabest(object):
                     err0 = '"{0}" is not a column in `data`.'.format(g)
                     err1 = " Please check `idx` and try again."
                     raise IndexError(err0 + err1)
-
+                    
             set_all_columns     = set(data_in.columns.tolist())
             set_all_plot_groups = set(all_plot_groups)
             id_vars = set_all_columns.difference(set_all_plot_groups)
@@ -143,26 +143,26 @@ class Dabest(object):
                                 value_vars=all_plot_groups,
                                 value_name=self.__yvar,
                                 var_name=self.__xvar)
-
+        
         # Lines 131 to 140 added in v0.2.3.
-        # Fixes a bug that jammed up when the xvar column was already
+        # Fixes a bug that jammed up when the xvar column was already 
         # a pandas Categorical. Now we check for this and act appropriately.
-        if isinstance(plot_data[self.__xvar].dtype,
+        if isinstance(plot_data[self.__xvar].dtype, 
                       pd.CategoricalDtype) is True:
             plot_data[self.__xvar].cat.remove_unused_categories(inplace=True)
-            plot_data[self.__xvar].cat.reorder_categories(all_plot_groups,
-                                                          ordered=True,
+            plot_data[self.__xvar].cat.reorder_categories(all_plot_groups, 
+                                                          ordered=True, 
                                                           inplace=True)
         else:
             plot_data.loc[:, self.__xvar] = pd.Categorical(plot_data[self.__xvar],
                                                categories=all_plot_groups,
                                                ordered=True)
-
+        
         # # The line below was added in v0.2.4, removed in v0.2.5.
         # plot_data.dropna(inplace=True)
-
+        
         self.__plot_data = plot_data
-
+        
         self.__all_plot_groups = all_plot_groups
 
 
@@ -355,7 +355,6 @@ class TwoGroupsEffectSize(object):
 
         """
         Compute the effect size between two groups.
-
         Parameters
         ----------
         control : array-like
@@ -374,47 +373,44 @@ class TwoGroupsEffectSize(object):
             `random_seed` is used to seed the random number generator during
             bootstrap resampling. This ensures that the confidence intervals
             reported are replicable.
-
-
         Returns
         -------
         A :py:class:`TwoGroupEffectSize` object.
-
+        
         difference : float
             The effect size of the difference between the control and the test.
-
+        
         effect_size : string
             The type of effect size reported.
-
+        
         is_paired : boolean
             Whether or not the difference is paired (ie. repeated measures).
-
+            
         ci : float
             Returns the width of the confidence interval, in percent.
-
+            
         alpha : float
             Returns the significance level of the statistical test as a float
             between 0 and 1.
-
+            
         resamples : int
             The number of resamples performed during the bootstrap procedure.
-
         bootstraps : nmupy ndarray
             The generated bootstraps of the effect size.
-
+            
         random_seed : int
             The number used to initialise the numpy random seed generator, ie.
             `seed_value` from `numpy.random.seed(seed_value)` is returned.
-
+            
         bca_low, bca_high : float
             The bias-corrected and accelerated confidence interval lower limit
             and upper limits, respectively.
-
+            
         pct_low, pct_high : float
-            The percentile confidence interval lower limit and upper limits,
+            The percentile confidence interval lower limit and upper limits, 
             respectively.
-
-
+            
+            
         Examples
         --------
         >>> import numpy as np
@@ -428,7 +424,7 @@ class TwoGroupsEffectSize(object):
         The unpaired mean difference is -0.253 [95%CI -0.782, 0.241]
         5000 bootstrap samples. The confidence interval is bias-corrected
         and accelerated.
-        >>> effsize.to_dict()
+        >>> effsize.to_dict() 
         {'alpha': 0.05,
          'bca_high': 0.2413346581369784,
          'bca_interval_idx': (109, 4858),
@@ -630,7 +626,7 @@ class TwoGroupsEffectSize(object):
             # Mann-Whitney test: Non parametric,
             # does not assume normality of distributions
             try:
-                mann_whitney = spstats.mannwhitneyu(control, test,
+                mann_whitney = spstats.mannwhitneyu(control, test, 
                                                     alternative='two-sided')
                 self.__pvalue_mann_whitney = mann_whitney.pvalue
                 self.__statistic_mann_whitney = mann_whitney.statistic
@@ -1013,7 +1009,7 @@ class EffectSizeDataFrame(object):
                 r_dict["test"]      = tname
                 r_dict["control_N"] = int(len(control))
                 r_dict["test_N"]    = int(len(test))
-
+                
                 out.append(r_dict)
 
                 if j == len(idx)-1 and ix == len(current_tuple)-2:
@@ -1094,7 +1090,7 @@ class EffectSizeDataFrame(object):
             swarm_ylim=None, contrast_ylim=None,
 
             custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
-            halfviolin_alpha=0.8,
+            halfviolin_alpha=0.8, 
 
             float_contrast=True,
             show_pairs=True,
@@ -1113,7 +1109,6 @@ class EffectSizeDataFrame(object):
             legend_kwargs=None):
         """
         Creates an estimation plot for the effect size of interest.
-
         Parameters
         ----------
         color_col : string, default None
@@ -1156,7 +1151,7 @@ class EffectSizeDataFrame(object):
             curves by the desired proportion. Uses `seaborn.desaturate()` to
             acheive this.
         halfviolin_alpha : float, default 0.8
-            The alpha (transparency) level of the half-violin bootstrap curves.
+            The alpha (transparency) level of the half-violin bootstrap curves.            
         float_contrast : boolean, default True
             Whether or not to display the halfviolin bootstrapped difference
             distribution alongside the raw data.
@@ -1172,7 +1167,7 @@ class EffectSizeDataFrame(object):
             instead. If 'None', the summaries are not shown.
         group_summaries_offset : float, default 0.1
             If group summaries are displayed, they will be offset from the raw
-            data swarmplot groups by this value.
+            data swarmplot groups by this value. 
         fig_size : tuple, default None
             The desired dimensions of the figure as a (length, width) tuple.
         dpi : int, default 100
@@ -1206,49 +1201,33 @@ class EffectSizeDataFrame(object):
             `legend` command here, as a dict. If None, the following keywords
             are passed to matplotlib.Axes.legend : {'loc':'upper left',
             'frameon':False}.
-
-
         Returns
         -------
         A :class:`matplotlib.figure.Figure` with 2 Axes.
-
         The first axes (accessible with ``FigName.axes[0]``) contains the rawdata swarmplot; the second axes (accessible with ``FigName.axes[1]``) has the bootstrap distributions and effect sizes (with confidence intervals) plotted on it.
-
         Examples
         --------
         Create a Gardner-Altman estimation plot for the mean difference.
-
         >>> my_data = dabest.load(df, idx=("Control 1", "Test 1"))
         >>> fig1 = my_data.mean_diff.plot()
-
         Create a Gardner-Altman plot for the Hedges' g effect size.
-
         >>> fig2 = my_data.hedges_g.plot()
-
         Create a Cumming estimation plot for the mean difference.
-
         >>> fig3 = my_data.mean_diff.plot(float_contrast=True)
-
         Create a paired Gardner-Altman plot.
-
         >>> my_data_paired = dabest.load(df, idx=("Control 1", "Test 1"),
         ...                              paired=True)
         >>> fig4 = my_data_paired.mean_diff.plot()
-
         Create a multi-group Cumming plot.
-
         >>> my_multi_groups = dabest.load(df, idx=(("Control 1", "Test 1"),
         ...                                        ("Control 2", "Test 2"))
         ...                               )
         >>> fig5 = my_multi_groups.mean_diff.plot()
-
         Create a shared control Cumming plot.
-
         >>> my_shared_control = dabest.load(df, idx=("Control 1", "Test 1",
         ...                                          "Test 2", "Test 3")
         ...                                 )
         >>> fig6 = my_shared_control.mean_diff.plot()
-
         """
 
         from .plotter import EffectSizeDataFramePlotter

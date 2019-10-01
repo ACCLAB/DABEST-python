@@ -22,7 +22,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         swarm_ylim=None, contrast_ylim=None,
 
         custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
-        halfviolin_alpha=0.8,
+        halfviolin_alpha=0.8, 
 
         float_contrast=True,
         show_pairs=True,
@@ -257,7 +257,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     # sns.set(context="talk", style='ticks')
     init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"])
 
-    # TODO: double check that everything is working!
     width_ratios_ga = [2.5, 1]
     h_scpace_cummings = 0.3
     if plot_kwargs["ax"] is not None:
@@ -266,24 +265,20 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         ax_position = ax.get_position()  # [[x0, y0], [x1, y1]]
         rawdata_axes = ax
         if float_contrast is True:
-
-#            fig, rawdata_axes = plt.subplots(**init_fig_kwargs)
             axins = rawdata_axes.inset_axes(
                     [1, 0,
                      width_ratios_ga[1]/width_ratios_ga[0], 1])
-            rawdata_axes.set_position( # [l, b, w, h]
+            rawdata_axes.set_position(  # [l, b, w, h]
                     [ax_position.x0,
                      ax_position.y0,
-                     (ax_position.x1 - ax_position.x0)*(width_ratios_ga[0]/
-                                                        sum(width_ratios_ga)),
+                     (ax_position.x1 - ax_position.x0) * (width_ratios_ga[0] /
+                                                         sum(width_ratios_ga)),
                      (ax_position.y1 - ax_position.y0)])
 
             contrast_axes = axins
 
         else:
-#            fig, rawdata_axes = plt.subplots(**init_fig_kwargs)
             axins = rawdata_axes.inset_axes([0, -1 - h_scpace_cummings, 1, 1])
-#            rawdata_axes.set_position([0.125, 0.55, 0.775, 0.33])
             plot_height = ((ax_position.y1 - ax_position.y0) /
                            (2 + h_scpace_cummings))
             rawdata_axes.set_position(
@@ -568,7 +563,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         _, contrast_xlim_max = contrast_axes.get_xlim()
 
         difference = float(results.difference[0])
-
+        
         if effect_size_type in ["mean_diff", "median_diff"]:
             # Align 0 of contrast_axes to reference group mean of rawdata_axes.
             # If the effect size is positive, shift the contrast axis up.
@@ -595,25 +590,25 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 which_std = 0
             temp_control = plot_data[plot_data[xvar] == current_control][yvar]
             temp_test    = plot_data[plot_data[xvar] == current_group][yvar]
-
+            
             stds = _compute_standardizers(temp_control, temp_test)
             if is_paired:
                 pooled_sd = stds[1]
             else:
                 pooled_sd = stds[0]
-
+            
             if effect_size_type == 'hedges_g':
                 gby_count   = plot_data.groupby(xvar).count()
                 len_control = gby_count.loc[current_control, yvar]
                 len_test    = gby_count.loc[current_group, yvar]
-
+                            
                 hg_correction_factor = _compute_hedges_correction_factor(len_control, len_test)
-
+                            
                 ylim_scale_factor = pooled_sd / hg_correction_factor
-
+                
             else:
                 ylim_scale_factor = pooled_sd
-
+                
             scaled_ylim = ((rawdata_axes.get_ylim() - control_group_summary) / ylim_scale_factor).tolist()
 
             contrast_axes.set_ylim(scaled_ylim)
@@ -643,7 +638,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             axx.hlines(ref,            # y-coordinates
                        0, xlimhigh,  # x-coordinates, start and end.
                        **reflines_kwargs)
-
+                        
             # Draw effect size line.
             axx.hlines(diff, effsize_line_start, xlimhigh,
                        **reflines_kwargs)
@@ -699,7 +694,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         # Compute the end of each x-axes line.
         rightend_ticks = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
 
-        for ax in [rawdata_axes, contrast_axes]:
+        for ax in fig.axes:
             sns.despine(ax=ax, bottom=True)
 
             ylim = ax.get_ylim()
@@ -723,7 +718,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         swarm_label = "value"
     elif swarm_label is None and yvar is not None:
         swarm_label = yvar
-
+        
     # Place contrast axes y-label.
     contrast_label_dict = {'mean_diff'    : "mean difference",
                            'median_diff'  : "median difference",
@@ -746,7 +741,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         contrast_axes.yaxis.set_label_position("right")
 
 
-    # Set the rawdata axes labels appropriately
+    # Set the rawdata axes labels appropriately        
     rawdata_axes.set_ylabel(swarm_label)
     rawdata_axes.set_xlabel("")
 
