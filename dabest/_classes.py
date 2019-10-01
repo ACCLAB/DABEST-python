@@ -1217,38 +1217,38 @@ class EffectSizeDataFrame(object):
         Examples
         --------
         Create a Gardner-Altman estimation plot for the mean difference.
-        
+
         >>> my_data = dabest.load(df, idx=("Control 1", "Test 1"))
         >>> fig1 = my_data.mean_diff.plot()
-        
+
         Create a Gardner-Altman plot for the Hedges' g effect size.
-        
+
         >>> fig2 = my_data.hedges_g.plot()
-        
+
         Create a Cumming estimation plot for the mean difference.
-        
+
         >>> fig3 = my_data.mean_diff.plot(float_contrast=True)
-        
+
         Create a paired Gardner-Altman plot.
-        
+
         >>> my_data_paired = dabest.load(df, idx=("Control 1", "Test 1"),
         ...                              paired=True)
         >>> fig4 = my_data_paired.mean_diff.plot()
-        
+
         Create a multi-group Cumming plot.
-        
+
         >>> my_multi_groups = dabest.load(df, idx=(("Control 1", "Test 1"),
         ...                                        ("Control 2", "Test 2"))
         ...                               )
         >>> fig5 = my_multi_groups.mean_diff.plot()
-        
+
         Create a shared control Cumming plot.
-        
+
         >>> my_shared_control = dabest.load(df, idx=("Control 1", "Test 1",
         ...                                          "Test 2", "Test 3")
         ...                                 )
         >>> fig6 = my_shared_control.mean_diff.plot()
-        
+
         """
 
         from .plotter import EffectSizeDataFramePlotter
