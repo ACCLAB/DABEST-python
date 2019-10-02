@@ -1178,8 +1178,8 @@ class EffectSizeDataFrame(object):
         dpi : int, default 100
             The dots per inch of the resulting figure.
         ax : matplotlib.Axes, default None
-            Provide an existing axes for the plots to be created. If no axes
-            specified, a new figure will be created with the plot.
+            Provide an existing Axes for the plots to be created. If no Axes is
+            specified, a new matplotlib Figure will be created.
         swarmplot_kwargs : dict, default None
             Pass any keyword arguments accepted by the seaborn `swarmplot`
             command here, as a dict. If None, the following keywords are
