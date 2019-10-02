@@ -258,7 +258,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"])
 
     width_ratios_ga = [2.5, 1]
-    h_scpace_cummings = 0.3
+    h_space_cummings = 0.3
     if plot_kwargs["ax"] is not None:
         ax = plot_kwargs["ax"]
         fig = ax.get_figure()
@@ -278,12 +278,12 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_axes = axins
 
         else:
-            axins = rawdata_axes.inset_axes([0, -1 - h_scpace_cummings, 1, 1])
+            axins = rawdata_axes.inset_axes([0, -1 - h_space_cummings, 1, 1])
             plot_height = ((ax_position.y1 - ax_position.y0) /
-                           (2 + h_scpace_cummings))
+                           (2 + h_space_cummings))
             rawdata_axes.set_position(
                     [ax_position.x0,
-                     ax_position.y0 + (1 + h_scpace_cummings) * plot_height,
+                     ax_position.y0 + (1 + h_space_cummings) * plot_height,
                      (ax_position.x1 - ax_position.x0),
                      plot_height])
 
