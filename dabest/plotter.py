@@ -260,10 +260,15 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     width_ratios_ga = [2.5, 1]
     h_space_cummings = 0.3
     if plot_kwargs["ax"] is not None:
-        ax = plot_kwargs["ax"]
-        fig = ax.get_figure()
-        ax_position = ax.get_position()  # [[x0, y0], [x1, y1]]
-        rawdata_axes = ax
+        # New in v0.2.6.
+        # Use inset axes to create the estimation plot inside a single axes.
+        # Author: Adam L Nekimken. (PR #73)
+        inset_contrast = True
+        rawdata_axes = plot_kwargs["ax"]
+        ax_position = rawdata_axes.get_position()  # [[x0, y0], [x1, y1]]
+        
+        fig = rawdata_axes.get_figure()
+        
         if float_contrast is True:
             axins = rawdata_axes.inset_axes(
                     [1, 0,
