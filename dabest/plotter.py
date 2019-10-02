@@ -299,9 +299,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_ax_ylim_high = list()
             contrast_ax_ylim_tickintervals = list()
         contrast_axes = axins
-        ax.contrast_axes = axins
+        rawdata_axes.contrast_axes = axins
 
     else:
+        inset_contrast = False
         # Here, we hardcode some figure parameters.
         if float_contrast is True:
             fig, axx = plt.subplots(
