@@ -1103,6 +1103,7 @@ class EffectSizeDataFrame(object):
 
             fig_size=None,
             dpi=100,
+            ax=None,
 
             swarmplot_kwargs=None,
             violinplot_kwargs=None,
@@ -1176,6 +1177,9 @@ class EffectSizeDataFrame(object):
             The desired dimensions of the figure as a (length, width) tuple.
         dpi : int, default 100
             The dots per inch of the resulting figure.
+        ax : matplotlib.Axes, default None
+            Provide an existing axes for the plots to be created. If no axes
+            specified, a new figure will be created with the plot.
         swarmplot_kwargs : dict, default None
             Pass any keyword arguments accepted by the seaborn `swarmplot`
             command here, as a dict. If None, the following keywords are

@@ -31,6 +31,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         fig_size=None,
         dpi=100,
+        ax=None,
 
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
@@ -256,26 +257,67 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     # sns.set(context="talk", style='ticks')
     init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"])
 
-    # Here, we hardcode some figure parameters.
-    if float_contrast is True:
-        fig, axx = plt.subplots(ncols=2,
-                                gridspec_kw={"width_ratios": [2.5, 1],
-                                             "wspace": 0},
-                                **init_fig_kwargs)
+    width_ratios_ga = [2.5, 1]
+    h_scpace_cummings = 0.3
+    if plot_kwargs["ax"] is not None:
+        ax = plot_kwargs["ax"]
+        fig = ax.get_figure()
+        ax_position = ax.get_position()  # [[x0, y0], [x1, y1]]
+        rawdata_axes = ax
+        if float_contrast is True:
+            axins = rawdata_axes.inset_axes(
+                    [1, 0,
+                     width_ratios_ga[1]/width_ratios_ga[0], 1])
+            rawdata_axes.set_position(  # [l, b, w, h]
+                    [ax_position.x0,
+                     ax_position.y0,
+                     (ax_position.x1 - ax_position.x0) * (width_ratios_ga[0] /
+                                                         sum(width_ratios_ga)),
+                     (ax_position.y1 - ax_position.y0)])
+
+            contrast_axes = axins
+
+        else:
+            axins = rawdata_axes.inset_axes([0, -1 - h_scpace_cummings, 1, 1])
+            plot_height = ((ax_position.y1 - ax_position.y0) /
+                           (2 + h_scpace_cummings))
+            rawdata_axes.set_position(
+                    [ax_position.x0,
+                     ax_position.y0 + (1 + h_scpace_cummings) * plot_height,
+                     (ax_position.x1 - ax_position.x0),
+                     plot_height])
+
+            # If the contrast axes are NOT floating, create lists to store
+            # raw ylims and raw tick intervals, so that I can normalize
+            # their ylims later.
+            contrast_ax_ylim_low = list()
+            contrast_ax_ylim_high = list()
+            contrast_ax_ylim_tickintervals = list()
+        contrast_axes = axins
+        ax.contrast_axes = axins
 
     else:
-        fig, axx = plt.subplots(nrows=2,
-                                gridspec_kw={"hspace": 0.3},
-                                **init_fig_kwargs)
+        # Here, we hardcode some figure parameters.
+        if float_contrast is True:
+            fig, axx = plt.subplots(
+                    ncols=2,
+                    gridspec_kw={"width_ratios": width_ratios_ga,
+                                 "wspace": 0},
+                                 **init_fig_kwargs)
 
-        # If the contrast axes are NOT floating, create lists to store raw ylims
-        # and raw tick intervals, so that I can normalize their ylims later.
-        contrast_ax_ylim_low = list()
-        contrast_ax_ylim_high = list()
-        contrast_ax_ylim_tickintervals = list()
+        else:
+            fig, axx = plt.subplots(nrows=2,
+                                    gridspec_kw={"hspace": 0.3},
+                                    **init_fig_kwargs)
+            # If the contrast axes are NOT floating, create lists to store
+            # raw ylims and raw tick intervals, so that I can normalize
+            # their ylims later.
+            contrast_ax_ylim_low = list()
+            contrast_ax_ylim_high = list()
+            contrast_ax_ylim_tickintervals = list()
 
-    rawdata_axes  = axx[0]
-    contrast_axes = axx[1]
+        rawdata_axes  = axx[0]
+        contrast_axes = axx[1]
 
     rawdata_axes.set_frame_on(False)
     contrast_axes.set_frame_on(False)
