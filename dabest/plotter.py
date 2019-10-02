@@ -694,7 +694,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         # Compute the end of each x-axes line.
         rightend_ticks = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
 
-        for ax in fig.axes:
+        for ax in [rawdata_axes, contrast_axes]:
             sns.despine(ax=ax, bottom=True)
 
             ylim = ax.get_ylim()
