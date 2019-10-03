@@ -460,7 +460,7 @@ class TwoGroupsEffectSize(object):
          'statistic_wilcoxon': nan}
         """
 
-        from numpy import array, isnan
+        from numpy import array, isnan, isinf
         from numpy import sort as npsort
         from numpy.random import choice, seed
 
@@ -522,6 +522,20 @@ class TwoGroupsEffectSize(object):
                             control, test, is_paired, effect_size,
                             resamples, random_seed)
         self.__bootstraps = npsort(bootstraps)
+        
+        # Added in v0.2.6.
+        # Raises a UserWarning if there are any infiinities in the bootstraps.
+        num_infinities = len(self.__bootstraps[isinf(self.__bootstraps)])
+        
+        if num_infinities > 0:
+            warn_msg = "There are {} bootstrap(s) that are not defined. "\
+            "This is likely due to smaple sample sizes. "\
+            "The values in a bootstrap for a group will be more likely "\
+            "to be all equal, with a resulting variance of zero. "\
+            "The computation of Cohen's d and Hedges' g thus "\
+            "involved a division by zero. "
+            warnings.warn(warn_msg.format(num_infinities), 
+                          category=UserWarning)
 
         self.__bias_correction = ci2g.compute_meandiff_bias_correction(
                                     self.__bootstraps, self.__difference)

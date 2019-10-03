@@ -159,7 +159,24 @@ def compute_bootstrapped_diff(x0, x1, is_paired, effect_size,
 
     # reset seed
     np.random.seed()
-
+    
+    # check whether there are any infinities in the bootstrap,
+    # which likely indicates the sample sizes are too small as
+    # the computation of Cohen's d and Hedges' g necessitated 
+    # a division by zero.
+    # Added in v0.2.6.
+    
+    # num_infinities = len(out[np.isinf(out)])
+    # print(num_infinities)
+    # if num_infinities > 0:
+    #     warn_msg = "There are {} bootstraps that are not defined. "\
+    #     "This is likely due to smaple sample sizes. "\
+    #     "The values in a bootstrap for a group will be more likely "\
+    #     "to be all equal, with a resulting variance of zero. "\
+    #     "The computation of Cohen's d and Hedges' g will therefore "\
+    #     "involved a division by zero. "
+    #     warnings.warn(warn_msg.format(num_infinities), category="UserWarning")
+        
     return out
 
 

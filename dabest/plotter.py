@@ -471,7 +471,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         current_ci_high   = results.bca_high[j]
 
         # Create the violinplot.
-        v = contrast_axes.violinplot(current_bootstrap,
+        # New in v0.2.6: drop negative infinities before plotting.
+        v = contrast_axes.violinplot(current_bootstrap[~np.isinf(current_bootstrap)],
                                      positions=[tick],
                                      **violinplot_kwargs)
         # Turn the violinplot into half, and color it the same as the swarmplot.
