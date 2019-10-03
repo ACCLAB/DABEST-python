@@ -1271,7 +1271,7 @@ class EffectSizeDataFrame(object):
         
         Creating estimation plots in individual panels of a figure.
         
-        >>> f, axx = plt.subplots(nrows=2, ncols = 2, figsize=(15, 15))
+        >>> f, axx = plt.subplots(nrows=2, ncols=2, figsize=(15, 15))
         >>> my_data.mean_diff.plot(ax=axx.flat[0])
         >>> my_data_paired.mean_diff.plot(ax=axx.flat[1])
         >>> my_shared_control.mean_diff.plot(ax=axx.flat[2])
