@@ -1284,9 +1284,10 @@ effect size differences.
 
 .. image:: _images/tutorial_75_0.png
 
+.. _inset_plot:
 
-Creating estimation plots in existing axes.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating estimation plots in existing axes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 *Implemented in v0.2.6 by Adam Nekimken.*
 

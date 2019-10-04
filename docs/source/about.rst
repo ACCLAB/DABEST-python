@@ -11,6 +11,15 @@ Authors
 
 To find out more about the authors’ research, please visit the `Claridge-Chang lab webpage <http://www.claridgechang.net/>`_.
 
+Contributors
+------------
+
+- Mason Malone (`@MasonM <https://github.com/MasonM>`_) with `PR #30 <https://github.com/ACCLAB/DABEST-python/pull/30>`_:  Fix plot error when effect size is 0
+
+- Matthew Edwards (`@mje-nz <https://github.com/mje-nz>`_) with `PR #71 <https://github.com/ACCLAB/DABEST-python/pull/30>`_: Specify dependencies correctly in ``setup.py``. 
+
+- Adam Nekimken (`@anekimken <https://github.com/anekimken>`_) with `PR #73 <https://github.com/ACCLAB/DABEST-python/pull/73>`_: Implement inset axes so estimation plots can be plotted on a pre-determined :py:mod:`matplotlib` :py:class:`Axes` object.
+
 Typography
 ----------
 

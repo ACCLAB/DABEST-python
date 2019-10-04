@@ -4,10 +4,21 @@
 Release Notes
 =============
 
-v0.2.5
+v0.2.6
 ------
 
 This release addresses a number of bugs and feature improvements. There are no known breaking changes to the API; hence **all users are strongly encouraged to upgrade to the latest version**.
+
+Feature additions:
+  - It is now possible to specify a pre-determined :py:mod:`matplotlib` :py:class:`Axes` to create the estimation plot in. See the new section in the tutorial for more information. (`Pull request #73 <https://github.com/ACCLAB/DABEST-python/pull/73>`_; thanks to Adam Nekimken (`@anekimken <https://github.com/anekimken>`_).
+  - 
+
+
+Bug-fixes: 
+  - Ensure all dependencies are installed along with DABEST. (`Pull request #71 <https://github.com/ACCLAB/DABEST-python/pull/71>`_; thanks to Matthew Edwards (`@mje-nz <https://github.com/mje-nz>`_).
+
+v0.2.5
+------
 
 Feature additions:
   - Adding Ns of each group to the results DataFrame. (`Issue #45 <https://github.com/ACCLAB/DABEST-python/issues/45>`_)
@@ -35,7 +46,7 @@ This release fixes a bug that did not handle when the supplied ``x`` was a :py:m
 v0.2.2
 ------
 
-This release fixes a `bug <https://github.com/ACCLAB/DABEST-python/pull/30>`_ that has a mean difference or median difference of exactly 0.
+This release fixes a `bug <https://github.com/ACCLAB/DABEST-python/pull/30>`_ that has a mean difference or median difference of exactly 0. (`Pull request #73 <https://github.com/ACCLAB/DABEST-python/pull/73>`_; thanks to Mason Malone (`@MasonM <https://github.com/MasonM>`_).
 
 
 v0.2.1
