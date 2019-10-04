@@ -25,7 +25,7 @@ Load Libraries
 Create dataset for demo
 -----------------------
 
-Here, we create a dataset to illustrate how ``dabest`` functions. In
+Here, we create a dataset to illustrate how DABEST functions. In
 this dataset, each column corresponds to a group of observations.
 
 .. code-block:: python3
@@ -207,7 +207,7 @@ list.
 
     two_groups_unpaired = dabest.load(df, idx=("Control 1", "Test 1"), resamples=5000)
 
-Calling this ``Dabest`` object gives you a gentle greeting, as well as
+Calling this :py:class:`Dabest`; object gives you a gentle greeting, as well as
 the comparisons that can be computed.
 
 .. code-block:: python3
@@ -304,7 +304,7 @@ produced.
 Effect sizes
 ------------
 
-``dabest`` now features a range of effect sizes: - the mean difference
+DABEST now features a range of effect sizes: - the mean difference
 (``mean_diff``) - the median difference (``median_diff``) - `Cohen's
 *d* <https://en.wikipedia.org/wiki/Effect_size#Cohen's_d>`__
 (``cohens_d``) - `Hedges'
@@ -313,7 +313,7 @@ Effect sizes
 delta <https://en.wikipedia.org/wiki/Effect_size#Effect_size_for_ordinal_data>`__
 (``cliffs_delta``)
 
-Each of these are attributes of the ``Dabest`` object.
+Each of these are attributes of the :py:class:`Dabest` object.
 
 .. code-block:: python3
   :linenos:
@@ -719,7 +719,7 @@ Both Gardner-Altman and Cumming plots support this.
 .. image:: _images/tutorial_34_0.png
 
 
-The ``dabest`` package also implements a range of estimation plot
+The DABEST package also implements a range of estimation plot
 designs aimed at depicting common experimental designs.
 
 The **multi-two-group estimation plot** tiles two or more Cumming plots
@@ -857,7 +857,7 @@ to ``idx`` has more than two data columns.
 .. image:: _images/tutorial_43_0.png
 
 
-``dabest`` thus empowers you to robustly perform and elegantly present
+DABEST thus empowers you to robustly perform and elegantly present
 complex visualizations and statistics.
 
 .. code-block:: python3
@@ -952,7 +952,7 @@ complex visualizations and statistics.
 Using long (aka 'melted') data frames
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``dabest`` can also work with 'melted' or 'long' data. This term is
+DABEST can also work with 'melted' or 'long' data. This term is
 so used because each row will now correspond to a single datapoint, with
 one column carrying the value and other columns carrying 'metadata'
 describing that datapoint.
@@ -1240,7 +1240,7 @@ better outcome), you can simply invert the tuple passed to
 You can add minor ticks and also change the tick frequency by accessing
 the axes directly.
 
-Each estimation plot produced by ``dabest`` has 2 axes. The first one
+The estimation plot produced by ``dabest.plot()`` has 2 axes. The first one
 contains the rawdata swarmplot; the second one contains the bootstrap
 effect size differences.
 
@@ -1343,7 +1343,7 @@ Applying style sheets
 
 *Implemented in v0.2.0*.
 
-``dabest`` can now apply `matplotlib style
+DABEST can now apply `matplotlib style
 sheets <https://matplotlib.org/tutorials/introductory/customizing.html>`__
 to estimation plots. You can refer to this
 `gallery <https://matplotlib.org/3.0.3/gallery/style_sheets/style_sheets_reference.html>`__

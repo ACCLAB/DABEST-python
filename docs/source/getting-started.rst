@@ -8,7 +8,7 @@ Getting Started
 Requirements
 ------------
 
-Python 3.7 is strongly recommended. ``dabest`` has also been tested with Python 3.5 and 3.6.
+Python 3.7 is strongly recommended. DABEST has also been tested with Python 3.5 and 3.6.
 
 In addition, the following packages are also required:
 
@@ -47,7 +47,7 @@ Then, navigate to the cloned repo in the command line and run
 Testing
 -------
 
-To test ``dabest``, you will need to install `pytest <https://docs.pytest.org/en/latest/>`_.
+To test DABEST, you will need to install `pytest <https://docs.pytest.org/en/latest/>`_.
 
 Run ``pytest`` in the root directory of the source distribution. This runs the test suite in ``dabest/tests`` folder. The test suite will ensure that the bootstrapping functions and the plotting functions perform as expected.
 

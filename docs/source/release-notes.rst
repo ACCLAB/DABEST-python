@@ -69,7 +69,7 @@ Now, every analysis session begins with ``dabest.load()``.
 
     my_data = dabest.load(my_dataframe, idx=("Control", "Test"))
 
-This creates a ``dabest`` object with effect sizes as instances.
+This creates a :py:class:`Dabest` object with effect sizes as instances.
 
 .. code-block:: python
     :linenos:
@@ -123,14 +123,14 @@ v0.1.6
 
 Several keywords have been added to allow more fine-grained control over a selection of plot elements.
 
-* `swarm_dotsize`
-* `difference_dotsize`
-* `ci_linewidth`
-* `summary_linewidth`
+* ``swarm_dotsize``
+* ``difference_dotsize``
+* ``ci_linewidth``
+* ``summary_linewidth``
 
-The new keyword `context` allows you to set the plotting context as defined by seaborn's `plotting_context() <https://seaborn.pydata.org/generated/seaborn.plotting_context.html>`_ .
+The new keyword ``context`` allows you to set the plotting context as defined by seaborn's `plotting_context() <https://seaborn.pydata.org/generated/seaborn.plotting_context.html>`_ .
 
-Now, if `paired=True`, you will need to supply an `id_col`, which is a column in the DataFrame which specifies which sample the datapoint belongs to. See the :doc:`tutorial` for more details.
+Now, if ``paired=True``, you will need to supply an ``id_col``, which is a column in the DataFrame which specifies which sample the datapoint belongs to. See the :doc:`tutorial` for more details.
 
 
 v0.1.5
@@ -149,7 +149,7 @@ Update dependencies to
 
 Aesthetic changes
 
-* add `tick_length` and `tick_pad` arguments to allow tweaking of the axes tick lengths, and padding of the tick labels, respectively.
+* add ``tick_length`` and ``tick_pad`` arguments to allow tweaking of the axes tick lengths, and padding of the tick labels, respectively.
 
 
 v0.1.3
@@ -160,7 +160,7 @@ Update dependencies to
 
 Bugfixes
 
-* fix bug that did not label `swarm_label` if raw data was in tidy form
+* fix bug that did not label ``swarm_label`` if raw data was in tidy form
 * fix bug that did not dropnans for unpaired diff
 
 
