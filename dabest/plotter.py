@@ -255,7 +255,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Initialise the figure.
     # sns.set(context="talk", style='ticks')
-    init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"])
+    init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"],
+                           tight_layout=True)
 
     width_ratios_ga = [2.5, 1]
     h_space_cummings = 0.3
