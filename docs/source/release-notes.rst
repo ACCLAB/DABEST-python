@@ -16,6 +16,7 @@ Feature additions:
 
 Bug-fixes: 
   - Ensure all dependencies are installed along with DABEST. (`Pull request #71 <https://github.com/ACCLAB/DABEST-python/pull/71>`_; thanks to Matthew Edwards (`@mje-nz <https://github.com/mje-nz>`_).
+  - Handle infinities in bootstraps during plotting. (`Issue #72 <https://github.com/ACCLAB/DABEST-python/issues/72>`_, `Pull request #74 <https://github.com/ACCLAB/DABEST-python/pull/71>`_)
 
 v0.2.5
 ------
