@@ -113,8 +113,8 @@ def test_10_cummings_multi_groups():
     
     
     
-@pytest.mark.mpl_image_compare
-def test_11_inset_plots(tolerance=8):
+@pytest.mark.mpl_image_compare(tolerance=20)
+def test_11_inset_plots():
     
     # Load the iris dataset. Requires internet access.
     iris = pd.read_csv("https://github.com/mwaskom/seaborn-data/raw/master/iris.csv")
