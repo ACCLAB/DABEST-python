@@ -1,143 +1,270 @@
-# #! /usr/bin/env python
+#!/usr/bin/env python3
 
-# Load Libraries
+# -*- coding: utf-8 -*-
+
 
 import pytest
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-mpl.use('Agg')
-
 import numpy as np
-import scipy as sp
 import pandas as pd
-import seaborn as sns
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+import matplotlib.ticker as Ticker
+
+
 from .._api import load
-from .utils import create_dummy_dataset, get_swarm_yspans
+from .utils import create_demo_dataset
 
 
 
-def test_gardner_altman_unpaired():
+df = create_demo_dataset()
 
-    base_mean = np.random.randint(10, 101)
-    seed, ptp, df = create_dummy_dataset(base_mean=base_mean)
-    print('\nSeed = {}; base mean = {}'.format(seed, base_mean))
+two_groups_unpaired = load(df, idx=("Control 1", "Test 1"))
 
-    for c in df.columns[1:-1]:
-        print('{}...'.format(c))
+two_groups_paired   = load(df, idx=("Control 1", "Test 1"), 
+                           paired=True, id_col="ID")
+                           
+multi_2group = load(df, idx=(("Control 1", "Test 1",),
+                                     ("Control 2", "Test 2"))
+                            )
+                                   
+multi_2group_paired = load(df, idx=(("Control 1", "Test 1"),
+                                           ("Control 2", "Test 2")),
+                                  paired=True, id_col="ID")
 
-        # Create Gardner-Altman plot.
-        rand_swarm_ylim = (np.random.uniform(base_mean-10, base_mean, 1),
-                           np.random.uniform(base_mean, base_mean+10, 1))
-        two_group_unpaired = load(df, idx=(df.columns[0], c))
-        f1 = two_group_unpaired.mean_diff.plot(swarm_ylim=rand_swarm_ylim,
-                                               swarm_label="Raw swarmplot...",
-                                               contrast_label="Contrast!")
+shared_control = load(df, idx=("Control 1", "Test 1",
+                                      "Test 2", "Test 3",
+                                      "Test 4", "Test 5", "Test 6")
+                             )
+                             
+multi_groups = load(df, idx=(("Control 1", "Test 1",),
+                                     ("Control 2", "Test 2","Test 3"),
+                                     ("Control 3", "Test 4","Test 5", "Test 6")
+                                   ))
 
-        rawswarm_axes = f1.axes[0]
-        contrast_axes = f1.axes[1]
+                             
+                             
+@pytest.mark.mpl_image_compare
+def test_01_gardner_altman_unpaired_meandiff():
+    return two_groups_unpaired.mean_diff.plot();
+    
+    
 
-        # Check ylims match the desired ones.
-        assert rawswarm_axes.get_ylim()[0] == pytest.approx(rand_swarm_ylim[0])
-        assert rawswarm_axes.get_ylim()[1] == pytest.approx(rand_swarm_ylim[1])
-
-
-        # Check each swarmplot group matches canonical seaborn swarmplot.
-        _, swarmplt = plt.subplots(1)
-        swarmplt.set_ylim(rand_swarm_ylim)
-        sns.swarmplot(data=df[[df.columns[0], c]], ax=swarmplt)
-        sns_yspans = []
-        for coll in swarmplt.collections:
-            sns_yspans.append(get_swarm_yspans(coll))
-        dabest_yspans = [get_swarm_yspans(coll)
-                        for coll in rawswarm_axes.collections]
-        for j, span in enumerate(sns_yspans):
-            assert span == pytest.approx(dabest_yspans[j])
-
-        # Check xtick labels.
-        swarm_xticks = [a.get_text() for a in rawswarm_axes.get_xticklabels()]
-        assert swarm_xticks[0] == "{}\nN = 30".format(df.columns[0])
-        assert swarm_xticks[1] == "{}\nN = 30".format(c)
-
-        contrast_xticks = [a.get_text() for a in contrast_axes.get_xticklabels()]
-        assert contrast_xticks[1] == "{}\nminus\n{}".format(c, df.columns[0])
-
-        # Check ylabels.
-        assert rawswarm_axes.get_ylabel() == "Raw swarmplot..."
-        assert contrast_axes.get_ylabel() == "Contrast!"
+@pytest.mark.mpl_image_compare
+def test_02_gardner_altman_unpaired_mediandiff():
+    return two_groups_unpaired.median_diff.plot();
 
 
 
+@pytest.mark.mpl_image_compare
+def test_03_gardner_altman_unpaired_hedges_g():
+    return two_groups_unpaired.hedges_g.plot();
+    
+    
+    
+@pytest.mark.mpl_image_compare
+def test_04_gardner_altman_paired_meandiff():
+    return two_groups_paired.mean_diff.plot();
+    
+    
+    
+@pytest.mark.mpl_image_compare
+def test_04_gardner_altman_paired_hedges_g():
+    return two_groups_paired.hedges_g.plot();
 
 
-def test_cummings_unpaired():
-    base_mean = np.random.randint(-5, 5)
-    seed, ptp, df = create_dummy_dataset(base_mean=base_mean, expt_groups=7)
-    print('\nSeed = {}; base mean = {}'.format(seed, base_mean))
+    
+@pytest.mark.mpl_image_compare
+def test_05_cummings_two_group_unpaired_meandiff():
+    return two_groups_unpaired.mean_diff.plot(fig_size=(4, 6),
+                                              float_contrast=False);
+    
+    
+    
+@pytest.mark.mpl_image_compare
+def test_06_cummings_two_group_paired_meandiff():
+    return two_groups_paired.mean_diff.plot(fig_size=(6, 6),
+                                            float_contrast=False);
+    
+    
+    
+@pytest.mark.mpl_image_compare
+def test_07_cummings_multi_group_unpaired():
+    return multi_2group.mean_diff.plot();
+        
+    
+    
+    
+@pytest.mark.mpl_image_compare
+def test_08_cummings_multi_group_paired():
+    return multi_2group_paired.mean_diff.plot(fig_size=(6, 6));
+    
+    
+    
+@pytest.mark.mpl_image_compare
+def test_09_cummings_shared_control():
+    return shared_control.mean_diff.plot();
+    
+    
 
-    IDX = (('0','5'), ('3','2'), ('4', '1', '6'))
-    multi_2group_unpaired = load(df, idx=IDX)
+@pytest.mark.mpl_image_compare
+def test_10_cummings_multi_groups():
+    return multi_groups.mean_diff.plot();
+    
+    
+    
+@pytest.mark.mpl_image_compare(tolerance=20)
+def test_11_inset_plots():
+    
+    # Load the iris dataset. Requires internet access.
+    iris = pd.read_csv("https://github.com/mwaskom/seaborn-data/raw/master/iris.csv")
+    iris_melt = pd.melt(iris.reset_index(), 
+                        id_vars=["species", "index"], var_name="metric")
+                        
+                        
+                        
+    # Load the above data into `dabest`.
+    iris_dabest1 = load(data=iris, x="species", y="petal_width",
+                              idx=("setosa", "versicolor", "virginica"))
 
-    rand_swarm_ylim = (np.random.uniform(base_mean-10, base_mean, 1),
-                       np.random.uniform(base_mean, base_mean+10, 1))
-                       
-    if base_mean == 0:
-        # Have to set the contrast ylim, because the way I dynamically generate
-        # the contrast ylims will flunk out with base_mean = 0.
-        rand_contrast_ylim = (-0.5, 0.5)
-    else:
-        rand_contrast_ylim = (-base_mean/3, base_mean/3)
+    iris_dabest2 = load(data=iris, x="species", y="sepal_width",
+                              idx=("setosa", "versicolor"))
 
-    f1 = multi_2group_unpaired.mean_diff.plot(swarm_ylim=rand_swarm_ylim,
-                                              contrast_ylim=rand_contrast_ylim,
-                                              swarm_label="Raw swarmplot!",
-                                              contrast_label="Contrast...")
+    iris_dabest3 = load(data=iris_melt[iris_melt.species=="setosa"], 
+                        x="metric", y="value",
+                        idx=("sepal_length", "sepal_width"),
+                        paired=True, id_col="index")
+                        
+                        
+                        
+    # Create Figure.
+    fig, ax = plt.subplots(nrows=2, ncols=2, 
+                           figsize=(15, 15), 
+                           gridspec_kw={"wspace":0.5})
 
-    rawswarm_axes = f1.axes[0]
-    contrast_axes = f1.axes[1]
+    iris_dabest1.mean_diff.plot(ax=ax.flat[0]);
 
-    # Check swarm ylims match the desired ones.
-    assert rawswarm_axes.get_ylim()[0] == pytest.approx(rand_swarm_ylim[0])
-    assert rawswarm_axes.get_ylim()[1] == pytest.approx(rand_swarm_ylim[1])
+    iris_dabest2.mean_diff.plot(ax=ax.flat[1]);
 
-    # Check contrast ylims match the desired ones.
-    assert contrast_axes.get_ylim()[0] == pytest.approx(rand_contrast_ylim[0])
-    assert contrast_axes.get_ylim()[1] == pytest.approx(rand_contrast_ylim[1])
+    iris_dabest3.mean_diff.plot(ax=ax.flat[2]);
 
-    # Check xtick labels.
-    idx_flat = [g for t in IDX for g in t]
-    swarm_xticks = [a.get_text() for a in rawswarm_axes.get_xticklabels()]
-    for j, xtick in enumerate(swarm_xticks):
-        assert xtick == "{}\nN = 30".format(idx_flat[j])
-
-    contrast_xticks = [a.get_text() for a in contrast_axes.get_xticklabels()]
-    assert contrast_xticks[1] == "5\nminus\n0"
-    assert contrast_xticks[3] == "2\nminus\n3"
-    assert contrast_xticks[5] == "1\nminus\n4"
-    assert contrast_xticks[6] == "6\nminus\n4"
-
-    # Check ylabels.
-    assert rawswarm_axes.get_ylabel() == "Raw swarmplot!"
-    assert contrast_axes.get_ylabel() == "Contrast..."
-
-
-
-
-
-def test_gardner_altman_paired():
-    base_mean = np.random.randint(-5, 5)
-    seed, ptp, df = create_dummy_dataset(base_mean=base_mean)
-
-
-    # Check that the plot data matches the raw data.
-    two_group_paired = load(df, idx=("1", "2"), id_col="idcol", paired=True)
-    f1 = two_group_paired.mean_diff.plot()
-    rawswarm_axes = f1.axes[0]
-    contrast_axes = f1.axes[1]
-    assert df['1'].tolist() == [l.get_ydata()[0] for l in rawswarm_axes.lines]
-    assert df['2'].tolist() == [l.get_ydata()[1] for l in rawswarm_axes.lines]
+    iris_dabest3.mean_diff.plot(ax=ax.flat[3], float_contrast=False);
+    
+    return fig
+    
+    
+    
+@pytest.mark.mpl_image_compare
+def test_12_gardner_altman_ylabel():
+    return two_groups_unpaired.mean_diff.plot(swarm_label="This is my\nrawdata",  
+                                   contrast_label="The bootstrap\ndistribtions!");
+                                   
 
 
-    # Check that id_col must be specified.
-    err_to_catch = "`id_col` must be specified if `is_paired` is set to True."
-    with pytest.raises(IndexError, match=err_to_catch):
-        this_will_not_work = load(df, idx=("1", "2"), paired=True)
+@pytest.mark.mpl_image_compare
+def test_13_multi_2group_color():
+    return multi_2group.mean_diff.plot(color_col="Gender");
+    
+    
+    
+@pytest.mark.mpl_image_compare
+def test_14_gardner_altman_paired_color():
+    return two_groups_paired.mean_diff.plot(fig_size=(6, 6),
+                                            color_col="Gender");
+    
+    
+@pytest.mark.mpl_image_compare
+def test_15_change_palette_a():
+    return multi_2group.mean_diff.plot(fig_size=(7, 6),
+                                       color_col="Gender", 
+                                       custom_palette="Dark2");
+    
+    
+@pytest.mark.mpl_image_compare
+def test_16_change_palette_b():
+    return multi_2group.mean_diff.plot(custom_palette="Paired");
+    
+    
+
+my_color_palette = {"Control 1" : "blue",    
+                "Test 1"    : "purple",
+                "Control 2" : "#cb4b16",     # This is a hex string.
+                "Test 2"    : (0., 0.7, 0.2) # This is a RGB tuple.
+               }
+               
+@pytest.mark.mpl_image_compare
+def test_17_change_palette_c():
+    return multi_2group.mean_diff.plot(custom_palette=my_color_palette);
+
+
+
+@pytest.mark.mpl_image_compare
+def test_18_desat():
+    return multi_2group.mean_diff.plot(custom_palette=my_color_palette, 
+                            swarm_desat=0.75, 
+                            halfviolin_desat=0.25);
+                            
+                            
+                                                    
+@pytest.mark.mpl_image_compare                            
+def test_19_dot_sizes():
+    return multi_2group.mean_diff.plot(raw_marker_size=3, 
+                                       es_marker_size=12);
+                                       
+                                       
+                                       
+                                       
+@pytest.mark.mpl_image_compare
+def test_20_change_ylims():
+    return multi_2group.mean_diff.plot(swarm_ylim=(0, 5), 
+                                       contrast_ylim=(-2, 2));
+                                       
+                                       
+@pytest.mark.mpl_image_compare
+def test_21_invert_ylim():
+    return multi_2group.mean_diff.plot(contrast_ylim=(2, -2), 
+                                       contrast_label="More negative is better!");
+                                       
+
+
+@pytest.mark.mpl_image_compare
+def test_22_ticker_gardner_altman():
+
+    f = two_groups_unpaired.mean_diff.plot()
+
+    rawswarm_axes = f.axes[0]
+    contrast_axes = f.axes[1]
+
+    rawswarm_axes.yaxis.set_major_locator(Ticker.MultipleLocator(1))
+    rawswarm_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(0.5))
+
+    contrast_axes.yaxis.set_major_locator(Ticker.MultipleLocator(0.5))
+    contrast_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(0.25))
+    
+    return f
+    
+    
+    
+@pytest.mark.mpl_image_compare
+def test_23_ticker_cumming():
+    f = multi_2group.mean_diff.plot(swarm_ylim=(0,6),
+                               contrast_ylim=(-3, 1))
+
+    rawswarm_axes = f.axes[0]
+    contrast_axes = f.axes[1]
+
+    rawswarm_axes.yaxis.set_major_locator(Ticker.MultipleLocator(2))
+    rawswarm_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(1))
+
+    contrast_axes.yaxis.set_major_locator(Ticker.MultipleLocator(0.5))
+    contrast_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(0.25))
+    
+    return f
+    
+    
+    
+@pytest.mark.mpl_image_compare
+def test_25_style_sheets():
+    plt.style.use("dark_background")
+    
+    return multi_2group.mean_diff.plot();

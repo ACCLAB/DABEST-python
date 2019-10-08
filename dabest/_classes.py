@@ -460,7 +460,7 @@ class TwoGroupsEffectSize(object):
          'statistic_wilcoxon': nan}
         """
 
-        from numpy import array, isnan
+        from numpy import array, isnan, isinf
         from numpy import sort as npsort
         from numpy.random import choice, seed
 
@@ -522,6 +522,20 @@ class TwoGroupsEffectSize(object):
                             control, test, is_paired, effect_size,
                             resamples, random_seed)
         self.__bootstraps = npsort(bootstraps)
+        
+        # Added in v0.2.6.
+        # Raises a UserWarning if there are any infiinities in the bootstraps.
+        num_infinities = len(self.__bootstraps[isinf(self.__bootstraps)])
+        
+        if num_infinities > 0:
+            warn_msg = "There are {} bootstrap(s) that are not defined. "\
+            "This is likely due to smaple sample sizes. "\
+            "The values in a bootstrap for a group will be more likely "\
+            "to be all equal, with a resulting variance of zero. "\
+            "The computation of Cohen's d and Hedges' g thus "\
+            "involved a division by zero. "
+            warnings.warn(warn_msg.format(num_infinities), 
+                          category=UserWarning)
 
         self.__bias_correction = ci2g.compute_meandiff_bias_correction(
                                     self.__bootstraps, self.__difference)
@@ -1103,6 +1117,7 @@ class EffectSizeDataFrame(object):
 
             fig_size=None,
             dpi=100,
+            ax=None,
 
             swarmplot_kwargs=None,
             violinplot_kwargs=None,
@@ -1112,6 +1127,7 @@ class EffectSizeDataFrame(object):
             legend_kwargs=None):
         """
         Creates an estimation plot for the effect size of interest.
+        
 
         Parameters
         ----------
@@ -1176,6 +1192,9 @@ class EffectSizeDataFrame(object):
             The desired dimensions of the figure as a (length, width) tuple.
         dpi : int, default 100
             The dots per inch of the resulting figure.
+        ax : matplotlib.Axes, default None
+            Provide an existing Axes for the plots to be created. If no Axes is
+            specified, a new matplotlib Figure will be created.
         swarmplot_kwargs : dict, default None
             Pass any keyword arguments accepted by the seaborn `swarmplot`
             command here, as a dict. If None, the following keywords are
@@ -1206,9 +1225,14 @@ class EffectSizeDataFrame(object):
 
         Returns
         -------
-        A :class:`matplotlib.figure.Figure` with 2 Axes.
-
+        A :class:`matplotlib.figure.Figure` with 2 Axes, if ``ax = None``.
+        
         The first axes (accessible with ``FigName.axes[0]``) contains the rawdata swarmplot; the second axes (accessible with ``FigName.axes[1]``) has the bootstrap distributions and effect sizes (with confidence intervals) plotted on it.
+        
+        If ``ax`` is specified, the rawdata swarmplot is accessed at ``ax`` 
+        itself, while the effect size axes is accessed at ``ax.contrast_axes``.
+        See the last example below.
+        
 
         Examples
         --------
@@ -1244,6 +1268,14 @@ class EffectSizeDataFrame(object):
         ...                                          "Test 2", "Test 3")
         ...                                 )
         >>> fig6 = my_shared_control.mean_diff.plot()
+        
+        Creating estimation plots in individual panels of a figure.
+        
+        >>> f, axx = plt.subplots(nrows=2, ncols=2, figsize=(15, 15))
+        >>> my_data.mean_diff.plot(ax=axx.flat[0])
+        >>> my_data_paired.mean_diff.plot(ax=axx.flat[1])
+        >>> my_shared_control.mean_diff.plot(ax=axx.flat[2])
+        >>> my_shared_control.mean_diff.plot(ax=axx.flat[3], float_contrast=False)
 
         """
 

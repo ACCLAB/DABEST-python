@@ -18,8 +18,11 @@ Analyze your data with estimation statistics!
 
 News
 ----
+October 2019:
+  - v0.2.6 released. This release has one new feature (plotting of estimation plot inside any :py:mod:`matplotlib` :py:class:`Axes`; see the section on :ref:`inset_plot` in the :doc:`tutorial`). There are also two bug patches for the handling of bootstrap plotting, and of dependency installation. For more information, see the :doc:`release-notes`.
+
 September 2019:
-  - v0.2.5 released. This release addresses two feature requests, and also patches two bugs: one affecting the paired difference CIs, and one involving NaNs in unused/irrelevant columns. See the :doc:`release-notes`.
+  - v0.2.5 released. This release addresses two feature requests, and also patches two bugs: one affecting the paired difference CIs, and one involving NaNs in unused/irrelevant columns.
 
 May 2019:
   - v0.2.4 released. This is a patch for a set of bugs that mis-aligned Gardner-Altman plots, and also adds the capability to tweak the x-position of the Tufte gapped lines. 

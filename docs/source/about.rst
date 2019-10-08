@@ -7,9 +7,18 @@ About
 
 Authors
 --------
-`dabest` is written in Python by `Joses W. Ho <https://twitter.com/jacuzzijo>`_, with design and input from `Adam Claridge-Chang <https://twitter.com/adamcchang>`_ and other lab members.
+DABEST is written in Python by `Joses W. Ho <https://twitter.com/jacuzzijo>`_, with design and input from `Adam Claridge-Chang <https://twitter.com/adamcchang>`_ and other lab members.
 
 To find out more about the authors’ research, please visit the `Claridge-Chang lab webpage <http://www.claridgechang.net/>`_.
+
+Contributors
+------------
+
+- Mason Malone (`@MasonM <https://github.com/MasonM>`_) with `PR #30 <https://github.com/ACCLAB/DABEST-python/pull/30>`_:  Fix plot error when effect size is 0.
+
+- Matthew Edwards (`@mje-nz <https://github.com/mje-nz>`_) with `PR #71 <https://github.com/ACCLAB/DABEST-python/pull/30>`_: Specify dependencies correctly in ``setup.py``. 
+
+- Adam Nekimken (`@anekimken <https://github.com/anekimken>`_) with `PR #73 <https://github.com/ACCLAB/DABEST-python/pull/73>`_: Implement inset axes so estimation plots can be plotted on a pre-determined :py:mod:`matplotlib` :py:class:`Axes` object.
 
 Typography
 ----------
@@ -20,7 +29,7 @@ This documentation uses `Spectral <https://spectral.prototypo.io/>`_ for the bod
 License
 -------
 
-The `dabest` package in Python is licenced under the `BSD 3-clause Clear License <https://choosealicense.com/licenses/bsd-3-clause-clear/>`_.
+The DABEST package in Python is licenced under the `BSD 3-clause Clear License <https://choosealicense.com/licenses/bsd-3-clause-clear/>`_.
 
 Copyright (c) 2016-2019, Joses W. Ho
 All rights reserved.

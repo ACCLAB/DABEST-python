@@ -217,11 +217,13 @@ def cohens_d(control, test, is_paired=False):
         # assume the two arrays are ordered already.
         delta = test - control
         M = np.mean(delta)
-        return M / average_sd
+        divisor = average_sd
 
     else:
         M = np.mean(test) - np.mean(control)
-        return M / pooled_sd
+        divisor = pooled_sd
+        
+    return M / divisor
 
 
 

@@ -4,10 +4,22 @@
 Release Notes
 =============
 
-v0.2.5
+v0.2.6
 ------
 
 This release addresses a number of bugs and feature improvements. There are no known breaking changes to the API; hence **all users are strongly encouraged to upgrade to the latest version**.
+
+Feature additions:
+  - It is now possible to specify a pre-determined :py:mod:`matplotlib` :py:class:`Axes` to create the estimation plot in. See the new section in the tutorial for more information. (`Pull request #73 <https://github.com/ACCLAB/DABEST-python/pull/73>`_; thanks to Adam Nekimken (`@anekimken <https://github.com/anekimken>`_).
+  - 
+
+
+Bug-fixes: 
+  - Ensure all dependencies are installed along with DABEST. (`Pull request #71 <https://github.com/ACCLAB/DABEST-python/pull/71>`_; thanks to Matthew Edwards (`@mje-nz <https://github.com/mje-nz>`_).
+  - Handle infinities in bootstraps during plotting. (`Issue #72 <https://github.com/ACCLAB/DABEST-python/issues/72>`_, `Pull request #74 <https://github.com/ACCLAB/DABEST-python/pull/71>`_)
+
+v0.2.5
+------
 
 Feature additions:
   - Adding Ns of each group to the results DataFrame. (`Issue #45 <https://github.com/ACCLAB/DABEST-python/issues/45>`_)
@@ -35,7 +47,7 @@ This release fixes a bug that did not handle when the supplied ``x`` was a :py:m
 v0.2.2
 ------
 
-This release fixes a `bug <https://github.com/ACCLAB/DABEST-python/pull/30>`_ that has a mean difference or median difference of exactly 0.
+This release fixes a `bug <https://github.com/ACCLAB/DABEST-python/pull/30>`_ that has a mean difference or median difference of exactly 0. (`Pull request #73 <https://github.com/ACCLAB/DABEST-python/pull/73>`_; thanks to Mason Malone (`@MasonM <https://github.com/MasonM>`_).
 
 
 v0.2.1
@@ -58,7 +70,7 @@ Now, every analysis session begins with ``dabest.load()``.
 
     my_data = dabest.load(my_dataframe, idx=("Control", "Test"))
 
-This creates a ``dabest`` object with effect sizes as instances.
+This creates a :py:class:`Dabest` object with effect sizes as instances.
 
 .. code-block:: python
     :linenos:
@@ -112,14 +124,14 @@ v0.1.6
 
 Several keywords have been added to allow more fine-grained control over a selection of plot elements.
 
-* `swarm_dotsize`
-* `difference_dotsize`
-* `ci_linewidth`
-* `summary_linewidth`
+* ``swarm_dotsize``
+* ``difference_dotsize``
+* ``ci_linewidth``
+* ``summary_linewidth``
 
-The new keyword `context` allows you to set the plotting context as defined by seaborn's `plotting_context() <https://seaborn.pydata.org/generated/seaborn.plotting_context.html>`_ .
+The new keyword ``context`` allows you to set the plotting context as defined by seaborn's `plotting_context() <https://seaborn.pydata.org/generated/seaborn.plotting_context.html>`_ .
 
-Now, if `paired=True`, you will need to supply an `id_col`, which is a column in the DataFrame which specifies which sample the datapoint belongs to. See the :doc:`tutorial` for more details.
+Now, if ``paired=True``, you will need to supply an ``id_col``, which is a column in the DataFrame which specifies which sample the datapoint belongs to. See the :doc:`tutorial` for more details.
 
 
 v0.1.5
@@ -138,7 +150,7 @@ Update dependencies to
 
 Aesthetic changes
 
-* add `tick_length` and `tick_pad` arguments to allow tweaking of the axes tick lengths, and padding of the tick labels, respectively.
+* add ``tick_length`` and ``tick_pad`` arguments to allow tweaking of the axes tick lengths, and padding of the tick labels, respectively.
 
 
 v0.1.3
@@ -149,7 +161,7 @@ Update dependencies to
 
 Bugfixes
 
-* fix bug that did not label `swarm_label` if raw data was in tidy form
+* fix bug that did not label ``swarm_label`` if raw data was in tidy form
 * fix bug that did not dropnans for unpaired diff
 
 

@@ -31,6 +31,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         fig_size=None,
         dpi=100,
+        ax=None,
 
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
@@ -254,28 +255,76 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Initialise the figure.
     # sns.set(context="talk", style='ticks')
-    init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"])
+    init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"],
+                           tight_layout=True)
 
-    # Here, we hardcode some figure parameters.
-    if float_contrast is True:
-        fig, axx = plt.subplots(ncols=2,
-                                gridspec_kw={"width_ratios": [2.5, 1],
-                                             "wspace": 0},
-                                **init_fig_kwargs)
+    width_ratios_ga = [2.5, 1]
+    h_space_cummings = 0.3
+    if plot_kwargs["ax"] is not None:
+        # New in v0.2.6.
+        # Use inset axes to create the estimation plot inside a single axes.
+        # Author: Adam L Nekimken. (PR #73)
+        inset_contrast = True
+        rawdata_axes = plot_kwargs["ax"]
+        ax_position = rawdata_axes.get_position()  # [[x0, y0], [x1, y1]]
+        
+        fig = rawdata_axes.get_figure()
+        
+        if float_contrast is True:
+            axins = rawdata_axes.inset_axes(
+                    [1, 0,
+                     width_ratios_ga[1]/width_ratios_ga[0], 1])
+            rawdata_axes.set_position(  # [l, b, w, h]
+                    [ax_position.x0,
+                     ax_position.y0,
+                     (ax_position.x1 - ax_position.x0) * (width_ratios_ga[0] /
+                                                         sum(width_ratios_ga)),
+                     (ax_position.y1 - ax_position.y0)])
+
+            contrast_axes = axins
+
+        else:
+            axins = rawdata_axes.inset_axes([0, -1 - h_space_cummings, 1, 1])
+            plot_height = ((ax_position.y1 - ax_position.y0) /
+                           (2 + h_space_cummings))
+            rawdata_axes.set_position(
+                    [ax_position.x0,
+                     ax_position.y0 + (1 + h_space_cummings) * plot_height,
+                     (ax_position.x1 - ax_position.x0),
+                     plot_height])
+
+            # If the contrast axes are NOT floating, create lists to store
+            # raw ylims and raw tick intervals, so that I can normalize
+            # their ylims later.
+            contrast_ax_ylim_low = list()
+            contrast_ax_ylim_high = list()
+            contrast_ax_ylim_tickintervals = list()
+        contrast_axes = axins
+        rawdata_axes.contrast_axes = axins
 
     else:
-        fig, axx = plt.subplots(nrows=2,
-                                gridspec_kw={"hspace": 0.3},
-                                **init_fig_kwargs)
+        inset_contrast = False
+        # Here, we hardcode some figure parameters.
+        if float_contrast is True:
+            fig, axx = plt.subplots(
+                    ncols=2,
+                    gridspec_kw={"width_ratios": width_ratios_ga,
+                                 "wspace": 0},
+                                 **init_fig_kwargs)
 
-        # If the contrast axes are NOT floating, create lists to store raw ylims
-        # and raw tick intervals, so that I can normalize their ylims later.
-        contrast_ax_ylim_low = list()
-        contrast_ax_ylim_high = list()
-        contrast_ax_ylim_tickintervals = list()
+        else:
+            fig, axx = plt.subplots(nrows=2,
+                                    gridspec_kw={"hspace": 0.3},
+                                    **init_fig_kwargs)
+            # If the contrast axes are NOT floating, create lists to store
+            # raw ylims and raw tick intervals, so that I can normalize
+            # their ylims later.
+            contrast_ax_ylim_low = list()
+            contrast_ax_ylim_high = list()
+            contrast_ax_ylim_tickintervals = list()
 
-    rawdata_axes  = axx[0]
-    contrast_axes = axx[1]
+        rawdata_axes  = axx[0]
+        contrast_axes = axx[1]
 
     rawdata_axes.set_frame_on(False)
     contrast_axes.set_frame_on(False)
@@ -423,7 +472,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         current_ci_high   = results.bca_high[j]
 
         # Create the violinplot.
-        v = contrast_axes.violinplot(current_bootstrap,
+        # New in v0.2.6: drop negative infinities before plotting.
+        v = contrast_axes.violinplot(current_bootstrap[~np.isinf(current_bootstrap)],
                                      positions=[tick],
                                      **violinplot_kwargs)
         # Turn the violinplot into half, and color it the same as the swarmplot.
@@ -651,19 +701,19 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         # Compute the end of each x-axes line.
         rightend_ticks = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
-
-        for ax in fig.axes:
+        
+        for ax in [rawdata_axes, contrast_axes]:
             sns.despine(ax=ax, bottom=True)
-
+        
             ylim = ax.get_ylim()
             xlim = ax.get_xlim()
             redraw_axes_kwargs['y'] = ylim[0]
-
+        
             for k, start_tick in enumerate(ticks_to_skip):
                 end_tick = rightend_ticks[k]
                 ax.hlines(xmin=start_tick, xmax=end_tick,
                           **redraw_axes_kwargs)
-
+        
             ax.set_ylim(ylim)
             del redraw_axes_kwargs['y']
 

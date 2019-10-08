@@ -19,13 +19,13 @@ Load Libraries
 
 .. parsed-literal::
 
-    We're using DABEST v0.2.5
+    We're using DABEST v0.2.6
 
 
 Create dataset for demo
 -----------------------
 
-Here, we create a dataset to illustrate how ``dabest`` functions. In
+Here, we create a dataset to illustrate how DABEST functions. In
 this dataset, each column corresponds to a group of observations.
 
 .. code-block:: python3
@@ -59,10 +59,10 @@ this dataset, each column corresponds to a group of observations.
     id_col = pd.Series(range(1, Ns+1))
     
     # Combine samples and gender into a DataFrame.
-    df = pd.DataFrame({'Control 1' : c1,   'Control 2' : c2,  'Control 3' : c3,
-                       'Test 1'    : t1,   'Test 2'    : t2,  'Test 3'    : t3,
-                       'Test 4'    : t4,   'Test 5'    : t5,  'Test 6'    : t6,
-                       
+    df = pd.DataFrame({'Control 1' : c1,     'Test 1' : t1,
+                       'Control 2' : c2,     'Test 2' : t2,
+                       'Control 3' : c3,     'Test 3' : t3,
+                       'Test 4'    : t4,     'Test 5' : t5, 'Test 6' : t6,
                        'Gender'    : gender, 'ID'  : id_col
                       })
 
@@ -205,11 +205,9 @@ list.
 .. code-block:: python3
   :linenos:
 
-    two_groups_unpaired = dabest.load(df, 
-                                      idx=("Control 1", "Test 1"), 
-                                      resamples=5000)
+    two_groups_unpaired = dabest.load(df, idx=("Control 1", "Test 1"), resamples=5000)
 
-Calling this ``Dabest`` object gives you a gentle greeting, as well as
+Calling this :py:class:`Dabest`; object gives you a gentle greeting, as well as
 the comparisons that can be computed.
 
 .. code-block:: python3
@@ -222,11 +220,11 @@ the comparisons that can be computed.
 
 .. parsed-literal::
 
-    DABEST v0.2.5
+    DABEST v0.2.6
     =============
                  
     Good afternoon!
-    The current time is Wed Sep  4 14:34:59 2019.
+    The current time is Thu Oct  3 17:38:00 2019.
     
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -246,10 +244,8 @@ dataset that indicates the identity of each observation, using the
 .. code-block:: python3
   :linenos:
 
-    two_groups_paired = dabest.load(df, 
-                                    idx=("Control 1", "Test 1"), 
-                                    paired=True, 
-                                    id_col="ID")
+    two_groups_paired = dabest.load(df, idx=("Control 1", "Test 1"), 
+                                  paired=True, id_col="ID")
 
 .. code-block:: python3
   :linenos:
@@ -261,11 +257,11 @@ dataset that indicates the identity of each observation, using the
 
 .. parsed-literal::
 
-    DABEST v0.2.5
+    DABEST v0.2.6
     =============
                  
     Good afternoon!
-    The current time is Wed Sep  4 14:34:59 2019.
+    The current time is Thu Oct  3 17:38:00 2019.
     
     Paired effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -280,22 +276,23 @@ produced.
 .. code-block:: python3
   :linenos:
 
-    two_groups_unpaired_ci90 = dabest.load(df, 
-                                          idx=("Control 1", "Test 1"), 
-                                          ci=90)
-                                          
-    two_groups_unpaired_ci90 # prints out the text below!
+    two_groups_unpaired_ci90 = dabest.load(df, idx=("Control 1", "Test 1"), ci=90)
+
+.. code-block:: python3
+  :linenos:
+
+    two_groups_unpaired_ci90
 
 
 
 
 .. parsed-literal::
 
-    DABEST v0.2.5
+    DABEST v0.2.6
     =============
                  
     Good afternoon!
-    The current time is Wed Sep  4 14:34:59 2019.
+    The current time is Thu Oct  3 17:38:00 2019.
     
     Effect size(s) with 90% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -307,7 +304,7 @@ produced.
 Effect sizes
 ------------
 
-``dabest`` now features a range of effect sizes: - the mean difference
+DABEST now features a range of effect sizes: - the mean difference
 (``mean_diff``) - the median difference (``median_diff``) - `Cohen's
 *d* <https://en.wikipedia.org/wiki/Effect_size#Cohen's_d>`__
 (``cohens_d``) - `Hedges'
@@ -316,7 +313,7 @@ Effect sizes
 delta <https://en.wikipedia.org/wiki/Effect_size#Effect_size_for_ordinal_data>`__
 (``cliffs_delta``)
 
-Each of these are attributes of the ``Dabest`` object.
+Each of these are attributes of the :py:class:`Dabest` object.
 
 .. code-block:: python3
   :linenos:
@@ -328,11 +325,11 @@ Each of these are attributes of the ``Dabest`` object.
 
 .. parsed-literal::
 
-    DABEST v0.2.5
+    DABEST v0.2.6
     =============
                  
     Good afternoon!
-    The current time is Wed Sep  4 14:35:00 2019.
+    The current time is Thu Oct  3 17:38:00 2019.
     
     The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.205, 0.774].
     The two-sided p-value of the Mann-Whitney test is 0.00163.
@@ -366,10 +363,12 @@ tests.
 
 You can access the results as a pandas DataFrame as well.
 
+
+
 .. code-block:: python3
   :linenos:
-
-    pd.options.display.max_columns = 50    # to display all columns.
+  
+    pd.options.display.max_columns = 50
     two_groups_unpaired.mean_diff.results
 
 
@@ -537,11 +536,11 @@ Let's compute the Hedges' g for our comparison.
 
 .. parsed-literal::
 
-    DABEST v0.2.5
+    DABEST v0.2.6
     =============
                  
     Good afternoon!
-    The current time is Wed Sep  4 14:35:01 2019.
+    The current time is Thu Oct  3 17:38:01 2019.
     
     The unpaired Hedges' g between Control 1 and Test 1 is 1.03 [95%CI 0.317, 1.62].
     The two-sided p-value of the Mann-Whitney test is 0.00163.
@@ -650,6 +649,14 @@ inspiration here.
 Every effect size instance has access to the ``.plot()`` method. This
 means you can quickly create plots for different effect sizes easily.
 
+.. .. code-block:: python3
+..   :linenos:
+.. 
+..     import matplotlib as mpl
+..     import warnings
+..     # warnings.filterwarnings("ignore", category=mpl.cbook.mplDeprecation)
+..     warnings.filterwarnings("ignore")
+
 .. code-block:: python3
   :linenos:
 
@@ -657,7 +664,7 @@ means you can quickly create plots for different effect sizes easily.
 
 
 
-.. image:: _images/tutorial_27_1.png
+.. image:: _images/tutorial_28_0.png
 
 
 .. code-block:: python3
@@ -667,9 +674,7 @@ means you can quickly create plots for different effect sizes easily.
 
 
 
-
-
-.. image:: _images/tutorial_28_1.png
+.. image:: _images/tutorial_29_0.png
 
 
 Instead of a Gardner-Altman plot, you can produce a **Cumming estimation
@@ -686,7 +691,7 @@ Tufte's dictum to maximise the data-ink ratio.
 
 
 
-.. image:: _images/tutorial_30_0.png
+.. image:: _images/tutorial_31_0.png
 
 
 For paired data, we use
@@ -701,8 +706,7 @@ Both Gardner-Altman and Cumming plots support this.
 
 
 
-
-.. image:: _images/tutorial_32_1.png
+.. image:: _images/tutorial_33_0.png
 
 
 .. code-block:: python3
@@ -712,10 +716,10 @@ Both Gardner-Altman and Cumming plots support this.
 
 
 
-.. image:: _images/tutorial_33_0.png
+.. image:: _images/tutorial_34_0.png
 
 
-The ``dabest`` package also implements a range of estimation plot
+The DABEST package also implements a range of estimation plot
 designs aimed at depicting common experimental designs.
 
 The **multi-two-group estimation plot** tiles two or more Cumming plots
@@ -737,7 +741,7 @@ meta-analyses to aggregate and compare data from different experiments.
 
 
 
-.. image:: _images/tutorial_35_0.png
+.. image:: _images/tutorial_36_0.png
 
 
 The multi-two-group design also accomodates paired comparisons.
@@ -755,7 +759,7 @@ The multi-two-group design also accomodates paired comparisons.
 
 
 
-.. image:: _images/tutorial_37_0.png
+.. image:: _images/tutorial_38_0.png
 
 
 The **shared control plot** displays another common experimental
@@ -783,11 +787,11 @@ to ``idx`` has more than two data columns.
 
 .. parsed-literal::
 
-    DABEST v0.2.5
+    DABEST v0.2.6
     =============
                  
     Good afternoon!
-    The current time is Wed Sep  4 14:35:05 2019.
+    The current time is Thu Oct  3 17:38:24 2019.
     
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -811,11 +815,11 @@ to ``idx`` has more than two data columns.
 
 .. parsed-literal::
 
-    DABEST v0.2.5
+    DABEST v0.2.6
     =============
                  
     Good afternoon!
-    The current time is Wed Sep  4 14:35:06 2019.
+    The current time is Thu Oct  3 17:38:25 2019.
     
     The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.205, 0.774].
     The two-sided p-value of the Mann-Whitney test is 0.00163.
@@ -850,10 +854,10 @@ to ``idx`` has more than two data columns.
 
 
 
-.. image:: _images/tutorial_42_0.png
+.. image:: _images/tutorial_43_0.png
 
 
-``dabest`` thus empowers you to robustly perform and elegantly present
+DABEST thus empowers you to robustly perform and elegantly present
 complex visualizations and statistics.
 
 .. code-block:: python3
@@ -875,11 +879,11 @@ complex visualizations and statistics.
 
 .. parsed-literal::
 
-    DABEST v0.2.5
+    DABEST v0.2.6
     =============
                  
     Good afternoon!
-    The current time is Wed Sep  4 14:35:07 2019.
+    The current time is Thu Oct  3 17:38:26 2019.
     
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -903,11 +907,11 @@ complex visualizations and statistics.
 
 .. parsed-literal::
 
-    DABEST v0.2.5
+    DABEST v0.2.6
     =============
                  
     Good afternoon!
-    The current time is Wed Sep  4 14:35:08 2019.
+    The current time is Thu Oct  3 17:38:27 2019.
     
     The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.205, 0.774].
     The two-sided p-value of the Mann-Whitney test is 0.00163.
@@ -942,13 +946,13 @@ complex visualizations and statistics.
 
 
 
-.. image:: _images/tutorial_47_0.png
+.. image:: _images/tutorial_48_0.png
 
 
 Using long (aka 'melted') data frames
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``dabest.plot`` can also work with 'melted' or 'long' data. This term is
+DABEST can also work with 'melted' or 'long' data. This term is
 so used because each row will now correspond to a single datapoint, with
 one column carrying the value and other columns carrying 'metadata'
 describing that datapoint.
@@ -1063,11 +1067,11 @@ When your data is in this format, you will need to specify the ``x`` and
 
 .. parsed-literal::
 
-    DABEST v0.2.5
+    DABEST v0.2.6
     =============
                  
     Good afternoon!
-    The current time is Wed Sep  4 14:35:09 2019.
+    The current time is Thu Oct  3 17:38:27 2019.
     
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -1083,8 +1087,7 @@ When your data is in this format, you will need to specify the ``x`` and
 
 
 
-
-.. image:: _images/tutorial_53_1.png
+.. image:: _images/tutorial_53_0.png
 
 
 Controlling plot aesthetics
@@ -1100,8 +1103,7 @@ Changing the y-axes labels.
 
 
 
-
-.. image:: _images/tutorial_56_1.png
+.. image:: _images/tutorial_56_0.png
 
 
 Color the rawdata according to another column in the dataframe.
@@ -1123,9 +1125,7 @@ Color the rawdata according to another column in the dataframe.
 
 
 
-
-
-.. image:: _images/tutorial_59_1.png
+.. image:: _images/tutorial_59_0.png
 
 
 Changing the palette used with ``custom_palette``. Any valid matplotlib
@@ -1240,7 +1240,7 @@ better outcome), you can simply invert the tuple passed to
 You can add minor ticks and also change the tick frequency by accessing
 the axes directly.
 
-Each estimation plot produced by ``dabest`` has 2 axes. The first one
+The estimation plot produced by ``dabest.plot()`` has 2 axes. The first one
 contains the rawdata swarmplot; the second one contains the bootstrap
 effect size differences.
 
@@ -1262,8 +1262,7 @@ effect size differences.
 
 
 
-
-.. image:: _images/tutorial_74_1.png
+.. image:: _images/tutorial_74_0.png
 
 
 .. code-block:: python3
@@ -1285,8 +1284,66 @@ effect size differences.
 
 .. image:: _images/tutorial_75_0.png
 
+.. _inset_plot:
 
-with v0.2.0, ``dabest`` can now apply `matplotlib style
+Creating estimation plots in existing axes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+*Implemented in v0.2.6 by Adam Nekimken.*
+
+``dabest.plot`` has an ``ax`` keyword that accepts any Matplotlib
+``Axes``. The entire estimation plot will be created in the specified
+``Axes``.
+
+.. code-block:: python3
+  :linenos:
+
+    from matplotlib import pyplot as plt
+    f, axx = plt.subplots(nrows=2, ncols=2, 
+                          figsize=(15, 15),
+                          
+                          # ensure proper width-wise spacing.
+                          gridspec_kw={'wspace': 0.25}
+                         )
+    
+    two_groups_unpaired.mean_diff.plot(ax=axx.flat[0]);
+    
+    two_groups_paired.mean_diff.plot(ax=axx.flat[1]);
+    
+    multi_2group.mean_diff.plot(ax=axx.flat[2]);
+    
+    multi_2group_paired.mean_diff.plot(ax=axx.flat[3]);
+
+
+
+.. image:: _images/tutorial_77_0.png
+
+
+In this case, to access the individual rawdata axes, use
+``name_of_axes`` to manipulate the rawdata swarmplot axes, and
+``name_of_axes.contrast_axes`` to gain access to the effect size axes.
+
+.. code-block:: python3
+  :linenos:
+
+    topleft_axes = axx.flat[0]
+    topleft_axes.set_ylabel("New y-axis label for rawdata")
+    topleft_axes.contrast_axes.set_ylabel("New y-axis label for effect size")
+    
+
+
+
+
+.. image:: _images/tutorial_79_0.png
+
+
+
+Applying style sheets
+~~~~~~~~~~~~~~~~~~~~~
+
+*Implemented in v0.2.0*.
+
+DABEST can now apply `matplotlib style
 sheets <https://matplotlib.org/tutorials/introductory/customizing.html>`__
 to estimation plots. You can refer to this
 `gallery <https://matplotlib.org/3.0.3/gallery/style_sheets/style_sheets_reference.html>`__
@@ -1297,10 +1354,13 @@ of style sheets for reference.
 
     import matplotlib.pyplot as plt
     plt.style.use("dark_background")
-    
+
+.. code-block:: python3
+  :linenos:
+
     multi_2group.mean_diff.plot();
 
 
 
-.. image:: _images/tutorial_78_0.png
+.. image:: _images/tutorial_82_0.png
 

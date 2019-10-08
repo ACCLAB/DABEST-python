@@ -8,9 +8,9 @@
 
 
 ## Did you write a patch that fixes a bug?
-- Open a new GitHub [pull request](https://help.github.com/en/articles/about-pull-requests)(PR for short) with the patch.
+- Open a new GitHub [pull request](https://help.github.com/en/articles/about-pull-requests) (PR for short) with the patch.
 
-- Create the PR into the development branch, which is indicated by `v{latest version number}_dev`.
+- Create the PR into the development branch, which is indicated by `v{latest version number}-dev`.
 
 - Clearly state the problem and solution in the PR description. Include the relevant [issue number](https://guides.github.com/features/issues/) if applicable.
 
