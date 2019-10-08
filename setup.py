@@ -46,7 +46,7 @@ if __name__ == "__main__":
             'matplotlib~=3.0',
             'seaborn~=0.9'
         ],
-        extras_require={'dev': ['pytest==5.2 pytest-mpl==0.10']},
+        extras_require={'dev': ['pytest==5.2', 'pytest-mpl==0.10']},
         python_requires='>=3.5',
         url='https://acclab.github.io/DABEST-python-docs',
         download_url='https://www.github.com/ACCLAB/DABEST-python',
