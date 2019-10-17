@@ -41,9 +41,8 @@ if __name__ == "__main__":
         install_requires=[
             'numpy~=1.15',
             'scipy~=1.2',
-            # 'statsmodels~=0.9',
             'pandas==0.24',
-            'matplotlib~=3.1',
+            'matplotlib~=3.0',
             'seaborn~=0.9'
         ],
         extras_require={'dev': ['pytest==5.2', 'pytest-mpl==0.10']},
