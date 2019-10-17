@@ -143,6 +143,11 @@ class Dabest(object):
                                 value_vars=all_plot_groups,
                                 value_name=self.__yvar,
                                 var_name=self.__xvar)
+                                
+        # Added in v0.2.7.
+        # remove any NA rows.
+        plot_data.dropna(axis=0, how='any', subset=[self.__yvar], inplace=True)
+
         
         # Lines 131 to 140 added in v0.2.3.
         # Fixes a bug that jammed up when the xvar column was already 
