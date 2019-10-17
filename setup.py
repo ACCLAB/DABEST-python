@@ -42,7 +42,7 @@ if __name__ == "__main__":
             'numpy~=1.15',
             'scipy~=1.2',
             # 'statsmodels~=0.9',
-            'pandas~=0.24',
+            'pandas==0.24',
             'matplotlib~=3.1',
             'seaborn~=0.9'
         ],
