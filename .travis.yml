@@ -21,7 +21,7 @@ before_install:
 install:
   - conda update conda --yes
   - conda config --add channels conda-forge
-  - if [ "$PYTHON" = "3.8" ]; then conda create -n testenv --yes --channel conda-forge/label/pre-3.8 pip python=$PYTHON matplotlib; else conda create -n testenv --yes pip python=$PYTHON matplotlib; fi
+  - if [ "$PYTHON" = "3.8" ]; then conda create -n testenv --yes --channel conda-forge/label/pre-3.8 pip python=$PYTHON; else conda create -n testenv --yes pip python=$PYTHON matplotlib; fi
   - source activate testenv
   - pip install .[dev]
 
