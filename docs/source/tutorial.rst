@@ -19,7 +19,7 @@ Load Libraries
 
 .. parsed-literal::
 
-    We're using DABEST v0.2.6
+    We're using DABEST v0.2.7
 
 
 Create dataset for demo
@@ -220,11 +220,11 @@ the comparisons that can be computed.
 
 .. parsed-literal::
 
-    DABEST v0.2.6
+    DABEST v0.2.7
     =============
                  
     Good afternoon!
-    The current time is Thu Oct  3 17:38:00 2019.
+    The current time is Mon Oct 21  11:29:00 2019.
     
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -257,11 +257,11 @@ dataset that indicates the identity of each observation, using the
 
 .. parsed-literal::
 
-    DABEST v0.2.6
+    DABEST v0.2.7
     =============
                  
     Good afternoon!
-    The current time is Thu Oct  3 17:38:00 2019.
+    The current time is Mon Oct 21  11:29:00 2019.
     
     Paired effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -288,11 +288,11 @@ produced.
 
 .. parsed-literal::
 
-    DABEST v0.2.6
+    DABEST v0.2.7
     =============
                  
     Good afternoon!
-    The current time is Thu Oct  3 17:38:00 2019.
+    The current time is Mon Oct 21  11:29:00 2019.
     
     Effect size(s) with 90% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -325,11 +325,11 @@ Each of these are attributes of the :py:class:`Dabest` object.
 
 .. parsed-literal::
 
-    DABEST v0.2.6
+    DABEST v0.2.7
     =============
                  
     Good afternoon!
-    The current time is Thu Oct  3 17:38:00 2019.
+    The current time is Mon Oct 21  11:29:00 2019.
     
     The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.205, 0.774].
     The two-sided p-value of the Mann-Whitney test is 0.00163.
@@ -361,7 +361,7 @@ As noted in the output, you can use ``.mean_diff.statistical_tests`` to
 obtain the p-values and test statistics for all relavant statistical
 tests.
 
-You can access the results as a pandas DataFrame as well.
+You can access the results as a :py:mod:`pandas` :py:class:`DataFrame` as well.
 
 
 
@@ -536,11 +536,11 @@ Let's compute the Hedges' g for our comparison.
 
 .. parsed-literal::
 
-    DABEST v0.2.6
+    DABEST v0.2.7
     =============
                  
     Good afternoon!
-    The current time is Thu Oct  3 17:38:01 2019.
+    The current time is Mon Oct 21  11:29:01 2019.
     
     The unpaired Hedges' g between Control 1 and Test 1 is 1.03 [95%CI 0.317, 1.62].
     The two-sided p-value of the Mann-Whitney test is 0.00163.
@@ -787,11 +787,11 @@ to ``idx`` has more than two data columns.
 
 .. parsed-literal::
 
-    DABEST v0.2.6
+    DABEST v0.2.7
     =============
                  
     Good afternoon!
-    The current time is Thu Oct  3 17:38:24 2019.
+    The current time is Mon Oct 21  11:29:24 2019.
     
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -815,11 +815,11 @@ to ``idx`` has more than two data columns.
 
 .. parsed-literal::
 
-    DABEST v0.2.6
+    DABEST v0.2.7
     =============
                  
     Good afternoon!
-    The current time is Thu Oct  3 17:38:25 2019.
+    The current time is Mon Oct 21  11:29:25 2019.
     
     The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.205, 0.774].
     The two-sided p-value of the Mann-Whitney test is 0.00163.
@@ -879,11 +879,11 @@ complex visualizations and statistics.
 
 .. parsed-literal::
 
-    DABEST v0.2.6
+    DABEST v0.2.7
     =============
                  
     Good afternoon!
-    The current time is Thu Oct  3 17:38:26 2019.
+    The current time is Mon Oct 21  11:29:26 2019.
     
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -907,11 +907,11 @@ complex visualizations and statistics.
 
 .. parsed-literal::
 
-    DABEST v0.2.6
+    DABEST v0.2.7
     =============
                  
     Good afternoon!
-    The current time is Thu Oct  3 17:38:27 2019.
+    The current time is Mon Oct 21  11:29:27 2019.
     
     The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.205, 0.774].
     The two-sided p-value of the Mann-Whitney test is 0.00163.
@@ -1067,11 +1067,11 @@ When your data is in this format, you will need to specify the ``x`` and
 
 .. parsed-literal::
 
-    DABEST v0.2.6
+    DABEST v0.2.7
     =============
                  
     Good afternoon!
-    The current time is Thu Oct  3 17:38:27 2019.
+    The current time is Mon Oct 21  11:29:27 2019.
     
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1

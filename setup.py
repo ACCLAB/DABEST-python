@@ -34,15 +34,15 @@ if __name__ == "__main__":
         author_email='joseshowh@gmail.com',
         maintainer='Joses W. Ho',
         maintainer_email='joseshowh@gmail.com',
-        version='0.2.6',
+        version='0.2.7',
         description=DESCRIPTION,
         long_description=LONG_DESCRIPTION,
         packages=find_packages(),
         install_requires=[
             'numpy~=1.15',
             'scipy~=1.2',
-            # 'statsmodels~=0.9',
-            'pandas<0.25',
+            'pandas==0.24',
+            
             'matplotlib~=3.0',
             'seaborn~=0.9'
         ],
