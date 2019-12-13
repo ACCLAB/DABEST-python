@@ -697,7 +697,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         else:
             contrast_ylim_high, contrast_ylim_low = contrast_axes_ylim
         if contrast_ylim_low < 0 < contrast_ylim_high:
-            contrast_axes.axhline(y=0, lw=0.75, color=ytick_color)
+            contrast_axes.axhline(y=0, **reflines_kwargs)
 
         # Compute the end of each x-axes line.
         rightend_ticks = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
