@@ -1239,6 +1239,12 @@ class EffectSizeDataFrame(object):
             pyplot.violinplot` command here, as a dict. If None, the following
             keywords are passed to violinplot : {'widths':0.5, 'vert':True,
             'showextrema':False, 'showmedians':False}.
+        slopegraph_kwargs : dict, default None
+            This will change the appearance of the lines used to join each pair
+            of observations when `show_pairs=True`. Pass any keyword arguments
+            accepted by matplotlib `plot()` function here, as a dict.
+            If None, the following keywords are
+            passed to plot() : {'linewidth':1, 'alpha':0.5}.
         reflines_kwargs : dict, default None
             This will change the appearance of the zero reference lines. Pass
             any keyword arguments accepted by the matplotlib Axes `hlines`
