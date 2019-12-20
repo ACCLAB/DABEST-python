@@ -660,7 +660,6 @@ class TwoGroupsEffectSize(object):
                 pass
 
             # Likelihood Q-Ratio test:
-            # Assumes a gross-error model of distributions
             try:
                 if self.__is_paired:
                     lqrt_ratio = lqrt.lqrtest_rel(control, test)
