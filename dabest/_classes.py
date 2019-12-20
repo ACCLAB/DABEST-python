@@ -470,6 +470,7 @@ class TwoGroupsEffectSize(object):
         from numpy.random import choice, seed
 
         import scipy.stats as spstats
+        import lqrt
 
         # import statsmodels.stats.power as power
 
@@ -656,6 +657,20 @@ class TwoGroupsEffectSize(object):
             except ValueError:
                 # Occurs when the control and test are exactly identical
                 # in terms of rank (eg. all zeros.)
+                pass
+
+            # Likelihood Q-Ratio test:
+            # Assumes a gross-error model of distributions
+            try:
+                if self.__is_paired:
+                    lqrt_ratio = lqrt.lqrtest_rel(control, test)
+                else:
+                    lqrt_ratio = lqrt.lqrtest_ind(control, test)
+                self.__pvalue_lqrt = lqrt_ratio.pvalue
+                self.__statistic_lqrt = lqrt_ratio.statistic
+            except ImportError:
+                # did not install necessary library to run robust lqrt statistic
+                # warnings.warn("To get")
                 pass
 
             standardized_es = es.cohens_d(control, test, is_paired=False)
@@ -874,6 +889,21 @@ class TwoGroupsEffectSize(object):
         except AttributeError:
             return npnan
 
+    @property
+    def pvalue_lqrt(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_lqrt
+        except AttributeError:
+            return npnan
+
+    @property
+    def statistic_lqrt(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_lqrt
+        except AttributeError:
+            return npnan
 
 
     @property
