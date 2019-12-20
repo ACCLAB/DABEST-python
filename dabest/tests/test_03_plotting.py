@@ -178,7 +178,7 @@ def test_14_gardner_altman_paired_color():
 
 @pytest.mark.mpl_image_compare
 def test_15_change_palette_a():
-    return multi_2group.mean_diff.plot(fig_size=(7, 6),
+    return multi_2group.mean_diff.plot(fig_size=(8, 6),
                                        color_col="Gender", 
                                        custom_palette="Dark2");
 
@@ -285,7 +285,7 @@ long_df['dummy'] = np.repeat(np.nan, len(long_df))
 
 
 @pytest.mark.mpl_image_compare
-def test_24_test_wide_df_nan():
+def test_24_wide_df_nan():
 
     wide_df_dabest = load(wide_df, 
                           idx=("Control", "Test 1", "Test 2", "Test 3")
@@ -296,16 +296,59 @@ def test_24_test_wide_df_nan():
 
 
 @pytest.mark.mpl_image_compare
-def test_25_test_long_df_nan():
+def test_25_long_df_nan():
 
     long_df_dabest = load(long_df, x="group", y="value",
                           idx=("Control", "Test 1", "Test 2", "Test 3")
                           )
 
     return long_df_dabest.mean_diff.plot(); 
+    
+    
+    
+@pytest.mark.mpl_image_compare
+def test_26_slopegraph_kwargs():
+    
+    return two_groups_paired.mean_diff.plot(
+            slopegraph_kwargs=dict(linestyle='dotted')
+            );
+    
+
+
+@pytest.mark.mpl_image_compare
+def test_27_gardner_altman_reflines_kwargs():
+    
+    return two_groups_unpaired.mean_diff.plot(
+            reflines_kwargs=dict(linestyle='dotted')
+            );
 
 
 
+@pytest.mark.mpl_image_compare
+def test_28_unpaired_cumming_reflines_kwargs():
+    
+    return two_groups_unpaired.mean_diff.plot(
+            fig_size=(12,10),
+            float_contrast=False,
+            reflines_kwargs=dict(linestyle='dotted', 
+                                 linewidth=2),
+            contrast_ylim=(-1, 1)
+            );
+
+
+
+@pytest.mark.mpl_image_compare
+def test_28_paired_cumming_slopegraph_reflines_kwargs():
+    
+    return two_groups_paired.mean_diff.plot(float_contrast=False,
+                                 color_col="Gender",
+                                 slopegraph_kwargs=dict(linestyle='dotted'),
+                                 reflines_kwargs=dict(linestyle='dashed', 
+                                                      linewidth=2),
+                                 contrast_ylim=(-1, 1)
+                                 );
+    
+    
 @pytest.mark.mpl_image_compare
 def test_99_style_sheets():
     # Perform this test last so we don't have to reset the plot style.
