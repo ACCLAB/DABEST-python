@@ -4,6 +4,19 @@
 Release Notes
 =============
 
+v0.2.8
+------
+
+This release fixes minor bugs, and implements a new statistical test. There are no known breaking changes to the API; hence **all users are strongly encouraged to upgrade to the latest version**.
+
+Feature Additions:
+  -  Implement `Lq-Likelihood-Ratio-Type Test <https://github.com/alyakin314/lqrt>`_ in statistical output with `PR #85 <https://github.com/ACCLAB/DABEST-python/pull/85>`_; thanks to Adam Li (`@adam2392 <https://github.com/adam2392>`_).
+
+Bug-fixes:
+  - - Fix bugs in slopegraph and reference line keyword parsing with `PR #86 <https://github.com/ACCLAB/DABEST-python/pull/86>`_; thanks to DizietAsahi (`DizietAsahi <https://github.com/DizietAsahi>`_).
+
+
+
 v0.2.7
 ------
 
