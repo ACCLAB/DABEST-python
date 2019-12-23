@@ -602,6 +602,12 @@ class TwoGroupsEffectSize(object):
             wilcoxon = spstats.wilcoxon(control, test)
             self.__pvalue_wilcoxon = wilcoxon.pvalue
             self.__statistic_wilcoxon = wilcoxon.statistic
+            
+            lqrt_result = lqrt.lqrtest_rel(control, test, 
+                                    random_state=random_seed)
+                            
+            self.__pvalue_paired_lqrt = lqrt_result.pvalue
+            self.__statistic_paired_lqrt = lqrt_result.statistic
 
             if effect_size != "median_diff":
                 # Paired Student's t-test.
@@ -660,19 +666,23 @@ class TwoGroupsEffectSize(object):
                 pass
 
             # Likelihood Q-Ratio test:
-            try:
-                if self.__is_paired:
-                    lqrt_ratio = lqrt.lqrtest_rel(control, test)
-                else:
-                    lqrt_ratio = lqrt.lqrtest_ind(control, test)
-                self.__pvalue_lqrt = lqrt_ratio.pvalue
-                self.__statistic_lqrt = lqrt_ratio.statistic
-            except ImportError:
-                # did not install necessary library to run robust lqrt statistic
-                # warnings.warn("To get")
-                pass
+            lqrt_equal_var_result = lqrt.lqrtest_ind(control, test, 
+                                        random_state=random_seed,
+                                        equal_var=True)
+                            
+            self.__pvalue_lqrt_equal_var = lqrt_equal_var_result.pvalue
+            self.__statistic_lqrt_equal_var = lqrt_equal_var_result.statistic
+            
+            lqrt_unequal_var_result = lqrt.lqrtest_ind(control, test, 
+                                        random_state=random_seed,
+                                        equal_var=False)
+                                        
+            self.__pvalue_lqrt_unequal_var = lqrt_unequal_var_result.pvalue
+            self.__statistic_lqrt_unequal_var = lqrt_unequal_var_result.statistic
+                    
 
             standardized_es = es.cohens_d(control, test, is_paired=False)
+            
             # self.__power = power.tt_ind_solve_power(standardized_es,
             #                                         len(control),
             #                                         alpha=self.__alpha,
@@ -888,21 +898,6 @@ class TwoGroupsEffectSize(object):
         except AttributeError:
             return npnan
 
-    @property
-    def pvalue_lqrt(self):
-        from numpy import nan as npnan
-        try:
-            return self.__pvalue_lqrt
-        except AttributeError:
-            return npnan
-
-    @property
-    def statistic_lqrt(self):
-        from numpy import nan as npnan
-        try:
-            return self.__statistic_lqrt
-        except AttributeError:
-            return npnan
 
 
     @property
@@ -997,6 +992,65 @@ class TwoGroupsEffectSize(object):
 
 
 
+    
+    @property
+    def pvalue_lqrt_paired(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_paired_lqrt
+        except AttributeError:
+            return npnan
+
+
+
+    @property
+    def statistic_lqrt_paired(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_paired_lqrt
+        except AttributeError:
+            return npnan
+            
+    
+    @property
+    def pvalue_lqrt_unpaired_equal_variance(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_lqrt_equal_var
+        except AttributeError:
+            return npnan
+
+
+
+    @property
+    def statistic_lqrt_unpaired_equal_variance(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_lqrt_equal_var
+        except AttributeError:
+            return npnan
+            
+            
+    @property
+    def pvalue_lqrt_unpaired_unequal_variance(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_lqrt_unequal_var
+        except AttributeError:
+            return npnan
+
+
+
+    @property
+    def statistic_lqrt_unpaired_unequal_variance(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_lqrt_unequal_var
+        except AttributeError:
+            return npnan
+    
+    
+    
     # @property
     # def power(self):
     #     from numpy import nan as npnan
@@ -1118,7 +1172,16 @@ class EffectSizeDataFrame(object):
                             'statistic_paired_students_t',
 
                             'pvalue_kruskal',
-                            'statistic_kruskal']
+                            'statistic_kruskal',
+                            
+                            'pvalue_lqrt_paired',
+                            'statistic_lqrt_paired', 
+                            
+                            'pvalue_lqrt_unpaired_equal_variance', 
+                            'statistic_lqrt_unpaired_equal_variance',
+                            
+                            'pvalue_lqrt_unpaired_unequal_variance',
+                            'statistic_lqrt_unpaired_unequal_variance']
 
         self.__results   = out_.reindex(columns=columns_in_order)
         self.__results.dropna(axis="columns", how="all", inplace=True)
