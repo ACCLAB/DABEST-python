@@ -13,14 +13,12 @@ Feature Additions:
   -  Implement `Lq-Likelihood-Ratio-Type Test <https://github.com/alyakin314/lqrt>`_ in statistical output with `PR #85 <https://github.com/ACCLAB/DABEST-python/pull/85>`_; thanks to Adam Li (`@adam2392 <https://github.com/adam2392>`_).
 
 Bug-fixes:
-  - - Fix bugs in slopegraph and reference line keyword parsing with `PR #86 <https://github.com/ACCLAB/DABEST-python/pull/86>`_; thanks to DizietAsahi (`DizietAsahi <https://github.com/DizietAsahi>`_).
+  - Fix bugs in slopegraph and reference line keyword parsing with `PR #86 <https://github.com/ACCLAB/DABEST-python/pull/86>`_; thanks to DizietAsahi (`DizietAsahi <https://github.com/DizietAsahi>`_).
 
 
 
 v0.2.7
 ------
-
-This release addresses a single bug. There are no known breaking changes to the API; hence **all users are strongly encouraged to upgrade to the latest version**.
 
 Bug-fixes:
   - Bug affecting display of Tufte gapped lines in Cumming plots if the supplied :py:mod:`pandas` :py:class:`DataFrame` was in 'wide' format, but did not have equal number of Ns in the groups. (`Issue #79 <https://github.com/ACCLAB/DABEST-python/issues/79>`_)
