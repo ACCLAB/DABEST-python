@@ -20,8 +20,6 @@ Bug-fixes:
 v0.2.7
 ------
 
-This release addresses a single bug. There are no known breaking changes to the API; hence **all users are strongly encouraged to upgrade to the latest version**.
-
 Bug-fixes:
   - Bug affecting display of Tufte gapped lines in Cumming plots if the supplied :py:mod:`pandas` :py:class:`DataFrame` was in 'wide' format, but did not have equal number of Ns in the groups. (`Issue #79 <https://github.com/ACCLAB/DABEST-python/issues/79>`_)
 
