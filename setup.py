@@ -34,20 +34,21 @@ if __name__ == "__main__":
         author_email='joseshowh@gmail.com',
         maintainer='Joses W. Ho',
         maintainer_email='joseshowh@gmail.com',
-        version='0.2.7',
+        version='0.2.8',
         description=DESCRIPTION,
         long_description=LONG_DESCRIPTION,
         packages=find_packages(),
         install_requires=[
             'numpy~=1.15',
             'scipy~=1.2',
-            'pandas==0.24',
+            'pandas~=0.25,!=0.25.2',
             
             'matplotlib~=3.0',
-            'seaborn~=0.9'
+            'seaborn~=0.9',
+            'lqrt~=0.3.2'
         ],
-        extras_require={'dev': ['pytest==5.2', 'pytest-mpl==0.10']},
-        python_requires='>=3.5',
+        extras_require={'dev': ['pytest~=5.2', 'pytest-mpl~=0.10']},
+        python_requires='~=3.5',
         url='https://acclab.github.io/DABEST-python-docs',
         download_url='https://www.github.com/ACCLAB/DABEST-python',
         license='BSD 3-clause Clear License'

@@ -449,6 +449,9 @@ class TwoGroupsEffectSize(object):
          'pct_low': -0.763588353717278,
          'pvalue_brunner_munzel': nan,
          'pvalue_kruskal': nan,
+         'pvalue_lqrt_paired': nan,
+         'pvalue_lqrt_unpaired_equal_variance': 0.36,
+         'pvalue_lqrt_unpaired_unequal_variance': 0.36,
          'pvalue_mann_whitney': 0.2600723060808019,
          'pvalue_paired_students_t': nan,
          'pvalue_students_t': 0.34743913903372836,
@@ -458,6 +461,9 @@ class TwoGroupsEffectSize(object):
          'resamples': 5000,
          'statistic_brunner_munzel': nan,
          'statistic_kruskal': nan,
+         'statistic_lqrt_paired': nan,
+         'statistic_lqrt_unpaired_equal_variance': 0.8894980773231964,
+         'statistic_lqrt_unpaired_unequal_variance': 0.8916901409507432,
          'statistic_mann_whitney': 406.0,
          'statistic_paired_students_t': nan,
          'statistic_students_t': 0.9472545159069105,
@@ -470,6 +476,7 @@ class TwoGroupsEffectSize(object):
         from numpy.random import choice, seed
 
         import scipy.stats as spstats
+        import lqrt
 
         # import statsmodels.stats.power as power
 
@@ -601,6 +608,12 @@ class TwoGroupsEffectSize(object):
             wilcoxon = spstats.wilcoxon(control, test)
             self.__pvalue_wilcoxon = wilcoxon.pvalue
             self.__statistic_wilcoxon = wilcoxon.statistic
+            
+            lqrt_result = lqrt.lqrtest_rel(control, test, 
+                                    random_state=random_seed)
+                            
+            self.__pvalue_paired_lqrt = lqrt_result.pvalue
+            self.__statistic_paired_lqrt = lqrt_result.statistic
 
             if effect_size != "median_diff":
                 # Paired Student's t-test.
@@ -658,7 +671,24 @@ class TwoGroupsEffectSize(object):
                 # in terms of rank (eg. all zeros.)
                 pass
 
+            # Likelihood Q-Ratio test:
+            lqrt_equal_var_result = lqrt.lqrtest_ind(control, test, 
+                                        random_state=random_seed,
+                                        equal_var=True)
+                            
+            self.__pvalue_lqrt_equal_var = lqrt_equal_var_result.pvalue
+            self.__statistic_lqrt_equal_var = lqrt_equal_var_result.statistic
+            
+            lqrt_unequal_var_result = lqrt.lqrtest_ind(control, test, 
+                                        random_state=random_seed,
+                                        equal_var=False)
+                                        
+            self.__pvalue_lqrt_unequal_var = lqrt_unequal_var_result.pvalue
+            self.__statistic_lqrt_unequal_var = lqrt_unequal_var_result.statistic
+                    
+
             standardized_es = es.cohens_d(control, test, is_paired=False)
+            
             # self.__power = power.tt_ind_solve_power(standardized_es,
             #                                         len(control),
             #                                         alpha=self.__alpha,
@@ -968,6 +998,65 @@ class TwoGroupsEffectSize(object):
 
 
 
+    
+    @property
+    def pvalue_lqrt_paired(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_paired_lqrt
+        except AttributeError:
+            return npnan
+
+
+
+    @property
+    def statistic_lqrt_paired(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_paired_lqrt
+        except AttributeError:
+            return npnan
+            
+    
+    @property
+    def pvalue_lqrt_unpaired_equal_variance(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_lqrt_equal_var
+        except AttributeError:
+            return npnan
+
+
+
+    @property
+    def statistic_lqrt_unpaired_equal_variance(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_lqrt_equal_var
+        except AttributeError:
+            return npnan
+            
+            
+    @property
+    def pvalue_lqrt_unpaired_unequal_variance(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_lqrt_unequal_var
+        except AttributeError:
+            return npnan
+
+
+
+    @property
+    def statistic_lqrt_unpaired_unequal_variance(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_lqrt_unequal_var
+        except AttributeError:
+            return npnan
+    
+    
+    
     # @property
     # def power(self):
     #     from numpy import nan as npnan
@@ -1089,7 +1178,16 @@ class EffectSizeDataFrame(object):
                             'statistic_paired_students_t',
 
                             'pvalue_kruskal',
-                            'statistic_kruskal']
+                            'statistic_kruskal',
+                            
+                            'pvalue_lqrt_paired',
+                            'statistic_lqrt_paired', 
+                            
+                            'pvalue_lqrt_unpaired_equal_variance', 
+                            'statistic_lqrt_unpaired_equal_variance',
+                            
+                            'pvalue_lqrt_unpaired_unequal_variance',
+                            'statistic_lqrt_unpaired_unequal_variance']
 
         self.__results   = out_.reindex(columns=columns_in_order)
         self.__results.dropna(axis="columns", how="all", inplace=True)
@@ -1209,6 +1307,12 @@ class EffectSizeDataFrame(object):
             pyplot.violinplot` command here, as a dict. If None, the following
             keywords are passed to violinplot : {'widths':0.5, 'vert':True,
             'showextrema':False, 'showmedians':False}.
+        slopegraph_kwargs : dict, default None
+            This will change the appearance of the lines used to join each pair
+            of observations when `show_pairs=True`. Pass any keyword arguments
+            accepted by matplotlib `plot()` function here, as a dict.
+            If None, the following keywords are
+            passed to plot() : {'linewidth':1, 'alpha':0.5}.
         reflines_kwargs : dict, default None
             This will change the appearance of the zero reference lines. Pass
             any keyword arguments accepted by the matplotlib Axes `hlines`

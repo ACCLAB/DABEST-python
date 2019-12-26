@@ -14,11 +14,16 @@ To find out more about the authors’ research, please visit the `Claridge-Chang
 Contributors
 ------------
 
+- DizietAsahi (`DizietAsahi <https://github.com/DizietAsahi>`_) with `PR #86 <https://github.com/ACCLAB/DABEST-python/pull/86>`_:  Fix bugs in slopegraph and reference line keyword parsing.
+
+- Adam Li (`@adam2392 <https://github.com/adam2392>`_) with `PR #85 <https://github.com/ACCLAB/DABEST-python/pull/85>`_:  Implement `Lq-Likelihood-Ratio-Type Test <https://github.com/alyakin314/lqrt>`_ in statistical output.
+
 - Mason Malone (`@MasonM <https://github.com/MasonM>`_) with `PR #30 <https://github.com/ACCLAB/DABEST-python/pull/30>`_:  Fix plot error when effect size is 0.
 
 - Matthew Edwards (`@mje-nz <https://github.com/mje-nz>`_) with `PR #71 <https://github.com/ACCLAB/DABEST-python/pull/30>`_: Specify dependencies correctly in ``setup.py``. 
 
 - Adam Nekimken (`@anekimken <https://github.com/anekimken>`_) with `PR #73 <https://github.com/ACCLAB/DABEST-python/pull/73>`_: Implement inset axes so estimation plots can be plotted on a pre-determined :py:mod:`matplotlib` :py:class:`Axes` object.
+
 
 Typography
 ----------
@@ -31,7 +36,7 @@ License
 
 The DABEST package in Python is licenced under the `BSD 3-clause Clear License <https://choosealicense.com/licenses/bsd-3-clause-clear/>`_.
 
-Copyright (c) 2016-2019, Joses W. Ho
+Copyright (c) 2016-2020, Joses W. Ho
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
