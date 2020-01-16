@@ -5,6 +5,7 @@ env:
   - PYTHON=3.5 BACKEND=agg
   - PYTHON=3.6 BACKEND=agg
   - PYTHON=3.7 BACKEND=agg
+  # - PYTHON=3.8 BACKEND=agg
 
 
 before_install:
@@ -21,6 +22,7 @@ install:
   - conda update conda --yes
   - conda config --add channels conda-forge
   - conda create -n testenv --yes pip python=$PYTHON matplotlib
+  # - if [ "$PYTHON" = "3.8" ]; then conda create -n testenv --yes --channel conda-forge/label/pre-3.8 pip python=$PYTHON; else conda create -n testenv --yes pip python=$PYTHON matplotlib; fi
   - source activate testenv
   - pip install .[dev]
 

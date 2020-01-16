@@ -5,9 +5,10 @@
 
 
 import sys
+import pytest
+import lqrt
 import numpy as np
 import scipy as sp
-import pytest
 import pandas as pd
 from .._stats_tools import effsize
 from .._classes import TwoGroupsEffectSize
@@ -177,3 +178,30 @@ def test_ordinal_dominance():
                              
     p1 = sp.stats.brunnermunzel(likert_control, likert_treatment).pvalue
     assert es.pvalue_brunner_munzel == pytest.approx(p1)
+    
+    
+
+def test_lqrt_unpaired():
+    es = TwoGroupsEffectSize(wellbeing.control, wellbeing.expt, 
+                             "mean_diff", is_paired=False)
+                             
+    p1 = lqrt.lqrtest_ind(wellbeing.control, wellbeing.expt,
+                          equal_var=False,
+                          random_state=12345)
+                          
+    p2 = lqrt.lqrtest_ind(wellbeing.control, wellbeing.expt,
+                          equal_var=True,
+                          random_state=12345)
+    
+    assert es.pvalue_lqrt_unpaired_unequal_variance == pytest.approx(p1.pvalue)
+    assert es.pvalue_lqrt_unpaired_equal_variance == pytest.approx(p2.pvalue)
+    
+    
+def test_lqrt_paired():
+    es = TwoGroupsEffectSize(paired_wellbeing.pre, paired_wellbeing.post, 
+                             "mean_diff", is_paired=True)
+                             
+    p1 = lqrt.lqrtest_rel(paired_wellbeing.pre, paired_wellbeing.post, 
+                 random_state=12345)
+    
+    assert es.pvalue_lqrt_paired == pytest.approx(p1.pvalue)

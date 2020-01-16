@@ -18,8 +18,12 @@ Analyze your data with estimation statistics!
 
 News
 ----
+December 2019:
+  - v0.2.8 released. This release adds the `Lq-Likelihood-Ratio-Type Test <https://github.com/alyakin314/lqrt>`_ in the statistical output, and also a bugfix for  slopegraph and reference line keyword parsing. For more information, see the :doc:`release-notes`.
+
 October 2019:
-  - v0.2.6 released. This release has one new feature (plotting of estimation plot inside any :py:mod:`matplotlib` :py:class:`Axes`; see the section on :ref:`inset_plot` in the :doc:`tutorial`). There are also two bug patches for the handling of bootstrap plotting, and of dependency installation. For more information, see the :doc:`release-notes`.
+  - v0.2.7 released. A minor bugfix in the handling of wide datasets with unequal Ns in each group. 
+  - v0.2.6 released. This release has one new feature (plotting of estimation plot inside any :py:mod:`matplotlib` :py:class:`Axes`; see the section on :ref:`inset_plot` in the :doc:`tutorial`). There are also two bug patches for the handling of bootstrap plotting, and of dependency installation. 
 
 September 2019:
   - v0.2.5 released. This release addresses two feature requests, and also patches two bugs: one affecting the paired difference CIs, and one involving NaNs in unused/irrelevant columns.
