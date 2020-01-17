@@ -45,7 +45,7 @@ if __name__ == "__main__":
             
             'matplotlib~=3.0',
             'seaborn~=0.9',
-            #'lqrt~=0.3.2'
+            'lqrt~=0.3.2'
         ],
         extras_require={'dev': ['pytest~=5.2', 'pytest-mpl~=0.10']},
         python_requires='~=3.5',

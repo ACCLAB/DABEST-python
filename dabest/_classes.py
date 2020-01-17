@@ -476,7 +476,6 @@ class TwoGroupsEffectSize(object):
         from numpy.random import choice, seed
 
         import scipy.stats as spstats
-        import lqrt
 
         # import statsmodels.stats.power as power
 
@@ -1222,19 +1221,11 @@ class EffectSizeDataFrame(object):
 
                             'pvalue_kruskal',
                             'statistic_kruskal',
-                            
-#                             'pvalue_lqrt_paired',
-#                             'statistic_lqrt_paired', 
-                            
-#                             'pvalue_lqrt_unpaired_equal_variance', 
-#                             'statistic_lqrt_unpaired_equal_variance',
-                            
-#                             'pvalue_lqrt_unpaired_unequal_variance',
-#                             'statistic_lqrt_unpaired_unequal_variance'
                            ]
 
         self.__results   = out_.reindex(columns=columns_in_order)
         self.__results.dropna(axis="columns", how="all", inplace=True)
+        
 
 
 
@@ -1244,6 +1235,63 @@ class EffectSizeDataFrame(object):
         except AttributeError:
             self.__pre_calc()
             return self.__for_print
+            
+            
+            
+    def __calc_lqrt(self):
+        import lqrt
+        import pandas as pd
+        
+        rnd_seed = self.__random_seed
+        db_obj = self.__dabest_obj
+        dat  = db_obj._plot_data
+        xvar = db_obj._xvar
+        yvar = db_obj._yvar
+        
+
+        out = []
+
+        for j, current_tuple in enumerate(db_obj.idx):
+            cname = current_tuple[0]
+            control = dat[dat[xvar] == cname][yvar].copy()
+
+            for ix, tname in enumerate(current_tuple[1:]):
+                test = dat[dat[xvar] == tname][yvar].copy()
+                
+                if self.__is_paired is True:                    
+                    # Refactored here in v0.2.9 for performance issues.
+                    lqrt_result = lqrt.lqrtest_rel(control, test, 
+                                            random_state=rnd_seed)
+                    
+                    out.append({"control": cname, "test": tname, 
+                                "control_N": int(len(control)), 
+                                "test_N": int(len(test)),
+                                "pvalue_paired_lqrt": lqrt_result.pvalue,
+                                "statistic_paired_lqrt": lqrt_result.statistic
+                                })
+
+                else:
+                    # Likelihood Q-Ratio test:
+                    lqrt_equal_var_result = lqrt.lqrtest_ind(control, test, 
+                                                random_state=rnd_seed,
+                                                equal_var=True)
+                                                
+                                                
+                    lqrt_unequal_var_result = lqrt.lqrtest_ind(control, test, 
+                                                random_state=rnd_seed,
+                                                equal_var=False)
+                                                
+                    out.append({"control": cname, "test": tname, 
+                                "control_N": int(len(control)), 
+                                "test_N": int(len(test)),
+                                
+                                "pvalue_lqrt_equal_var"      : lqrt_equal_var_result.pvalue,
+                                "statistic_lqrt_equal_var"   : lqrt_equal_var_result.statistic,
+                                "pvalue_lqrt_unequal_var"    : lqrt_unequal_var_result.pvalue,
+                                "statistic_lqrt_unequal_var" : lqrt_unequal_var_result.statistic,
+                                })
+                                
+        self.__lqrt_results = pd.DataFrame(out)
 
 
 
@@ -1530,6 +1578,16 @@ class EffectSizeDataFrame(object):
         class.
         """
         return self.__dabest_obj
+        
+        
+    @property
+    def lqrt(self):
+        """Returns all pairwise Lq-Likelihood Ratio Type test results nicely."""
+        try:
+            return self.__lqrt_results
+        except AttributeError:
+            self.__calc_lqrt()
+            return self.__lqrt_results
         
         
         
