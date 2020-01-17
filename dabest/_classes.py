@@ -1568,8 +1568,18 @@ class PermutationTest:
     
     Example
     -------
+    >>> import numpy as np
+    >>> import scipy as sp
+    >>> import dabest
+    >>> np.random.seed(12345)
+    >>> control = sp.stats.norm.rvs(loc=0, size=30)
+    >>> test = sp.stats.norm.rvs(loc=0.5, size=30)
+    >>> perm_test = dabest.PermutationTest(control, test, 
+    ...                                    effect_size="mean_diff", 
+    ...                                    is_paired=False)
+    >>> perm_test
     
-    
+    5000 permutations were taken. The pvalue is 0.3484.
     """
     
     def __init__(self, control, test, 
@@ -1645,7 +1655,7 @@ class PermutationTest:
     @property
     def permutation_count(self):
         """
-        The number of permuations taken .
+        The number of permuations taken.
         """
         return self.__permutation_count
 
