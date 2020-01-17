@@ -356,7 +356,9 @@ class TwoGroupsEffectSize(object):
 
     def __init__(self, control, test, effect_size,
                  is_paired=False, ci=95,
-                 resamples=5000, random_seed=12345):
+                 resamples=5000, 
+                 permutation_count=5000, 
+                 random_seed=12345):
 
         """
         Compute the effect size between two groups.
@@ -371,7 +373,11 @@ class TwoGroupsEffectSize(object):
             'mean_diff', 'median_diff', 'cohens_d', 'hedges_g', or 'cliffs_delta'
         is_paired : boolean, default False
         resamples : int, default 5000
-            The number of bootstrap resamples to be taken.
+            The number of bootstrap resamples to be taken for the calculation
+            of the confidence interval limits.
+        permutation_count : int, default 10000
+            The number of permutations (reshuffles) to perform for the 
+            computation of the permutation p-value
         ci : float, default 95
             The confidence interval width. The default of 95 produces 95%
             confidence intervals.
@@ -449,9 +455,6 @@ class TwoGroupsEffectSize(object):
          'pct_low': -0.763588353717278,
          'pvalue_brunner_munzel': nan,
          'pvalue_kruskal': nan,
-         'pvalue_lqrt_paired': nan,
-         'pvalue_lqrt_unpaired_equal_variance': 0.36,
-         'pvalue_lqrt_unpaired_unequal_variance': 0.36,
          'pvalue_mann_whitney': 0.2600723060808019,
          'pvalue_paired_students_t': nan,
          'pvalue_students_t': 0.34743913903372836,
@@ -461,9 +464,6 @@ class TwoGroupsEffectSize(object):
          'resamples': 5000,
          'statistic_brunner_munzel': nan,
          'statistic_kruskal': nan,
-         'statistic_lqrt_paired': nan,
-         'statistic_lqrt_unpaired_equal_variance': 0.8894980773231964,
-         'statistic_lqrt_unpaired_unequal_variance': 0.8916901409507432,
          'statistic_mann_whitney': 406.0,
          'statistic_paired_students_t': nan,
          'statistic_students_t': 0.9472545159069105,
@@ -485,7 +485,6 @@ class TwoGroupsEffectSize(object):
 
         from ._stats_tools import confint_2group_diff as ci2g
         from ._stats_tools import effsize as es
-
 
 
         self.__EFFECT_SIZE_DICT =  {"mean_diff" : "mean difference",
@@ -512,14 +511,15 @@ class TwoGroupsEffectSize(object):
         control = control[~isnan(control)]
         test    = test[~isnan(test)]
 
-        self.__effect_size = effect_size
-        self.__control     = control
-        self.__test        = test
-        self.__is_paired   = is_paired
-        self.__resamples   = resamples
-        self.__random_seed = random_seed
-        self.__ci          = ci
-        self.__alpha       = ci2g._compute_alpha_from_ci(ci)
+        self.__effect_size       = effect_size
+        self.__control           = control
+        self.__test              = test
+        self.__is_paired         = is_paired
+        self.__resamples         = resamples
+        self.__permutation_count = permutation_count
+        self.__random_seed       = random_seed
+        self.__ci                = ci
+        self.__alpha             = ci2g._compute_alpha_from_ci(ci)
 
 
         self.__difference = es.two_group_difference(
@@ -603,17 +603,24 @@ class TwoGroupsEffectSize(object):
         self.__pct_high = self.__bootstraps[pct_idx_high]
 
         # Perform statistical tests.
+        
+        self.__PermutationTest_result = PermutationTest(control, test, 
+                                                        effect_size, 
+                                                        is_paired,
+                                                        permutation_count)
+        
         if is_paired is True:
             # Wilcoxon, a non-parametric version of the paired T-test.
             wilcoxon = spstats.wilcoxon(control, test)
             self.__pvalue_wilcoxon = wilcoxon.pvalue
             self.__statistic_wilcoxon = wilcoxon.statistic
             
-            lqrt_result = lqrt.lqrtest_rel(control, test, 
-                                    random_state=random_seed)
-                            
-            self.__pvalue_paired_lqrt = lqrt_result.pvalue
-            self.__statistic_paired_lqrt = lqrt_result.statistic
+            
+            # Introduced in v0.2.8, removed in v0.2.9 for performance issues.
+#             lqrt_result = lqrt.lqrtest_rel(control, test, 
+#                                     random_state=random_seed)
+#             self.__pvalue_paired_lqrt = lqrt_result.pvalue
+#             self.__statistic_paired_lqrt = lqrt_result.statistic
 
             if effect_size != "median_diff":
                 # Paired Student's t-test.
@@ -670,21 +677,22 @@ class TwoGroupsEffectSize(object):
                 # Occurs when the control and test are exactly identical
                 # in terms of rank (eg. all zeros.)
                 pass
-
-            # Likelihood Q-Ratio test:
-            lqrt_equal_var_result = lqrt.lqrtest_ind(control, test, 
-                                        random_state=random_seed,
-                                        equal_var=True)
-                            
-            self.__pvalue_lqrt_equal_var = lqrt_equal_var_result.pvalue
-            self.__statistic_lqrt_equal_var = lqrt_equal_var_result.statistic
             
-            lqrt_unequal_var_result = lqrt.lqrtest_ind(control, test, 
-                                        random_state=random_seed,
-                                        equal_var=False)
+            # Introduced in v0.2.8, removed in v0.2.9 for performance issues.
+#             # Likelihood Q-Ratio test:
+#             lqrt_equal_var_result = lqrt.lqrtest_ind(control, test, 
+#                                         random_state=random_seed,
+#                                         equal_var=True)
+                            
+#             self.__pvalue_lqrt_equal_var = lqrt_equal_var_result.pvalue
+#             self.__statistic_lqrt_equal_var = lqrt_equal_var_result.statistic
+            
+#             lqrt_unequal_var_result = lqrt.lqrtest_ind(control, test, 
+#                                         random_state=random_seed,
+#                                         equal_var=False)
                                         
-            self.__pvalue_lqrt_unequal_var = lqrt_unequal_var_result.pvalue
-            self.__statistic_lqrt_unequal_var = lqrt_unequal_var_result.statistic
+#             self.__pvalue_lqrt_unequal_var = lqrt_unequal_var_result.pvalue
+#             self.__statistic_lqrt_unequal_var = lqrt_unequal_var_result.statistic
                     
 
             standardized_es = es.cohens_d(control, test, is_paired=False)
@@ -701,59 +709,77 @@ class TwoGroupsEffectSize(object):
 
 
     def __repr__(self, show_resample_count=True, define_pval=True, sigfig=3):
-        UNPAIRED_ES_TO_TEST = {"mean_diff"    : "Mann-Whitney",
-                               "median_diff"  : "Kruskal",
-                               "cohens_d"     : "Mann-Whitney",
-                               "hedges_g"     : "Mann-Whitney",
-                               "cliffs_delta" : "Brunner-Munzel"}
-
-        TEST_TO_PVAL_ATTR = {"Mann-Whitney"    : "pvalue_mann_whitney",
-                             "Kruskal"        :  "pvalue_kruskal",
-                             "Brunner-Munzel" :  "pvalue_brunner_munzel",
-                             "Wilcoxon"       :  "pvalue_wilcoxon"}
-
+        
+        # # Deprecated in v0.2.9; permutation p-values will be reported by default.
+        # UNPAIRED_ES_TO_TEST = {"mean_diff"    : "Mann-Whitney",
+        #                        "median_diff"  : "Kruskal",
+        #                        "cohens_d"     : "Mann-Whitney",
+        #                        "hedges_g"     : "Mann-Whitney",
+        #                        "cliffs_delta" : "Brunner-Munzel"}
+        # 
+        # TEST_TO_PVAL_ATTR = {"Mann-Whitney"    : "pvalue_mann_whitney",
+        #                      "Kruskal"        :  "pvalue_kruskal",
+        #                      "Brunner-Munzel" :  "pvalue_brunner_munzel",
+        #                      "Wilcoxon"       :  "pvalue_wilcoxon"}
+        
         PAIRED_STATUS = {True: 'paired', False: 'unpaired'}
-
+        
         first_line = {"is_paired": PAIRED_STATUS[self.__is_paired],
                       "es"       : self.__EFFECT_SIZE_DICT[self.__effect_size]}
-
+        
         out1 = "The {is_paired} {es} ".format(**first_line)
-
+        
         base_string_fmt = "{:." + str(sigfig) + "}"
         if "." in str(self.__ci):
             ci_width = base_string_fmt.format(self.__ci)
         else:
             ci_width = str(self.__ci)
-
+        
         ci_out = {"es"       : base_string_fmt.format(self.__difference),
                   "ci"       : ci_width,
                   "bca_low"  : base_string_fmt.format(self.__bca_low),
                   "bca_high" : base_string_fmt.format(self.__bca_high)}
-
+        
         out2 = "is {es} [{ci}%CI {bca_low}, {bca_high}].".format(**ci_out)
         out = out1 + out2
-
-        if self.__is_paired:
-            stats_test = "Wilcoxon"
-        else:
-            stats_test = UNPAIRED_ES_TO_TEST[self.__effect_size]
-        pval_rounded = base_string_fmt.format(getattr(self,
-                                                     TEST_TO_PVAL_ATTR[stats_test])
-                                              )
-        pvalue = "The two-sided p-value of the {} test is {}.".format(stats_test,
-                                                                pval_rounded)
-
+        
+        # # Deprecated in v0.2.9; permutation p-values will be reported by default.
+        # if self.__is_paired:
+        #     stats_test = "Wilcoxon"
+        # else:
+        #     stats_test = UNPAIRED_ES_TO_TEST[self.__effect_size]
+        
+        
+        # pval_rounded = base_string_fmt.format(getattr(self,
+        #                                              TEST_TO_PVAL_ATTR[stats_test])
+        #                                       )
+        
+        pval_rounded = base_string_fmt.format(self.pvalue_permutation)
+        
+        # # Deprecated in v0.2.9; permutation p-values will be reported by default.
+        # pvalue = "The two-sided p-value of the {} test is {}.".format(stats_test,
+        #                                                         pval_rounded)
+        
+        # pvalue = "The two-sided p-value of the {} test is {}.".format(stats_test,
+        #                                                         pval_rounded)
+        
+        
+        pvalue = "The p-value of the two-sided permutation t-test is {}. ".format(pval_rounded)
+                                                                
         bs1 = "{} bootstrap samples were taken; ".format(self.__resamples)
         bs2 = "the confidence interval is bias-corrected and accelerated."
         bs = bs1 + bs2
 
-        defined = "The p-value(s) reported are the likelihood(s) of observing the " + \
+        pval_def1 = "The p-value(s) reported are the likelihood(s) of observing the " + \
                   "effect size(s),\nif the null hypothesis of zero difference is true."
+        pval_def2 = "\nFor each p-value, 5000 reshuffles of the " + \
+                    "control and test labels were performed."
+        pval_def = pval_def1 + pval_def2
 
         if show_resample_count and define_pval:
-            return "{}\n{}\n\n{}\n{}".format(out, pvalue, bs, defined)
+            return "{}\n{}\n\n{}\n{}".format(out, pvalue, bs, pval_def)
         elif show_resample_count is False and define_pval is True:
-            return "{}\n{}\n\n{}".format(out, pvalue, defined)
+            return "{}\n{}\n\n{}".format(out, pvalue, pval_def)
         elif show_resample_count is True and define_pval is False:
             return "{}\n{}\n\n{}".format(out, pvalue, bs)
         else:
@@ -995,65 +1021,76 @@ class TwoGroupsEffectSize(object):
             return self.__statistic_mann_whitney
         except AttributeError:
             return npnan
-
-
-
-    
+            
+    # Introduced in v0.2.9.
     @property
-    def pvalue_lqrt_paired(self):
-        from numpy import nan as npnan
-        try:
-            return self.__pvalue_paired_lqrt
-        except AttributeError:
-            return npnan
-
-
-
+    def pvalue_permutation(self):
+        return self.__PermutationTest_result.pvalue
+        
+        
+        
     @property
-    def statistic_lqrt_paired(self):
-        from numpy import nan as npnan
-        try:
-            return self.__statistic_paired_lqrt
-        except AttributeError:
-            return npnan
+    def permutation_count(self):
+        return self.__PermutationTest_result.permutation_count
+
+
+
+    # Introduced in v0.2.8, removed in v0.2.9 for performance issues.
+#     @property
+#     def pvalue_lqrt_paired(self):
+#         from numpy import nan as npnan
+#         try:
+#             return self.__pvalue_paired_lqrt
+#         except AttributeError:
+#             return npnan
+
+
+
+#     @property
+#     def statistic_lqrt_paired(self):
+#         from numpy import nan as npnan
+#         try:
+#             return self.__statistic_paired_lqrt
+#         except AttributeError:
+#             return npnan
             
     
-    @property
-    def pvalue_lqrt_unpaired_equal_variance(self):
-        from numpy import nan as npnan
-        try:
-            return self.__pvalue_lqrt_equal_var
-        except AttributeError:
-            return npnan
+#     @property
+#     def pvalue_lqrt_unpaired_equal_variance(self):
+#         from numpy import nan as npnan
+#         try:
+#             return self.__pvalue_lqrt_equal_var
+#         except AttributeError:
+#             return npnan
 
 
 
-    @property
-    def statistic_lqrt_unpaired_equal_variance(self):
-        from numpy import nan as npnan
-        try:
-            return self.__statistic_lqrt_equal_var
-        except AttributeError:
-            return npnan
+#     @property
+#     def statistic_lqrt_unpaired_equal_variance(self):
+#         from numpy import nan as npnan
+#         try:
+#             return self.__statistic_lqrt_equal_var
+#         except AttributeError:
+#             return npnan
             
             
-    @property
-    def pvalue_lqrt_unpaired_unequal_variance(self):
-        from numpy import nan as npnan
-        try:
-            return self.__pvalue_lqrt_unequal_var
-        except AttributeError:
-            return npnan
+#     @property
+#     def pvalue_lqrt_unpaired_unequal_variance(self):
+#         from numpy import nan as npnan
+#         try:
+#             return self.__pvalue_lqrt_unequal_var
+#         except AttributeError:
+#             return npnan
 
 
 
-    @property
-    def statistic_lqrt_unpaired_unequal_variance(self):
-        from numpy import nan as npnan
-        try:
-            return self.__statistic_lqrt_unequal_var
-        except AttributeError:
-            return npnan
+#     @property
+#     def statistic_lqrt_unpaired_unequal_variance(self):
+#         from numpy import nan as npnan
+#         try:
+#             return self.__statistic_lqrt_unequal_var
+#         except AttributeError:
+#             return npnan
     
     
     
@@ -1075,18 +1112,21 @@ class EffectSizeDataFrame(object):
 
     def __init__(self, dabest, effect_size,
                  is_paired, ci=95,
-                 resamples=5000, random_seed=12345):
+                 resamples=5000, 
+                 permutation_count=5000,
+                 random_seed=12345):
         """
         Parses the data from a Dabest object, enabling plotting and printing
         capability for the effect size of interest.
         """
 
-        self.__dabest_obj   = dabest
-        self.__effect_size  = effect_size
-        self.__is_paired    = is_paired
-        self.__ci           = ci
-        self.__resamples    = resamples
-        self.__random_seed  = random_seed
+        self.__dabest_obj        = dabest
+        self.__effect_size       = effect_size
+        self.__is_paired         = is_paired
+        self.__ci                = ci
+        self.__resamples         = resamples
+        self.__permutation_count = permutation_count
+        self.__random_seed       = random_seed
 
 
     def __pre_calc(self):
@@ -1114,6 +1154,7 @@ class EffectSizeDataFrame(object):
                                              self.__is_paired,
                                              self.__ci,
                                              self.__resamples,
+                                             self.__permutation_count,
                                              self.__random_seed)
                 r_dict = result.to_dict()
 
@@ -1156,6 +1197,8 @@ class EffectSizeDataFrame(object):
 
                             'bca_low', 'bca_high', 'bca_interval_idx',
                             'pct_low', 'pct_high', 'pct_interval_idx',
+                            
+                            'pvalue_permutation', 'permutation_count',
 
                             'bootstraps', 'resamples', 'random_seed',
 
@@ -1180,14 +1223,15 @@ class EffectSizeDataFrame(object):
                             'pvalue_kruskal',
                             'statistic_kruskal',
                             
-                            'pvalue_lqrt_paired',
-                            'statistic_lqrt_paired', 
+#                             'pvalue_lqrt_paired',
+#                             'statistic_lqrt_paired', 
                             
-                            'pvalue_lqrt_unpaired_equal_variance', 
-                            'statistic_lqrt_unpaired_equal_variance',
+#                             'pvalue_lqrt_unpaired_equal_variance', 
+#                             'statistic_lqrt_unpaired_equal_variance',
                             
-                            'pvalue_lqrt_unpaired_unequal_variance',
-                            'statistic_lqrt_unpaired_unequal_variance']
+#                             'pvalue_lqrt_unpaired_unequal_variance',
+#                             'statistic_lqrt_unpaired_unequal_variance'
+                           ]
 
         self.__results   = out_.reindex(columns=columns_in_order)
         self.__results.dropna(axis="columns", how="all", inplace=True)
@@ -1486,3 +1530,129 @@ class EffectSizeDataFrame(object):
         class.
         """
         return self.__dabest_obj
+        
+        
+        
+        
+class PermutationTest:
+    """
+    A class to compute and report permutation tests.
+    
+    Parameters
+    ----------
+    control : array-like
+    test : array-like
+        These should be numerical iterables.
+    effect_size : string.
+        Any one of the following are accepted inputs:
+        'mean_diff', 'median_diff', 'cohens_d', 'hedges_g', or 'cliffs_delta'
+    is_paired : boolean, default False
+    permutation_count : int, default 10000
+        The number of permutations (reshuffles) to perform.
+    random_seed : int, default 12345
+        `random_seed` is used to seed the random number generator during
+        bootstrap resampling. This ensures that the generated permutations
+        are replicable.
+
+
+    Returns
+    -------
+    A :py:class:`PermutationTest` object.
+    
+    difference : float
+        The effect size of the difference between the control and the test.
+    
+    effect_size : string
+        The type of effect size reported.
+    
+    
+    Example
+    -------
+    
+    
+    """
+    
+    def __init__(self, control, test, 
+                 effect_size, is_paired,
+                 permutation_count=5000, 
+                 random_seed=12345,
+                 **kwargs):
+    
+        import numpy as np
+        from ._stats_tools.effsize import two_group_difference
+
+        self.__permutation_count = permutation_count
+
+        # Run Sanity Check.
+        if is_paired and len(control) != len(test):
+            raise ValueError("The two arrays do not have the same length.")
+
+        # Initialise random number generator.
+        rng = np.random.default_rng(seed=random_seed)
+
+        # Set required constants and variables
+        control = np.array(control)
+        test = np.array(test)
+
+        control_sample = control.copy()
+        test_sample    = test.copy()
+
+        BAG = np.array([*control, *test])
+        CONTROL_LEN = int(len(control))
+        EXTREME_COUNT = 0.
+        THRESHOLD = np.abs(two_group_difference(control, test, 
+                                                is_paired, effect_size))
+        self.__permutations = []
+
+        for i in range(int(permutation_count)):
+            
+            if is_paired:
+                # Select which control-test pairs to swap.
+                random_idx = rng.choice(CONTROL_LEN,
+                                rng.integers(0, CONTROL_LEN),
+                                replace=False)
+
+                # Perform swap.
+                for i in random_idx:
+                    _placeholder      = control_sample[i]
+                    control_sample[i] = test_sample[i]
+                    test_sample[i]    = _placeholder
+                
+            else:
+                # Shuffle the bag and assign to control and test groups.
+                # NB. rng.shuffle didn't produce replicable results...
+                shuffled = rng.permutation(BAG) 
+                control_sample = shuffled[:CONTROL_LEN]
+                test_sample    = shuffled[CONTROL_LEN:]
+
+
+            es = two_group_difference(control_sample, test_sample, 
+                                    False, effect_size)
+            
+            self.__permutations.append(es)
+
+            if np.abs(es) > THRESHOLD:
+                EXTREME_COUNT += 1.
+
+        self.pvalue = EXTREME_COUNT / permutation_count
+
+
+    def __repr__(self):
+        return("{} permutations were taken. The pvalue is {}.".format(self.permutation_count, 
+                                                                      self.pvalue))
+
+
+    @property
+    def permutation_count(self):
+        """
+        The number of permuations taken .
+        """
+        return self.__permutation_count
+
+
+    @property
+    def permutations(self):
+        """
+        The effect sizes of all the permutations in a list.
+        """
+        return self.__permutations

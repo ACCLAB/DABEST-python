@@ -21,6 +21,6 @@ https://doi.org/10.1101/377978
 
 from ._api import load
 from ._stats_tools import effsize as effsize
-from ._classes import TwoGroupsEffectSize 
+from ._classes import TwoGroupsEffectSize, PermutationTest
 
-__version__ = "0.2.8"
+__version__ = "0.2.9"
