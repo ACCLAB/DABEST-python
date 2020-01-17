@@ -6,6 +6,7 @@
 
 import sys
 import numpy as np
+from numpy.random import MT19937, RandomState
 import scipy as sp
 import pytest
 import pandas as pd
@@ -22,14 +23,12 @@ def test_unrelated_columns(N=60, random_seed=12345):
     Added in v0.2.5.
     """
 
-    np.random.seed(random_seed)
+    rng = RandomState(MT19937(random_seed))
 
     df = pd.DataFrame(
-        {'groups': np.random.choice(['Group 1', 'Group 2', 'Group 3'], size=(N,)),
-         'color' : np.random.choice(['green', 'red', 'purple'], size=(N,)),
-         'value': np.random.random(size=(N,))})
-
-    np.random.seed()
+        {'groups': rng.choice(['Group 1', 'Group 2', 'Group 3'], size=(N,)),
+         'color' : rng.choice(['green', 'red', 'purple'], size=(N,)),
+         'value':  rng.random(size=(N,))})
 
     df['unrelated'] = np.nan
 
@@ -38,6 +37,6 @@ def test_unrelated_columns(N=60, random_seed=12345):
     
     md = test.mean_diff.results
     
-    assert md.difference[0] == pytest.approx(0.1115, abs=1e-6)
-    assert md.bca_low[0]    == pytest.approx(-0.042835, abs=1e-6)
-    assert md.bca_high[0]   == pytest.approx(0.264542, abs=1e-6)
+    assert md.difference[0] == pytest.approx(0.128217, abs=1e-6)
+    assert md.bca_low[0]    == pytest.approx(-0.040298, abs=1e-6)
+    assert md.bca_high[0]   == pytest.approx(0.287429, abs=1e-6)
