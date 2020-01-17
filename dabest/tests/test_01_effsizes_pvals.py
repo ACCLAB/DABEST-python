@@ -11,7 +11,7 @@ import numpy as np
 import scipy as sp
 import pandas as pd
 from .._stats_tools import effsize
-from .._classes import TwoGroupsEffectSize
+from .._classes import TwoGroupsEffectSize, PermutationTest, Dabest
 
 
 
@@ -26,8 +26,9 @@ wellbeing = pd.DataFrame(wb)
 
 
 # from Cumming 2012 Table 11.2 Page 291
-paired_wb = {"pre":     [43, 28, 54, 36, 31, 48, 50, 69, 29, 40],
-             "post":    [51, 33, 58, 42, 39, 45, 54, 68, 35, 44]}
+paired_wb = {"pre":   [43, 28, 54, 36, 31, 48, 50, 69, 29, 40],
+             "post":  [51, 33, 58, 42, 39, 45, 54, 68, 35, 44],
+             "ID":    np.arange(10)}
 paired_wellbeing = pd.DataFrame(paired_wb)
 
 
@@ -52,6 +53,9 @@ b_scores = [1, 3, 4, 7, 8]
 
 
 
+# kwargs for Dabest class init.
+dabest_default_kwargs = dict(x=None, y=None, ci=95, 
+                            resamples=5000, random_seed=12345)
 
 
 
@@ -180,28 +184,50 @@ def test_ordinal_dominance():
     assert es.pvalue_brunner_munzel == pytest.approx(p1)
     
     
-
+    
+def test_unpaired_permutation_test():
+    perm_test = PermutationTest(wellbeing.control, wellbeing.expt, 
+                                effect_size="mean_diff", 
+                                is_paired=False)
+    assert perm_test.pvalue == pytest.approx(0.2976)
+    
+    
+    
+def test_paired_permutation_test():
+    perm_test = PermutationTest(paired_wellbeing.pre, 
+                                paired_wellbeing.post, 
+                                effect_size="mean_diff", 
+                                is_paired=True)
+    assert perm_test.pvalue == pytest.approx(0.0132)
+    
+    
+    
 def test_lqrt_unpaired():
-    es = TwoGroupsEffectSize(wellbeing.control, wellbeing.expt, 
-                             "mean_diff", is_paired=False)
-                             
+    unpaired_dabest = Dabest(wellbeing, idx=("control", "expt"), 
+                             paired=False, id_col=None, 
+                             **dabest_default_kwargs)
+    lqrt_result = unpaired_dabest.mean_diff.lqrt
+                   
     p1 = lqrt.lqrtest_ind(wellbeing.control, wellbeing.expt,
-                          equal_var=False,
+                          equal_var=True,
                           random_state=12345)
                           
     p2 = lqrt.lqrtest_ind(wellbeing.control, wellbeing.expt,
-                          equal_var=True,
+                          equal_var=False,
                           random_state=12345)
     
-    assert es.pvalue_lqrt_unpaired_unequal_variance == pytest.approx(p1.pvalue)
-    assert es.pvalue_lqrt_unpaired_equal_variance == pytest.approx(p2.pvalue)
+    assert lqrt_result.pvalue_lqrt_equal_var[0] == pytest.approx(p1.pvalue)
+    assert lqrt_result.pvalue_lqrt_unequal_var[0] == pytest.approx(p2.pvalue)
+    
     
     
 def test_lqrt_paired():
-    es = TwoGroupsEffectSize(paired_wellbeing.pre, paired_wellbeing.post, 
-                             "mean_diff", is_paired=True)
+    paired_dabest = Dabest(paired_wellbeing, idx=("pre", "post"),
+                           paired=True, id_col="ID",
+                           **dabest_default_kwargs)
+    lqrt_result = paired_dabest.mean_diff.lqrt
                              
     p1 = lqrt.lqrtest_rel(paired_wellbeing.pre, paired_wellbeing.post, 
                  random_state=12345)
     
-    assert es.pvalue_lqrt_paired == pytest.approx(p1.pvalue)
+    assert lqrt_result.pvalue_paired_lqrt[0] == pytest.approx(p1.pvalue)
