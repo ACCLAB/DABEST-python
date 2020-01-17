@@ -39,7 +39,7 @@ if __name__ == "__main__":
         long_description=LONG_DESCRIPTION,
         packages=find_packages(),
         install_requires=[
-            'numpy~=1.15',
+            'numpy~=1.17',
             'scipy~=1.2',
             'pandas~=0.25,!=0.25.2',
             
