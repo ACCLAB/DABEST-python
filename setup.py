@@ -60,7 +60,7 @@ if __name__ == "__main__":
             "Operating System :: POSIX :: Linux",
             "Operating System :: Unix",
             "Operating System :: MacOS",
-        ]
+        ],
         url='https://acclab.github.io/DABEST-python-docs',
         download_url='https://www.github.com/ACCLAB/DABEST-python',
         license='BSD 3-clause Clear License'
