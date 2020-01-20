@@ -49,6 +49,18 @@ if __name__ == "__main__":
         ],
         extras_require={'dev': ['pytest~=5.3', 'pytest-mpl~=0.11']},
         python_requires='~=3.5',
+        classifiers=[
+            "Development Status :: 5 - Production/Stable",
+            "Intended Audience :: Science/Research",
+            "Intended Audience :: Education",
+            "License :: OSI Approved :: BSD License",
+            "Programming Language :: Python :: 3",
+            "Topic :: Scientific/Engineering :: Visualization",
+            "Operating System :: Microsoft :: Windows",
+            "Operating System :: POSIX :: Linux",
+            "Operating System :: Unix",
+            "Operating System :: MacOS",
+        ]
         url='https://acclab.github.io/DABEST-python-docs',
         download_url='https://www.github.com/ACCLAB/DABEST-python',
         license='BSD 3-clause Clear License'
