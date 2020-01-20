@@ -6,8 +6,6 @@ env:
   - PYTHON=3.6 BACKEND=agg
   - PYTHON=3.7 BACKEND=agg
   - PYTHON=3.8 BACKEND=agg
-  # - PYTHON=3.8 BACKEND=agg
-
 
 before_install:
   - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
