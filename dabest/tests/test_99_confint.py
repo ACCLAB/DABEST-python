@@ -27,8 +27,8 @@ def test_paired_mean_diff_ci():
                  paired=True, id_col="subject_id")
     paired_mean_diff = ex_bp.mean_diff.results
     
-    assert pytest.approx(3.625) == paired_mean_diff.bca_low[0]
-    assert pytest.approx(9.125) == paired_mean_diff.bca_high[0]
+    assert pytest.approx(3.5) == paired_mean_diff.bca_low[0]
+    assert pytest.approx(9.25) == paired_mean_diff.bca_high[0]
 
 
 # def test_paired_median_diff_ci():    

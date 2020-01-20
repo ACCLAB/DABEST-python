@@ -23,7 +23,8 @@ def test_unrelated_columns(N=60, random_seed=12345):
     Added in v0.2.5.
     """
 
-    rng = RandomState(MT19937(random_seed))
+    # rng = RandomState(MT19937(random_seed))
+    rng = np.random.default_rng(seed=random_seed)
 
     df = pd.DataFrame(
         {'groups': rng.choice(['Group 1', 'Group 2', 'Group 3'], size=(N,)),
@@ -37,6 +38,6 @@ def test_unrelated_columns(N=60, random_seed=12345):
     
     md = test.mean_diff.results
     
-    assert md.difference[0] == pytest.approx(0.128217, abs=1e-6)
-    assert md.bca_low[0]    == pytest.approx(-0.040298, abs=1e-6)
-    assert md.bca_high[0]   == pytest.approx(0.287429, abs=1e-6)
+    assert md.difference[0] == pytest.approx(0.0792, abs=1e-4)
+    assert md.bca_low[0]    == pytest.approx(-0.0899, abs=1e-4)
+    assert md.bca_high[0]   == pytest.approx(0.2418, abs=1e-4)
