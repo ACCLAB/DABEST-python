@@ -198,7 +198,7 @@ def test_paired_permutation_test():
                                 paired_wellbeing.post, 
                                 effect_size="mean_diff", 
                                 is_paired=True)
-    assert perm_test.pvalue == pytest.approx(0.0132)
+    assert perm_test.pvalue == pytest.approx(0.0124)
     
     
     

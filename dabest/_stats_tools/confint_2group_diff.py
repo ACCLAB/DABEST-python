@@ -135,10 +135,10 @@ def compute_bootstrapped_diff(x0, x1, is_paired, effect_size,
     
     from . import effsize as __es
     import numpy as np
-    # from numpy.random import MT19937, RandomState
+    from numpy.random import PCG64, RandomState
     
     # rng = RandomState(default_rng(random_seed))
-    rng = np.random.default_rng(seed=random_seed)
+    rng = RandomState(PCG64(random_seed))
 
     out = np.repeat(np.nan, resamples)
     x0_len = len(x0)
@@ -158,9 +158,6 @@ def compute_bootstrapped_diff(x0, x1, is_paired, effect_size,
             
         out[i] = __es.two_group_difference(x0_sample, x1_sample,
                                           is_paired, effect_size)
-
-    # # reset seed
-    # rng = RandomState(MT19937())
     
     # check whether there are any infinities in the bootstrap,
     # which likely indicates the sample sizes are too small as

@@ -1646,6 +1646,7 @@ class PermutationTest:
                  **kwargs):
     
         import numpy as np
+        from numpy.random import PCG64, RandomState
         from ._stats_tools.effsize import two_group_difference
 
         self.__permutation_count = permutation_count
@@ -1655,7 +1656,8 @@ class PermutationTest:
             raise ValueError("The two arrays do not have the same length.")
 
         # Initialise random number generator.
-        rng = np.random.default_rng(seed=random_seed)
+        # rng = np.random.default_rng(seed=random_seed)
+        rng = RandomState(PCG64(random_seed))
 
         # Set required constants and variables
         control = np.array(control)
@@ -1676,7 +1678,7 @@ class PermutationTest:
             if is_paired:
                 # Select which control-test pairs to swap.
                 random_idx = rng.choice(CONTROL_LEN,
-                                rng.integers(0, CONTROL_LEN),
+                                rng.randint(0, CONTROL_LEN+1),
                                 replace=False)
 
                 # Perform swap.

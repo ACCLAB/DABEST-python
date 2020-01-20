@@ -6,7 +6,7 @@
 
 import sys
 import numpy as np
-from numpy.random import MT19937, RandomState
+from numpy.random import PCG64, RandomState
 import scipy as sp
 import pytest
 import pandas as pd
@@ -22,9 +22,10 @@ def test_unrelated_columns(N=60, random_seed=12345):
     
     Added in v0.2.5.
     """
-
+    
     # rng = RandomState(MT19937(random_seed))
-    rng = np.random.default_rng(seed=random_seed)
+    rng = RandomState(PCG64(12345))
+    # rng = np.random.default_rng(seed=random_seed)
 
     df = pd.DataFrame(
         {'groups': rng.choice(['Group 1', 'Group 2', 'Group 3'], size=(N,)),
@@ -38,6 +39,6 @@ def test_unrelated_columns(N=60, random_seed=12345):
     
     md = test.mean_diff.results
     
-    assert md.difference[0] == pytest.approx(0.0792, abs=1e-4)
-    assert md.bca_low[0]    == pytest.approx(-0.0899, abs=1e-4)
-    assert md.bca_high[0]   == pytest.approx(0.2418, abs=1e-4)
+    assert md.difference[0] == pytest.approx(-0.0322, abs=1e-4)
+    assert md.bca_low[0]    == pytest.approx(-0.2279, abs=1e-4)
+    assert md.bca_high[0]   == pytest.approx(0.1613, abs=1e-4)
