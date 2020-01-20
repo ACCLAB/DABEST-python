@@ -135,9 +135,10 @@ def compute_bootstrapped_diff(x0, x1, is_paired, effect_size,
     
     from . import effsize as __es
     import numpy as np
-    from numpy.random import MT19937, RandomState
+    # from numpy.random import MT19937, RandomState
     
-    rng = RandomState(MT19937(random_seed))
+    # rng = RandomState(default_rng(random_seed))
+    rng = np.random.default_rng(seed=random_seed)
 
     out = np.repeat(np.nan, resamples)
     x0_len = len(x0)
