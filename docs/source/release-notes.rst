@@ -4,10 +4,21 @@
 Release Notes
 =============
 
+
+v0.3.0
+------
+This is a new major release that refactors the statistical test output. All users are strongly encouraged to update to this release.
+
+Main Changes:
+  - the Lq-Likelihood Ratio-Type test results are now computed only when the user calls the `lqrt` property of the `dabest_object.effect_size` :py:class:`EffectSizeDataFrame` object. This refactor was done to mitigate the lengthy computation time the test took. See Issues `#94 <https://github.com/ACCLAB/DABEST-python/issues/94>`_ and `#91 <https://github.com/ACCLAB/DABEST-python/issues/91>`_.
+  - The default hypothesis test reported by calling the `dabest_object.effect_size` :py:class:`EffectSizeDataFrame` object is now the `non-parametric two-sided permutation t-test <https://en.wikipedia.org/wiki/Resampling_(statistics)#Permutation_tests>`_. Conceptually, this hypothesis test mirrors the usage of the bootstrap (to obtain the 95% confidence intervals). Read more at :doc:`tutorial`. See Issue `#92 <https://github.com/ACCLAB/DABEST-python/issues/92>`_ and PR `#93 <https://github.com/ACCLAB/DABEST-python/issues/93>`_.
+  - The minimum version of :py:mod:`numpy` is now v0.17, which has an updated method of generating random samples. The resampling code used in :py:mod:`dabest` has thus been updated as well.
+
+
 v0.2.8
 ------
 
-This release fixes minor bugs, and implements a new statistical test. There are no known breaking changes to the API; hence **all users are strongly encouraged to upgrade to the latest version**.
+This release fixes minor bugs, and implements a new statistical test.
 
 Feature Additions:
   -  Implement `Lq-Likelihood-Ratio-Type Test <https://github.com/alyakin314/lqrt>`_ in statistical output with `PR #85 <https://github.com/ACCLAB/DABEST-python/pull/85>`_; thanks to Adam Li (`@adam2392 <https://github.com/adam2392>`_).
@@ -28,7 +39,7 @@ v0.2.6
 ------
 
 Feature additions:
-  - It is now possible to specify a pre-determined :py:mod:`matplotlib` :py:class:`Axes` to create the estimation plot in. See the new section in the tutorial for more information. (`Pull request #73 <https://github.com/ACCLAB/DABEST-python/pull/73>`_; thanks to Adam Nekimken (`@anekimken <https://github.com/anekimken>`_).
+  - It is now possible to specify a pre-determined :py:mod:`matplotlib` :py:class:`Axes` to create the estimation plot in. See :ref:`inset plot` in the :doc:`tutorial` (`Pull request #73 <https://github.com/ACCLAB/DABEST-python/pull/73>`_; thanks to Adam Nekimken (`@anekimken <https://github.com/anekimken>`_).
   - 
 
 

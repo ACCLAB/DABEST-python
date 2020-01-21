@@ -46,7 +46,7 @@ autoclass_content = "init"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon',
-              'sphinx.ext.githubpages', 'sphinx.ext.intersphinx']
+              'sphinx.ext.mathjax', 'sphinx.ext.githubpages', 'sphinx.ext.intersphinx']
 
 # Add mappings
 intersphinx_mapping = {
@@ -67,7 +67,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'dabest'
-copyright = '2019, Joses W. Ho'
+copyright = '2017-2020, Joses W. Ho'
 author = 'Joses W. Ho'
 
 # The version info for the project you're documenting, acts as replacement for
