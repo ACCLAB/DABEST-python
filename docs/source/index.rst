@@ -18,6 +18,9 @@ Analyze your data with estimation statistics!
 
 News
 ----
+January 2020:
+ - v0.3.0 released. Approximate permutation tests have been added, and are now the default p-values reported in the textual output. The LqRT tests were also refactored to a user-callable property.
+
 December 2019:
   - v0.2.8 released. This release adds the `Lq-Likelihood-Ratio-Type Test <https://github.com/alyakin314/lqrt>`_ in the statistical output, and also a bugfix for  slopegraph and reference line keyword parsing. For more information, see the :doc:`release-notes`.
 
