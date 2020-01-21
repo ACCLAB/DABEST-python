@@ -14,7 +14,8 @@ class Dabest(object):
 
         """
         Parses and stores pandas DataFrames in preparation for estimation
-        statistics.
+        statistics. You should not be calling this class directly; instead,
+        use `dabest.load()` to parse your DataFrame prior to analysis.
         """
 
         # Import standard data science libraries.
@@ -181,26 +182,26 @@ class Dabest(object):
                 raise IndexError(err)
 
         EffectSizeDataFrame_kwargs = dict(ci=ci, is_paired=paired,
-                                          random_seed=random_seed,
-                                          resamples=resamples)
+                                           random_seed=random_seed,
+                                           resamples=resamples)
 
-        self.mean_diff    = EffectSizeDataFrame(self, "mean_diff",
+        self.__mean_diff    = EffectSizeDataFrame(self, "mean_diff",
                                                 **EffectSizeDataFrame_kwargs)
 
-        self.median_diff  = EffectSizeDataFrame(self, "median_diff",
+        self.__median_diff  = EffectSizeDataFrame(self, "median_diff",
                                                **EffectSizeDataFrame_kwargs)
 
-        self.cohens_d     = EffectSizeDataFrame(self, "cohens_d",
+        self.__cohens_d     = EffectSizeDataFrame(self, "cohens_d",
                                                 **EffectSizeDataFrame_kwargs)
 
-        self.hedges_g     = EffectSizeDataFrame(self, "hedges_g",
+        self.__hedges_g     = EffectSizeDataFrame(self, "hedges_g",
                                                 **EffectSizeDataFrame_kwargs)
 
         if paired is False:
-            self.cliffs_delta = EffectSizeDataFrame(self, "cliffs_delta",
+            self.__cliffs_delta = EffectSizeDataFrame(self, "cliffs_delta",
                                                     **EffectSizeDataFrame_kwargs)
         else:
-            self.cliffs_delta = "The data is paired; Cliff's delta is therefore undefined."
+            self.__cliffs_delta = "The data is paired; Cliff's delta is therefore undefined."
 
 
     def __repr__(self):
@@ -247,6 +248,205 @@ class Dabest(object):
     # @property
     # def variable_name(self):
     #     return self.__variable_name()
+    
+    @property
+    def mean_diff(self):
+        """
+        Returns an :py:class:`EffectSizeDataFrame` for the mean difference, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
+        
+        Example
+        -------
+        >>> from scipy.stats import norm
+        >>> import pandas as pd
+        >>> import dabest
+        >>> control = norm.rvs(loc=0, size=30, random_state=12345)
+        >>> test    = norm.rvs(loc=0.5, size=30, random_state=12345)
+        >>> my_df   = pd.DataFrame({"control": control,
+                                    "test": test})
+        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
+        >>> my_dabest_object.mean_diff
+        
+        Notes
+        -----
+        This is simply the mean of the control group subtracted from
+        the mean of the test group.
+        
+        .. math::
+            \\text{Mean difference} = \\overline{x}_{Test} - \\overline{x}_{Control}
+            
+        where :math:`\\overline{x}` is the mean for the group :math:`x`.
+        """
+        return self.__mean_diff
+        
+        
+    @property    
+    def median_diff(self):
+        """
+        Returns an :py:class:`EffectSizeDataFrame` for the median difference, its confidence interval, and relevant statistics, for all comparisons  as indicated via the `idx` and `paired` argument in `dabest.load()`.
+        
+        Example
+        -------
+        >>> from scipy.stats import norm
+        >>> import pandas as pd
+        >>> import dabest
+        >>> control = norm.rvs(loc=0, size=30, random_state=12345)
+        >>> test    = norm.rvs(loc=0.5, size=30, random_state=12345)
+        >>> my_df   = pd.DataFrame({"control": control,
+                                    "test": test})
+        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
+        >>> my_dabest_object.median_diff
+        
+        Notes
+        -----
+        This is simply the median of the control group subtracted from
+        the median of the test group.
+        
+        .. math::
+            \\text{Median difference} = \\widetilde{x}_{Test} - \\widetilde{x}_{Control}
+            
+        where :math:`\\widetilde{x}` is the median for the group :math:`x`.
+        """
+        return self.__median_diff
+        
+        
+    @property
+    def cohens_d(self):
+        """
+        Returns an :py:class:`EffectSizeDataFrame` for the standardized mean difference Cohen's `d`, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
+        
+        Example
+        -------
+        >>> from scipy.stats import norm
+        >>> import pandas as pd
+        >>> import dabest
+        >>> control = norm.rvs(loc=0, size=30, random_state=12345)
+        >>> test    = norm.rvs(loc=0.5, size=30, random_state=12345)
+        >>> my_df   = pd.DataFrame({"control": control,
+                                    "test": test})
+        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
+        >>> my_dabest_object.cohens_d
+        
+        Notes
+        -----
+        Cohen's `d` is simply the mean of the control group subtracted from
+        the mean of the test group.
+        
+        If the comparison(s) are unpaired, Cohen's `d` is computed with the following equation:
+        
+        .. math::
+            
+            d = \\frac{\\overline{x}_{Test} - \\overline{x}_{Control}} {\\text{pooled standard deviation}}
+                
+        
+        For paired comparisons, Cohen's d is given by
+        
+        .. math::
+            d = \\frac{\\overline{x}_{Test} - \\overline{x}_{Control}} {\\text{average standard deviation}}
+            
+        where :math:`\\overline{x}` is the mean of the respective group of observations, :math:`{Var}_{x}` denotes the variance of that group,
+        
+        .. math::
+        
+            \\text{pooled standard deviation} = \\sqrt{ \\frac{(n_{control} - 1) * {Var}_{control} + (n_{test} - 1) * {Var}_{test} } {n_{control} + n_{test} - 2} }
+        
+        and
+        
+        .. math::
+        
+            \\text{average standard deviation} = \\sqrt{ \\frac{{Var}_{control} + {Var}_{test}} {2}}
+            
+        The sample variance (and standard deviation) uses N-1 degrees of freedoms.
+        This is an application of `Bessel's correction <https://en.wikipedia.org/wiki/Bessel%27s_correction>`_, and yields the unbiased
+        sample variance.
+        
+        References:
+            https://en.wikipedia.org/wiki/Effect_size#Cohen's_d
+            https://en.wikipedia.org/wiki/Bessel%27s_correction
+            https://en.wikipedia.org/wiki/Standard_deviation#Corrected_sample_standard_deviation
+        """
+        return self.__cohens_d
+    
+    
+    @property  
+    def hedges_g(self):
+        """
+        Returns an :py:class:`EffectSizeDataFrame` for the standardized mean difference Hedges' `g`, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
+        
+        
+        Example
+        -------
+        >>> from scipy.stats import norm
+        >>> import pandas as pd
+        >>> import dabest
+        >>> control = norm.rvs(loc=0, size=30, random_state=12345)
+        >>> test    = norm.rvs(loc=0.5, size=30, random_state=12345)
+        >>> my_df   = pd.DataFrame({"control": control,
+                                    "test": test})
+        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
+        >>> my_dabest_object.hedges_g
+        
+        Notes
+        -----
+        
+        Hedges' `g` is :py:attr:`cohens_d` corrected for bias via multiplication with the following correction factor:
+        
+        .. math::
+            \\frac{ \\Gamma( \\frac{a} {2} )} {\\sqrt{ \\frac{a} {2} } \\times \\Gamma( \\frac{a - 1} {2} )}
+            
+        where
+        
+        .. math::
+            a = {n}_{control} + {n}_{test} - 2
+            
+        and :math:`\\Gamma(x)` is the `Gamma function <https://en.wikipedia.org/wiki/Gamma_function>`_.
+            
+        
+        
+        References:
+            https://en.wikipedia.org/wiki/Effect_size#Hedges'_g
+            https://journals.sagepub.com/doi/10.3102/10769986006002107
+        """
+        return self.__hedges_g
+        
+        
+    @property    
+    def cliffs_delta(self):
+        """
+        Returns an :py:class:`EffectSizeDataFrame` for Cliff's delta, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
+        
+        
+        Example
+        -------
+        >>> from scipy.stats import norm
+        >>> import pandas as pd
+        >>> import dabest
+        >>> control = norm.rvs(loc=0, size=30, random_state=12345)
+        >>> test    = norm.rvs(loc=0.5, size=30, random_state=12345)
+        >>> my_df   = pd.DataFrame({"control": control,
+                                    "test": test})
+        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
+        >>> my_dabest_object.cliffs_delta
+        
+        
+        Notes
+        -----
+        
+        Cliff's delta is a measure of ordinal dominance, ie. how often the values from the test sample are larger than values from the control sample.
+        
+        .. math::
+            \\text{Cliff's delta} = \\frac{\\#({x}_{test} > {x}_{control}) - \\#({x}_{test} < {x}_{control})} {{n}_{Test} \\times {n}_{Control}}
+            
+            
+        where :math:`\\#` denotes the number of times a value from the test sample exceeds (or is lesser than) values in the control sample. 
+         
+        Cliff's delta ranges from -1 to 1; it can also be thought of as a measure of the degree of overlap between the two samples. An attractive aspect of this effect size is that it does not make an assumptions about the underlying distributions that the samples were drawn from. 
+        
+        References:
+            https://en.wikipedia.org/wiki/Effect_size#Effect_size_for_ordinal_data
+            https://psycnet.apa.org/record/1994-08169-001
+        """
+        return self.__cliffs_delta
+
 
 
     @property
@@ -273,7 +473,7 @@ class Dabest(object):
     @property
     def id_col(self):
         """
-        Returns the ic column declared to `dabest.load()`.
+        Returns the id column declared to `dabest.load()`.
         """
         return self.__id_col
 
@@ -1294,7 +1494,6 @@ class EffectSizeDataFrame(object):
         self.__lqrt_results = pd.DataFrame(out)
 
 
-
     def plot(self, color_col=None,
 
             raw_marker_size=6, es_marker_size=9,
@@ -1582,7 +1781,11 @@ class EffectSizeDataFrame(object):
         
     @property
     def lqrt(self):
-        """Returns all pairwise Lq-Likelihood Ratio Type test results nicely."""
+        """Returns all pairwise Lq-Likelihood Ratio Type test results 
+        as a pandas DataFrame.
+        
+        For more information on LqRT tests, see https://arxiv.org/abs/1911.11922
+        """
         try:
             return self.__lqrt_results
         except AttributeError:
@@ -1622,6 +1825,21 @@ class PermutationTest:
     
     effect_size : string
         The type of effect size reported.
+        
+        
+    Notes
+    -----
+    The basic concept of permutation tests is the same as that behind bootstrapping.
+    In an "exact" permutation test, all possible resuffles of the control and test 
+    labels are performed, and the proportion of effect sizes that equal or exceed 
+    the observed effect size is computed. This is the probability, under the null 
+    hypothesis of zero difference between test and control groups, of observing the
+    effect size: the p-value of the Student's t-test.
+    
+    Exact permutation tests are impractical: computing the effect sizes for all reshuffles quickly exceeds trivial computational loads. A control group and a test group both with 10 observations each would have a total of  :math:`20!` or :math:`2.43 \\times {10}^{18}` reshuffles.
+    Therefore, in practice, "approximate" permutation tests are performed, where a sufficient number of reshuffles are performed (5,000 or 10,000), from which the p-value is computed.
+    
+    More information can be found `here <https://en.wikipedia.org/wiki/Resampling_(statistics)#Permutation_tests>`_.
     
     
     Example
@@ -1635,7 +1853,6 @@ class PermutationTest:
     ...                                    effect_size="mean_diff", 
     ...                                    is_paired=False)
     >>> perm_test
-    
     5000 permutations were taken. The pvalue is 0.0758.
     """
     
@@ -1707,7 +1924,7 @@ class PermutationTest:
 
 
     def __repr__(self):
-        return("{} permutations were taken. The pvalue is {}.".format(self.permutation_count, 
+        return("{} permutations were taken. The p-value is {}.".format(self.permutation_count, 
                                                                       self.pvalue))
 
 
