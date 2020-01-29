@@ -815,7 +815,7 @@ class TwoGroupsEffectSize(object):
             self.__statistic_wilcoxon = wilcoxon.statistic
             
             
-            # Introduced in v0.2.8, removed in v0.2.9 for performance issues.
+            # Introduced in v0.2.8, removed in v0.3.0 for performance issues.
 #             lqrt_result = lqrt.lqrtest_rel(control, test, 
 #                                     random_state=random_seed)
 #             self.__pvalue_paired_lqrt = lqrt_result.pvalue
@@ -877,7 +877,7 @@ class TwoGroupsEffectSize(object):
                 # in terms of rank (eg. all zeros.)
                 pass
             
-            # Introduced in v0.2.8, removed in v0.2.9 for performance issues.
+            # Introduced in v0.2.8, removed in v0.3.0 for performance issues.
 #             # Likelihood Q-Ratio test:
 #             lqrt_equal_var_result = lqrt.lqrtest_ind(control, test, 
 #                                         random_state=random_seed,
@@ -909,7 +909,7 @@ class TwoGroupsEffectSize(object):
 
     def __repr__(self, show_resample_count=True, define_pval=True, sigfig=3):
         
-        # # Deprecated in v0.2.9; permutation p-values will be reported by default.
+        # # Deprecated in v0.3.0; permutation p-values will be reported by default.
         # UNPAIRED_ES_TO_TEST = {"mean_diff"    : "Mann-Whitney",
         #                        "median_diff"  : "Kruskal",
         #                        "cohens_d"     : "Mann-Whitney",
@@ -942,7 +942,7 @@ class TwoGroupsEffectSize(object):
         out2 = "is {es} [{ci}%CI {bca_low}, {bca_high}].".format(**ci_out)
         out = out1 + out2
         
-        # # Deprecated in v0.2.9; permutation p-values will be reported by default.
+        # # Deprecated in v0.3.0; permutation p-values will be reported by default.
         # if self.__is_paired:
         #     stats_test = "Wilcoxon"
         # else:
@@ -955,7 +955,7 @@ class TwoGroupsEffectSize(object):
         
         pval_rounded = base_string_fmt.format(self.pvalue_permutation)
         
-        # # Deprecated in v0.2.9; permutation p-values will be reported by default.
+        # # Deprecated in v0.3.0; permutation p-values will be reported by default.
         # pvalue = "The two-sided p-value of the {} test is {}.".format(stats_test,
         #                                                         pval_rounded)
         
@@ -1221,7 +1221,7 @@ class TwoGroupsEffectSize(object):
         except AttributeError:
             return npnan
             
-    # Introduced in v0.2.9.
+    # Introduced in v0.3.0.
     @property
     def pvalue_permutation(self):
         return self.__PermutationTest_result.pvalue
@@ -1234,7 +1234,7 @@ class TwoGroupsEffectSize(object):
 
 
 
-    # Introduced in v0.2.8, removed in v0.2.9 for performance issues.
+    # Introduced in v0.2.8, removed in v0.3.0 for performance issues.
 #     @property
 #     def pvalue_lqrt_paired(self):
 #         from numpy import nan as npnan
@@ -1459,7 +1459,7 @@ class EffectSizeDataFrame(object):
                 test = dat[dat[xvar] == tname][yvar].copy()
                 
                 if self.__is_paired is True:                    
-                    # Refactored here in v0.2.9 for performance issues.
+                    # Refactored here in v0.3.0 for performance issues.
                     lqrt_result = lqrt.lqrtest_rel(control, test, 
                                             random_state=rnd_seed)
                     
