@@ -670,7 +670,8 @@ class TwoGroupsEffectSize(object):
          'statistic_welch': 0.9472545159069105,
          'statistic_wilcoxon': nan}
         """
-
+        
+        import numpy as np
         from numpy import array, isnan, isinf
         from numpy import sort as npsort
         from numpy.random import choice, seed
@@ -802,7 +803,7 @@ class TwoGroupsEffectSize(object):
         self.__pct_high = self.__bootstraps[pct_idx_high]
 
         # Perform statistical tests.
-        
+                
         self.__PermutationTest_result = PermutationTest(control, test, 
                                                         effect_size, 
                                                         is_paired,
@@ -1225,9 +1226,9 @@ class TwoGroupsEffectSize(object):
     @property
     def pvalue_permutation(self):
         return self.__PermutationTest_result.pvalue
-        
-        
-        
+    
+    # 
+    # 
     @property
     def permutation_count(self):
         return self.__PermutationTest_result.permutation_count
@@ -1353,7 +1354,7 @@ class EffectSizeDataFrame(object):
                                              self.__is_paired,
                                              self.__ci,
                                              self.__resamples,
-                                             self.__permutation_count,
+                                             # self.__permutation_count,
                                              self.__random_seed)
                 r_dict = result.to_dict()
 
@@ -1397,10 +1398,10 @@ class EffectSizeDataFrame(object):
                             'bca_low', 'bca_high', 'bca_interval_idx',
                             'pct_low', 'pct_high', 'pct_interval_idx',
                             
-                            'pvalue_permutation', 'permutation_count',
-
                             'bootstraps', 'resamples', 'random_seed',
-
+                            
+                            'pvalue_permutation', 'permutation_count',
+                            
                             'pvalue_welch',
                             'statistic_welch',
 
