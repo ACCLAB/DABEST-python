@@ -6,6 +6,20 @@
 [![Free-to-view citation](https://zenodo.org/badge/DOI/10.1038/s41592-019-0470-3.svg)](https://rdcu.be/bHhJ4)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause--Clear-orange.svg)](https://spdx.org/licenses/BSD-3-Clause-Clear.html)
 
+## Contents
+<!-- TOC depthFrom:1 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
+- [About](#about)
+- [Installation](#installation)
+- [Usage](#usage)
+- [How to cite](#how-to-cite)
+- [Bugs](#bugs)
+- [Contributing](#contributing)
+- [Acknowledgements](#acknowledgements)
+- [Testing](#testing)
+- [DABEST in other languages](#dabest-in-other-languages)
+
+<!-- /TOC -->
+
 ## About
 
 DABEST is a package for **D**ata **A**nalysis using **B**ootstrap-Coupled **EST**imation.
@@ -25,7 +39,7 @@ DABEST powers [estimationstats.com](https://www.estimationstats.com/), allowing 
 
 ## Installation
 
-This package is tested on Python 3.5, 3.6, and 3.7.
+This package is tested on Python 3.5, 3.6, 3.7, and 3.8.
 It is highly recommended to download the [Anaconda distribution](https://www.continuum.io/downloads) of Python in order to obtain the dependencies easily.
 
 You can install this package via `pip`.

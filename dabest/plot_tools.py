@@ -19,13 +19,13 @@ def halfviolin(v, half='right', fill_color='k', alpha=1,
         mean_vertical = np.mean(V[:, 0])
         mean_horizontal = np.mean(V[:, 1])
 
-        if half is 'left':
-            V[:, 0] = np.clip(V[:, 0], -np.inf, mean_vertical)
-        if half is 'right':
+        if half == 'right':
             V[:, 0] = np.clip(V[:, 0], mean_vertical, np.inf)
-        if half is 'bottom':
+        elif half == 'left':
+            V[:, 0] = np.clip(V[:, 0], -np.inf, mean_vertical)
+        elif half == 'bottom':
             V[:, 1] = np.clip(V[:, 1], -np.inf, mean_horizontal)
-        if half is 'top':
+        elif half == 'top':
             V[:, 1] = np.clip(V[:, 1], mean_horizontal, np.inf)
 
         b.set_color(fill_color)

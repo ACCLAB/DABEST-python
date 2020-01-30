@@ -28,22 +28,24 @@ two_groups_paired   = load(df, idx=("Control 1", "Test 1"),
                            paired=True, id_col="ID")
                            
 multi_2group = load(df, idx=(("Control 1", "Test 1",),
-                                     ("Control 2", "Test 2"))
-                            )
+                             ("Control 2", "Test 2"))
+                    )
                                    
-multi_2group_paired = load(df, idx=(("Control 1", "Test 1"),
-                                           ("Control 2", "Test 2")),
-                                  paired=True, id_col="ID")
+multi_2group_paired = load(df, 
+                            idx=(("Control 1", "Test 1"),
+                                 ("Control 2", "Test 2")),
+                            paired=True, id_col="ID")
 
 shared_control = load(df, idx=("Control 1", "Test 1",
-                                      "Test 2", "Test 3",
-                                      "Test 4", "Test 5", "Test 6")
-                             )
+                                "Test 2", "Test 3",
+                                "Test 4", "Test 5", "Test 6")
+                    )
                              
 multi_groups = load(df, idx=(("Control 1", "Test 1",),
-                                     ("Control 2", "Test 2","Test 3"),
-                                     ("Control 3", "Test 4","Test 5", "Test 6")
-                                   ))
+                             ("Control 2", "Test 2","Test 3"),
+                             ("Control 3", "Test 4","Test 5", "Test 6")
+                             )
+                    )
 
 
 
