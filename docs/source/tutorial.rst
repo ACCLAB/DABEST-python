@@ -4,11 +4,13 @@
 Tutorial
 ========
 
+
 Load Libraries
 --------------
 
 .. code-block:: python3
   :linenos:
+
 
     import numpy as np
     import pandas as pd
@@ -19,17 +21,18 @@ Load Libraries
 
 .. parsed-literal::
 
-    We're using DABEST v0.2.7
+    We're using DABEST v0.3.0
 
 
 Create dataset for demo
 -----------------------
 
-Here, we create a dataset to illustrate how DABEST functions. In
+Here, we create a dataset to illustrate how ``dabest`` functions. In
 this dataset, each column corresponds to a group of observations.
 
 .. code-block:: python3
   :linenos:
+
 
     from scipy.stats import norm # Used in generation of populations.
     
@@ -70,12 +73,13 @@ Note that we have 9 groups (3 Control samples and 6 Test samples). Our
 dataset also has a non-numerical column indicating gender, and another
 column indicating the identity of each observation.
 
-This is known as a 'wide' dataset. See this
+This is known as a ‘wide’ dataset. See this
 `writeup <https://sejdemyr.github.io/r-tutorials/basics/wide-and-long/>`__
 for more details.
 
 .. code-block:: python3
   :linenos:
+
 
     df.head()
 
@@ -86,7 +90,7 @@ for more details.
 
     <div>
     <style scoped>
-        /* .dataframe tbody tr th:only-of-type {
+      /*  .dataframe tbody tr th:only-of-type {
             vertical-align: middle;
         }
     
@@ -205,13 +209,15 @@ list.
 .. code-block:: python3
   :linenos:
 
+
     two_groups_unpaired = dabest.load(df, idx=("Control 1", "Test 1"), resamples=5000)
 
-Calling this :py:class:`Dabest`; object gives you a gentle greeting, as well as
+Calling this ``Dabest`` object gives you a gentle greeting, as well as
 the comparisons that can be computed.
 
 .. code-block:: python3
   :linenos:
+
 
     two_groups_unpaired
 
@@ -220,11 +226,11 @@ the comparisons that can be computed.
 
 .. parsed-literal::
 
-    DABEST v0.2.7
+    DABEST v0.3.0
     =============
                  
     Good afternoon!
-    The current time is Mon Oct 21  11:29:00 2019.
+    The current time is Mon Jan 20 17:12:44 2020.
     
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -244,11 +250,13 @@ dataset that indicates the identity of each observation, using the
 .. code-block:: python3
   :linenos:
 
+
     two_groups_paired = dabest.load(df, idx=("Control 1", "Test 1"), 
                                   paired=True, id_col="ID")
 
 .. code-block:: python3
   :linenos:
+
 
     two_groups_paired
 
@@ -257,11 +265,11 @@ dataset that indicates the identity of each observation, using the
 
 .. parsed-literal::
 
-    DABEST v0.2.7
+    DABEST v0.3.0
     =============
                  
     Good afternoon!
-    The current time is Mon Oct 21  11:29:00 2019.
+    The current time is Mon Jan 20 17:12:44 2020.
     
     Paired effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -276,10 +284,12 @@ produced.
 .. code-block:: python3
   :linenos:
 
+
     two_groups_unpaired_ci90 = dabest.load(df, idx=("Control 1", "Test 1"), ci=90)
 
 .. code-block:: python3
   :linenos:
+
 
     two_groups_unpaired_ci90
 
@@ -288,11 +298,11 @@ produced.
 
 .. parsed-literal::
 
-    DABEST v0.2.7
+    DABEST v0.3.0
     =============
                  
     Good afternoon!
-    The current time is Mon Oct 21  11:29:00 2019.
+    The current time is Mon Jan 20 17:12:44 2020.
     
     Effect size(s) with 90% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -304,19 +314,18 @@ produced.
 Effect sizes
 ------------
 
-DABEST now features a range of effect sizes: - the mean difference
-(``mean_diff``) - the median difference (``median_diff``) - `Cohen's
-*d* <https://en.wikipedia.org/wiki/Effect_size#Cohen's_d>`__
-(``cohens_d``) - `Hedges'
-*g* <https://en.wikipedia.org/wiki/Effect_size#Hedges'_g>`__
-(``hedges_g``) - `Cliff's
-delta <https://en.wikipedia.org/wiki/Effect_size#Effect_size_for_ordinal_data>`__
-(``cliffs_delta``)
+``dabest`` now features a range of effect sizes: 
+  - the mean difference (``mean_diff``) 
+  - the median difference (``median_diff``) 
+  - `Cohen’s d <https://en.wikipedia.org/wiki/Effect_size#Cohen's_d>`__ (``cohens_d``) 
+  - `Hedges’ g <https://en.wikipedia.org/wiki/Effect_size#Hedges'_g>`__ (``hedges_g``) 
+  - `Cliff’s delta <https://en.wikipedia.org/wiki/Effect_size#Effect_size_for_ordinal_data>`__ (``cliffs_delta``)
 
-Each of these are attributes of the :py:class:`Dabest` object.
+Each of these are attributes of the ``Dabest`` object.
 
 .. code-block:: python3
   :linenos:
+
 
     two_groups_unpaired.mean_diff
 
@@ -325,49 +334,39 @@ Each of these are attributes of the :py:class:`Dabest` object.
 
 .. parsed-literal::
 
-    DABEST v0.2.7
+    DABEST v0.3.0
     =============
                  
     Good afternoon!
-    The current time is Mon Oct 21  11:29:00 2019.
+    The current time is Mon Jan 20 17:12:44 2020.
     
-    The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.205, 0.774].
-    The two-sided p-value of the Mann-Whitney test is 0.00163.
+    The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.221, 0.768].
+    The p-value of the two-sided permutation t-test is 0.001. 
     
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
     The p-value(s) reported are the likelihood(s) of observing the effect size(s),
     if the null hypothesis of zero difference is true.
+    For each p-value, 5000 reshuffles of the control and test labels were performed.
     
     To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
 
 
 
-For each comparison, the type of effect size is reported (here, it's the
-"unpaired mean difference").
-
-The confidence interval is reported as: [*confidenceIntervalWidth*
-*LowerBound*, *UpperBound*]
+For each comparison, the type of effect size is reported (here, it’s the
+“unpaired mean difference”). The confidence interval is reported as:
+[*confidenceIntervalWidth* *LowerBound*, *UpperBound*]
 
 This confidence interval is generated through bootstrap resampling. See
-:ref:``Bootstrap Confidence Intervals`` for more details.
+:doc:`bootstraps` for more details.
 
-By default, DABEST will report the two-sided p-value of the most
-conservative test that is appropriate for the effect size. "Most
-conservative" refers to the test that does not assume normality of the
-underlying populations, and does not assume that both of them do not
-share the same variance (ie. heteroscadacity).
+Since v0.3.0, DABEST will report the p-value of the `non-parametric two-sided approximate permutation t-test <https://en.wikipedia.org/wiki/Resampling_(statistics)#Permutation_tests>`__. This is also known as the Monte Carlo permutation test. 
 
-As noted in the output, you can use ``.mean_diff.statistical_tests`` to
-obtain the p-values and test statistics for all relavant statistical
-tests.
-
-You can access the results as a :py:mod:`pandas` :py:class:`DataFrame` as well.
-
-
+For unpaired comparisons, the p-values and test statistics of `Welch's t test <https://en.wikipedia.org/wiki/Welch%27s_t-test>`__, `Student's t test <https://en.wikipedia.org/wiki/Student%27s_t-test>`__, and `Mann-Whitney U test <https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test>`__ can be found in addition. For paired comparisons, the p-values and test statistics of the `paired Student's t <https://en.wikipedia.org/wiki/Student%27s_t-test#Paired_samples>`__ and `Wilcoxon <https://en.wikipedia.org/wiki/Wilcoxon_signed-rank_test>`__ tests are presented.
 
 .. code-block:: python3
   :linenos:
-  
+
+
     pd.options.display.max_columns = 50
     two_groups_unpaired.mean_diff.results
 
@@ -378,7 +377,7 @@ You can access the results as a :py:mod:`pandas` :py:class:`DataFrame` as well.
 
     <div>
     <style scoped>
-        .dataframe tbody tr th:only-of-type {
+        /* .dataframe tbody tr th:only-of-type {
             vertical-align: middle;
         }
     
@@ -388,7 +387,7 @@ You can access the results as a :py:mod:`pandas` :py:class:`DataFrame` as well.
     
         .dataframe thead th {
             text-align: right;
-        }
+        } */
     </style>
     <table border="1" class="dataframe">
       <thead>
@@ -408,6 +407,8 @@ You can access the results as a :py:mod:`pandas` :py:class:`DataFrame` as well.
           <th>pct_low</th>
           <th>pct_high</th>
           <th>pct_interval_idx</th>
+          <th>pvalue_permutation</th>
+          <th>permutation_count</th>
           <th>bootstraps</th>
           <th>resamples</th>
           <th>random_seed</th>
@@ -430,13 +431,15 @@ You can access the results as a :py:mod:`pandas` :py:class:`DataFrame` as well.
           <td>False</td>
           <td>0.48029</td>
           <td>95</td>
-          <td>0.205161</td>
-          <td>0.773647</td>
-          <td>(145, 4893)</td>
-          <td>0.197427</td>
-          <td>0.758752</td>
+          <td>0.220869</td>
+          <td>0.767721</td>
+          <td>(140, 4889)</td>
+          <td>0.215697</td>
+          <td>0.761716</td>
           <td>(125, 4875)</td>
-          <td>[-0.05989473868674011, -0.018608309424335, 0.0...</td>
+          <td>0.001</td>
+          <td>5000</td>
+          <td>[-0.157303571150468, -0.025932185794146356, 0....</td>
           <td>5000</td>
           <td>12345</td>
           <td>0.002094</td>
@@ -454,6 +457,7 @@ You can access the results as a :py:mod:`pandas` :py:class:`DataFrame` as well.
 
 .. code-block:: python3
   :linenos:
+
 
     two_groups_unpaired.mean_diff.statistical_tests
 
@@ -490,6 +494,7 @@ You can access the results as a :py:mod:`pandas` :py:class:`DataFrame` as well.
           <th>ci</th>
           <th>bca_low</th>
           <th>bca_high</th>
+          <th>pvalue_permutation</th>
           <th>pvalue_welch</th>
           <th>statistic_welch</th>
           <th>pvalue_students_t</th>
@@ -509,8 +514,9 @@ You can access the results as a :py:mod:`pandas` :py:class:`DataFrame` as well.
           <td>False</td>
           <td>0.48029</td>
           <td>95</td>
-          <td>0.205161</td>
-          <td>0.773647</td>
+          <td>0.220869</td>
+          <td>0.767721</td>
+          <td>0.001</td>
           <td>0.002094</td>
           <td>-3.308806</td>
           <td>0.002057</td>
@@ -524,10 +530,11 @@ You can access the results as a :py:mod:`pandas` :py:class:`DataFrame` as well.
 
 
 
-Let's compute the Hedges' g for our comparison.
+Let’s compute the Hedges’ *g* for our comparison.
 
 .. code-block:: python3
   :linenos:
+
 
     two_groups_unpaired.hedges_g
 
@@ -536,18 +543,19 @@ Let's compute the Hedges' g for our comparison.
 
 .. parsed-literal::
 
-    DABEST v0.2.7
+    DABEST v0.3.0
     =============
                  
     Good afternoon!
-    The current time is Mon Oct 21  11:29:01 2019.
+    The current time is Mon Jan 20 17:12:46 2020.
     
-    The unpaired Hedges' g between Control 1 and Test 1 is 1.03 [95%CI 0.317, 1.62].
-    The two-sided p-value of the Mann-Whitney test is 0.00163.
+    The unpaired Hedges' g between Control 1 and Test 1 is 1.03 [95%CI 0.349, 1.62].
+    The p-value of the two-sided permutation t-test is 0.001. 
     
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
     The p-value(s) reported are the likelihood(s) of observing the effect size(s),
     if the null hypothesis of zero difference is true.
+    For each p-value, 5000 reshuffles of the control and test labels were performed.
     
     To get the results of all valid statistical tests, use `.hedges_g.statistical_tests`
 
@@ -555,6 +563,7 @@ Let's compute the Hedges' g for our comparison.
 
 .. code-block:: python3
   :linenos:
+
 
     two_groups_unpaired.hedges_g.results
 
@@ -595,6 +604,8 @@ Let's compute the Hedges' g for our comparison.
           <th>pct_low</th>
           <th>pct_high</th>
           <th>pct_interval_idx</th>
+          <th>pvalue_permutation</th>
+          <th>permutation_count</th>
           <th>bootstraps</th>
           <th>resamples</th>
           <th>random_seed</th>
@@ -617,13 +628,15 @@ Let's compute the Hedges' g for our comparison.
           <td>False</td>
           <td>1.025525</td>
           <td>95</td>
-          <td>0.316506</td>
-          <td>1.616235</td>
-          <td>(42, 4725)</td>
-          <td>0.44486</td>
-          <td>1.745146</td>
+          <td>0.349394</td>
+          <td>1.618579</td>
+          <td>(42, 4724)</td>
+          <td>0.472844</td>
+          <td>1.74166</td>
           <td>(125, 4875)</td>
-          <td>[-0.1491709040527835, -0.0504066101302326, 0.0...</td>
+          <td>0.001</td>
+          <td>5000</td>
+          <td>[-0.3617512915188043, -0.06120428036887727, 0....</td>
           <td>5000</td>
           <td>12345</td>
           <td>0.002094</td>
@@ -644,37 +657,31 @@ Producing estimation plots
 
 To produce a **Gardner-Altman estimation plot**, simply use the
 ``.plot()`` method. You can read more about its genesis and design
-inspiration here.
+inspiration at :doc:`robust-beautiful`.
 
 Every effect size instance has access to the ``.plot()`` method. This
 means you can quickly create plots for different effect sizes easily.
 
-.. .. code-block:: python3
-..   :linenos:
-.. 
-..     import matplotlib as mpl
-..     import warnings
-..     # warnings.filterwarnings("ignore", category=mpl.cbook.mplDeprecation)
-..     warnings.filterwarnings("ignore")
+.. code-block:: python3
+  :linenos:
+  
+  
+  two_groups_unpaired.mean_diff.plot();
+
+
+
+.. image:: _images/tutorial_27_0.png
+
 
 .. code-block:: python3
   :linenos:
 
-    two_groups_unpaired.mean_diff.plot();
-
-
-
-.. image:: _images/tutorial_28_0.png
-
-
-.. code-block:: python3
-  :linenos:
 
     two_groups_unpaired.hedges_g.plot();
 
 
 
-.. image:: _images/tutorial_29_0.png
+.. image:: _images/tutorial_28_0.png
 
 
 Instead of a Gardner-Altman plot, you can produce a **Cumming estimation
@@ -682,16 +689,17 @@ plot** by setting ``float_contrast=False`` in the ``plot()`` method.
 This will plot the bootstrap effect sizes below the raw data, and also
 displays the the mean (gap) and ± standard deviation of each group
 (vertical ends) as gapped lines. This design was inspired by Edward
-Tufte's dictum to maximise the data-ink ratio.
+Tufte’s dictum to maximise the data-ink ratio.
 
 .. code-block:: python3
   :linenos:
+
 
     two_groups_unpaired.hedges_g.plot(float_contrast=False);
 
 
 
-.. image:: _images/tutorial_31_0.png
+.. image:: _images/tutorial_30_0.png
 
 
 For paired data, we use
@@ -702,24 +710,26 @@ Both Gardner-Altman and Cumming plots support this.
 .. code-block:: python3
   :linenos:
 
+
     two_groups_paired.mean_diff.plot();
+
+
+
+.. image:: _images/tutorial_32_0.png
+
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_paired.mean_diff.plot(float_contrast=False);
 
 
 
 .. image:: _images/tutorial_33_0.png
 
 
-.. code-block:: python3
-  :linenos:
-
-    two_groups_paired.mean_diff.plot(float_contrast=False);
-
-
-
-.. image:: _images/tutorial_34_0.png
-
-
-The DABEST package also implements a range of estimation plot
+The ``dabest`` package also implements a range of estimation plot
 designs aimed at depicting common experimental designs.
 
 The **multi-two-group estimation plot** tiles two or more Cumming plots
@@ -733,6 +743,7 @@ meta-analyses to aggregate and compare data from different experiments.
 .. code-block:: python3
   :linenos:
 
+
     multi_2group = dabest.load(df, idx=(("Control 1", "Test 1",),
                                          ("Control 2", "Test 2")
                                        ))
@@ -741,13 +752,14 @@ meta-analyses to aggregate and compare data from different experiments.
 
 
 
-.. image:: _images/tutorial_36_0.png
+.. image:: _images/tutorial_35_0.png
 
 
 The multi-two-group design also accomodates paired comparisons.
 
 .. code-block:: python3
   :linenos:
+
 
     multi_2group_paired = dabest.load(df, idx=(("Control 1", "Test 1"),
                                                ("Control 2", "Test 2")
@@ -759,7 +771,7 @@ The multi-two-group design also accomodates paired comparisons.
 
 
 
-.. image:: _images/tutorial_38_0.png
+.. image:: _images/tutorial_37_0.png
 
 
 The **shared control plot** displays another common experimental
@@ -772,6 +784,7 @@ to ``idx`` has more than two data columns.
 .. code-block:: python3
   :linenos:
 
+
     shared_control = dabest.load(df, idx=("Control 1", "Test 1",
                                           "Test 2", "Test 3",
                                           "Test 4", "Test 5", "Test 6")
@@ -780,6 +793,7 @@ to ``idx`` has more than two data columns.
 .. code-block:: python3
   :linenos:
 
+
     shared_control
 
 
@@ -787,11 +801,11 @@ to ``idx`` has more than two data columns.
 
 .. parsed-literal::
 
-    DABEST v0.2.7
+    DABEST v0.3.0
     =============
                  
     Good afternoon!
-    The current time is Mon Oct 21  11:29:24 2019.
+    The current time is Mon Jan 20 17:12:54 2020.
     
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -808,6 +822,7 @@ to ``idx`` has more than two data columns.
 .. code-block:: python3
   :linenos:
 
+
     shared_control.mean_diff
 
 
@@ -815,33 +830,34 @@ to ``idx`` has more than two data columns.
 
 .. parsed-literal::
 
-    DABEST v0.2.7
+    DABEST v0.3.0
     =============
                  
     Good afternoon!
-    The current time is Mon Oct 21  11:29:25 2019.
+    The current time is Mon Jan 20 17:12:58 2020.
     
-    The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.205, 0.774].
-    The two-sided p-value of the Mann-Whitney test is 0.00163.
+    The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.221, 0.768].
+    The p-value of the two-sided permutation t-test is 0.001. 
     
-    The unpaired mean difference between Control 1 and Test 2 is -0.542 [95%CI -0.915, -0.206].
-    The two-sided p-value of the Mann-Whitney test is 0.0114.
+    The unpaired mean difference between Control 1 and Test 2 is -0.542 [95%CI -0.914, -0.211].
+    The p-value of the two-sided permutation t-test is 0.0042. 
     
-    The unpaired mean difference between Control 1 and Test 3 is 0.174 [95%CI -0.273, 0.647].
-    The two-sided p-value of the Mann-Whitney test is 0.409.
+    The unpaired mean difference between Control 1 and Test 3 is 0.174 [95%CI -0.295, 0.628].
+    The p-value of the two-sided permutation t-test is 0.479. 
     
-    The unpaired mean difference between Control 1 and Test 4 is 0.79 [95%CI 0.325, 1.33].
-    The two-sided p-value of the Mann-Whitney test is 0.0531.
+    The unpaired mean difference between Control 1 and Test 4 is 0.79 [95%CI 0.306, 1.31].
+    The p-value of the two-sided permutation t-test is 0.0042. 
     
-    The unpaired mean difference between Control 1 and Test 5 is 0.265 [95%CI 0.0115, 0.497].
-    The two-sided p-value of the Mann-Whitney test is 0.0411.
+    The unpaired mean difference between Control 1 and Test 5 is 0.265 [95%CI 0.0137, 0.497].
+    The p-value of the two-sided permutation t-test is 0.0404. 
     
-    The unpaired mean difference between Control 1 and Test 6 is 0.288 [95%CI 0.00913, 0.524].
-    The two-sided p-value of the Mann-Whitney test is 0.0275.
+    The unpaired mean difference between Control 1 and Test 6 is 0.288 [95%CI -0.00441, 0.515].
+    The p-value of the two-sided permutation t-test is 0.0324. 
     
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
     The p-value(s) reported are the likelihood(s) of observing the effect size(s),
     if the null hypothesis of zero difference is true.
+    For each p-value, 5000 reshuffles of the control and test labels were performed.
     
     To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
 
@@ -850,18 +866,20 @@ to ``idx`` has more than two data columns.
 .. code-block:: python3
   :linenos:
 
+
     shared_control.mean_diff.plot();
 
 
 
-.. image:: _images/tutorial_43_0.png
+.. image:: _images/tutorial_42_0.png
 
 
-DABEST thus empowers you to robustly perform and elegantly present
+``dabest`` thus empowers you to robustly perform and elegantly present
 complex visualizations and statistics.
 
 .. code-block:: python3
   :linenos:
+
 
     multi_groups = dabest.load(df, idx=(("Control 1", "Test 1",),
                                          ("Control 2", "Test 2","Test 3"),
@@ -872,6 +890,7 @@ complex visualizations and statistics.
 .. code-block:: python3
   :linenos:
 
+
     multi_groups
 
 
@@ -879,11 +898,11 @@ complex visualizations and statistics.
 
 .. parsed-literal::
 
-    DABEST v0.2.7
+    DABEST v0.3.0
     =============
                  
     Good afternoon!
-    The current time is Mon Oct 21  11:29:26 2019.
+    The current time is Mon Jan 20 17:12:58 2020.
     
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -900,6 +919,7 @@ complex visualizations and statistics.
 .. code-block:: python3
   :linenos:
 
+
     multi_groups.mean_diff
 
 
@@ -907,33 +927,34 @@ complex visualizations and statistics.
 
 .. parsed-literal::
 
-    DABEST v0.2.7
+    DABEST v0.3.0
     =============
                  
     Good afternoon!
-    The current time is Mon Oct 21  11:29:27 2019.
+    The current time is Mon Jan 20 17:13:02 2020.
     
-    The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.205, 0.774].
-    The two-sided p-value of the Mann-Whitney test is 0.00163.
+    The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.221, 0.768].
+    The p-value of the two-sided permutation t-test is 0.001. 
     
-    The unpaired mean difference between Control 2 and Test 2 is -1.38 [95%CI -1.93, -0.905].
-    The two-sided p-value of the Mann-Whitney test is 2.6e-05.
+    The unpaired mean difference between Control 2 and Test 2 is -1.38 [95%CI -1.93, -0.895].
+    The p-value of the two-sided permutation t-test is 0.0. 
     
-    The unpaired mean difference between Control 2 and Test 3 is -0.666 [95%CI -1.29, -0.0788].
-    The two-sided p-value of the Mann-Whitney test is 0.0439.
+    The unpaired mean difference between Control 2 and Test 3 is -0.666 [95%CI -1.3, -0.103].
+    The p-value of the two-sided permutation t-test is 0.0352. 
     
-    The unpaired mean difference between Control 3 and Test 4 is 0.362 [95%CI -0.111, 0.901].
-    The two-sided p-value of the Mann-Whitney test is 0.365.
+    The unpaired mean difference between Control 3 and Test 4 is 0.362 [95%CI -0.114, 0.887].
+    The p-value of the two-sided permutation t-test is 0.161. 
     
-    The unpaired mean difference between Control 3 and Test 5 is -0.164 [95%CI -0.398, 0.0747].
-    The two-sided p-value of the Mann-Whitney test is 0.156.
+    The unpaired mean difference between Control 3 and Test 5 is -0.164 [95%CI -0.404, 0.0742].
+    The p-value of the two-sided permutation t-test is 0.208. 
     
-    The unpaired mean difference between Control 3 and Test 6 is -0.14 [95%CI -0.4, 0.0937].
-    The two-sided p-value of the Mann-Whitney test is 0.441.
+    The unpaired mean difference between Control 3 and Test 6 is -0.14 [95%CI -0.398, 0.102].
+    The p-value of the two-sided permutation t-test is 0.282. 
     
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
     The p-value(s) reported are the likelihood(s) of observing the effect size(s),
     if the null hypothesis of zero difference is true.
+    For each p-value, 5000 reshuffles of the control and test labels were performed.
     
     To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
 
@@ -942,22 +963,23 @@ complex visualizations and statistics.
 .. code-block:: python3
   :linenos:
 
+
     multi_groups.mean_diff.plot();
 
 
 
-.. image:: _images/tutorial_48_0.png
+.. image:: _images/tutorial_47_0.png
 
 
-Using long (aka 'melted') data frames
+Using long (aka ‘melted’) data frames
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-DABEST can also work with 'melted' or 'long' data. This term is
-so used because each row will now correspond to a single datapoint, with
-one column carrying the value and other columns carrying 'metadata'
+``dabest`` can also work with ‘melted’ or ‘long’ data. This term is so
+used because each row will now correspond to a single datapoint, with
+one column carrying the value and other columns carrying ‘metadata’
 describing that datapoint.
 
-More details on wide vs long or 'melted' data can be found in this
+More details on wide vs long or ‘melted’ data can be found in this
 `Wikipedia
 article <https://en.wikipedia.org/wiki/Wide_and_narrow_data>`__. The
 `pandas
@@ -966,6 +988,7 @@ gives recipes for melting dataframes.
 
 .. code-block:: python3
   :linenos:
+
 
     x='group'
     y='metric'
@@ -1057,6 +1080,7 @@ When your data is in this format, you will need to specify the ``x`` and
 .. code-block:: python3
   :linenos:
 
+
     analysis_of_long_df = dabest.load(df_melted, idx=("Control 1", "Test 1"),
                                      x="group", y="metric")
     
@@ -1067,11 +1091,11 @@ When your data is in this format, you will need to specify the ``x`` and
 
 .. parsed-literal::
 
-    DABEST v0.2.7
+    DABEST v0.3.0
     =============
                  
     Good afternoon!
-    The current time is Mon Oct 21  11:29:27 2019.
+    The current time is Mon Jan 20 17:13:03 2020.
     
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -1083,11 +1107,12 @@ When your data is in this format, you will need to specify the ``x`` and
 .. code-block:: python3
   :linenos:
 
+
     analysis_of_long_df.mean_diff.plot();
 
 
 
-.. image:: _images/tutorial_53_0.png
+.. image:: _images/tutorial_52_0.png
 
 
 Controlling plot aesthetics
@@ -1098,12 +1123,13 @@ Changing the y-axes labels.
 .. code-block:: python3
   :linenos:
 
+
     two_groups_unpaired.mean_diff.plot(swarm_label="This is my\nrawdata",  
                                        contrast_label="The bootstrap\ndistribtions!");
 
 
 
-.. image:: _images/tutorial_56_0.png
+.. image:: _images/tutorial_55_0.png
 
 
 Color the rawdata according to another column in the dataframe.
@@ -1111,21 +1137,23 @@ Color the rawdata according to another column in the dataframe.
 .. code-block:: python3
   :linenos:
 
+
     multi_2group.mean_diff.plot(color_col="Gender");
 
 
 
-.. image:: _images/tutorial_58_0.png
+.. image:: _images/tutorial_57_0.png
 
 
 .. code-block:: python3
   :linenos:
 
+
     two_groups_paired.mean_diff.plot(color_col="Gender");
 
 
 
-.. image:: _images/tutorial_59_0.png
+.. image:: _images/tutorial_58_0.png
 
 
 Changing the palette used with ``custom_palette``. Any valid matplotlib
@@ -1134,21 +1162,23 @@ or seaborn color palette is accepted.
 .. code-block:: python3
   :linenos:
 
+
     multi_2group.mean_diff.plot(color_col="Gender", custom_palette="Dark2");
 
 
 
-.. image:: _images/tutorial_61_0.png
+.. image:: _images/tutorial_60_0.png
 
 
 .. code-block:: python3
   :linenos:
 
+
     multi_2group.mean_diff.plot(custom_palette="Paired");
 
 
 
-.. image:: _images/tutorial_62_0.png
+.. image:: _images/tutorial_61_0.png
 
 
 You can also create your own color palette. Create a dictionary where
@@ -1162,6 +1192,7 @@ tuples.
 .. code-block:: python3
   :linenos:
 
+
     my_color_palette = {"Control 1" : "blue",    
                         "Test 1"    : "purple",
                         "Control 2" : "#cb4b16",     # This is a hex string.
@@ -1172,7 +1203,7 @@ tuples.
 
 
 
-.. image:: _images/tutorial_64_0.png
+.. image:: _images/tutorial_63_0.png
 
 
 By default, ``dabest.plot()`` will
@@ -1186,13 +1217,14 @@ You can alter the default values with the ``swarm_desat`` and
 .. code-block:: python3
   :linenos:
 
+
     multi_2group.mean_diff.plot(custom_palette=my_color_palette, 
                                 swarm_desat=0.75, 
                                 halfviolin_desat=0.25);
 
 
 
-.. image:: _images/tutorial_66_0.png
+.. image:: _images/tutorial_65_0.png
 
 
 You can also change the sizes of the dots used in the rawdata swarmplot,
@@ -1201,12 +1233,13 @@ and those used to indicate the effect sizes.
 .. code-block:: python3
   :linenos:
 
+
     multi_2group.mean_diff.plot(raw_marker_size=3, 
                                 es_marker_size=12);
 
 
 
-.. image:: _images/tutorial_68_0.png
+.. image:: _images/tutorial_67_0.png
 
 
 Changing the y-limits for the rawdata axes, and for the contrast axes.
@@ -1214,12 +1247,13 @@ Changing the y-limits for the rawdata axes, and for the contrast axes.
 .. code-block:: python3
   :linenos:
 
+
     multi_2group.mean_diff.plot(swarm_ylim=(0, 5), 
                                 contrast_ylim=(-2, 2));
 
 
 
-.. image:: _images/tutorial_70_0.png
+.. image:: _images/tutorial_69_0.png
 
 
 If your effect size is qualitatively inverted (ie. a smaller value is a
@@ -1229,23 +1263,25 @@ better outcome), you can simply invert the tuple passed to
 .. code-block:: python3
   :linenos:
 
+
     multi_2group.mean_diff.plot(contrast_ylim=(2, -2), 
                                 contrast_label="More negative is better!");
 
 
 
-.. image:: _images/tutorial_72_0.png
+.. image:: _images/tutorial_71_0.png
 
 
 You can add minor ticks and also change the tick frequency by accessing
 the axes directly.
 
-The estimation plot produced by ``dabest.plot()`` has 2 axes. The first one
+Each estimation plot produced by ``dabest`` has 2 axes. The first one
 contains the rawdata swarmplot; the second one contains the bootstrap
 effect size differences.
 
 .. code-block:: python3
   :linenos:
+
 
     import matplotlib.ticker as Ticker
     
@@ -1262,11 +1298,12 @@ effect size differences.
 
 
 
-.. image:: _images/tutorial_74_0.png
+.. image:: _images/tutorial_73_0.png
 
 
 .. code-block:: python3
   :linenos:
+
 
     f = multi_2group.mean_diff.plot(swarm_ylim=(0,6),
                                    contrast_ylim=(-3, 1))
@@ -1282,14 +1319,15 @@ effect size differences.
 
 
 
-.. image:: _images/tutorial_75_0.png
+.. image:: _images/tutorial_74_0.png
 
-.. _inset_plot:
+
+.. _inset plot:
 
 Creating estimation plots in existing axes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-*Implemented in v0.2.6 by Adam Nekimken.*
+*Implemented in v0.2.6 by Adam Nekimken*.
 
 ``dabest.plot`` has an ``ax`` keyword that accepts any Matplotlib
 ``Axes``. The entire estimation plot will be created in the specified
@@ -1298,12 +1336,11 @@ Creating estimation plots in existing axes
 .. code-block:: python3
   :linenos:
 
+
     from matplotlib import pyplot as plt
     f, axx = plt.subplots(nrows=2, ncols=2, 
                           figsize=(15, 15),
-                          
-                          # ensure proper width-wise spacing.
-                          gridspec_kw={'wspace': 0.25}
+                          gridspec_kw={'wspace': 0.25} # ensure proper width-wise spacing.
                          )
     
     two_groups_unpaired.mean_diff.plot(ax=axx.flat[0]);
@@ -1316,7 +1353,7 @@ Creating estimation plots in existing axes
 
 
 
-.. image:: _images/tutorial_77_0.png
+.. image:: _images/tutorial_76_0.png
 
 
 In this case, to access the individual rawdata axes, use
@@ -1326,15 +1363,17 @@ In this case, to access the individual rawdata axes, use
 .. code-block:: python3
   :linenos:
 
+
     topleft_axes = axx.flat[0]
     topleft_axes.set_ylabel("New y-axis label for rawdata")
     topleft_axes.contrast_axes.set_ylabel("New y-axis label for effect size")
     
+    f
 
 
 
 
-.. image:: _images/tutorial_79_0.png
+.. image:: _images/tutorial_78_0.png
 
 
 
@@ -1343,7 +1382,7 @@ Applying style sheets
 
 *Implemented in v0.2.0*.
 
-DABEST can now apply `matplotlib style
+``dabest`` can apply `matplotlib style
 sheets <https://matplotlib.org/tutorials/introductory/customizing.html>`__
 to estimation plots. You can refer to this
 `gallery <https://matplotlib.org/3.0.3/gallery/style_sheets/style_sheets_reference.html>`__
@@ -1352,15 +1391,18 @@ of style sheets for reference.
 .. code-block:: python3
   :linenos:
 
+
     import matplotlib.pyplot as plt
     plt.style.use("dark_background")
 
 .. code-block:: python3
   :linenos:
 
+
     multi_2group.mean_diff.plot();
 
 
 
-.. image:: _images/tutorial_82_0.png
+.. image:: _images/tutorial_81_0.png
+
 

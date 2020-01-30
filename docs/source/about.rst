@@ -7,7 +7,7 @@ About
 
 Authors
 --------
-DABEST is written in Python by `Joses W. Ho <https://twitter.com/jacuzzijo>`_, with design and input from `Adam Claridge-Chang <https://twitter.com/adamcchang>`_ and other lab members.
+DABEST is written in Python by `Joses W. Ho <https://twitter.com/jacuzzijo>`_, with design and input from `Adam Claridge-Chang <https://twitter.com/adamcchang>`_ and other `lab members <https://www.claridgechang.net/people.html>`__.
 
 To find out more about the authors’ research, please visit the `Claridge-Chang lab webpage <http://www.claridgechang.net/>`_.
 

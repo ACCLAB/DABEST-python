@@ -9,21 +9,21 @@ A range of functions to compute bootstraps for a single sample.
 def create_bootstrap_indexes(array, resamples=5000, random_seed=12345):
     """Given an array-like, returns a generator of bootstrap indexes
     to be used for resampling.
-    """
+    """i
     import numpy as np
-    
-    # Set seed.
-    np.random.seed(random_seed)
+    from numpy.random import PCG64, RandomState
+    rng = RandomState(PCG64(random_seed))
     
     indexes = range(0, len(array))
 
-    out = (np.random.choice(indexes, len(indexes), replace=True)
+    out = (rng.choice(indexes, len(indexes), replace=True)
             for i in range(0, resamples))
-    
-    # Reset seed
-    np.random.seed()
-    
+            
+    # Reset RNG
+    # rng = RandomState(MT19937())
     return out
+
+
 
 def compute_1group_jackknife(x, func, *args, **kwargs):
     """
@@ -49,9 +49,6 @@ def compute_1group_bootstraps(x, func, resamples=5000, random_seed=12345,
 
     import numpy as np
     
-    # Instantiate random seed.
-    np.random.seed(random_seed)
-    
     # Create bootstrap indexes.
     boot_indexes = create_bootstrap_indexes(x, resamples=resamples,
                                             random_seed=random_seed)
@@ -59,8 +56,6 @@ def compute_1group_bootstraps(x, func, resamples=5000, random_seed=12345,
     out = [func(x[b], *args, **kwargs) for b in boot_indexes]
     
     del boot_indexes
-    
-    np.random.seed()
     
     return out
 

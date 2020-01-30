@@ -130,13 +130,15 @@ def _calc_accel(jack_dist):
 
 
 def compute_bootstrapped_diff(x0, x1, is_paired, effect_size,
-                                resamples=5000, random_seed=12345):
+                              resamples=5000, random_seed=12345):
     """Bootstraps the effect_size for 2 groups."""
     
     from . import effsize as __es
     import numpy as np
-
-    np.random.seed(random_seed)
+    from numpy.random import PCG64, RandomState
+    
+    # rng = RandomState(default_rng(random_seed))
+    rng = RandomState(PCG64(random_seed))
 
     out = np.repeat(np.nan, resamples)
     x0_len = len(x0)
@@ -147,18 +149,15 @@ def compute_bootstrapped_diff(x0, x1, is_paired, effect_size,
         if is_paired:
             if x0_len != x1_len:
                 raise ValueError("The two arrays do not have the same length.")
-            random_idx = np.random.choice(x0_len, x0_len, replace=True)
+            random_idx = rng.choice(x0_len, x0_len, replace=True)
             x0_sample = x0[random_idx]
             x1_sample = x1[random_idx]
         else:
-            x0_sample = np.random.choice(x0, x0_len, replace=True)
-            x1_sample = np.random.choice(x1, x1_len, replace=True)
+            x0_sample = rng.choice(x0, x0_len, replace=True)
+            x1_sample = rng.choice(x1, x1_len, replace=True)
             
         out[i] = __es.two_group_difference(x0_sample, x1_sample,
                                           is_paired, effect_size)
-
-    # reset seed
-    np.random.seed()
     
     # check whether there are any infinities in the bootstrap,
     # which likely indicates the sample sizes are too small as
