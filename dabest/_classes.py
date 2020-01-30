@@ -575,7 +575,7 @@ class TwoGroupsEffectSize(object):
         resamples : int, default 5000
             The number of bootstrap resamples to be taken for the calculation
             of the confidence interval limits.
-        permutation_count : int, default 10000
+        permutation_count : int, default 5000
             The number of permutations (reshuffles) to perform for the 
             computation of the permutation p-value
         ci : float, default 95
@@ -1354,7 +1354,7 @@ class EffectSizeDataFrame(object):
                                              self.__is_paired,
                                              self.__ci,
                                              self.__resamples,
-                                             # self.__permutation_count,
+                                             self.__permutation_count,
                                              self.__random_seed)
                 r_dict = result.to_dict()
 
