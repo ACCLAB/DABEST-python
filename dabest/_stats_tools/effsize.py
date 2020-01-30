@@ -60,7 +60,7 @@ def two_group_difference(control, test, is_paired=False,
                         J(n) = ------------------------------
                                sqrt(n/2) * gamma((n - 1) / 2)
 
-                        where n = (n1 + n2 -2).
+                        where n = (n1 + n2 - 2).
 
         median_diff:    This is the median of `control` subtracted from the
                         median of `test`.

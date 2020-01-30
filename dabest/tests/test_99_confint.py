@@ -27,8 +27,8 @@ def test_paired_mean_diff_ci():
                  paired=True, id_col="subject_id")
     paired_mean_diff = ex_bp.mean_diff.results
     
-    assert pytest.approx(3.625) == paired_mean_diff.bca_low[0]
-    assert pytest.approx(9.125) == paired_mean_diff.bca_high[0]
+    assert pytest.approx(3.875) == paired_mean_diff.bca_low[0]
+    assert pytest.approx(9.5) == paired_mean_diff.bca_high[0]
 
 
 # def test_paired_median_diff_ci():    
@@ -122,28 +122,28 @@ def test_unpaired_ci(reps=30, ci=95):
     error_count_cliffs_delta = 0
 
     for i in range(0, reps):
+        # print(i) # for debug.
         # pick a random seed
         rnd_sd = np.random.randint(0, 999999)
         load_kwargs = dict(ci=ci, random_seed=rnd_sd)
 
-
-
         std_diff_data = load(data=std_diff_df, idx=("Control", "Test"), **load_kwargs)
-
         cd = std_diff_data.cohens_d.results
+        # print("cohen's d")  # for debug.
         cd_low, cd_high = float(cd.bca_low), float(cd.bca_high)
         if cd_low < POP_D < cd_high is False:
             error_count_cohens_d += 1
 
         hg = std_diff_data.hedges_g.results
+        # print("hedges' g") # for debug.
         hg_low, hg_high = float(hg.bca_low), float(hg.bca_high)
         if hg_low < POP_D < hg_high is False:
             error_count_hedges_g += 1
 
 
-
         mean_diff_data = load(data=mean_df, idx=("Control", "Test"), **load_kwargs)
         mean_d = mean_diff_data.mean_diff.results
+        # print("mean diff") # for debug.
         mean_d_low, mean_d_high = float(mean_d.bca_low), float(mean_d.bca_high)
         if mean_d_low < TRUE_DIFFERENCE < mean_d_high is False:
             error_count_mean_diff += 1
@@ -152,14 +152,16 @@ def test_unpaired_ci(reps=30, ci=95):
         median_diff_data = load(data=median_df, idx=("Control", "Test"),
                              **load_kwargs)
         median_d = median_diff_data.median_diff.results
+        # print("median diff") # for debug.
         median_d_low, median_d_high = float(median_d.bca_low), float(median_d.bca_high)
         if median_d_low < MEDIAN_DIFFERENCE < median_d_high is False:
             error_count_median_diff += 1
 
 
         cd_data = load(data=cd_df, idx=("Control", "Test"), **load_kwargs)
-        cd = cd_data.cliffs_delta.results
-        low, high = float(cd.bca_low), float(cd.bca_high)
+        cliffs = cd_data.cliffs_delta.results
+        # print("cliff's delta") # for debug.
+        low, high = float(cliffs.bca_low), float(cliffs.bca_high)
         if low < 0.5 < high is False:
             error_count_cliffs_delta += 1
 
