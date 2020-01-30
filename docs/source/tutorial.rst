@@ -1382,7 +1382,7 @@ Applying style sheets
 
 *Implemented in v0.2.0*.
 
-``dabest`` can now apply `matplotlib style
+``dabest`` can apply `matplotlib style
 sheets <https://matplotlib.org/tutorials/introductory/customizing.html>`__
 to estimation plots. You can refer to this
 `gallery <https://matplotlib.org/3.0.3/gallery/style_sheets/style_sheets_reference.html>`__

@@ -8,7 +8,7 @@ Getting Started
 Requirements
 ------------
 
-Python 3.7 is strongly recommended. DABEST has also been tested with Python 3.5 and 3.6.
+Python 3.8 is strongly recommended. DABEST has also been tested with Python 3.5, 3.6, and 3.7.
 
 In addition, the following packages are also required (listed with their minimal versions):
 
@@ -17,7 +17,7 @@ In addition, the following packages are also required (listed with their minimal
 * `matplotlib 3.0 <https://www.matplotlib.org>`_
 * `pandas 0.25.3 <https://pandas.pydata.org>`_
 * `seaborn 0.9 <https://seaborn.pydata.org>`_
-* `lqrt 0.3.2 <https://github.com/alyakin314/lqrt>`_
+* `lqrt 0.3 <https://github.com/alyakin314/lqrt>`_
 
 To obtain these package dependencies easily, it is highly recommended to download the `Anaconda <https://www.continuum.io/downloads>`_ distribution of Python.
 
