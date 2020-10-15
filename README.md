@@ -39,7 +39,7 @@ DABEST powers [estimationstats.com](https://www.estimationstats.com/), allowing 
 
 ## Installation
 
-This package is tested on Python 3.5, 3.6, 3.7, and 3.8.
+This package is tested on Python 3.6, 3.7, and 3.8.
 It is highly recommended to download the [Anaconda distribution](https://www.continuum.io/downloads) of Python in order to obtain the dependencies easily.
 
 You can install this package via `pip`.

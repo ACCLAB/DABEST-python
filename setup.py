@@ -48,7 +48,7 @@ if __name__ == "__main__":
             'lqrt~=0.3'
         ],
         extras_require={'dev': ['pytest~=6.1', 'pytest-mpl~=0.11']},
-        python_requires='~=3.5',
+        python_requires='~=3.6',
         classifiers=[
             "Development Status :: 5 - Production/Stable",
             "Intended Audience :: Science/Research",
