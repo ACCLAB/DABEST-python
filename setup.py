@@ -42,12 +42,12 @@ if __name__ == "__main__":
             'numpy~=1.19',
             'scipy~=1.5',
             'pandas~=1.1',
-            
+
             'matplotlib~=3.3',
             'seaborn~=0.11',
             'lqrt~=0.3'
         ],
-        extras_require={'dev': ['pytest~=5.3', 'pytest-mpl~=0.11']},
+        extras_require={'dev': ['pytest~=6.1', 'pytest-mpl~=0.11']},
         python_requires='~=3.5',
         classifiers=[
             "Development Status :: 5 - Production/Stable",
