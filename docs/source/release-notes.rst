@@ -4,6 +4,17 @@
 Release Notes
 =============
 
+v0.3.1
+------
+
+This release updates the package requirements to:
+  - :py:mod:`numpy`: 0.19
+  - :py:mod:`matplotlib`: 3.3
+  - :py:mod:`scipy`: 1.5
+  - :py:mod:`pandas`: 1.1
+  - :py:mod:`seaborn`: 0.11
+  - :py:mod:`lqrt`: 0.3
+
 
 v0.3.0
 ------
@@ -40,10 +51,10 @@ v0.2.6
 
 Feature additions:
   - It is now possible to specify a pre-determined :py:mod:`matplotlib` :py:class:`Axes` to create the estimation plot in. See :ref:`inset plot` in the :doc:`tutorial` (`Pull request #73 <https://github.com/ACCLAB/DABEST-python/pull/73>`_; thanks to Adam Nekimken (`@anekimken <https://github.com/anekimken>`_).
-  - 
+  -
 
 
-Bug-fixes: 
+Bug-fixes:
   - Ensure all dependencies are installed along with DABEST. (`Pull request #71 <https://github.com/ACCLAB/DABEST-python/pull/71>`_; thanks to Matthew Edwards (`@mje-nz <https://github.com/mje-nz>`_).
   - Handle infinities in bootstraps during plotting. (`Issue #72 <https://github.com/ACCLAB/DABEST-python/issues/72>`_, `Pull request #74 <https://github.com/ACCLAB/DABEST-python/pull/71>`_)
 
@@ -54,7 +65,7 @@ Feature additions:
   - Adding Ns of each group to the results DataFrame. (`Issue #45 <https://github.com/ACCLAB/DABEST-python/issues/45>`_)
   - Auto-labelling the swarmplot rawdata axes y-label. (`Issue #51 <https://github.com/ACCLAB/DABEST-python/issues/51>`_)
 
-Bug-fixes: 
+Bug-fixes:
   - Bug affecting calculation of paired difference confidence intervals. (`Issue #48 in ACCLAB/dabestr <https://github.com/ACCLAB/dabestr/issues/48>`_)
   - NaNs in unused/unrelated columns would result in null results (`Issue #44 <https://github.com/ACCLAB/DABEST-python/issues/44>`_)
 
