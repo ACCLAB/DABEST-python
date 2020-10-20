@@ -15,13 +15,13 @@ Load Libraries
     import numpy as np
     import pandas as pd
     import dabest
-    
+
     print("We're using DABEST v{}".format(dabest.__version__))
 
 
 .. parsed-literal::
 
-    We're using DABEST v0.3.0
+    We're using DABEST v0.3.1
 
 
 Create dataset for demo
@@ -35,32 +35,32 @@ this dataset, each column corresponds to a group of observations.
 
 
     from scipy.stats import norm # Used in generation of populations.
-    
+
     np.random.seed(9999) # Fix the seed so the results are replicable.
     # pop_size = 10000 # Size of each population.
     Ns = 20 # The number of samples taken from each population
-    
+
     # Create samples
     c1 = norm.rvs(loc=3, scale=0.4, size=Ns)
     c2 = norm.rvs(loc=3.5, scale=0.75, size=Ns)
     c3 = norm.rvs(loc=3.25, scale=0.4, size=Ns)
-    
+
     t1 = norm.rvs(loc=3.5, scale=0.5, size=Ns)
     t2 = norm.rvs(loc=2.5, scale=0.6, size=Ns)
     t3 = norm.rvs(loc=3, scale=0.75, size=Ns)
     t4 = norm.rvs(loc=3.5, scale=0.75, size=Ns)
     t5 = norm.rvs(loc=3.25, scale=0.4, size=Ns)
     t6 = norm.rvs(loc=3.25, scale=0.4, size=Ns)
-    
-    
+
+
     # Add a `gender` column for coloring the data.
     females = np.repeat('Female', Ns/2).tolist()
     males = np.repeat('Male', Ns/2).tolist()
     gender = females + males
-    
-    # Add an `id` column for paired data plotting. 
+
+    # Add an `id` column for paired data plotting.
     id_col = pd.Series(range(1, Ns+1))
-    
+
     # Combine samples and gender into a DataFrame.
     df = pd.DataFrame({'Control 1' : c1,     'Test 1' : t1,
                        'Control 2' : c2,     'Test 2' : t2,
@@ -93,11 +93,11 @@ for more details.
       /*  .dataframe tbody tr th:only-of-type {
             vertical-align: middle;
         }
-    
+
         .dataframe tbody tr th {
             vertical-align: top;
         }
-    
+
         .dataframe thead th {
             text-align: right;
         } */
@@ -226,15 +226,15 @@ the comparisons that can be computed.
 
 .. parsed-literal::
 
-    DABEST v0.3.0
+    DABEST v0.3.1
     =============
-                 
+
     Good afternoon!
-    The current time is Mon Jan 20 17:12:44 2020.
-    
+    The current time is Mon Oct 19 17:12:44 2020.
+
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
-    
+
     5000 resamples will be used to generate the effect size bootstraps.
 
 
@@ -251,7 +251,7 @@ dataset that indicates the identity of each observation, using the
   :linenos:
 
 
-    two_groups_paired = dabest.load(df, idx=("Control 1", "Test 1"), 
+    two_groups_paired = dabest.load(df, idx=("Control 1", "Test 1"),
                                   paired=True, id_col="ID")
 
 .. code-block:: python3
@@ -265,15 +265,15 @@ dataset that indicates the identity of each observation, using the
 
 .. parsed-literal::
 
-    DABEST v0.3.0
+    DABEST v0.3.1
     =============
-                 
+
     Good afternoon!
-    The current time is Mon Jan 20 17:12:44 2020.
-    
+    The current time is Mon Oct 19 17:12:44 2020.
+
     Paired effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
-    
+
     5000 resamples will be used to generate the effect size bootstraps.
 
 
@@ -298,15 +298,15 @@ produced.
 
 .. parsed-literal::
 
-    DABEST v0.3.0
+    DABEST v0.3.1
     =============
-                 
+
     Good afternoon!
-    The current time is Mon Jan 20 17:12:44 2020.
-    
+    The current time is Mon Oct 19 17:12:44 2020.
+
     Effect size(s) with 90% confidence intervals will be computed for:
     1. Test 1 minus Control 1
-    
+
     5000 resamples will be used to generate the effect size bootstraps.
 
 
@@ -314,11 +314,11 @@ produced.
 Effect sizes
 ------------
 
-``dabest`` now features a range of effect sizes: 
-  - the mean difference (``mean_diff``) 
-  - the median difference (``median_diff``) 
-  - `Cohen’s d <https://en.wikipedia.org/wiki/Effect_size#Cohen's_d>`__ (``cohens_d``) 
-  - `Hedges’ g <https://en.wikipedia.org/wiki/Effect_size#Hedges'_g>`__ (``hedges_g``) 
+``dabest`` now features a range of effect sizes:
+  - the mean difference (``mean_diff``)
+  - the median difference (``median_diff``)
+  - `Cohen’s d <https://en.wikipedia.org/wiki/Effect_size#Cohen's_d>`__ (``cohens_d``)
+  - `Hedges’ g <https://en.wikipedia.org/wiki/Effect_size#Hedges'_g>`__ (``hedges_g``)
   - `Cliff’s delta <https://en.wikipedia.org/wiki/Effect_size#Effect_size_for_ordinal_data>`__ (``cliffs_delta``)
 
 Each of these are attributes of the ``Dabest`` object.
@@ -334,20 +334,20 @@ Each of these are attributes of the ``Dabest`` object.
 
 .. parsed-literal::
 
-    DABEST v0.3.0
+    DABEST v0.3.1
     =============
-                 
+
     Good afternoon!
-    The current time is Mon Jan 20 17:12:44 2020.
-    
+    The current time is Mon Oct 19 17:12:44 2020.
+
     The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.221, 0.768].
-    The p-value of the two-sided permutation t-test is 0.001. 
-    
+    The p-value of the two-sided permutation t-test is 0.001.
+
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
     The p-value(s) reported are the likelihood(s) of observing the effect size(s),
     if the null hypothesis of zero difference is true.
     For each p-value, 5000 reshuffles of the control and test labels were performed.
-    
+
     To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
 
 
@@ -359,7 +359,7 @@ For each comparison, the type of effect size is reported (here, it’s the
 This confidence interval is generated through bootstrap resampling. See
 :doc:`bootstraps` for more details.
 
-Since v0.3.0, DABEST will report the p-value of the `non-parametric two-sided approximate permutation t-test <https://en.wikipedia.org/wiki/Resampling_(statistics)#Permutation_tests>`__. This is also known as the Monte Carlo permutation test. 
+Since v0.3.0, DABEST will report the p-value of the `non-parametric two-sided approximate permutation t-test <https://en.wikipedia.org/wiki/Resampling_(statistics)#Permutation_tests>`__. This is also known as the Monte Carlo permutation test.
 
 For unpaired comparisons, the p-values and test statistics of `Welch's t test <https://en.wikipedia.org/wiki/Welch%27s_t-test>`__, `Student's t test <https://en.wikipedia.org/wiki/Student%27s_t-test>`__, and `Mann-Whitney U test <https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test>`__ can be found in addition. For paired comparisons, the p-values and test statistics of the `paired Student's t <https://en.wikipedia.org/wiki/Student%27s_t-test#Paired_samples>`__ and `Wilcoxon <https://en.wikipedia.org/wiki/Wilcoxon_signed-rank_test>`__ tests are presented.
 
@@ -380,11 +380,11 @@ For unpaired comparisons, the p-values and test statistics of `Welch's t test <h
         /* .dataframe tbody tr th:only-of-type {
             vertical-align: middle;
         }
-    
+
         .dataframe tbody tr th {
             vertical-align: top;
         }
-    
+
         .dataframe thead th {
             text-align: right;
         } */
@@ -471,11 +471,11 @@ For unpaired comparisons, the p-values and test statistics of `Welch's t test <h
         .dataframe tbody tr th:only-of-type {
             vertical-align: middle;
         }
-    
+
         .dataframe tbody tr th {
             vertical-align: top;
         }
-    
+
         .dataframe thead th {
             text-align: right;
         }
@@ -545,18 +545,18 @@ Let’s compute the Hedges’ *g* for our comparison.
 
     DABEST v0.3.0
     =============
-                 
+
     Good afternoon!
-    The current time is Mon Jan 20 17:12:46 2020.
-    
+    The current time is Mon Oct 19 17:12:46 2020.
+
     The unpaired Hedges' g between Control 1 and Test 1 is 1.03 [95%CI 0.349, 1.62].
-    The p-value of the two-sided permutation t-test is 0.001. 
-    
+    The p-value of the two-sided permutation t-test is 0.001.
+
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
     The p-value(s) reported are the likelihood(s) of observing the effect size(s),
     if the null hypothesis of zero difference is true.
     For each p-value, 5000 reshuffles of the control and test labels were performed.
-    
+
     To get the results of all valid statistical tests, use `.hedges_g.statistical_tests`
 
 
@@ -577,11 +577,11 @@ Let’s compute the Hedges’ *g* for our comparison.
         .dataframe tbody tr th:only-of-type {
             vertical-align: middle;
         }
-    
+
         .dataframe tbody tr th {
             vertical-align: top;
         }
-    
+
         .dataframe thead th {
             text-align: right;
         }
@@ -664,8 +664,8 @@ means you can quickly create plots for different effect sizes easily.
 
 .. code-block:: python3
   :linenos:
-  
-  
+
+
   two_groups_unpaired.mean_diff.plot();
 
 
@@ -747,7 +747,7 @@ meta-analyses to aggregate and compare data from different experiments.
     multi_2group = dabest.load(df, idx=(("Control 1", "Test 1",),
                                          ("Control 2", "Test 2")
                                        ))
-    
+
     multi_2group.mean_diff.plot();
 
 
@@ -766,7 +766,7 @@ The multi-two-group design also accomodates paired comparisons.
                                               ),
                                       paired=True, id_col="ID"
                                      )
-    
+
     multi_2group_paired.mean_diff.plot();
 
 
@@ -803,10 +803,10 @@ to ``idx`` has more than two data columns.
 
     DABEST v0.3.0
     =============
-                 
+
     Good afternoon!
-    The current time is Mon Jan 20 17:12:54 2020.
-    
+    The current time is Mon Oct 19 17:12:54 2020.
+
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
     2. Test 2 minus Control 1
@@ -814,7 +814,7 @@ to ``idx`` has more than two data columns.
     4. Test 4 minus Control 1
     5. Test 5 minus Control 1
     6. Test 6 minus Control 1
-    
+
     5000 resamples will be used to generate the effect size bootstraps.
 
 
@@ -832,33 +832,33 @@ to ``idx`` has more than two data columns.
 
     DABEST v0.3.0
     =============
-                 
+
     Good afternoon!
-    The current time is Mon Jan 20 17:12:58 2020.
-    
+    The current time is Mon Oct 19 17:12:58 2020.
+
     The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.221, 0.768].
-    The p-value of the two-sided permutation t-test is 0.001. 
-    
+    The p-value of the two-sided permutation t-test is 0.001.
+
     The unpaired mean difference between Control 1 and Test 2 is -0.542 [95%CI -0.914, -0.211].
-    The p-value of the two-sided permutation t-test is 0.0042. 
-    
+    The p-value of the two-sided permutation t-test is 0.0042.
+
     The unpaired mean difference between Control 1 and Test 3 is 0.174 [95%CI -0.295, 0.628].
-    The p-value of the two-sided permutation t-test is 0.479. 
-    
+    The p-value of the two-sided permutation t-test is 0.479.
+
     The unpaired mean difference between Control 1 and Test 4 is 0.79 [95%CI 0.306, 1.31].
-    The p-value of the two-sided permutation t-test is 0.0042. 
-    
+    The p-value of the two-sided permutation t-test is 0.0042.
+
     The unpaired mean difference between Control 1 and Test 5 is 0.265 [95%CI 0.0137, 0.497].
-    The p-value of the two-sided permutation t-test is 0.0404. 
-    
+    The p-value of the two-sided permutation t-test is 0.0404.
+
     The unpaired mean difference between Control 1 and Test 6 is 0.288 [95%CI -0.00441, 0.515].
-    The p-value of the two-sided permutation t-test is 0.0324. 
-    
+    The p-value of the two-sided permutation t-test is 0.0324.
+
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
     The p-value(s) reported are the likelihood(s) of observing the effect size(s),
     if the null hypothesis of zero difference is true.
     For each p-value, 5000 reshuffles of the control and test labels were performed.
-    
+
     To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
 
 
@@ -900,10 +900,10 @@ complex visualizations and statistics.
 
     DABEST v0.3.0
     =============
-                 
+
     Good afternoon!
-    The current time is Mon Jan 20 17:12:58 2020.
-    
+    The current time is Mon Oct 19 17:12:58 2020.
+
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
     2. Test 2 minus Control 2
@@ -911,7 +911,7 @@ complex visualizations and statistics.
     4. Test 4 minus Control 3
     5. Test 5 minus Control 3
     6. Test 6 minus Control 3
-    
+
     5000 resamples will be used to generate the effect size bootstraps.
 
 
@@ -929,33 +929,33 @@ complex visualizations and statistics.
 
     DABEST v0.3.0
     =============
-                 
+
     Good afternoon!
-    The current time is Mon Jan 20 17:13:02 2020.
-    
+    The current time is Mon Oct 19 17:13:02 2020.
+
     The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.221, 0.768].
-    The p-value of the two-sided permutation t-test is 0.001. 
-    
+    The p-value of the two-sided permutation t-test is 0.001.
+
     The unpaired mean difference between Control 2 and Test 2 is -1.38 [95%CI -1.93, -0.895].
-    The p-value of the two-sided permutation t-test is 0.0. 
-    
+    The p-value of the two-sided permutation t-test is 0.0.
+
     The unpaired mean difference between Control 2 and Test 3 is -0.666 [95%CI -1.3, -0.103].
-    The p-value of the two-sided permutation t-test is 0.0352. 
-    
+    The p-value of the two-sided permutation t-test is 0.0352.
+
     The unpaired mean difference between Control 3 and Test 4 is 0.362 [95%CI -0.114, 0.887].
-    The p-value of the two-sided permutation t-test is 0.161. 
-    
+    The p-value of the two-sided permutation t-test is 0.161.
+
     The unpaired mean difference between Control 3 and Test 5 is -0.164 [95%CI -0.404, 0.0742].
-    The p-value of the two-sided permutation t-test is 0.208. 
-    
+    The p-value of the two-sided permutation t-test is 0.208.
+
     The unpaired mean difference between Control 3 and Test 6 is -0.14 [95%CI -0.398, 0.102].
-    The p-value of the two-sided permutation t-test is 0.282. 
-    
+    The p-value of the two-sided permutation t-test is 0.282.
+
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
     The p-value(s) reported are the likelihood(s) of observing the effect size(s),
     if the null hypothesis of zero difference is true.
     For each p-value, 5000 reshuffles of the control and test labels were performed.
-    
+
     To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
 
 
@@ -992,15 +992,15 @@ gives recipes for melting dataframes.
 
     x='group'
     y='metric'
-    
+
     value_cols = df.columns[:-2] # select all but the "Gender" and "ID" columns.
-    
+
     df_melted = pd.melt(df.reset_index(),
                         id_vars=["Gender", "ID"],
                         value_vars=value_cols,
                         value_name=y,
                         var_name=x)
-    
+
     df_melted.head() # Gives the first five rows of `df_melted`.
 
 
@@ -1013,11 +1013,11 @@ gives recipes for melting dataframes.
         .dataframe tbody tr th:only-of-type {
             vertical-align: middle;
         }
-    
+
         .dataframe tbody tr th {
             vertical-align: top;
         }
-    
+
         .dataframe thead th {
             text-align: right;
         }
@@ -1083,7 +1083,7 @@ When your data is in this format, you will need to specify the ``x`` and
 
     analysis_of_long_df = dabest.load(df_melted, idx=("Control 1", "Test 1"),
                                      x="group", y="metric")
-    
+
     analysis_of_long_df
 
 
@@ -1093,13 +1093,13 @@ When your data is in this format, you will need to specify the ``x`` and
 
     DABEST v0.3.0
     =============
-                 
+
     Good afternoon!
-    The current time is Mon Jan 20 17:13:03 2020.
-    
+    The current time is Mon Oct 19 17:13:03 2020.
+
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
-    
+
     5000 resamples will be used to generate the effect size bootstraps.
 
 
@@ -1124,7 +1124,7 @@ Changing the y-axes labels.
   :linenos:
 
 
-    two_groups_unpaired.mean_diff.plot(swarm_label="This is my\nrawdata",  
+    two_groups_unpaired.mean_diff.plot(swarm_label="This is my\nrawdata",
                                        contrast_label="The bootstrap\ndistribtions!");
 
 
@@ -1193,12 +1193,12 @@ tuples.
   :linenos:
 
 
-    my_color_palette = {"Control 1" : "blue",    
+    my_color_palette = {"Control 1" : "blue",
                         "Test 1"    : "purple",
                         "Control 2" : "#cb4b16",     # This is a hex string.
                         "Test 2"    : (0., 0.7, 0.2) # This is a RGB tuple.
                        }
-    
+
     multi_2group.mean_diff.plot(custom_palette=my_color_palette);
 
 
@@ -1218,8 +1218,8 @@ You can alter the default values with the ``swarm_desat`` and
   :linenos:
 
 
-    multi_2group.mean_diff.plot(custom_palette=my_color_palette, 
-                                swarm_desat=0.75, 
+    multi_2group.mean_diff.plot(custom_palette=my_color_palette,
+                                swarm_desat=0.75,
                                 halfviolin_desat=0.25);
 
 
@@ -1234,7 +1234,7 @@ and those used to indicate the effect sizes.
   :linenos:
 
 
-    multi_2group.mean_diff.plot(raw_marker_size=3, 
+    multi_2group.mean_diff.plot(raw_marker_size=3,
                                 es_marker_size=12);
 
 
@@ -1248,7 +1248,7 @@ Changing the y-limits for the rawdata axes, and for the contrast axes.
   :linenos:
 
 
-    multi_2group.mean_diff.plot(swarm_ylim=(0, 5), 
+    multi_2group.mean_diff.plot(swarm_ylim=(0, 5),
                                 contrast_ylim=(-2, 2));
 
 
@@ -1264,7 +1264,7 @@ better outcome), you can simply invert the tuple passed to
   :linenos:
 
 
-    multi_2group.mean_diff.plot(contrast_ylim=(2, -2), 
+    multi_2group.mean_diff.plot(contrast_ylim=(2, -2),
                                 contrast_label="More negative is better!");
 
 
@@ -1284,15 +1284,15 @@ effect size differences.
 
 
     import matplotlib.ticker as Ticker
-    
+
     f = two_groups_unpaired.mean_diff.plot()
-    
+
     rawswarm_axes = f.axes[0]
     contrast_axes = f.axes[1]
-    
+
     rawswarm_axes.yaxis.set_major_locator(Ticker.MultipleLocator(1))
     rawswarm_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(0.5))
-    
+
     contrast_axes.yaxis.set_major_locator(Ticker.MultipleLocator(0.5))
     contrast_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(0.25))
 
@@ -1307,13 +1307,13 @@ effect size differences.
 
     f = multi_2group.mean_diff.plot(swarm_ylim=(0,6),
                                    contrast_ylim=(-3, 1))
-    
+
     rawswarm_axes = f.axes[0]
     contrast_axes = f.axes[1]
-    
+
     rawswarm_axes.yaxis.set_major_locator(Ticker.MultipleLocator(2))
     rawswarm_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(1))
-    
+
     contrast_axes.yaxis.set_major_locator(Ticker.MultipleLocator(0.5))
     contrast_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(0.25))
 
@@ -1338,17 +1338,17 @@ Creating estimation plots in existing axes
 
 
     from matplotlib import pyplot as plt
-    f, axx = plt.subplots(nrows=2, ncols=2, 
+    f, axx = plt.subplots(nrows=2, ncols=2,
                           figsize=(15, 15),
                           gridspec_kw={'wspace': 0.25} # ensure proper width-wise spacing.
                          )
-    
+
     two_groups_unpaired.mean_diff.plot(ax=axx.flat[0]);
-    
+
     two_groups_paired.mean_diff.plot(ax=axx.flat[1]);
-    
+
     multi_2group.mean_diff.plot(ax=axx.flat[2]);
-    
+
     multi_2group_paired.mean_diff.plot(ax=axx.flat[3]);
 
 
@@ -1367,7 +1367,7 @@ In this case, to access the individual rawdata axes, use
     topleft_axes = axx.flat[0]
     topleft_axes.set_ylabel("New y-axis label for rawdata")
     topleft_axes.contrast_axes.set_ylabel("New y-axis label for effect size")
-    
+
     f
 
 
@@ -1404,5 +1404,3 @@ of style sheets for reference.
 
 
 .. image:: _images/tutorial_81_0.png
-
-
