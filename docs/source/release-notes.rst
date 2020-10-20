@@ -7,7 +7,7 @@ Release Notes
 v0.3.1
 ------
 
-This release updates the package requirements to:
+This release updates the minimal Python version to 3.6 (as `Python 3.5 is already an "end-of-life" release as of September 2020 <https://www.python.org/downloads/release/python-3510/>`_), and also updates the package requirements to:
   - :py:mod:`numpy`: 0.19
   - :py:mod:`matplotlib`: 3.3
   - :py:mod:`scipy`: 1.5
@@ -15,6 +15,7 @@ This release updates the package requirements to:
   - :py:mod:`seaborn`: 0.11
   - :py:mod:`lqrt`: 0.3
 
+All users are strongly encouraged to update.
 
 v0.3.0
 ------
