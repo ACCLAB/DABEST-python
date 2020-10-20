@@ -34,21 +34,21 @@ if __name__ == "__main__":
         author_email='joseshowh@gmail.com',
         maintainer='Joses W. Ho',
         maintainer_email='joseshowh@gmail.com',
-        version='0.3.0',
+        version='0.3.1',
         description=DESCRIPTION,
         long_description=LONG_DESCRIPTION,
         packages=find_packages(),
         install_requires=[
-            'numpy~=1.17',
-            'scipy~=1.2',
-            'pandas~=0.25,!=0.25.2',
-            
-            'matplotlib~=3.0',
-            'seaborn~=0.9',
+            'numpy~=1.19',
+            'scipy~=1.5',
+            'pandas~=1.1',
+
+            'matplotlib~=3.3',
+            'seaborn~=0.11',
             'lqrt~=0.3'
         ],
-        extras_require={'dev': ['pytest~=5.3', 'pytest-mpl~=0.11']},
-        python_requires='~=3.5',
+        extras_require={'dev': ['pytest~=6.1', 'pytest-mpl~=0.11']},
+        python_requires='~=3.6',
         classifiers=[
             "Development Status :: 5 - Production/Stable",
             "Intended Audience :: Science/Research",

@@ -1,6 +1,6 @@
 # DABEST-Python
 [![Travis CI build status](https://travis-ci.org/ACCLAB/DABEST-python.svg?branch=master)](https://travis-ci.org/ACCLAB/DABEST-python)
-[![minimal Python version](https://img.shields.io/badge/Python%3E%3D-3.5-6666ff.svg)](https://www.anaconda.com/distribution/)
+[![minimal Python version](https://img.shields.io/badge/Python%3E%3D-3.6-6666ff.svg)](https://www.anaconda.com/distribution/)
 [![PyPI version](https://badge.fury.io/py/dabest.svg)](https://badge.fury.io/py/dabest)
 [![Downloads](https://pepy.tech/badge/dabest/month)](https://pepy.tech/project/dabest/month)
 [![Free-to-view citation](https://zenodo.org/badge/DOI/10.1038/s41592-019-0470-3.svg)](https://rdcu.be/bHhJ4)
@@ -39,7 +39,7 @@ DABEST powers [estimationstats.com](https://www.estimationstats.com/), allowing 
 
 ## Installation
 
-This package is tested on Python 3.5, 3.6, 3.7, and 3.8.
+This package is tested on Python 3.6, 3.7, and 3.8.
 It is highly recommended to download the [Anaconda distribution](https://www.continuum.io/downloads) of Python in order to obtain the dependencies easily.
 
 You can install this package via `pip`.
