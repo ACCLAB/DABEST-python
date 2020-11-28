@@ -36,10 +36,8 @@ class Dabest(object):
         # data_in.reset_index(inplace=True)
         # data_in_index_name = data_in.index.name
 
-
-        from collections import Hashable
         # Determine the kind of estimation plot we need to produce.
-        if all([isinstance(i, Hashable) for i in idx]):
+        if all([isinstance(i, (str, int, float)) for i in idx]):
             # flatten out idx.
             all_plot_groups = set(idx)
             if len(idx) > len(all_plot_groups):
