@@ -37,11 +37,11 @@ class Dabest(object):
         # data_in_index_name = data_in.index.name
 
 
-
+        from collections import Hashable
         # Determine the kind of estimation plot we need to produce.
-        if all([isinstance(i, str) for i in idx]):
+        if all([isinstance(i, Hashable) for i in idx]):
             # flatten out idx.
-            all_plot_groups = pd.unique([t for t in idx]).tolist()
+            all_plot_groups = set(idx)
             if len(idx) > len(all_plot_groups):
                 err0 = '`idx` contains duplicated groups. Please remove any duplicates and try again.'
                 raise ValueError(err0)
