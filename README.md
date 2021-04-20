@@ -112,7 +112,9 @@ Currently, DABEST offers functions to handle data traditionally analyzed with St
 
 ● Currently, DABEST can analyse multiple paired data in a single plot, and multiple groups with a common, shared control. However, a common design in biomedical science is to follow the same group of subjects over multiple, successive time points. An estimation plot for this would combine elements of the two other designs, and could be used in place of a repeated-measures ANOVA. 
 
-● We have observed that proportional data are often analyzed in neuroscience and other areas of biomedical research. However, compared to other data types, the charts are frequently even more impoverished: often, they omit error bars, sample sizes, and even P values—let alone effect sizes. We would like DABEST to feature proportion charts, with error bars and a curve for the distribution of the proportional differences.
+● We have observed that proportional data are often analyzed in neuroscience and other areas of biomedical research. However, compared to other data types, the charts are frequently impoverished: often, they omit error bars, sample sizes, and even P values—let alone effect sizes. We would like DABEST to feature proportion charts, with error bars and a curve for the distribution of the proportional differences.
+
+We encourage contributions for the above features. 
 
 
 ## Acknowledgements
