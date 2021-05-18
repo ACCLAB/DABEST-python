@@ -9,7 +9,7 @@ class Dabest(object):
     Class for estimation statistics and plots.
     """
 
-    def __init__(self, data, idx, x, y, paired, id_col, ci, resamples,
+    def __init__(self, data, idx, x, y, paired, preceding, id_col, ci, resamples,
                 random_seed):
 
         """
@@ -28,6 +28,7 @@ class Dabest(object):
         self.__idx         = idx
         self.__id_col      = id_col
         self.__is_paired   = paired
+        self.__is_preceding= preceding
         self.__resamples   = resamples
         self.__random_seed = random_seed
 
@@ -75,6 +76,11 @@ class Dabest(object):
         #        err2 = "in {} does not consist only of two groups.".format(idx)
         #        raise ValueError(err1 + err2)
 
+        # preceding canbe true only if paired is true. 
+        if preceding is True and paired is False:
+            err1 = "`is_preceding` could not be True when `is_paired` "
+            err2 = "is False"
+            raise ValueError(err1 + err2)
 
         # Determine the type of data: wide or long.
         if x is None and y is not None:
@@ -181,7 +187,7 @@ class Dabest(object):
                 err = "{} is not a column in `data`. ".format(id_col)
                 raise IndexError(err)
 
-        EffectSizeDataFrame_kwargs = dict(ci=ci, is_paired=paired,
+        EffectSizeDataFrame_kwargs = dict(ci=ci, is_paired=paired, is_preceding=preceding,
                                            random_seed=random_seed,
                                            resamples=resamples)
 
@@ -226,14 +232,26 @@ class Dabest(object):
 
         comparisons = []
 
-        for j, current_tuple in enumerate(self.__idx):
-            control_name = current_tuple[0]
+        # if __is_preceding is true, treat the adjacent 2 groups 
+        # as a pair and calculate pairwise effect size
+        if not self.__is_preceding:
+            for j, current_tuple in enumerate(self.__idx):
+                control_name = current_tuple[0]
+                
+                for ix, test_name in enumerate(current_tuple[1:]):
+                    comparisons.append("{} minus {}".format(test_name, control_name))
 
-            for ix, test_name in enumerate(current_tuple[1:]):
-                comparisons.append("{} minus {}".format(test_name, control_name))
+            for j, g in enumerate(comparisons):
+                out.append("{}. {}".format(j+1, g))
 
-        for j, g in enumerate(comparisons):
-            out.append("{}. {}".format(j+1, g))
+        else:
+            for j, current_tuple in enumerate(self.__idx):
+                for ix, test_name in enumerate(current_tuple[1:]):
+                    control_name = current_tuple[ix]
+                    comparisons.append("{} minus {}".format(test_name, control_name))
+
+            for j, g in enumerate(comparisons):
+                out.append("{}. {}".format(j+1, g))
 
         resamples_line1 = "\n{} resamples ".format(self.__resamples)
         resamples_line2 = "will be used to generate the effect size bootstraps."
@@ -470,6 +488,13 @@ class Dabest(object):
         """
         return self.__is_paired
 
+    @property
+    def is_preceding(self):
+        """
+        Returns True if the dataset was declared as preceis_preceding to `dabest.load()`.
+        """
+        return self.__is_preceding
+    
     @property
     def id_col(self):
         """
@@ -1313,7 +1338,7 @@ class EffectSizeDataFrame(object):
     sizes for several comparisons."""
 
     def __init__(self, dabest, effect_size,
-                 is_paired, ci=95,
+                 is_paired, is_preceding, ci=95,
                  resamples=5000, 
                  permutation_count=5000,
                  random_seed=12345):
@@ -1325,6 +1350,7 @@ class EffectSizeDataFrame(object):
         self.__dabest_obj        = dabest
         self.__effect_size       = effect_size
         self.__is_paired         = is_paired
+        self.__is_preceding      = is_preceding
         self.__ci                = ci
         self.__resamples         = resamples
         self.__permutation_count = permutation_count
@@ -1343,44 +1369,82 @@ class EffectSizeDataFrame(object):
         out = []
         reprs = []
 
-        for j, current_tuple in enumerate(idx):
+        if not self.__is_preceding:
+            for j, current_tuple in enumerate(idx):
 
-            cname = current_tuple[0]
-            control = dat[dat[xvar] == cname][yvar].copy()
+                cname = current_tuple[0]
+                control = dat[dat[xvar] == cname][yvar].copy()
 
-            for ix, tname in enumerate(current_tuple[1:]):
-                test = dat[dat[xvar] == tname][yvar].copy()
+                for ix, tname in enumerate(current_tuple[1:]):
+                    test = dat[dat[xvar] == tname][yvar].copy()
 
-                result = TwoGroupsEffectSize(control, test,
+                    result = TwoGroupsEffectSize(control, test,
                                              self.__effect_size,
                                              self.__is_paired,
                                              self.__ci,
                                              self.__resamples,
                                              self.__permutation_count,
                                              self.__random_seed)
-                r_dict = result.to_dict()
+                    r_dict = result.to_dict()
 
-                r_dict["control"]   = cname
-                r_dict["test"]      = tname
-                r_dict["control_N"] = int(len(control))
-                r_dict["test_N"]    = int(len(test))
+                    r_dict["control"]   = cname
+                    r_dict["test"]      = tname
+                    r_dict["control_N"] = int(len(control))
+                    r_dict["test_N"]    = int(len(test))
                 
-                out.append(r_dict)
+                    out.append(r_dict)
 
-                if j == len(idx)-1 and ix == len(current_tuple)-2:
-                    resamp_count = True
-                    def_pval     = True
-                else:
-                    resamp_count = False
-                    def_pval     = False
+                    if j == len(idx)-1 and ix == len(current_tuple)-2:
+                        resamp_count = True
+                        def_pval     = True
+                    else:
+                        resamp_count = False
+                        def_pval     = False
 
-                text_repr = result.__repr__(show_resample_count=resamp_count,
+                    text_repr = result.__repr__(show_resample_count=resamp_count,
                                             define_pval=def_pval)
 
-                to_replace = "between {} and {} is".format(cname, tname)
-                text_repr = text_repr.replace("is", to_replace, 1)
+                    to_replace = "between {} and {} is".format(cname, tname)
+                    text_repr = text_repr.replace("is", to_replace, 1)
 
-                reprs.append(text_repr)
+                    reprs.append(text_repr)
+        else:
+            for j, current_tuple in enumerate(idx):
+                for ix, tname in enumerate(current_tuple[1:]):
+                    
+                    cname = current_tuple[ix]
+                    control = dat[dat[xvar] == cname][yvar].copy()
+                    test = dat[dat[xvar] == tname][yvar].copy()
+                    result = TwoGroupsEffectSize(control, test,
+                                             self.__effect_size,
+                                             self.__is_paired,
+                                             self.__ci,
+                                             self.__resamples,
+                                             self.__permutation_count,
+                                             self.__random_seed)
+                    r_dict = result.to_dict()
+
+                    r_dict["control"]   = cname
+                    r_dict["test"]      = tname
+                    r_dict["control_N"] = int(len(control))
+                    r_dict["test_N"]    = int(len(test))
+                
+                    out.append(r_dict)
+
+                    if j == len(idx)-1 and ix == len(current_tuple)-2:
+                        resamp_count = True
+                        def_pval     = True
+                    else:
+                        resamp_count = False
+                        def_pval     = False
+
+                    text_repr = result.__repr__(show_resample_count=resamp_count,
+                                            define_pval=def_pval)
+
+                    to_replace = "between {} and {} is".format(cname, tname)
+                    text_repr = text_repr.replace("is", to_replace, 1)
+
+                    reprs.append(text_repr)
 
         varname = get_varname(self.__dabest_obj)
         lastline = "To get the results of all valid statistical tests, " +\
@@ -1428,7 +1492,6 @@ class EffectSizeDataFrame(object):
 
         self.__results   = out_.reindex(columns=columns_in_order)
         self.__results.dropna(axis="columns", how="all", inplace=True)
-        
 
 
 
@@ -1454,14 +1517,14 @@ class EffectSizeDataFrame(object):
 
         out = []
 
-        for j, current_tuple in enumerate(db_obj.idx):
-            cname = current_tuple[0]
-            control = dat[dat[xvar] == cname][yvar].copy()
-
-            for ix, tname in enumerate(current_tuple[1:]):
-                test = dat[dat[xvar] == tname][yvar].copy()
-                
-                if self.__is_paired is True:                    
+        if self.__is_preceding is True:
+            
+            for j, current_tuple in enumerate(db_obj.idx):
+                for ix, tname in enumerate(current_tuple[1:]):
+                    cname = current_tuple[ix]
+                    control = dat[dat[xvar] == cname][yvar].copy()
+                    test = dat[dat[xvar] == tname][yvar].copy()
+                                 
                     # Refactored here in v0.3.0 for performance issues.
                     lqrt_result = lqrt.lqrtest_rel(control, test, 
                                             random_state=rnd_seed)
@@ -1472,13 +1535,17 @@ class EffectSizeDataFrame(object):
                                 "pvalue_paired_lqrt": lqrt_result.pvalue,
                                 "statistic_paired_lqrt": lqrt_result.statistic
                                 })
+        else:
+            for j, current_tuple in enumerate(db_obj.idx):
+                cname = current_tuple[0]
+                control = dat[dat[xvar] == cname][yvar].copy()
 
-                else:
+                for ix, tname in enumerate(current_tuple[1:]):
+                    test = dat[dat[xvar] == tname][yvar].copy()
                     # Likelihood Q-Ratio test:
                     lqrt_equal_var_result = lqrt.lqrtest_ind(control, test, 
                                                 random_state=rnd_seed,
-                                                equal_var=True)
-                                                
+                                                equal_var=True)     
                                                 
                     lqrt_unequal_var_result = lqrt.lqrtest_ind(control, test, 
                                                 random_state=rnd_seed,
@@ -1495,6 +1562,7 @@ class EffectSizeDataFrame(object):
                                 })
                                 
         self.__lqrt_results = pd.DataFrame(out)
+
 
 
     def plot(self, color_col=None,
@@ -1746,6 +1814,10 @@ class EffectSizeDataFrame(object):
     @property
     def is_paired(self):
         return self.__is_paired
+
+    @property
+    def is_preceding(self):
+        return self.__is_preceding
 
     @property
     def ci(self):
