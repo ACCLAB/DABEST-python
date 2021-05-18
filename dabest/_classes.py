@@ -68,12 +68,12 @@ class Dabest(object):
 
         # Having parsed the idx, check if it is a kosher paired plot,
         # if so stated.
-        if paired is True:
-            all_idx_lengths = [len(t) for t in self.__idx]
-            if (np.array(all_idx_lengths) != 2).any():
-                err1 = "`is_paired` is True, but some idx "
-                err2 = "in {} does not consist only of two groups.".format(idx)
-                raise ValueError(err1 + err2)
+        #if paired is True:
+        #    all_idx_lengths = [len(t) for t in self.__idx]
+        #    if (np.array(all_idx_lengths) != 2).any():
+        #        err1 = "`is_paired` is True, but some idx "
+        #        err2 = "in {} does not consist only of two groups.".format(idx)
+        #        raise ValueError(err1 + err2)
 
 
         # Determine the type of data: wide or long.

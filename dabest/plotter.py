@@ -350,6 +350,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         pivoted_plot_data = pd.pivot(data=plot_data, index=dabest_obj.id_col,
                                      columns=xvar, values=pivot_values)
 
+        x_start = 0
         for ii, current_tuple in enumerate(idx):
             if len(idx) > 1:
                 # Select only the data for the current tuple.
@@ -362,11 +363,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                     current_pair = pivoted_plot_data
                 else:
                     current_pair = pivoted_plot_data[yvar]
-
+            
+            grp_count = len(current_tuple)
             # Iterate through the data for the current tuple.
             for ID, observation in current_pair.iterrows():
-                x_start  = (ii * 2)
-                x_points = [x_start, x_start+1]
+                x_points = [t for t in range(x_start,x_start+grp_count)]
                 y_points = observation.tolist()
 
                 if color_col is None:
@@ -378,6 +379,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                     slopegraph_kwargs['label']  = color_key
 
                 rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
+            x_start  = x_start + grp_count
 
         # Set the tick labels, because the slopegraph plotting doesn't.
         rawdata_axes.set_xticks(np.arange(0, len(all_plot_groups)))
