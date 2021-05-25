@@ -103,8 +103,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         show_pairs = False
     else:
         show_pairs = plot_kwargs["show_pairs"]
-    
-    print(f"show_pairs = {show_pairs}")
 
 
     # Set default kwargs first, then merge with user-dictated ones.
