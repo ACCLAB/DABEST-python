@@ -4,7 +4,7 @@
 # Email : joseshowh@gmail.com
 
 
-def load(data, idx, x=None, y=None, paired=False, id_col=None,
+def load(data, idx, x=None, y=None, repeated_measures = None, id_col=None,
         ci=95, resamples=5000, random_seed=12345):
     '''
     Loads data in preparation for estimation statistics.
@@ -21,7 +21,8 @@ def load(data, idx, x=None, y=None, paired=False, id_col=None,
     x : string, default None
     y : string, default None
         Column names for data to be plotted on the x-axis and y-axis.
-    paired : boolean, default False.
+    repeated_measures : string, default None
+        The type of the experiment under which the data are obtained
     id_col : default None.
         Required if `paired` is True.
     ci : integer, default 95
@@ -62,4 +63,4 @@ def load(data, idx, x=None, y=None, paired=False, id_col=None,
     '''
     from ._classes import Dabest
 
-    return Dabest(data, idx, x, y, paired, id_col, ci, resamples, random_seed)
+    return Dabest(data, idx, x, y, repeated_measures, id_col, ci, resamples, random_seed)

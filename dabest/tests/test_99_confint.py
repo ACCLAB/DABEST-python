@@ -24,7 +24,7 @@ def test_paired_mean_diff_ci():
 
 
     ex_bp = load(data=exercise_bp, idx=("before", "after"), 
-                 paired=True, id_col="subject_id")
+                 repeated_measures="baseline", id_col="subject_id")
     paired_mean_diff = ex_bp.mean_diff.results
     
     assert pytest.approx(3.875) == paired_mean_diff.bca_low[0]
@@ -125,7 +125,7 @@ def test_unpaired_ci(reps=30, ci=95):
         # print(i) # for debug.
         # pick a random seed
         rnd_sd = np.random.randint(0, 999999)
-        load_kwargs = dict(ci=ci, random_seed=rnd_sd)
+        load_kwargs = dict(ci=ci, random_seed=rnd_sd, repeated_measures=None)
 
         std_diff_data = load(data=std_diff_df, idx=("Control", "Test"), **load_kwargs)
         cd = std_diff_data.cohens_d.results

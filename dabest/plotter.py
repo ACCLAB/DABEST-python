@@ -67,11 +67,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     ytick_color = plt.rcParams["ytick.color"]
     axes_facecolor = plt.rcParams['axes.facecolor']
 
-    dabest_obj  = EffectSizeDataFrame.dabest_obj
-    plot_data   = EffectSizeDataFrame._plot_data
-    xvar        = EffectSizeDataFrame.xvar
-    yvar        = EffectSizeDataFrame.yvar
-    is_paired   = EffectSizeDataFrame.is_paired
+    dabest_obj        = EffectSizeDataFrame.dabest_obj
+    plot_data         = EffectSizeDataFrame._plot_data
+    xvar              = EffectSizeDataFrame.xvar
+    yvar              = EffectSizeDataFrame.yvar
+    repeated_measures = EffectSizeDataFrame.repeated_measures
 
 
     all_plot_groups = dabest_obj._all_plot_groups
@@ -93,17 +93,21 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         float_contrast = False
 
 
-
+    # Removed due to the deprecation of `is_paired`
     # Disable slopegraph plotting if any of the idxs comprise of more than
     # two groups.
-    if np.all([len(i)==2 for i in idx]) is False:
-        is_paired = False
+    #if np.all([len(i)==2 for i in idx]) is False:
+    #    is_paired = False
     # if paired is False, set show_pairs as False.
-    if is_paired is False:
+    #if is_paired is False:
+    #    show_pairs = False
+    #else:
+    #    show_pairs = plot_kwargs["show_pairs"]
+
+    if not repeated_measures:
         show_pairs = False
     else:
         show_pairs = plot_kwargs["show_pairs"]
-
 
     # Set default kwargs first, then merge with user-dictated ones.
     default_swarmplot_kwargs = {'size': plot_kwargs["raw_marker_size"]}
@@ -237,7 +241,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     fig_size   = plot_kwargs["fig_size"]
     if fig_size is None:
         all_groups_count = np.sum([len(i) for i in dabest_obj.idx])
-        if is_paired is True and show_pairs is True:
+        if repeated_measures and show_pairs is True:
             frac = 0.75
         else:
             frac = 1
@@ -349,7 +353,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             pivot_values = [yvar, color_col]
         pivoted_plot_data = pd.pivot(data=plot_data, index=dabest_obj.id_col,
                                      columns=xvar, values=pivot_values)
-
+        x_start = 0
         for ii, current_tuple in enumerate(idx):
             if len(idx) > 1:
                 # Select only the data for the current tuple.
@@ -362,13 +366,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                     current_pair = pivoted_plot_data
                 else:
                     current_pair = pivoted_plot_data[yvar]
-
+                    
+            grp_count = len(current_tuple)
             # Iterate through the data for the current tuple.
             for ID, observation in current_pair.iterrows():
-                x_start  = (ii * 2)
-                x_points = [x_start, x_start+1]
+                x_points = [t for t in range(x_start,x_start+grp_count)]
                 y_points = observation.tolist()
-
+    
                 if color_col is None:
                     slopegraph_kwargs['color'] = ytick_color
                 else:
@@ -376,9 +380,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                                   current_tuple[0]].loc[ID]
                     slopegraph_kwargs['color']  = plot_palette_raw[color_key]
                     slopegraph_kwargs['label']  = color_key
-
+            
                 rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
-
+            x_start  = x_start + grp_count
         # Set the tick labels, because the slopegraph plotting doesn't.
         rawdata_axes.set_xticks(np.arange(0, len(all_plot_groups)))
         rawdata_axes.set_xticklabels(all_plot_groups)
@@ -592,7 +596,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_axes.set_xlim(contrast_xlim_max-1, contrast_xlim_max)
 
         elif effect_size_type in ["cohens_d", "hedges_g"]:
-            if is_paired:
+            if repeated_measures:
                 which_std = 1
             else:
                 which_std = 0
@@ -600,7 +604,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             temp_test    = plot_data[plot_data[xvar] == current_group][yvar]
             
             stds = _compute_standardizers(temp_control, temp_test)
-            if is_paired:
+            if repeated_measures:
                 pooled_sd = stds[1]
             else:
                 pooled_sd = stds[0]
@@ -736,7 +740,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     default_contrast_label = contrast_label_dict[EffectSizeDataFrame.effect_size]
 
     if plot_kwargs['contrast_label'] is None:
-        if is_paired is True:
+        if repeated_measures:
             contrast_label = "paired\n{}".format(default_contrast_label)
         else:
             contrast_label = default_contrast_label

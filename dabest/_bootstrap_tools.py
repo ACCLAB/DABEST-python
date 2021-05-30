@@ -17,8 +17,8 @@ class bootstrap:
             the two groups (x2-x1) is computed.
             NaNs are automatically discarded.
 
-        paired: boolean, default False
-            Whether or not x1 and x2 are paired samples.
+        repeated_measures: string, default None
+            The type of the experiment design.
 
         statfunction: callable, default np.mean
             The summary statistic called on data.
@@ -47,8 +47,8 @@ class bootstrap:
             Whether or not the summary is the difference between two groups.
             If False, only x1 was supplied.
 
-        is_paired: boolean
-            Whether or not the difference reported is between 2 paired groups.
+        repeated_measures: string
+            The type of experiment design.
 
         statistic: callable
             The function used to compute the summary.
@@ -85,19 +85,19 @@ class bootstrap:
 
         pvalue_2samp_ind_ttest: float
             P-value obtained from scipy.stats.ttest_ind.
-            If a single array was given (x1 only), or if `paired` is True,
+            If a single array was given (x1 only), or if `repeated_measures` is not None,
             returns 'NIL'.
             See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_ind.html
 
         pvalue_2samp_related_ttest: float
             P-value obtained from scipy.stats.ttest_rel.
-            If a single array was given (x1 only), or if `paired` is False,
+            If a single array was given (x1 only), or if `repeated_measures` is None,
             returns 'NIL'.
             See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_rel.html
 
         pvalue_wilcoxon: float
             P-value obtained from scipy.stats.wilcoxon.
-            If a single array was given (x1 only), or if `paired` is False,
+            If a single array was given (x1 only), or if `repeated_measures` is None,
             returns 'NIL'.
             The Wilcoxons signed-rank test is a nonparametric paired test of
             the null hypothesis that the related samples x1 and x2 are from
@@ -113,7 +113,7 @@ class bootstrap:
 
     '''
     def __init__(self, x1, x2=None,
-        paired=False,
+        repeated_measures=None,
         statfunction=None,
         smoothboot=False,
         alpha_level=0.05,
@@ -146,7 +146,7 @@ class bootstrap:
             'n_boot': reps,
             'smooth': smoothboot}
 
-        if paired:
+        if repeated_measures:
             # check x2 is not None:
             if x2 is None:
                 raise ValueError('Please specify x2.')
@@ -155,17 +155,17 @@ class bootstrap:
                 if len(x1) != len(x2):
                     raise ValueError('x1 and x2 are not the same length.')
 
-        if (x2 is None) or (paired is True) :
+        if (x2 is None) or (repeated_measures) :
 
             if x2 is None:
                 tx = x1
-                paired = False
+                repeated_measures = None
                 ttest_single = ttest_1samp(x1, 0)[1]
                 ttest_2_ind = 'NIL'
                 ttest_2_paired = 'NIL'
                 wilcoxonresult = 'NIL'
 
-            elif paired is True:
+            elif repeated_measures:
                 diff = True
                 tx = x2 - x1
                 ttest_single = 'NIL'
@@ -188,7 +188,7 @@ class bootstrap:
             pct_low_high = np.nan_to_num(pct_low_high).astype('int')
 
 
-        elif x2 is not None and paired is False:
+        elif x2 is not None and repeated_measures is None:
             diff = True
             x2 = pd.Series(x2).dropna()
             # Generate statarrays for both arrays.
@@ -228,7 +228,7 @@ class bootstrap:
                 " results may be unstable.")
 
         self.summary = summ_stat
-        self.is_paired = paired
+        self.repeated_measures = repeated_measures
         self.is_difference = diff
         self.statistic = str(statfunction)
         self.n_reps = reps
@@ -252,7 +252,7 @@ class bootstrap:
 
         self.results = {'stat_summary': self.summary,
                         'is_difference': diff,
-                        'is_paired': paired,
+                        'repeated_measures': repeated_measures,
                         'bca_ci_low': self.bca_ci_low,
                         'bca_ci_high': self.bca_ci_high,
                         'ci': self.ci
@@ -270,7 +270,7 @@ class bootstrap:
 
         diff_types = {True: 'paired', False: 'unpaired'}
         if self.is_difference:
-            a = 'The {} {} difference is {}.'.format(diff_types[self.is_paired],
+            a = 'The {} {} difference is {}.'.format(diff_types[self.repeated_measures is not None],
                     stat, self.summary)
         else:
             a = 'The {} is {}.'.format(stat, self.summary)
