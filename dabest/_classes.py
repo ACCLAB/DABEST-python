@@ -23,20 +23,25 @@ class Dabest(object):
         import pandas as pd
         import seaborn as sns
 
-        self.__ci               = ci
-        self.__data             = data
-        self.__idx              = idx
-        self.__id_col           = id_col
-        self.__is_paired        = paired
-        self.__repeated_measures= repeated_measures
-        self.__resamples        = resamples
-        self.__random_seed      = random_seed
+        self.__ci           = ci
+        self.__data         = data
+        self.__idx          = idx
+        self.__id_col       = id_col
+        self.__resamples    = resamples
+        self.__random_seed  = random_seed
+        self.__rm_design    = repeated_measures
+
+        # The computation of effect size is paired when `paired` = True 
+        # or `repeated_measures` is not None
+        if paired or repeated_measures:
+            self.__is_paired = True
+        else:
+            self.__is_paired = False
 
         # Make a copy of the data, so we don't make alterations to it.
         data_in = data.copy()
         # data_in.reset_index(inplace=True)
         # data_in_index_name = data_in.index.name
-
 
 
         # Determine the kind of estimation plot we need to produce.
@@ -80,13 +85,13 @@ class Dabest(object):
         # are declared at the same time
         if paired is True:
             if repeated_measures is not None:
-                err1 = "`is_paired` and `repeated_measures` cannot be declared "
+                err1 = "`paired` and `repeated_measures` cannot be declared "
                 err2 = "at the same time"
                 raise ValueError(err1 + err2)
 
             all_idx_lengths = [len(t) for t in self.__idx]
             if (np.array(all_idx_lengths) != 2).any():
-                err1 = "`is_paired` is True, but some idx "
+                err1 = "`paired` is True, but some idx "
                 err2 = "in {} does not consist only of two groups.".format(idx)
                 raise ValueError(err1 + err2)
 
@@ -188,19 +193,16 @@ class Dabest(object):
 
 
         # Sanity check that all idxs are paired, if so desired.
-        if paired is True or repeated_measures is not None:
-            if id_col is None and paired is True:
+        if self.__is_paired is True:
+            if id_col is None:
                 err = "`id_col` must be specified if `is_paired` is set to True."
-                raise IndexError(err)
-            elif id_col is None and repeated_measures is not None:
-                err = "`id_col` must be specified if `repeated_measures` is not None."
                 raise IndexError(err)
             elif id_col not in plot_data.columns:
                 err = "{} is not a column in `data`. ".format(id_col)
                 raise IndexError(err)
 
-        EffectSizeDataFrame_kwargs = dict(ci=ci, is_paired=paired, 
-                                            repeated_measures=repeated_measures,
+        EffectSizeDataFrame_kwargs = dict(ci=ci, is_paired=self.__is_paired, 
+                                            rm_design=self.__rm_design,
                                             random_seed=random_seed,
                                             resamples=resamples)
 
@@ -216,14 +218,12 @@ class Dabest(object):
         self.__hedges_g     = EffectSizeDataFrame(self, "hedges_g",
                                                 **EffectSizeDataFrame_kwargs)
 
-        if paired is False and repeated_measures is None:
+        if self.__is_paired is False:
             self.__cliffs_delta = EffectSizeDataFrame(self, "cliffs_delta",
                                                     **EffectSizeDataFrame_kwargs)
         else:
-            if paired is True:
-                self.__cliffs_delta = "The data is paired; Cliff's delta is therefore undefined."
-            else: 
-                self.__cliffs_delta = "Repeated-measure design is adopted; Cliff's delta is therefore undefined."
+            self.__cliffs_delta = "The data is paired; Cliff's delta is therefore undefined."
+            
 
 
     def __repr__(self):
@@ -234,11 +234,10 @@ class Dabest(object):
         from .misc_tools import print_greeting
 
         if self.__is_paired:
-            s1 = "Paired effect size(s) "
-        elif self.__repeated_measures:
-            METHOD = {"baseline"  : "against the baseline group ",
-                      "sequential": "in sequence "}
-            s1 = "Effect size(s) for repeated measures {} ".format(METHOD[self.__repeated_measures])            
+            METHOD = {"baseline"  : " for repeated measures against the baseline group",
+                      "sequential": " for the sequential design of repeated measures",
+                      None:""}
+            s1 = "Paired effect size(s){} ".format(METHOD[self.__rm_design])  
         else:
             s1 = "Effect size(s) "
 
@@ -251,12 +250,11 @@ class Dabest(object):
 
         comparisons = []
 
-        # if __repeated_measures is "sequential", treat the adjacent 2 groups 
+        # if repeated_measures is "sequential", treat the adjacent 2 groups 
         # as a pair and report pairwise effect size
-        if not self.__is_repeated_measures == "sequential":
+        if self.__rm_design != "sequential":
             for j, current_tuple in enumerate(self.__idx):
                 control_name = current_tuple[0]
-                
                 for ix, test_name in enumerate(current_tuple[1:]):
                     comparisons.append("{} minus {}".format(test_name, control_name))
 
@@ -505,12 +503,11 @@ class Dabest(object):
         return self.__is_paired
 
     @property
-    def repeated_measures(self):
+    def rm_design(self):
         """
-        Returns None if the dataset was not declared as is_repeated_measures to 
-        `dabest.load()`; else return the type of repeated-measures experiments.
+        Returns the type of repeated-measures experiments.
         """
-        return self.__repeated_measures
+        return self.__rm_design
     
     @property
     def id_col(self):
@@ -597,14 +594,13 @@ class TwoGroupsEffectSize(object):
     """
 
     def __init__(self, control, test, effect_size,
-                 is_paired=False, repeated_measures=None, ci=95,
+                 is_paired=False, ci=95,
                  resamples=5000, 
                  permutation_count=5000, 
                  random_seed=12345):
 
         """
         Compute the effect size between two groups.
-
         Parameters
         ----------
         control : array-like
@@ -614,7 +610,6 @@ class TwoGroupsEffectSize(object):
             Any one of the following are accepted inputs:
             'mean_diff', 'median_diff', 'cohens_d', 'hedges_g', or 'cliffs_delta'
         is_paired : boolean, default False
-        repeated_measures : string, default None
         resamples : int, default 5000
             The number of bootstrap resamples to be taken for the calculation
             of the confidence interval limits.
@@ -628,8 +623,6 @@ class TwoGroupsEffectSize(object):
             `random_seed` is used to seed the random number generator during
             bootstrap resampling. This ensures that the confidence intervals
             reported are replicable.
-
-
         Returns
         -------
         A :py:class:`TwoGroupEffectSize` object.
@@ -642,10 +635,7 @@ class TwoGroupsEffectSize(object):
         
         is_paired : boolean
             Whether or not the difference is paired (ie. repeated measures).
-        
-        repeated_measures : string
-            Return the type of repeated-measures design. 
-
+            
         ci : float
             Returns the width of the confidence interval, in percent.
             
@@ -655,7 +645,6 @@ class TwoGroupsEffectSize(object):
             
         resamples : int
             The number of resamples performed during the bootstrap procedure.
-
         bootstraps : nmupy ndarray
             The generated bootstraps of the effect size.
             
@@ -695,7 +684,6 @@ class TwoGroupsEffectSize(object):
          'ci': 95,
          'difference': -0.25315417702752846,
          'effect_size': 'mean difference',
-         'is_grouped': False,
          'is_paired': False,
          'pct_high': 0.24951887238295106,
          'pct_interval_idx': (125, 4875),
@@ -710,7 +698,6 @@ class TwoGroupsEffectSize(object):
          'pvalue_welch': 0.3474493875548965,
          'pvalue_wilcoxon': nan,
          'random_seed': 12345,
-         'repeated_measures': None,
          'resamples': 5000,
          'statistic_brunner_munzel': nan,
          'statistic_kruskal': nan,
@@ -753,9 +740,6 @@ class TwoGroupsEffectSize(object):
         if effect_size == "cliffs_delta" and is_paired is True:
             err1 = "`paired` is True; therefore Cliff's delta is not defined."
             raise ValueError(err1)
-        elif effect_size == "cliffs_delta" and repeated_measures is not None:
-            err1 = "Repeated-measures design is used; therefore Cliff's delta is not defined."
-            raise ValueError(err1)
 
         # Convert to numpy arrays for speed.
         # NaNs are automatically dropped.
@@ -768,35 +752,28 @@ class TwoGroupsEffectSize(object):
         self.__control           = control
         self.__test              = test
         self.__is_paired         = is_paired
-        self.__repeated_measures = repeated_measures
         self.__resamples         = resamples
         self.__permutation_count = permutation_count
         self.__random_seed       = random_seed
         self.__ci                = ci
         self.__alpha             = ci2g._compute_alpha_from_ci(ci)
 
-        # If either is_paired is True or repeated_measures not None, the control 
-        # and test data will be paired (indicated as is_grouped = True) 
-        if self.__is_paired == True or self.__repeated_measures:
-            self.__is_grouped = True
-        else:
-            self.__is_grouped = False
 
         self.__difference = es.two_group_difference(
-                                control, test, self.__is_grouped, effect_size)
+                                control, test, is_paired, effect_size)
 
         self.__jackknives = ci2g.compute_meandiff_jackknife(
-                                control, test, self.__is_grouped, effect_size)
+                                control, test, is_paired, effect_size)
 
         self.__acceleration_value = ci2g._calc_accel(self.__jackknives)
 
         bootstraps = ci2g.compute_bootstrapped_diff(
-                            control, test, self.__is_grouped, effect_size,
+                            control, test, is_paired, effect_size,
                             resamples, random_seed)
         self.__bootstraps = npsort(bootstraps)
         
         # Added in v0.2.6.
-        # Raises a UserWarning if there are any infinities in the bootstraps.
+        # Raises a UserWarning if there are any infiinities in the bootstraps.
         num_infinities = len(self.__bootstraps[isinf(self.__bootstraps)])
         
         if num_infinities > 0:
@@ -866,10 +843,10 @@ class TwoGroupsEffectSize(object):
                 
         self.__PermutationTest_result = PermutationTest(control, test, 
                                                         effect_size, 
-                                                        self.__is_grouped,
+                                                        is_paired,
                                                         permutation_count)
         
-        if self.__is_grouped is True:
+        if is_paired is True:
             # Wilcoxon, a non-parametric version of the paired T-test.
             wilcoxon = spstats.wilcoxon(control, test)
             self.__pvalue_wilcoxon = wilcoxon.pvalue
@@ -888,7 +865,7 @@ class TwoGroupsEffectSize(object):
                 self.__pvalue_paired_students_t = paired_t.pvalue
                 self.__statistic_paired_students_t = paired_t.statistic
 
-                standardized_es = es.cohens_d(control, test, is_grouped=True)
+                standardized_es = es.cohens_d(control, test, is_paired=True)
                 # self.__power = power.tt_solve_power(standardized_es,
                 #                                     len(control),
                 #                                     alpha=self.__alpha)
@@ -955,7 +932,7 @@ class TwoGroupsEffectSize(object):
 #             self.__statistic_lqrt_unequal_var = lqrt_unequal_var_result.statistic
                     
 
-            standardized_es = es.cohens_d(control, test, is_grouped=False)
+            standardized_es = es.cohens_d(control, test, is_paired=False)
             
             # self.__power = power.tt_ind_solve_power(standardized_es,
             #                                         len(control),
@@ -982,15 +959,13 @@ class TwoGroupsEffectSize(object):
         #                      "Brunner-Munzel" :  "pvalue_brunner_munzel",
         #                      "Wilcoxon"       :  "pvalue_wilcoxon"}
         
-        if self.__repeated_measures is None:
-            PAIRED_STATUS = {True: 'paired', False: 'unpaired'}
-            first_line = {"is_paired": PAIRED_STATUS[self.__is_paired],
-                          "es"       : self.__EFFECT_SIZE_DICT[self.__effect_size]}
-            out1 = "The {is_paired} {es} ".format(**first_line)
-
-        else:
-            out1 = "The {} for repeated measures ".format(self.__EFFECT_SIZE_DICT[self.__effect_size])
-
+        PAIRED_STATUS = {True: 'paired', False: 'unpaired'}
+        
+        first_line = {"is_paired": PAIRED_STATUS[self.__is_paired],
+                      "es"       : self.__EFFECT_SIZE_DICT[self.__effect_size]}
+        
+        out1 = "The {is_paired} {es} ".format(**first_line)
+        
         base_string_fmt = "{:." + str(sigfig) + "}"
         if "." in str(self.__ci):
             ci_width = base_string_fmt.format(self.__ci)
@@ -1082,18 +1057,6 @@ class TwoGroupsEffectSize(object):
     @property
     def is_paired(self):
         return self.__is_paired
-
-    @property
-    def is_grouped(self):
-        return self.__is_grouped
-
-    @property
-    def repeated_measures(self):
-        return self.__repeated_measures
-
-    @property
-    def is_grouped(self):
-        return self.__is_grouped
 
     @property
     def ci(self):
@@ -1385,7 +1348,7 @@ class EffectSizeDataFrame(object):
     sizes for several comparisons."""
 
     def __init__(self, dabest, effect_size,
-                 is_paired, repeated_measures, ci=95,
+                 is_paired, rm_design, ci=95,
                  resamples=5000, 
                  permutation_count=5000,
                  random_seed=12345):
@@ -1397,7 +1360,7 @@ class EffectSizeDataFrame(object):
         self.__dabest_obj        = dabest
         self.__effect_size       = effect_size
         self.__is_paired         = is_paired
-        self.__repeated_measures = repeated_measures
+        self.__rm_design         = rm_design
         self.__ci                = ci
         self.__resamples         = resamples
         self.__permutation_count = permutation_count
@@ -1423,7 +1386,7 @@ class EffectSizeDataFrame(object):
 
             for ix, tname in enumerate(current_tuple[1:]):
 
-                if self.__repeated_measures == "sequential":
+                if self.__rm_design == "sequential":
                     cname = current_tuple[ix]
                     control = dat[dat[xvar] == cname][yvar].copy()
                 
@@ -1432,7 +1395,6 @@ class EffectSizeDataFrame(object):
                 result = TwoGroupsEffectSize(control, test,
                                              self.__effect_size,
                                              self.__is_paired,
-                                             self.__repeated_measures,
                                              self.__ci,
                                              self.__resamples,
                                              self.__permutation_count,
@@ -1473,7 +1435,7 @@ class EffectSizeDataFrame(object):
         out_             = pd.DataFrame(out)
 
         columns_in_order = ['control', 'test', 'control_N', 'test_N',
-                            'effect_size', 'is_paired', 'repeated_measures',
+                            'effect_size', 'is_paired', 'rm_design',
                             'difference', 'ci',
 
                             'bca_low', 'bca_high', 'bca_interval_idx',
@@ -1537,7 +1499,7 @@ class EffectSizeDataFrame(object):
             for ix, tname in enumerate(current_tuple[1:]):
                 test = dat[dat[xvar] == tname][yvar].copy()
                 
-                if self.__is_paired is True or self.__repeated_measures:                    
+                if self.__is_paired is True:                    
                     # Refactored here in v0.3.0 for performance issues.
                     lqrt_result = lqrt.lqrtest_rel(control, test, 
                                             random_state=rnd_seed)
@@ -1792,7 +1754,7 @@ class EffectSizeDataFrame(object):
                          if c.startswith("statistic") or c.startswith("pvalue")]
 
         default_cols = ['control', 'test', 'control_N', 'test_N',
-                        'effect_size', 'is_paired', 'repeated_measures',
+                        'effect_size', 'is_paired', 'rm_design',
                         'difference', 'ci', 'bca_low', 'bca_high']
 
         cols_of_interest = default_cols + stats_columns
@@ -1825,8 +1787,8 @@ class EffectSizeDataFrame(object):
         return self.__is_paired
 
     @property
-    def repeated_measures(self):
-        return self.__repeated_measures
+    def rm_design(self):
+        return self.__rm_design
 
     @property
     def ci(self):
@@ -1891,7 +1853,7 @@ class PermutationTest:
     effect_size : string.
         Any one of the following are accepted inputs:
         'mean_diff', 'median_diff', 'cohens_d', 'hedges_g', or 'cliffs_delta'
-    is_grouped : boolean, default False
+    is_paired : boolean, default False
     permutation_count : int, default 10000
         The number of permutations (reshuffles) to perform.
     random_seed : int, default 12345
@@ -1935,13 +1897,13 @@ class PermutationTest:
     >>> test = norm.rvs(loc=0.5, size=30, random_state=12345)
     >>> perm_test = dabest.PermutationTest(control, test, 
     ...                                    effect_size="mean_diff", 
-    ...                                    is_grouped=False)
+    ...                                    is_paired=False)
     >>> perm_test
     5000 permutations were taken. The pvalue is 0.0758.
     """
     
     def __init__(self, control, test, 
-                 effect_size, is_grouped,
+                 effect_size, is_paired,
                  permutation_count=5000, 
                  random_seed=12345,
                  **kwargs):
@@ -1953,7 +1915,7 @@ class PermutationTest:
         self.__permutation_count = permutation_count
 
         # Run Sanity Check.
-        if is_grouped and len(control) != len(test):
+        if is_paired and len(control) != len(test):
             raise ValueError("The two arrays do not have the same length.")
 
         # Initialise random number generator.
@@ -1971,12 +1933,12 @@ class PermutationTest:
         CONTROL_LEN = int(len(control))
         EXTREME_COUNT = 0.
         THRESHOLD = np.abs(two_group_difference(control, test, 
-                                                is_grouped, effect_size))
+                                                is_paired, effect_size))
         self.__permutations = []
 
         for i in range(int(permutation_count)):
             
-            if is_grouped:
+            if is_paired:
                 # Select which control-test pairs to swap.
                 random_idx = rng.choice(CONTROL_LEN,
                                 rng.randint(0, CONTROL_LEN+1),

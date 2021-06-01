@@ -67,12 +67,12 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     ytick_color = plt.rcParams["ytick.color"]
     axes_facecolor = plt.rcParams['axes.facecolor']
 
-    dabest_obj          = EffectSizeDataFrame.dabest_obj
-    plot_data           = EffectSizeDataFrame._plot_data
-    xvar                = EffectSizeDataFrame.xvar
-    yvar                = EffectSizeDataFrame.yvar
-    is_paired           = EffectSizeDataFrame.is_paired
-    repeated_measures   = EffectSizeDataFrame.repeated_measures
+    dabest_obj  = EffectSizeDataFrame.dabest_obj
+    plot_data   = EffectSizeDataFrame._plot_data
+    xvar        = EffectSizeDataFrame.xvar
+    yvar        = EffectSizeDataFrame.yvar
+    is_paired   = EffectSizeDataFrame.is_paired
+    rm_design   = EffectSizeDataFrame.rm_design
 
     all_plot_groups = dabest_obj._all_plot_groups
     idx             = dabest_obj.idx
@@ -96,10 +96,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Disable slopegraph plotting if any of the idxs comprise of more than
     # two groups when repeated_measures is None
-    if np.all([len(i)==2 for i in idx]) is False and repeated_measures is None:
+    if np.all([len(i)==2 for i in idx]) is False and rm_design is None:
         is_paired = False
     # if paired is False or repeated_measures is not "sequential", set show_pairs as False.
-    if is_paired is False and repeated_measures != "sequential":
+    if is_paired is False:
         show_pairs = False
     else:
         show_pairs = plot_kwargs["show_pairs"]

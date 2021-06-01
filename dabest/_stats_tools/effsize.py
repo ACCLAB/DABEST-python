@@ -13,7 +13,7 @@ A range of functions to compute various effect sizes.
 """
 
 
-def two_group_difference(control, test, is_grouped=False,
+def two_group_difference(control, test, is_paired=False,
                         effect_size="mean_diff"):
     """
     Computes the following metrics for control and test:
@@ -31,7 +31,7 @@ def two_group_difference(control, test, is_grouped=False,
     control, test: list, tuple, or ndarray.
         Accepts lists, tuples, or numpy ndarrays of numeric types.
 
-    is_grouped: boolean, default False.
+    is_paired: boolean, default False.
         If True, returns the paired Cohen's d.
 
     effect_size: string, default "mean_diff"
@@ -72,27 +72,27 @@ def two_group_difference(control, test, is_grouped=False,
     import numpy as np
 
     if effect_size == "mean_diff":
-        return func_difference(control, test, np.mean, is_grouped)
+        return func_difference(control, test, np.mean, is_paired)
 
     elif effect_size == "median_diff":
-        return func_difference(control, test, np.median, is_grouped)
+        return func_difference(control, test, np.median, is_paired)
 
     elif effect_size == "cohens_d":
-        return cohens_d(control, test, is_grouped)
+        return cohens_d(control, test, is_paired)
 
     elif effect_size == "hedges_g":
-        return hedges_g(control, test, is_grouped)
+        return hedges_g(control, test, is_paired)
 
     elif effect_size == "cliffs_delta":
-        if is_grouped is True:
-            err1 = "`is_grouped` is True; therefore Cliff's delta is not defined."
+        if is_paired is True:
+            err1 = "`is_paired` is True; therefore Cliff's delta is not defined."
             raise ValueError(err1)
         else:
             return cliffs_delta(control, test)
 
 
 
-def func_difference(control, test, func, is_grouped):
+def func_difference(control, test, func, is_paired):
     """
     Applies func to `control` and `test`, and then returns the difference.
 
@@ -103,7 +103,7 @@ def func_difference(control, test, func, is_grouped):
 
         func: summary function to apply.
 
-        is_grouped: boolean.
+        is_paired: boolean.
             If True, computes func(test - control).
             If False, computes func(test) - func(control).
 
@@ -120,7 +120,7 @@ def func_difference(control, test, func, is_grouped):
     if test.__class__ != np.ndarray:
         test    = np.array(test)
 
-    if is_grouped:
+    if is_paired:
         if len(control) != len(test):
             err = "The two arrays supplied do not have the same length."
             raise ValueError(err)
@@ -146,7 +146,7 @@ def func_difference(control, test, func, is_grouped):
 
 
 
-def cohens_d(control, test, is_grouped=False):
+def cohens_d(control, test, is_paired=False):
     """
     Computes Cohen's d for test v.s. control.
     See https://en.wikipedia.org/wiki/Effect_size#Cohen's_d
@@ -155,16 +155,16 @@ def cohens_d(control, test, is_grouped=False):
     --------
     control, test: List, tuple, or array.
 
-    is_grouped: boolean, default False
+    is_paired: boolean, default False
         If True, the paired Cohen's d is returned.
 
     Returns
     -------
         d: float.
-            If is_grouped is False, this is equivalent to:
+            If is_paired is False, this is equivalent to:
             (numpy.mean(test) - numpy.mean(control))  / pooled StDev
 
-            If is_grouped is True, returns
+            If is_paired is True, returns
             (numpy.mean(test) - numpy.mean(control))  / average StDev
 
             The pooled standard deviation is equal to:
@@ -210,7 +210,7 @@ def cohens_d(control, test, is_grouped=False):
     # two paired groups but accounting for the correlation between
     # the two groups.
 
-    if is_grouped:
+    if is_paired:
         # Check control and test are same length.
         if len(control) != len(test):
             raise ValueError("`control` and `test` are not the same length.")
@@ -227,7 +227,7 @@ def cohens_d(control, test, is_grouped=False):
 
 
 
-def hedges_g(control, test, is_grouped=False):
+def hedges_g(control, test, is_paired=False):
     """
     Computes Hedges' g for  for test v.s. control.
     It first computes Cohen's d, then calulates a correction factor based on
@@ -255,7 +255,7 @@ def hedges_g(control, test, is_grouped=False):
     control = control[~np.isnan(control)]
     test    = test[~np.isnan(test)]
 
-    d = cohens_d(control, test, is_grouped)
+    d = cohens_d(control, test, is_paired)
     len_c = len(control)
     len_t = len(test)
     correction_factor = _compute_hedges_correction_factor(len_c, len_t)

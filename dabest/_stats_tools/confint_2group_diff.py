@@ -41,10 +41,10 @@ def create_repeated_indexes(data):
 
 
 
-def _create_two_group_jackknife_indexes(x0, x1, is_grouped):
+def _create_two_group_jackknife_indexes(x0, x1, is_paired):
     """Creates the jackknife bootstrap for 2 groups."""
 
-    if is_grouped and len(x0) == len(x1):
+    if is_paired and len(x0) == len(x1):
         out = list(zip([j for j in create_jackknife_indexes(x0)],
                        [i for i in create_jackknife_indexes(x1)]
                        )
@@ -67,13 +67,13 @@ def _create_two_group_jackknife_indexes(x0, x1, is_grouped):
 
 
 
-def compute_meandiff_jackknife(x0, x1, is_grouped, effect_size):
+def compute_meandiff_jackknife(x0, x1, is_paired, effect_size):
     """
     Given two arrays, returns the jackknife for their effect size.
     """
     from . import effsize as __es
 
-    jackknives = _create_two_group_jackknife_indexes(x0, x1, is_grouped)
+    jackknives = _create_two_group_jackknife_indexes(x0, x1, is_paired)
 
     out = []
 
@@ -82,7 +82,7 @@ def compute_meandiff_jackknife(x0, x1, is_grouped, effect_size):
         x1_shuffled = x1[j[1]]
 
         es = __es.two_group_difference(x0_shuffled, x1_shuffled,
-                                       is_grouped, effect_size)
+                                       is_paired, effect_size)
         out.append(es)
 
     return out
@@ -129,7 +129,7 @@ def _calc_accel(jack_dist):
 #     return out
 
 
-def compute_bootstrapped_diff(x0, x1, is_grouped, effect_size,
+def compute_bootstrapped_diff(x0, x1, is_paired, effect_size,
                               resamples=5000, random_seed=12345):
     """Bootstraps the effect_size for 2 groups."""
     
@@ -146,7 +146,7 @@ def compute_bootstrapped_diff(x0, x1, is_grouped, effect_size,
     
     for i in range(int(resamples)):
         
-        if is_grouped:
+        if is_paired:
             if x0_len != x1_len:
                 raise ValueError("The two arrays do not have the same length.")
             random_idx = rng.choice(x0_len, x0_len, replace=True)
@@ -157,7 +157,7 @@ def compute_bootstrapped_diff(x0, x1, is_grouped, effect_size,
             x1_sample = rng.choice(x1, x1_len, replace=True)
             
         out[i] = __es.two_group_difference(x0_sample, x1_sample,
-                                          is_grouped, effect_size)
+                                          is_paired, effect_size)
     
     # check whether there are any infinities in the bootstrap,
     # which likely indicates the sample sizes are too small as
