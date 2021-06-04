@@ -1425,12 +1425,40 @@ def ProportionalDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
             xlimlow, xlimhigh = axx.get_xlim()
 
+            """
+                Function to lighten a colour
+                credits to https://gist.github.com/ihincks/6a420b599f43fcd7dbd79d56798c4e5a 
+            """
+            def lighten_color(color, amount=0.5):
+                """
+                Lightens the given color by multiplying (1-luminosity) by the given amount.
+                Input can be matplotlib color string, hex string, or RGB tuple.
+
+                Examples:
+                >> lighten_color('g', 0.3)
+                >> lighten_color('#F034A3', 0.6)
+                >> lighten_color((.3,.55,.1), 0.5)
+                """
+                import matplotlib.colors as mc
+                import colorsys
+                try:
+                    c = mc.cnames[color]
+                except:
+                    c = color
+                c = colorsys.rgb_to_hls(*mc.to_rgb(c))
+                return colorsys.hls_to_rgb(c[0], 1 - amount * (1 - c[1]), c[2])
+
+
             if jj == 0:
+
+                # colours 
+                control_color = swarm_colors[0]
+                test_color = swarm_colors[1]
                 # Draw stacked bar chart
-                axx.bar(0, ref, color = color_col)
-                axx.bar(effsize_line_start, diff, color = color_col)
-                axx.bar(0, 1 - ref, bottom = ref, color = color_col) 
-                axx.bar(effsize_line_start, 1 - diff, bottom = diff, color = color_col)
+                axx.bar(0, ref, width = 0.5, color = control_color)
+                axx.bar(effsize_line_start, diff, width = 0.5, color = test_color)
+                axx.bar(0, 1 - ref, bottom = ref, width = 0.5, color = lighten_color(control_color))
+                axx.bar(effsize_line_start, 1 - diff, bottom = diff, width = 0.5, color = lighten_color(test_color))
 
                 # Control group's proportion error  
                 control_err = z_score*np.sqrt(ref*(1-ref)/(counts_lst[0]))
