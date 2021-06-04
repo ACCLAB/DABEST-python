@@ -307,6 +307,8 @@ class Dabest(object):
             \\text{Mean difference} = \\overline{x}_{Test} - \\overline{x}_{Control}
             
         where :math:`\\overline{x}` is the mean for the group :math:`x`.
+
+        
         """
         return self.__mean_diff
         
@@ -330,13 +332,20 @@ class Dabest(object):
         
         Notes
         -----
-        This is simply the median of the control group subtracted from
-        the median of the test group.
+        This is the median difference between the control group and the test group.
         
+        If the comparison(s) are unpaired, median_diff is computed with the following equation:
+
         .. math::
             \\text{Median difference} = \\widetilde{x}_{Test} - \\widetilde{x}_{Control}
             
         where :math:`\\widetilde{x}` is the median for the group :math:`x`.
+
+        If the comparison(s) are paired, median_diff is computed with the following equation:
+
+        .. math::
+            \\text{Median difference} = \\widetilde{x}_{Test - Control}
+
         """
         return self.__median_diff
         
