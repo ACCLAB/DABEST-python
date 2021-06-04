@@ -1456,9 +1456,9 @@ def ProportionalDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 test_color = swarm_colors[1]
                 # Draw stacked bar chart
                 axx.bar(0, ref, width = 0.5, color = control_color)
-                axx.bar(effsize_line_start, diff, width = 0.5, color = test_color)
+                axx.bar(effsize_line_start, diff, width = 0.5, color = control_color)
                 axx.bar(0, 1 - ref, bottom = ref, width = 0.5, color = lighten_color(control_color))
-                axx.bar(effsize_line_start, 1 - diff, bottom = diff, width = 0.5, color = lighten_color(test_color))
+                axx.bar(effsize_line_start, 1 - diff, bottom = diff, width = 0.5, color = lighten_color(control_color))
 
                 # Control group's proportion error  
                 control_err = z_score*np.sqrt(ref*(1-ref)/(counts_lst[0]))
