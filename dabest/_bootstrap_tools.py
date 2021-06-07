@@ -9,111 +9,87 @@ from __future__ import division
 
 class bootstrap:
     '''Computes the summary statistic and a bootstrapped confidence interval.
-
     Keywords:
         x1, x2: array-like
             The data in a one-dimensional array form. Only x1 is required.
             If x2 is given, the bootstrapped summary difference between
             the two groups (x2-x1) is computed.
             NaNs are automatically discarded.
-
-        repeated_measures: string, default None
-            The type of the experiment design.
-
+        paired: boolean, default False
+            Whether or not x1 and x2 are paired samples.
         statfunction: callable, default np.mean
             The summary statistic called on data.
-
         smoothboot: boolean, default False
             Taken from seaborn.algorithms.bootstrap.
             If True, performs a smoothed bootstrap (draws samples from a kernel
             destiny estimate).
-
         alpha: float, default 0.05
             Denotes the likelihood that the confidence interval produced
             does not include the true summary statistic. When alpha = 0.05,
             a 95% confidence interval is produced.
-
         reps: int, default 5000
             Number of bootstrap iterations to perform.
-
     Returns:
         An `bootstrap` object reporting the summary statistics, percentile CIs,
         bias-corrected and accelerated (BCa) CIs, and the settings used.
-
         summary: float
             The summary statistic.
-
         is_difference: boolean
             Whether or not the summary is the difference between two groups.
             If False, only x1 was supplied.
-
-        repeated_measures: string
-            The type of experiment design.
-
+        is_paired: boolean
+            Whether or not the difference reported is between 2 paired groups.
         statistic: callable
             The function used to compute the summary.
-
         reps: int
             The number of bootstrap iterations performed.
-
         stat_array: array.
             A sorted array of values obtained by bootstrapping the input arrays.
-
         ci: float
             The size of the confidence interval reported (in percentage).
-
         pct_ci_low, pct_ci_high: floats
             The upper and lower bounds of the confidence interval as computed
             by taking the percentage bounds.
-
         pct_low_high_indices: array
             An array with the indices in `stat_array` corresponding to the
             percentage confidence interval bounds.
-
         bca_ci_low, bca_ci_high: floats
             The upper and lower bounds of the bias-corrected and accelerated
             (BCa) confidence interval. See Efron 1977.
-
         bca_low_high_indices: array
             An array with the indices in `stat_array` corresponding to the BCa
             confidence interval bounds.
-
         pvalue_1samp_ttest: float
             P-value obtained from scipy.stats.ttest_1samp. If 2 arrays were
             passed (x1 and x2), returns 'NIL'.
             See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_1samp.html
-
         pvalue_2samp_ind_ttest: float
             P-value obtained from scipy.stats.ttest_ind.
-            If a single array was given (x1 only), or if `repeated_measures` is not None,
+            If a single array was given (x1 only), or if `paired` is True,
             returns 'NIL'.
             See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_ind.html
-
         pvalue_2samp_related_ttest: float
             P-value obtained from scipy.stats.ttest_rel.
-            If a single array was given (x1 only), or if `repeated_measures` is None,
+            If a single array was given (x1 only), or if `paired` is False,
             returns 'NIL'.
             See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.ttest_rel.html
-
         pvalue_wilcoxon: float
             P-value obtained from scipy.stats.wilcoxon.
-            If a single array was given (x1 only), or if `repeated_measures` is None,
+            If a single array was given (x1 only), or if `paired` is False,
             returns 'NIL'.
             The Wilcoxons signed-rank test is a nonparametric paired test of
             the null hypothesis that the related samples x1 and x2 are from
             the same distribution.
             See https://docs.scipy.org/doc/scipy-1.0.0/reference/scipy.stats.wilcoxon.html
-
         pvalue_mann_whitney: float
             Two-sided p-value obtained from scipy.stats.mannwhitneyu.
             If a single array was given (x1 only), returns 'NIL'.
             The Mann-Whitney U-test is a nonparametric unpaired test of the null
             hypothesis that x1 and x2 are from the same distribution.
             See https://docs.scipy.org/doc/scipy-1.0.0/reference/generated/scipy.stats.mannwhitneyu.html
-
     '''
     def __init__(self, x1, x2=None,
-        repeated_measures=None,
+        paired=False,
         statfunction=None,
         smoothboot=False,
         alpha_level=0.05,
@@ -146,7 +122,7 @@ class bootstrap:
             'n_boot': reps,
             'smooth': smoothboot}
 
-        if repeated_measures:
+        if paired:
             # check x2 is not None:
             if x2 is None:
                 raise ValueError('Please specify x2.')
@@ -155,17 +131,17 @@ class bootstrap:
                 if len(x1) != len(x2):
                     raise ValueError('x1 and x2 are not the same length.')
 
-        if (x2 is None) or (repeated_measures) :
+        if (x2 is None) or (paired is True) :
 
             if x2 is None:
                 tx = x1
-                repeated_measures = None
+                paired = False
                 ttest_single = ttest_1samp(x1, 0)[1]
                 ttest_2_ind = 'NIL'
                 ttest_2_paired = 'NIL'
                 wilcoxonresult = 'NIL'
 
-            elif repeated_measures:
+            elif paired is True:
                 diff = True
                 tx = x2 - x1
                 ttest_single = 'NIL'
@@ -188,7 +164,7 @@ class bootstrap:
             pct_low_high = np.nan_to_num(pct_low_high).astype('int')
 
 
-        elif x2 is not None and repeated_measures is None:
+        elif x2 is not None and paired is False:
             diff = True
             x2 = pd.Series(x2).dropna()
             # Generate statarrays for both arrays.
@@ -228,7 +204,7 @@ class bootstrap:
                 " results may be unstable.")
 
         self.summary = summ_stat
-        self.repeated_measures = repeated_measures
+        self.is_paired = paired
         self.is_difference = diff
         self.statistic = str(statfunction)
         self.n_reps = reps
@@ -252,7 +228,7 @@ class bootstrap:
 
         self.results = {'stat_summary': self.summary,
                         'is_difference': diff,
-                        'repeated_measures': repeated_measures,
+                        'is_paired': paired,
                         'bca_ci_low': self.bca_ci_low,
                         'bca_ci_high': self.bca_ci_high,
                         'ci': self.ci
@@ -270,7 +246,7 @@ class bootstrap:
 
         diff_types = {True: 'paired', False: 'unpaired'}
         if self.is_difference:
-            a = 'The {} {} difference is {}.'.format(diff_types[self.repeated_measures is not None],
+            a = 'The {} {} difference is {}.'.format(diff_types[self.is_paired],
                     stat, self.summary)
         else:
             a = 'The {} is {}.'.format(stat, self.summary)
@@ -284,7 +260,6 @@ def jackknife_indexes(data):
     From the scikits.bootstrap package.
     Given an array, returns a list of arrays where each array is a set of
     jackknife indexes.
-
     For a given set of data Y, the jackknife sample J[i] is defined as the
     data set Y with the ith data point deleted.
     """

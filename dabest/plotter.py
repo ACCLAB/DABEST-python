@@ -67,11 +67,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     ytick_color = plt.rcParams["ytick.color"]
     axes_facecolor = plt.rcParams['axes.facecolor']
 
-    dabest_obj        = EffectSizeDataFrame.dabest_obj
-    plot_data         = EffectSizeDataFrame._plot_data
-    xvar              = EffectSizeDataFrame.xvar
-    yvar              = EffectSizeDataFrame.yvar
-    repeated_measures = EffectSizeDataFrame.repeated_measures
+    dabest_obj = EffectSizeDataFrame.dabest_obj
+    plot_data  = EffectSizeDataFrame._plot_data
+    xvar       = EffectSizeDataFrame.xvar
+    yvar       = EffectSizeDataFrame.yvar
+    is_paired  = EffectSizeDataFrame.is_paired
 
 
     all_plot_groups = dabest_obj._all_plot_groups
@@ -92,19 +92,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if effect_size_type in ['cliffs_delta']:
         float_contrast = False
 
-
-    # Removed due to the deprecation of `is_paired`
-    # Disable slopegraph plotting if any of the idxs comprise of more than
-    # two groups.
-    #if np.all([len(i)==2 for i in idx]) is False:
-    #    is_paired = False
-    # if paired is False, set show_pairs as False.
-    #if is_paired is False:
-    #    show_pairs = False
-    #else:
-    #    show_pairs = plot_kwargs["show_pairs"]
-
-    if not repeated_measures:
+    if not is_paired:
         show_pairs = False
     else:
         show_pairs = plot_kwargs["show_pairs"]
@@ -241,7 +229,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     fig_size   = plot_kwargs["fig_size"]
     if fig_size is None:
         all_groups_count = np.sum([len(i) for i in dabest_obj.idx])
-        if repeated_measures and show_pairs is True:
+        if is_paired and show_pairs is True:
             frac = 0.75
         else:
             frac = 1
@@ -326,7 +314,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_ax_ylim_low = list()
             contrast_ax_ylim_high = list()
             contrast_ax_ylim_tickintervals = list()
-
         rawdata_axes  = axx[0]
         contrast_axes = axx[1]
 
@@ -353,9 +340,23 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             pivot_values = [yvar, color_col]
         pivoted_plot_data = pd.pivot(data=plot_data, index=dabest_obj.id_col,
                                      columns=xvar, values=pivot_values)
+        if is_paired == "baseline":
+            temp_idx = []
+            for i in idx:
+                control = i[0]
+                temp_idx.extend(((control, test) for test in i[1:]))
+            temp_idx = tuple(temp_idx)
+
+            temp_all_plot_groups = []
+            for i in temp_idx:
+                temp_all_plot_groups.extend(list(i))
+        else:
+            temp_idx = idx
+            temp_all_plot_groups = all_plot_groups
+        
         x_start = 0
-        for ii, current_tuple in enumerate(idx):
-            if len(idx) > 1:
+        for ii, current_tuple in enumerate(temp_idx):
+            if len(temp_idx) > 1:
                 # Select only the data for the current tuple.
                 if color_col is None:
                     current_pair = pivoted_plot_data.reindex(columns=current_tuple)
@@ -384,8 +385,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
             x_start  = x_start + grp_count
         # Set the tick labels, because the slopegraph plotting doesn't.
-        rawdata_axes.set_xticks(np.arange(0, len(all_plot_groups)))
-        rawdata_axes.set_xticklabels(all_plot_groups)
+        rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
+        rawdata_axes.set_xticklabels(temp_all_plot_groups)
 
 
     else:
@@ -452,12 +453,20 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Plot effect sizes and bootstraps.
     # Take note of where the `control` groups are.
-    ticks_to_skip   = np.cumsum([len(t) for t in idx])[:-1].tolist()
-    ticks_to_skip.insert(0, 0)
+    if is_paired == "baseline":
+        ticks_to_skip = np.arange(0, len(temp_all_plot_groups), 2).tolist()
+        ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist() 
+        ticks_to_skip_contrast = np.cumsum([(len(t)-1)*2 for t in idx])[:-1].tolist()
+        ticks_to_skip_contrast.insert(0, 0)
 
-    # Then obtain the ticks where we have to plot the effect sizes.
-    ticks_to_plot = [t for t in range(0, len(all_plot_groups))
-                    if t not in ticks_to_skip]
+    else:
+        ticks_to_skip   = np.cumsum([len(t) for t in idx])[:-1].tolist()
+        ticks_to_skip.insert(0, 0)
+
+        # Then obtain the ticks where we have to plot the effect sizes.
+        ticks_to_plot = [t for t in range(0, len(all_plot_groups))
+                        if t not in ticks_to_skip]
+
 
     # Plot the bootstraps, then the effect sizes and CIs.
     es_marker_size   = plot_kwargs["es_marker_size"]
@@ -596,7 +605,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_axes.set_xlim(contrast_xlim_max-1, contrast_xlim_max)
 
         elif effect_size_type in ["cohens_d", "hedges_g"]:
-            if repeated_measures:
+            if is_paired:
                 which_std = 1
             else:
                 which_std = 0
@@ -604,7 +613,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             temp_test    = plot_data[plot_data[xvar] == current_group][yvar]
             
             stds = _compute_standardizers(temp_control, temp_test)
-            if repeated_measures:
+            if is_paired:
                 pooled_sd = stds[1]
             else:
                 pooled_sd = stds[0]
@@ -703,23 +712,55 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         if contrast_ylim_low < 0 < contrast_ylim_high:
             contrast_axes.axhline(y=0, **reflines_kwargs)
 
-        # Compute the end of each x-axes line.
-        rightend_ticks = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
+        if is_paired == "baseline":
+            rightend_ticks_raw = np.array([len(i)-1 for i in temp_idx]) + np.array(ticks_to_skip)
+            for ax in [rawdata_axes]:
+                sns.despine(ax=ax, bottom=True)
         
-        for ax in [rawdata_axes, contrast_axes]:
-            sns.despine(ax=ax, bottom=True)
+                ylim = ax.get_ylim()
+                xlim = ax.get_xlim()
+                redraw_axes_kwargs['y'] = ylim[0]
         
-            ylim = ax.get_ylim()
-            xlim = ax.get_xlim()
-            redraw_axes_kwargs['y'] = ylim[0]
+                for k, start_tick in enumerate(ticks_to_skip):
+                    end_tick = rightend_ticks_raw[k]
+                    ax.hlines(xmin=start_tick, xmax=end_tick,
+                              **redraw_axes_kwargs)
         
-            for k, start_tick in enumerate(ticks_to_skip):
-                end_tick = rightend_ticks[k]
-                ax.hlines(xmin=start_tick, xmax=end_tick,
-                          **redraw_axes_kwargs)
+                ax.set_ylim(ylim)
+                del redraw_axes_kwargs['y']
+
+            rightend_ticks_contrast = np.array([(len(i)-1)*2-1 for i in idx]) + np.array(ticks_to_skip_contrast)
+            for ax in [contrast_axes]:
+                sns.despine(ax=ax, bottom=True)
         
-            ax.set_ylim(ylim)
-            del redraw_axes_kwargs['y']
+                ylim = ax.get_ylim()
+                xlim = ax.get_xlim()
+                redraw_axes_kwargs['y'] = ylim[0]
+        
+                for k, start_tick in enumerate(ticks_to_skip_contrast):
+                    end_tick = rightend_ticks_contrast[k]
+                    ax.hlines(xmin=start_tick, xmax=end_tick,
+                              **redraw_axes_kwargs)
+        
+                ax.set_ylim(ylim)
+                del redraw_axes_kwargs['y']
+        else:
+            # Compute the end of each x-axes line.
+            rightend_ticks = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
+            for ax in [rawdata_axes, contrast_axes]:
+                sns.despine(ax=ax, bottom=True)
+        
+                ylim = ax.get_ylim()
+                xlim = ax.get_xlim()
+                redraw_axes_kwargs['y'] = ylim[0]
+        
+                for k, start_tick in enumerate(ticks_to_skip):
+                    end_tick = rightend_ticks[k]
+                    ax.hlines(xmin=start_tick, xmax=end_tick,
+                              **redraw_axes_kwargs)
+        
+                ax.set_ylim(ylim)
+                del redraw_axes_kwargs['y']
 
 
 
@@ -740,7 +781,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     default_contrast_label = contrast_label_dict[EffectSizeDataFrame.effect_size]
 
     if plot_kwargs['contrast_label'] is None:
-        if repeated_measures:
+        if is_paired:
             contrast_label = "paired\n{}".format(default_contrast_label)
         else:
             contrast_label = default_contrast_label

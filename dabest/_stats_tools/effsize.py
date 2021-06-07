@@ -13,7 +13,7 @@ A range of functions to compute various effect sizes.
 """
 
 
-def two_group_difference(control, test, repeated_measures=None,
+def two_group_difference(control, test, is_paired=None,
                         effect_size="mean_diff"):
     """
     Computes the following metrics for control and test:
@@ -31,7 +31,7 @@ def two_group_difference(control, test, repeated_measures=None,
     control, test: list, tuple, or ndarray.
         Accepts lists, tuples, or numpy ndarrays of numeric types.
 
-    repeated_measures: string, default None.
+    is_paired: string, default None.
         If not None, returns the paired Cohen's d.
 
     effect_size: string, default "mean_diff"
@@ -72,27 +72,27 @@ def two_group_difference(control, test, repeated_measures=None,
     import numpy as np
 
     if effect_size == "mean_diff":
-        return func_difference(control, test, np.mean, repeated_measures)
+        return func_difference(control, test, np.mean, is_paired)
 
     elif effect_size == "median_diff":
-        return func_difference(control, test, np.median, repeated_measures)
+        return func_difference(control, test, np.median, is_paired)
 
     elif effect_size == "cohens_d":
-        return cohens_d(control, test, repeated_measures)
+        return cohens_d(control, test, is_paired)
 
     elif effect_size == "hedges_g":
-        return hedges_g(control, test, repeated_measures)
+        return hedges_g(control, test, is_paired)
 
     elif effect_size == "cliffs_delta":
-        if repeated_measures:
-            err1 = "`repeated_measures` is not None; therefore Cliff's delta is not defined."
+        if is_paired:
+            err1 = "`is_paired` is not None; therefore Cliff's delta is not defined."
             raise ValueError(err1)
         else:
             return cliffs_delta(control, test)
 
 
 
-def func_difference(control, test, func, repeated_measures):
+def func_difference(control, test, func, is_paired):
     """
     Applies func to `control` and `test`, and then returns the difference.
 
@@ -103,7 +103,7 @@ def func_difference(control, test, func, repeated_measures):
 
         func: summary function to apply.
 
-        repeated_measures: string.
+        is_paired: string.
             If not None, computes func(test - control).
             If None, computes func(test) - func(control).
 
@@ -120,7 +120,7 @@ def func_difference(control, test, func, repeated_measures):
     if test.__class__ != np.ndarray:
         test    = np.array(test)
 
-    if repeated_measures:
+    if is_paired:
         if len(control) != len(test):
             err = "The two arrays supplied do not have the same length."
             raise ValueError(err)
@@ -146,7 +146,7 @@ def func_difference(control, test, func, repeated_measures):
 
 
 
-def cohens_d(control, test, repeated_measures=None):
+def cohens_d(control, test, is_paired=None):
     """
     Computes Cohen's d for test v.s. control.
     See https://en.wikipedia.org/wiki/Effect_size#Cohen's_d
@@ -155,16 +155,16 @@ def cohens_d(control, test, repeated_measures=None):
     --------
     control, test: List, tuple, or array.
 
-    repeated_measures: string, default None
+    is_paired: string, default None
         If not None, the paired Cohen's d is returned.
 
     Returns
     -------
         d: float.
-            If repeated_measures is None, this is equivalent to:
+            If is_paired is None, this is equivalent to:
             (numpy.mean(test) - numpy.mean(control))  / pooled StDev
 
-            If repeated_measures is not None, returns
+            If is_paired is not None, returns
             (numpy.mean(test) - numpy.mean(control))  / average StDev
 
             The pooled standard deviation is equal to:
@@ -210,7 +210,7 @@ def cohens_d(control, test, repeated_measures=None):
     # two paired groups but accounting for the correlation between
     # the two groups.
 
-    if repeated_measures:
+    if is_paired:
         # Check control and test are same length.
         if len(control) != len(test):
             raise ValueError("`control` and `test` are not the same length.")
@@ -227,7 +227,7 @@ def cohens_d(control, test, repeated_measures=None):
 
 
 
-def hedges_g(control, test, repeated_measures=None):
+def hedges_g(control, test, is_paired=None):
     """
     Computes Hedges' g for  for test v.s. control.
     It first computes Cohen's d, then calulates a correction factor based on
@@ -255,7 +255,7 @@ def hedges_g(control, test, repeated_measures=None):
     control = control[~np.isnan(control)]
     test    = test[~np.isnan(test)]
 
-    d = cohens_d(control, test, repeated_measures)
+    d = cohens_d(control, test, is_paired)
     len_c = len(control)
     len_t = len(test)
     correction_factor = _compute_hedges_correction_factor(len_c, len_t)
