@@ -10,7 +10,7 @@ class Dabest(object):
     """
 
     def __init__(self, data, idx, x, y, paired, id_col, ci, resamples,
-                random_seed):
+                random_seed, proportional):
 
         """
         Parses and stores pandas DataFrames in preparation for estimation
@@ -30,6 +30,7 @@ class Dabest(object):
         self.__is_paired    = paired
         self.__resamples    = resamples
         self.__random_seed  = random_seed
+        self.__proportional = proportional
 
         # Make a copy of the data, so we don't make alterations to it.
         data_in = data.copy()
@@ -198,7 +199,8 @@ class Dabest(object):
 
         EffectSizeDataFrame_kwargs = dict(ci=ci, is_paired=paired,
                                            random_seed=random_seed,
-                                           resamples=resamples)
+                                           resamples=resamples,
+                                           proportional=proportional)
 
         self.__mean_diff    = EffectSizeDataFrame(self, "mean_diff",
                                                 **EffectSizeDataFrame_kwargs)
@@ -588,13 +590,21 @@ class Dabest(object):
         """
         return self.__plot_data
 
+    
+    @property
+    def proportional(self):
+        """
+        Returns the proportional parameter
+        class.
+        """
+        return self.__proportional
+
     @property
     def _all_plot_groups(self):
         """
         Returns the all plot groups, as indicated via the `idx` keyword.
         """
         return self.__all_plot_groups
-
 
 
 
@@ -1375,7 +1385,7 @@ class EffectSizeDataFrame(object):
     sizes for several comparisons."""
 
     def __init__(self, dabest, effect_size,
-                 is_paired, ci=95,
+                 is_paired, ci=95, proportional=False,
                  resamples=5000, 
                  permutation_count=5000,
                  random_seed=12345):
@@ -1391,6 +1401,7 @@ class EffectSizeDataFrame(object):
         self.__resamples         = resamples
         self.__permutation_count = permutation_count
         self.__random_seed       = random_seed
+        self.__proportional      = proportional
 
 
     def __pre_calc(self):
@@ -1570,10 +1581,10 @@ class EffectSizeDataFrame(object):
 
             raw_marker_size=6, es_marker_size=9,
 
-            swarm_label=None, contrast_label=None,
-            swarm_ylim=None, contrast_ylim=None,
+            swarm_label=None, barchart_label=None, contrast_label=None,
+            swarm_ylim=None, barchart_ylim=None, contrast_ylim=None,
 
-            custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
+            custom_palette=None, swarm_desat=0.5, barchart_desat=0.5, halfviolin_desat=1,
             halfviolin_alpha=0.8, 
 
             float_contrast=True,
@@ -1585,6 +1596,8 @@ class EffectSizeDataFrame(object):
             dpi=100,
             ax=None,
 
+
+            barchartplot_kwargs=None,
             swarmplot_kwargs=None,
             violinplot_kwargs=None,
             slopegraph_kwargs=None,
@@ -1765,18 +1778,34 @@ class EffectSizeDataFrame(object):
 
         """
 
-        from .plotter import EffectSizeDataFramePlotter
+        from .plotter import EffectSizeDataFramePlotter, ProportionalDataFramePlotter
+
 
         if hasattr(self, "results") is False:
             self.__pre_calc()
 
+        if self.__proportional:
+            raw_marker_size = 0.01
+            
         all_kwargs = locals()
         del all_kwargs["self"]
+
+        if self.__proportional:
+            out = ProportionalDataFramePlotter(self, **all_kwargs)
+            return out
 
         out = EffectSizeDataFramePlotter(self, **all_kwargs)
 
         return out
 
+
+    @property
+    def proportional(self):
+        """
+        Returns the proportional parameter
+        class.
+        """
+        return self.__proportional
 
     @property
     def results(self):
@@ -1863,7 +1892,14 @@ class EffectSizeDataFrame(object):
         class.
         """
         return self.__dabest_obj
-        
+
+    @property
+    def proportional(self):
+        """
+        Returns the proportional parameter
+        class.
+        """
+        return self.__proportional
         
     @property
     def lqrt(self):
@@ -1878,6 +1914,7 @@ class EffectSizeDataFrame(object):
             self.__calc_lqrt()
             return self.__lqrt_results
         
+    
         
         
         
