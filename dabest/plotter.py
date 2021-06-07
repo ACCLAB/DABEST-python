@@ -453,7 +453,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Plot effect sizes and bootstraps.
     # Take note of where the `control` groups are.
-    if is_paired == "baseline":
+    if is_paired == "baseline" and show_pairs == True:
         ticks_to_skip = np.arange(0, len(temp_all_plot_groups), 2).tolist()
         ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist() 
         ticks_to_skip_contrast = np.cumsum([(len(t)-1)*2 for t in idx])[:-1].tolist()
@@ -712,7 +712,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         if contrast_ylim_low < 0 < contrast_ylim_high:
             contrast_axes.axhline(y=0, **reflines_kwargs)
 
-        if is_paired == "baseline":
+        if is_paired == "baseline" and show_pairs == True:
             rightend_ticks_raw = np.array([len(i)-1 for i in temp_idx]) + np.array(ticks_to_skip)
             for ax in [rawdata_axes]:
                 sns.despine(ax=ax, bottom=True)
