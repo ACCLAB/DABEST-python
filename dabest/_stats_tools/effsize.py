@@ -13,7 +13,7 @@ A range of functions to compute various effect sizes.
 """
 
 
-def two_group_difference(control, test, is_paired=False,
+def two_group_difference(control, test, is_paired=None,
                         effect_size="mean_diff"):
     """
     Computes the following metrics for control and test:
@@ -31,8 +31,8 @@ def two_group_difference(control, test, is_paired=False,
     control, test: list, tuple, or ndarray.
         Accepts lists, tuples, or numpy ndarrays of numeric types.
 
-    is_paired: boolean, default False.
-        If True, returns the paired Cohen's d.
+    is_paired: string, default None.
+        If not None, returns the paired Cohen's d.
 
     effect_size: string, default "mean_diff"
         Any one of the following effect sizes:
@@ -84,8 +84,8 @@ def two_group_difference(control, test, is_paired=False,
         return hedges_g(control, test, is_paired)
 
     elif effect_size == "cliffs_delta":
-        if is_paired is True:
-            err1 = "`is_paired` is True; therefore Cliff's delta is not defined."
+        if is_paired:
+            err1 = "`is_paired` is not None; therefore Cliff's delta is not defined."
             raise ValueError(err1)
         else:
             return cliffs_delta(control, test)
@@ -103,9 +103,9 @@ def func_difference(control, test, func, is_paired):
 
         func: summary function to apply.
 
-        is_paired: boolean.
-            If True, computes func(test - control).
-            If False, computes func(test) - func(control).
+        is_paired: string.
+            If not None, computes func(test - control).
+            If None, computes func(test) - func(control).
 
     Returns:
     --------
@@ -146,7 +146,7 @@ def func_difference(control, test, func, is_paired):
 
 
 
-def cohens_d(control, test, is_paired=False):
+def cohens_d(control, test, is_paired=None):
     """
     Computes Cohen's d for test v.s. control.
     See https://en.wikipedia.org/wiki/Effect_size#Cohen's_d
@@ -155,16 +155,16 @@ def cohens_d(control, test, is_paired=False):
     --------
     control, test: List, tuple, or array.
 
-    is_paired: boolean, default False
-        If True, the paired Cohen's d is returned.
+    is_paired: string, default None
+        If not None, the paired Cohen's d is returned.
 
     Returns
     -------
         d: float.
-            If is_paired is False, this is equivalent to:
+            If is_paired is None, this is equivalent to:
             (numpy.mean(test) - numpy.mean(control))  / pooled StDev
 
-            If is_paired is True, returns
+            If is_paired is not None, returns
             (numpy.mean(test) - numpy.mean(control))  / average StDev
 
             The pooled standard deviation is equal to:
@@ -227,7 +227,7 @@ def cohens_d(control, test, is_paired=False):
 
 
 
-def hedges_g(control, test, is_paired=False):
+def hedges_g(control, test, is_paired=None):
     """
     Computes Hedges' g for  for test v.s. control.
     It first computes Cohen's d, then calulates a correction factor based on

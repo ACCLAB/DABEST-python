@@ -4,7 +4,7 @@
 # Email : joseshowh@gmail.com
 
 
-def load(data, idx, x=None, y=None, paired=False, id_col=None,
+def load(data, idx, x=None, y=None, paired=None, id_col=None,
         ci=95, resamples=5000, random_seed=12345, proportional=False):
     '''
     Loads data in preparation for estimation statistics.
@@ -21,7 +21,8 @@ def load(data, idx, x=None, y=None, paired=False, id_col=None,
     x : string, default None
     y : string, default None
         Column names for data to be plotted on the x-axis and y-axis.
-    paired : boolean, default False.
+    paired : string, default None
+        The type of the experiment under which the data are obtained
     id_col : default None.
         Required if `paired` is True.
     ci : integer, default 95
@@ -35,6 +36,7 @@ def load(data, idx, x=None, y=None, paired=False, id_col=None,
         bootstrap resampling, ensuring that the confidence intervals
         reported are replicable.
     proportional : boolean, default False. 
+        TO INCLUDE MORE DESCRIPTION ABOUT DATA FORMAT
 
     Returns
     -------
