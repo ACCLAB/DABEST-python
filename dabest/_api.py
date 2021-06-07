@@ -5,7 +5,7 @@
 
 
 def load(data, idx, x=None, y=None, paired=False, id_col=None,
-        ci=95, resamples=5000, random_seed=12345):
+        ci=95, resamples=5000, random_seed=12345, proportional=False):
     '''
     Loads data in preparation for estimation statistics.
 
@@ -34,6 +34,7 @@ def load(data, idx, x=None, y=None, paired=False, id_col=None,
         This integer is used to seed the random number generator during
         bootstrap resampling, ensuring that the confidence intervals
         reported are replicable.
+    proportional : boolean, default False. 
 
     Returns
     -------
@@ -62,4 +63,4 @@ def load(data, idx, x=None, y=None, paired=False, id_col=None,
     '''
     from ._classes import Dabest
 
-    return Dabest(data, idx, x, y, paired, id_col, ci, resamples, random_seed)
+    return Dabest(data, idx, x, y, paired, id_col, ci, resamples, random_seed, proportional)
