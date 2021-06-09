@@ -765,7 +765,7 @@ class TwoGroupsEffectSize(object):
             err2 = "is not one of {}".format(kosher_es)
             raise ValueError(" ".join([err1, err2]))
 
-        if effect_size == "cliffs_delta" and paired:
+        if effect_size == "cliffs_delta" and is_paired:
             err1 = "`paired` is not None; therefore Cliff's delta is not defined."
             raise ValueError(err1)
 
