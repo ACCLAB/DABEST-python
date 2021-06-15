@@ -40,6 +40,53 @@ def create_demo_dataset(seed=9999, N=20):
 
 
 
+def create_demo_dataset_rm(seed=9999, N=20):
+    
+    import numpy as np
+    import pandas as pd
+    from scipy.stats import norm # Used in generation of populations.
+
+    np.random.seed(9999) # Fix the seed so the results are replicable.
+    # pop_size = 10000 # Size of each population.
+
+    # Create samples
+    timepoint0 = norm.rvs(loc=3, scale=0.4, size=N)
+    timepoint1 = norm.rvs(loc=3.5, scale=0.75, size=N)
+    timepoint2 = norm.rvs(loc=3.25, scale=0.4, size=N)
+    timepoint3 = norm.rvs(loc=3.5, scale=0.5, size=N)
+    timepoint4 = norm.rvs(loc=2.5, scale=0.6, size=N)
+    timepoint5 = norm.rvs(loc=3, scale=0.75, size=N)
+    timepoint6 = norm.rvs(loc=3.5, scale=0.75, size=N)
+    timepoint7 = norm.rvs(loc=3.25, scale=0.4, size=N)
+    timepoint8 = norm.rvs(loc=3.25, scale=0.4, size=N)
+
+
+    # Add a `gender` column for coloring the data.
+    grp1 = np.repeat('Group 1', N/2).tolist()
+    grp2 = np.repeat('Group 2', N/2).tolist()
+    grp = grp1 + grp2
+
+    # Add an `id` column for paired data plotting. 
+    id_col = pd.Series(range(1, N+1))
+
+    # Combine samples and gender into a DataFrame.
+    df = pd.DataFrame({'Time Point 0' : timepoint0,     
+                       'Time Point 1' : timepoint1,
+                       'Time Point 2' : timepoint2,     
+                       'Time Point 3' : timepoint3,
+                       'Time Point 4' : timepoint4,     
+                       'Time Point 5' : timepoint5,
+                       'Time Point 6' : timepoint6,     
+                       'Time Point 7' : timepoint7, 
+                       'Time Point 8' : timepoint8,
+                       'Group'        : grp, 
+                       'ID'           : id_col
+                      })
+                      
+    return df
+
+
+
 def get_swarm_yspans(coll, round_result=False, decimals=12):
     """
     Given a matplotlib Collection, will obtain the y spans
