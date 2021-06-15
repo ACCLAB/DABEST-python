@@ -16,33 +16,36 @@ import matplotlib.ticker as Ticker
 
 
 from .._api import load
-from .utils import create_demo_dataset
+from .utils import create_demo_dataset, create_demo_dataset_rm
 
 
 
-df = create_demo_dataset()
+df = create_demo_dataset_rm()
 
-sequential = load(df, idx=("Control 1", "Test 1", "Test 2", "Test 3"),
+sequential = load(df, idx=("Time Point 0", "Time Point 1", "Time Point 2", "Time Point 3"),
                     paired = "sequential", id_col = "ID")
 
-baseline   = load(df, idx=("Control 1", "Test 1", "Test 2", "Test 3"),
+baseline   = load(df, idx=("Time Point 0", "Time Point 1", "Time Point 2", "Time Point 3"),
                     paired= "baseline", id_col="ID")
 
-shared_control = load(df, idx=("Control 1", "Test 1", "Test 2", "Test 3"))
+shared_control = load(df, idx=("Time Point 0", "Time Point 1", "Time Point 2", "Time Point 3"))
 
 
-multi_sequential = load(df, idx=(("Control 1", "Test 1", "Test 2", "Test 3"),
-                                 ("Control 2", "Test 4", "Test 5", "Test 6")),
+multi_sequential = load(df, idx=(("Time Point 0", "Time Point 1", "Time Point 2", "Time Point 3"),
+                                 ("Time Point 4", "Time Point 5", "Time Point 6", 
+                                   "Time Point 7", "Time Point 8")),
                     paired = "sequential", id_col = "ID")
 
 
-multi_baseline = load(df, idx=(("Control 1", "Test 1", "Test 2", "Test 3"),
-                                 ("Control 2", "Test 4", "Test 5", "Test 6")),
+multi_baseline = load(df, idx=(("Time Point 0", "Time Point 1", "Time Point 2", "Time Point 3"),
+                                 ("Time Point 4", "Time Point 5", "Time Point 6", 
+                                   "Time Point 7", "Time Point 8")),
                             paired="baseline", id_col="ID")
 
 
-multi_shared_control = load(df, idx=(("Control 1", "Test 1", "Test 2", "Test 3"),
-                                 ("Control 2", "Test 4", "Test 5", "Test 6")))
+multi_shared_control = load(df, idx=(("Time Point 0", "Time Point 1", "Time Point 2", "Time Point 3"),
+                                 ("Time Point 4", "Time Point 5", "Time Point 6", 
+                                   "Time Point 7", "Time Point 8")))
 
 
 @pytest.mark.mpl_image_compare(tolerance=10)
@@ -126,14 +129,14 @@ def test_41_cummings_ylabel():
 
 @pytest.mark.mpl_image_compare(tolerance=10)
 def test_42_repeated_measures_color():
-    return multi_sequential.mean_diff.plot(color_col="Gender", fig_size=(15,6));
+    return multi_sequential.mean_diff.plot(color_col="Group", fig_size=(15,6));
 
 
 
 @pytest.mark.mpl_image_compare(tolerance=10)
 def test_43_repeated_measures_change_palette_a():
     return multi_sequential.mean_diff.plot(fig_size=(15, 6),
-                                       color_col="Gender",
+                                       color_col="Group",
                                        custom_palette="Dark2");
 
 
@@ -148,7 +151,8 @@ def test_44_repeated_measures_dot_sizes():
 @pytest.mark.mpl_image_compare(tolerance=10)
 def test_45_repeated_measures_change_ylims():
     return multi_sequential.mean_diff.plot(swarm_ylim=(0, 5),
-                                       contrast_ylim=(-2, 2));
+                                       contrast_ylim=(-2, 2),
+                                       fig_size=(15,6));
 
 
 
