@@ -10,7 +10,7 @@ class Dabest(object):
     """
 
     def __init__(self, data, idx, x, y, paired, id_col, ci, resamples,
-                random_seed, proportional):
+                random_seed, proportional, var2, status):
 
         """
         Parses and stores pandas DataFrames in preparation for estimation
@@ -23,9 +23,10 @@ class Dabest(object):
         import pandas as pd
         import seaborn as sns
 
+        self.__var2         = var2
+        self.__status       = status
         self.__ci           = ci
         self.__data         = data
-        self.__idx          = idx
         self.__id_col       = id_col
         self.__is_paired    = paired
         self.__resamples    = resamples
@@ -38,6 +39,59 @@ class Dabest(object):
         # data_in_index_name = data_in.index.name
 
 
+
+        # check if this is a 2x2 ANOVA case and x & y are valid columns:
+        if var2:
+            if len(x) != 2:
+                err0 = '`var2` is True but the number of variables indicated by `x` is {}.'.format(len(x))
+                raise ValueError(err0)
+            if any(i not in data_in.columns for i in x):
+                err = 'Not all of {0} is a column in `data`. Please check.'.format(x)
+                raise IndexError(err)
+            if y not in data_in.columns:
+                err = '{0} is not a column in `data`. Please check.'.format(y)
+                raise IndexError(err)
+            if status not in data_in.columns:
+                err = '{0} is not a column in `data`. Please check.'.format(status)
+                raise IndexError(err)
+
+
+
+        # check if idx is specified
+        if not var2 and not idx:
+            err = '`idx` is not a column in `data`. Please check.'
+            raise IndexError(err)
+
+
+        # create new x & idx and record the second variable if this is a valid 2x2 ANOVA case
+        if var2:
+            # add a new column which is a combination of experiment status and the first variable
+            new_col_name = status+x[0]
+            while new_col_name in data_in.columns:
+                new_col_name += "_"
+            data_in[new_col_name] = data_in[x[0]].apply(lambda x: str(x)) + " " + data_in[status].apply(lambda x: str(x))
+
+            #create idx            
+            experiment = data_in[status].unique()
+            x1_level = data_in[x[0]].unique()
+            idx = []
+            for i in experiment:
+                temp = []
+                for j in x1_level:
+                    temp.append(j + " " + i)
+                idx.append(temp)         
+            self.__idx        = idx
+            self.__first      = x1_level
+            self.__experiment = experiment
+            # record the second variable and create idx
+            self.__second     = x[1]
+            x                 = new_col_name
+
+        else:
+            self.__second     = None
+            self.__idx        = idx
+            self.__first      = None
+            self.__experiment = experiment
 
         # Determine the kind of estimation plot we need to produce.
         if all([isinstance(i, str) for i in idx]):
@@ -200,7 +254,7 @@ class Dabest(object):
         EffectSizeDataFrame_kwargs = dict(ci=ci, is_paired=paired,
                                            random_seed=random_seed,
                                            resamples=resamples,
-                                           proportional=proportional)
+                                           proportional=proportional, var2=var2, second=self.__second)
 
         self.__mean_diff    = EffectSizeDataFrame(self, "mean_diff",
                                                 **EffectSizeDataFrame_kwargs)
@@ -495,13 +549,13 @@ class Dabest(object):
         return self.__cliffs_delta
 
 
-
     @property
     def data(self):
         """
         Returns the pandas DataFrame that was passed to `dabest.load()`.
         """
         return self.__data
+
 
     @property
     def idx(self):
@@ -510,13 +564,16 @@ class Dabest(object):
         """
         return self.__idx
     
-    # Removed due to the deprecation fo `is_paired`
-    #@property
-    #def is_paired(self):
-    #    """
-    #    Returns True if the dataset was declared as paired to `dabest.load()`.
-    #    """
-    #    return self.__is_paired
+
+    @property
+    def second(self):
+        return self.__second
+
+
+    @property
+    def var2(self):
+        return self.__var2
+    
 
     @property
     def is_paired(self):
@@ -525,12 +582,14 @@ class Dabest(object):
         """
         return self.__is_paired
 
+
     @property
     def id_col(self):
         """
         Returns the id column declared to `dabest.load()`.
         """
         return self.__id_col
+
 
     @property
     def ci(self):
@@ -539,12 +598,14 @@ class Dabest(object):
         """
         return self.__ci
 
+
     @property
     def resamples(self):
         """
         The number of resamples used to generate the bootstrap.
         """
         return self.__resamples
+
 
     @property
     def random_seed(self):
@@ -562,12 +623,14 @@ class Dabest(object):
         """
         return self.__x
 
+
     @property
     def y(self):
         """
         Returns the y column that was passed to `dabest.load()`, if any.
         """
         return self.__y
+
 
     @property
     def _xvar(self):
@@ -576,12 +639,14 @@ class Dabest(object):
         """
         return self.__xvar
 
+
     @property
     def _yvar(self):
         """
         Returns the yvar in dabest.plot_data.
         """
         return self.__yvar
+
 
     @property
     def _plot_data(self):
@@ -598,6 +663,7 @@ class Dabest(object):
         class.
         """
         return self.__proportional
+
 
     @property
     def _all_plot_groups(self):
@@ -1388,7 +1454,7 @@ class EffectSizeDataFrame(object):
                  is_paired, ci=95, proportional=False,
                  resamples=5000, 
                  permutation_count=5000,
-                 random_seed=12345):
+                 random_seed=12345, second=None, var2=False):
         """
         Parses the data from a Dabest object, enabling plotting and printing
         capability for the effect size of interest.
@@ -1402,6 +1468,8 @@ class EffectSizeDataFrame(object):
         self.__permutation_count = permutation_count
         self.__random_seed       = random_seed
         self.__proportional      = proportional
+        self.__second            = second
+        self.__var2              = var2 
 
 
     def __pre_calc(self):
@@ -1440,9 +1508,7 @@ class EffectSizeDataFrame(object):
                 r_dict["test"]      = tname
                 r_dict["control_N"] = int(len(control))
                 r_dict["test_N"]    = int(len(test))
-                
                 out.append(r_dict)
-
                 if j == len(idx)-1 and ix == len(current_tuple)-2:
                     resamp_count = True
                     def_pval     = True
@@ -1780,9 +1846,11 @@ class EffectSizeDataFrame(object):
 
         from .plotter import EffectSizeDataFramePlotter, ProportionalDataFramePlotter
 
-
         if hasattr(self, "results") is False:
             self.__pre_calc()
+
+        if self.__var2:
+            color_col = self.__second
 
         if self.__proportional:
             raw_marker_size = 0.01
@@ -1865,6 +1933,16 @@ class EffectSizeDataFrame(object):
         The width of the confidence interval being produced, in percent.
         """
         return self.__ci
+
+    @property
+    def second(self):
+        return self.__second
+
+
+    @property
+    def var2(self):
+        return self.__var2
+    
 
     @property
     def resamples(self):

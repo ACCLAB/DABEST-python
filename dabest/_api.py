@@ -4,8 +4,8 @@
 # Email : joseshowh@gmail.com
 
 
-def load(data, idx, x=None, y=None, paired=None, id_col=None,
-        ci=95, resamples=5000, random_seed=12345, proportional=False):
+def load(data, idx=None, x=None, y=None, paired=None, id_col=None,
+        ci=95, resamples=5000, random_seed=12345, proportional=False, var2 = False, status = None):
     '''
     Loads data in preparation for estimation statistics.
 
@@ -65,4 +65,4 @@ def load(data, idx, x=None, y=None, paired=None, id_col=None,
     '''
     from ._classes import Dabest
 
-    return Dabest(data, idx, x, y, paired, id_col, ci, resamples, random_seed, proportional)
+    return Dabest(data, idx, x, y, paired, id_col, ci, resamples, random_seed, proportional, var2, status)
