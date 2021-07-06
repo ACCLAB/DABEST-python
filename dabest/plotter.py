@@ -64,7 +64,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     xvar       = EffectSizeDataFrame.xvar
     yvar       = EffectSizeDataFrame.yvar
     is_paired  = EffectSizeDataFrame.is_paired
-
+    delta2     = EffectSizeDataFrame.delta2
+    first      = EffectSizeDataFrame.first
+    experiment = EffectSizeDataFrame.experiment
 
     all_plot_groups = dabest_obj._all_plot_groups
     idx             = dabest_obj.idx
@@ -75,7 +77,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
     # Disable Gardner-Altman plotting if any of the idxs comprise of more than
-    # two groups.
+    # two groups or if it is a delta-delta plot.
     float_contrast   = plot_kwargs["float_contrast"]
     effect_size_type = EffectSizeDataFrame.effect_size
     if len(idx) > 1 or len(idx[0]) > 2:
@@ -84,10 +86,14 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if effect_size_type in ['cliffs_delta']:
         float_contrast = False
 
+    if delta2:
+        float_contrast = False
+
     if not is_paired:
         show_pairs = False
     else:
         show_pairs = plot_kwargs["show_pairs"]
+
 
     # Set default kwargs first, then merge with user-dictated ones.
     default_swarmplot_kwargs = {'size': plot_kwargs["raw_marker_size"]}
@@ -96,7 +102,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         swarmplot_kwargs = merge_two_dicts(default_swarmplot_kwargs,
                                            plot_kwargs["swarmplot_kwargs"])
-
 
 
     # Violinplot kwargs.
@@ -116,8 +121,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         slopegraph_kwargs = merge_two_dicts(default_slopegraph_kwargs,
                                             plot_kwargs["slopegraph_kwargs"])
-
-
 
 
     # Zero reference-line kwargs.
@@ -221,6 +224,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     fig_size   = plot_kwargs["fig_size"]
     if fig_size is None:
         all_groups_count = np.sum([len(i) for i in dabest_obj.idx])
+        # Increase the width for delta-delta graph
+        if delta2:
+            all_groups_count += 2
         if is_paired and show_pairs is True:
             frac = 0.75
         else:
@@ -234,7 +240,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         width_inches = (each_group_width_inches * all_groups_count)
         fig_size = (width_inches, height_inches)
-
 
 
     # Initialise the figure.
@@ -308,7 +313,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_ax_ylim_tickintervals = list()
         rawdata_axes  = axx[0]
         contrast_axes = axx[1]
-
     rawdata_axes.set_frame_on(False)
     contrast_axes.set_frame_on(False)
 
@@ -459,6 +463,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         ticks_to_plot = [t for t in range(0, len(all_plot_groups))
                         if t not in ticks_to_skip]
 
+    # plot one more halfviolin graph if the plot is for delta-delta
+    if delta2:
+        ticks_to_plot.append(ticks_to_plot[-1]+2)
+        ticks_to_skip.append(ticks_to_skip[-1]+2)
 
     # Plot the bootstraps, then the effect sizes and CIs.
     es_marker_size   = plot_kwargs["es_marker_size"]
@@ -507,16 +515,27 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                                    current_control))
 
 
-    # Make sure the contrast_axes x-lims match the rawdata_axes xlims.
-    contrast_axes.set_xticks(rawdata_axes.get_xticks())
+    # Make sure the contrast_axes x-lims match the rawdata_axes xlims,
+    # and add an extra violinplot tick for delta-delta plot.
+    raw_x_stick = rawdata_axes.get_xticks()
+    if delta2:
+        raw_x_stick = np.append(raw_x_stick, max(raw_x_stick)+1)
+        raw_x_stick = np.append(raw_x_stick, max(raw_x_stick)+1)
+    contrast_axes.set_xticks(raw_x_stick)
+
     if show_pairs is True:
         max_x = contrast_axes.get_xlim()[1]
         rawdata_axes.set_xlim(-0.375, max_x)
 
     if float_contrast is True:
         contrast_axes.set_xlim(0.5, 1.5)
+    elif delta2:
+        temp = rawdata_axes.get_xlim()
+        contrast_axes.set_xlim(temp[0], temp[1]+2)
+        rawdata_axes.set_xlim(temp[0], temp[1]+2)
     else:
         contrast_axes.set_xlim(rawdata_axes.get_xlim())
+
 
     # Properly label the contrast ticks.
     for t in ticks_to_skip:
@@ -705,7 +724,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_axes.axhline(y=0, **reflines_kwargs)
 
         if is_paired == "baseline" and show_pairs == True:
-            rightend_ticks_raw = np.array([len(i)-1 for i in temp_idx]) + np.array(ticks_to_skip)
+            if delta2:
+                temp_ticks_to_skip = ticks_to_skip[:-1]
+            else:
+                temp_ticks_to_skip = ticks_to_skip
+            rightend_ticks_raw = np.array([len(i)-1 for i in temp_idx]) + np.array(temp_ticks_to_skip)
             for ax in [rawdata_axes]:
                 sns.despine(ax=ax, bottom=True)
         
@@ -713,15 +736,18 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 xlim = ax.get_xlim()
                 redraw_axes_kwargs['y'] = ylim[0]
         
-                for k, start_tick in enumerate(ticks_to_skip):
+                for k, start_tick in enumerate(temp_ticks_to_skip):
                     end_tick = rightend_ticks_raw[k]
                     ax.hlines(xmin=start_tick, xmax=end_tick,
                               **redraw_axes_kwargs)
         
                 ax.set_ylim(ylim)
                 del redraw_axes_kwargs['y']
-
-            rightend_ticks_contrast = np.array([(len(i)-1)*2-1 for i in idx]) + np.array(ticks_to_skip_contrast)
+            
+            temp_length = [(len(i)-1)*2-1 for i in idx]
+            if delta2:
+                temp_length.append(1)
+            rightend_ticks_contrast = np.array(temp_length) + np.array(ticks_to_skip_contrast)
             for ax in [contrast_axes]:
                 sns.despine(ax=ax, bottom=True)
         
@@ -738,21 +764,58 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 del redraw_axes_kwargs['y']
         else:
             # Compute the end of each x-axes line.
-            rightend_ticks = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
-            for ax in [rawdata_axes, contrast_axes]:
-                sns.despine(ax=ax, bottom=True)
+            # Compute the end of each x-axes line.
+            if delta2:
+                temp = np.array([len(i)-1 for i in idx])
+                temp = np.append(temp, 1)
+                rightend_ticks = np.array(temp) + np.array(ticks_to_skip)
+            else:
+                rightend_ticks = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
+            if not delta2:
+                for ax in [rawdata_axes, contrast_axes]:
+                    sns.despine(ax=ax, bottom=True)
         
-                ylim = ax.get_ylim()
-                xlim = ax.get_xlim()
-                redraw_axes_kwargs['y'] = ylim[0]
-        
-                for k, start_tick in enumerate(ticks_to_skip):
-                    end_tick = rightend_ticks[k]
-                    ax.hlines(xmin=start_tick, xmax=end_tick,
+                    ylim = ax.get_ylim()
+                    xlim = ax.get_xlim()
+                    redraw_axes_kwargs['y'] = ylim[0]
+
+                    for k, start_tick in enumerate(ticks_to_skip):
+                        end_tick = rightend_ticks[k]
+                        ax.hlines(xmin=start_tick, xmax=end_tick,
                               **redraw_axes_kwargs)
         
-                ax.set_ylim(ylim)
-                del redraw_axes_kwargs['y']
+                    ax.set_ylim(ylim)
+                    del redraw_axes_kwargs['y']
+            else:
+                for ax in [rawdata_axes]:
+                    sns.despine(ax=ax, bottom=True)
+
+                    ylim = ax.get_ylim()
+                    xlim = ax.get_xlim()
+                    redraw_axes_kwargs['y'] = ylim[0]
+
+                    for k, start_tick in enumerate(ticks_to_skip[:-1]):
+                        end_tick = rightend_ticks[k]
+                        ax.hlines(xmin=start_tick, xmax=end_tick,
+                              **redraw_axes_kwargs)
+        
+                    ax.set_ylim(ylim)
+                    del redraw_axes_kwargs['y']
+
+                for ax in [contrast_axes]:
+                    sns.despine(ax=ax, bottom=True)
+        
+                    ylim = ax.get_ylim()
+                    xlim = ax.get_xlim()
+                    redraw_axes_kwargs['y'] = ylim[0]
+                    
+                    for k, start_tick in enumerate(ticks_to_skip):
+                        end_tick = rightend_ticks[k]
+                        ax.hlines(xmin=start_tick, xmax=end_tick,
+                              **redraw_axes_kwargs)
+        
+                    ax.set_ylim(ylim)
+                    del redraw_axes_kwargs['y']
 
 
 

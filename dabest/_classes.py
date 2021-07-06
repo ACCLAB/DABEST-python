@@ -10,7 +10,7 @@ class Dabest(object):
     """
 
     def __init__(self, data, idx, x, y, paired, id_col, ci, resamples,
-                random_seed, proportional, var2, status):
+                random_seed, proportional, delta2, experiment):
 
         """
         Parses and stores pandas DataFrames in preparation for estimation
@@ -23,8 +23,8 @@ class Dabest(object):
         import pandas as pd
         import seaborn as sns
 
-        self.__var2         = var2
-        self.__status       = status
+        self.__delta2       = delta2
+        self.__experiment   = experiment
         self.__ci           = ci
         self.__data         = data
         self.__id_col       = id_col
@@ -41,9 +41,9 @@ class Dabest(object):
 
 
         # check if this is a 2x2 ANOVA case and x & y are valid columns:
-        if var2:
+        if delta2:
             if len(x) != 2:
-                err0 = '`var2` is True but the number of variables indicated by `x` is {}.'.format(len(x))
+                err0 = '`delta2` is True but the number of variables indicated by `x` is {}.'.format(len(x))
                 raise ValueError(err0)
             if any(i not in data_in.columns for i in x):
                 err = 'Not all of {0} is a column in `data`. Please check.'.format(x)
@@ -51,28 +51,28 @@ class Dabest(object):
             if y not in data_in.columns:
                 err = '{0} is not a column in `data`. Please check.'.format(y)
                 raise IndexError(err)
-            if status not in data_in.columns:
-                err = '{0} is not a column in `data`. Please check.'.format(status)
+            if experiment not in data_in.columns:
+                err = '{0} is not a column in `data`. Please check.'.format(experiment)
                 raise IndexError(err)
 
 
 
         # check if idx is specified
-        if not var2 and not idx:
+        if not delta2 and not idx:
             err = '`idx` is not a column in `data`. Please check.'
             raise IndexError(err)
 
 
         # create new x & idx and record the second variable if this is a valid 2x2 ANOVA case
-        if var2:
-            # add a new column which is a combination of experiment status and the first variable
-            new_col_name = status+x[0]
+        if delta2:
+            # add a new column which is a combination of experiment and the first variable
+            new_col_name = experiment+x[0]
             while new_col_name in data_in.columns:
                 new_col_name += "_"
-            data_in[new_col_name] = data_in[x[0]].apply(lambda x: str(x)) + " " + data_in[status].apply(lambda x: str(x))
+            data_in[new_col_name] = data_in[x[0]].apply(lambda x: str(x)) + " " + data_in[experiment].apply(lambda x: str(x))
 
             #create idx            
-            experiment = data_in[status].unique()
+            experiment = data_in[experiment].unique()
             x1_level = data_in[x[0]].unique()
             idx = []
             for i in experiment:
@@ -91,7 +91,7 @@ class Dabest(object):
             self.__second     = None
             self.__idx        = idx
             self.__first      = None
-            self.__experiment = experiment
+            self.__experiment = None
 
         # Determine the kind of estimation plot we need to produce.
         if all([isinstance(i, str) for i in idx]):
@@ -254,7 +254,11 @@ class Dabest(object):
         EffectSizeDataFrame_kwargs = dict(ci=ci, is_paired=paired,
                                            random_seed=random_seed,
                                            resamples=resamples,
-                                           proportional=proportional, var2=var2, second=self.__second)
+                                           proportional=proportional, 
+                                           delta2=delta2, 
+                                           experiment = self.__experiment,
+                                           first = self.__first,
+                                           second=self.__second)
 
         self.__mean_diff    = EffectSizeDataFrame(self, "mean_diff",
                                                 **EffectSizeDataFrame_kwargs)
@@ -323,6 +327,9 @@ class Dabest(object):
                 for ix, test_name in enumerate(current_tuple[1:]):
                     comparisons.append("{} minus {}".format(test_name, control_name))
 
+        if self.__delta2:
+            comparison.append("{} minus {}".format(self.__experiment[1], self.__experiment[0]))
+        
         for j, g in enumerate(comparisons):
             out.append("{}. {}".format(j+1, g))
 
@@ -566,14 +573,24 @@ class Dabest(object):
     
 
     @property
+    def first(self):
+        return self.__first
+
+
+    @property
     def second(self):
         return self.__second
 
 
     @property
-    def var2(self):
-        return self.__var2
+    def experiment(self):
+        return self.__experiment
     
+
+    @property
+    def delta2(self):
+        return self.__delta2
+
 
     @property
     def is_paired(self):
@@ -687,7 +704,8 @@ class TwoGroupsEffectSize(object):
                  is_paired=None, ci=95,
                  resamples=5000, 
                  permutation_count=5000, 
-                 random_seed=12345):
+                 random_seed=12345,
+                 first=None, delta2=False):
 
         """
         Compute the effect size between two groups.
@@ -851,20 +869,24 @@ class TwoGroupsEffectSize(object):
         self.__random_seed       = random_seed
         self.__ci                = ci
         self.__alpha             = ci2g._compute_alpha_from_ci(ci)
-
+        self.__delta2              = delta2
+        self.__first             = first
 
         self.__difference = es.two_group_difference(
                                 control, test, is_paired, effect_size)
-
+        
         self.__jackknives = ci2g.compute_meandiff_jackknife(
                                 control, test, is_paired, effect_size)
 
         self.__acceleration_value = ci2g._calc_accel(self.__jackknives)
 
-        bootstraps = ci2g.compute_bootstrapped_diff(
+        if not delta2:
+            bootstraps = ci2g.compute_bootstrapped_diff(
                             control, test, is_paired, effect_size,
                             resamples, random_seed)
-        self.__bootstraps = npsort(bootstraps)
+            self.__bootstraps = npsort(bootstraps)
+        else:
+            self.__bootstraps = npsort(self.__test-self.__control)
         
         # Added in v0.2.6.
         # Raises a UserWarning if there are any infiinities in the bootstraps.
@@ -924,14 +946,19 @@ class TwoGroupsEffectSize(object):
                 self.__bca_high  = self.__difference
                 warnings.warn(err_temp.substitute(lim_type="upper"),
                               stacklevel=0)
+        if not self.__delta2:
+            # Compute percentile intervals.
+            pct_idx_low  = int((self.__alpha/2)     * resamples)
+            pct_idx_high = int((1-(self.__alpha/2)) * resamples)
 
-        # Compute percentile intervals.
-        pct_idx_low  = int((self.__alpha/2)     * resamples)
-        pct_idx_high = int((1-(self.__alpha/2)) * resamples)
-
-        self.__pct_interval_idx = (pct_idx_low, pct_idx_high)
-        self.__pct_low  = self.__bootstraps[pct_idx_low]
-        self.__pct_high = self.__bootstraps[pct_idx_high]
+            self.__pct_interval_idx = (pct_idx_low, pct_idx_high)
+            self.__pct_low  = self.__bootstraps[pct_idx_low]
+            self.__pct_high = self.__bootstraps[pct_idx_high]
+        
+        else:
+            self.__pct_interval_idx = None
+            self.__pct_low  = None
+            self.__pct_high = None
 
         # Perform statistical tests.
                 
@@ -1067,7 +1094,10 @@ class TwoGroupsEffectSize(object):
                       "es"           : self.__EFFECT_SIZE_DICT[self.__effect_size],
                       "paired_status": PAIRED_STATUS[str(self.__is_paired)]}
         
-        out1 = "The {paired_status} {es} {rm_status}".format(**first_line)
+        if self.__delta2:
+            out1 = "The delta-delta {es}"
+        else:
+            out1 = "The {paired_status} {es} {rm_status}".format(**first_line)
         
         base_string_fmt = "{:." + str(sigfig) + "}"
         if "." in str(self.__ci):
@@ -1454,7 +1484,9 @@ class EffectSizeDataFrame(object):
                  is_paired, ci=95, proportional=False,
                  resamples=5000, 
                  permutation_count=5000,
-                 random_seed=12345, second=None, var2=False):
+                 random_seed=12345, 
+                 first=None, second=None, 
+                 delta2=False, experiment=None):
         """
         Parses the data from a Dabest object, enabling plotting and printing
         capability for the effect size of interest.
@@ -1468,8 +1500,10 @@ class EffectSizeDataFrame(object):
         self.__permutation_count = permutation_count
         self.__random_seed       = random_seed
         self.__proportional      = proportional
+        self.__first             = first
+        self.__experiment        = experiment 
         self.__second            = second
-        self.__var2              = var2 
+        self.__delta2              = delta2 
 
 
     def __pre_calc(self):
@@ -1523,6 +1557,28 @@ class EffectSizeDataFrame(object):
                 text_repr = text_repr.replace("is", to_replace, 1)
 
                 reprs.append(text_repr)
+
+        if self.__delta2:
+            delta = TwoGroupsEffectSize(out[0]["bootstraps"], 
+                                    out[1]["bootstraps"],
+                                    self.__effect_size,
+                                    True,
+                                    self.__ci,
+                                    self.__resamples,
+                                    self.__permutation_count,
+                                    self.__random_seed,
+                                    self.__first,
+                                    self.__delta2
+                                    )
+            r_dict = delta.to_dict()
+            r_dict["control"]   = self.__experiment[1]
+            r_dict["test"]      = self.__experiment[0]
+            r_dict["control_N"] = self.__resamples
+            r_dict["test_N"]    = self.__resamples
+            out.append(r_dict)
+            to_replace = "between {} and {} is".format(self.__experiment[0], self.__experiment[1])
+            text_repr = text_repr.replace("is", to_replace, 1)
+            reprs.append(text_repr)
 
         varname = get_varname(self.__dabest_obj)
         lastline = "To get the results of all valid statistical tests, " +\
@@ -1849,7 +1905,7 @@ class EffectSizeDataFrame(object):
         if hasattr(self, "results") is False:
             self.__pre_calc()
 
-        if self.__var2:
+        if self.__delta2:
             color_col = self.__second
 
         if self.__proportional:
@@ -1935,13 +1991,23 @@ class EffectSizeDataFrame(object):
         return self.__ci
 
     @property
+    def first(self):
+        return self.__first
+
+
+    @property
     def second(self):
         return self.__second
 
 
     @property
-    def var2(self):
-        return self.__var2
+    def experiment(self):
+        return self.__experiment
+    
+
+    @property
+    def delta2(self):
+        return self.__delta2
     
 
     @property
