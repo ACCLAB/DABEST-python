@@ -9,8 +9,9 @@ class Dabest(object):
     Class for estimation statistics and plots.
     """
 
-    def __init__(self, data, idx, x, y, paired, id_col, ci, resamples,
-                random_seed, proportional, delta2, experiment):
+    def __init__(self, data, idx, x, y, paired, id_col, ci, 
+                resamples, random_seed, proportional, delta2, 
+                experiment, experiment_label, x1_level):
 
         """
         Parses and stores pandas DataFrames in preparation for estimation
@@ -40,21 +41,65 @@ class Dabest(object):
 
 
 
-        # check if this is a 2x2 ANOVA case and x & y are valid columns:
+        # check if this is a 2x2 ANOVA case and x & y are valid columns
+        # create experiment_label and x1_level
         if delta2:
+            # idx should not be specified
+            if idx:
+                err0 = '`idx` should not be specified when `delta2` is True.'.format(len(x))
+                raise ValueError(err0)
+
+            # check if x is valid
             if len(x) != 2:
                 err0 = '`delta2` is True but the number of variables indicated by `x` is {}.'.format(len(x))
                 raise ValueError(err0)
-            if any(i not in data_in.columns for i in x):
-                err = 'Not all of {0} is a column in `data`. Please check.'.format(x)
-                raise IndexError(err)
-            if y not in data_in.columns:
+            else:
+                for i in x:
+                    if i not in data_in.columns:
+                        err = '{0} is a column in `data`. Please check.'.format(i)
+                        raise IndexError(err)
+
+            # check if y is valid
+            if not y:
+                err0 = '`delta2` is True but `y` is not indicated.'
+                raise ValueError(err0)
+            elif y not in data_in.columns:
                 err = '{0} is not a column in `data`. Please check.'.format(y)
                 raise IndexError(err)
+
+            # check if experiment is valid
             if experiment not in data_in.columns:
                 err = '{0} is not a column in `data`. Please check.'.format(experiment)
                 raise IndexError(err)
 
+            # check if experiment_label is valid and create experiment when needed
+            if experiment_label:
+                if len(experiment_label) != 2:
+                    err0 = '`experiment_label` does not have a length of 2.'
+                    raise ValueError(err0)
+                else: 
+                    for i in experiment_label:
+                        if i not in data_in[experiment].unique():
+                            err = '{0} is an element in the column `{1}` of `data`. Please check.'.format(i, experiment)
+                            raise IndexError(err)
+            else:
+                experiment_label = data_in[experiment].unique()
+
+            # check if x1_level is valid
+            if x1_level:
+                if len(x1_level) != 2:
+                    err0 = '`x1_level` does not have a length of 2.'
+                    raise ValueError(err0)
+                else: 
+                    for i in x1_level:
+                        if i not in data_in[x[0]].unique():
+                            err = '{0} is an element in the column `{1}` of `data`. Please check.'.format(i, experiment)
+                            raise IndexError(err)
+
+            else:
+                x1_level = data_in[x[0]].unique()    
+        self.__experiment_label = experiment_label
+        self.__x1_level         = x1_level
 
 
         # check if idx is specified
@@ -72,26 +117,21 @@ class Dabest(object):
             data_in[new_col_name] = data_in[x[0]].apply(lambda x: str(x)) + " " + data_in[experiment].apply(lambda x: str(x))
 
             #create idx            
-            experiment = data_in[experiment].unique()
-            x1_level = data_in[x[0]].unique()
             idx = []
-            for i in experiment:
+            for i in experiment_label:
                 temp = []
                 for j in x1_level:
                     temp.append(j + " " + i)
                 idx.append(temp)         
-            self.__idx        = idx
-            self.__first      = x1_level
-            self.__experiment = experiment
+            self.__idx = idx
+            self.__x1  = x[0]
+            self.__x2  = x[1]
             # record the second variable and create idx
-            self.__second     = x[1]
-            x                 = new_col_name
-
+            x = new_col_name
         else:
-            self.__second     = None
-            self.__idx        = idx
-            self.__first      = None
-            self.__experiment = None
+            self.__idx = idx
+            self.__x1  = None
+            self.__x2  = None
 
         # Determine the kind of estimation plot we need to produce.
         if all([isinstance(i, str) for i in idx]):
@@ -256,9 +296,9 @@ class Dabest(object):
                                            resamples=resamples,
                                            proportional=proportional, 
                                            delta2=delta2, 
-                                           experiment = self.__experiment,
-                                           first = self.__first,
-                                           second=self.__second)
+                                           experiment_label=self.__experiment_label,
+                                           x1_level=self.__x1_level,
+                                           x2=self.__x2)
 
         self.__mean_diff    = EffectSizeDataFrame(self, "mean_diff",
                                                 **EffectSizeDataFrame_kwargs)
@@ -328,7 +368,7 @@ class Dabest(object):
                     comparisons.append("{} minus {}".format(test_name, control_name))
 
         if self.__delta2:
-            comparison.append("{} minus {}".format(self.__experiment[1], self.__experiment[0]))
+            comparison.append("{} minus {}".format(self.__experiment_label[1], self.__experiment_label[0]))
         
         for j, g in enumerate(comparisons):
             out.append("{}. {}".format(j+1, g))
@@ -573,19 +613,29 @@ class Dabest(object):
     
 
     @property
-    def first(self):
-        return self.__first
+    def x1(self):
+        return self.__x1
 
 
     @property
-    def second(self):
-        return self.__second
+    def x1_level(self):
+        return self.__x1_level
+
+
+    @property
+    def x2(self):
+        return self.__x2
 
 
     @property
     def experiment(self):
         return self.__experiment
     
+
+    @property
+    def experiment_label(self):
+        return self.__experiment_label
+
 
     @property
     def delta2(self):
@@ -705,7 +755,7 @@ class TwoGroupsEffectSize(object):
                  resamples=5000, 
                  permutation_count=5000, 
                  random_seed=12345,
-                 first=None, delta2=False):
+                 delta2=False):
 
         """
         Compute the effect size between two groups.
@@ -870,7 +920,6 @@ class TwoGroupsEffectSize(object):
         self.__ci                = ci
         self.__alpha             = ci2g._compute_alpha_from_ci(ci)
         self.__delta2              = delta2
-        self.__first             = first
 
         self.__difference = es.two_group_difference(
                                 control, test, is_paired, effect_size)
@@ -1485,8 +1534,8 @@ class EffectSizeDataFrame(object):
                  resamples=5000, 
                  permutation_count=5000,
                  random_seed=12345, 
-                 first=None, second=None, 
-                 delta2=False, experiment=None):
+                 x1_level=None, x2=None, 
+                 delta2=False, experiment_label=None):
         """
         Parses the data from a Dabest object, enabling plotting and printing
         capability for the effect size of interest.
@@ -1500,10 +1549,10 @@ class EffectSizeDataFrame(object):
         self.__permutation_count = permutation_count
         self.__random_seed       = random_seed
         self.__proportional      = proportional
-        self.__first             = first
-        self.__experiment        = experiment 
-        self.__second            = second
-        self.__delta2              = delta2 
+        self.__x1_level          = x1_level
+        self.__experiment_label  = experiment_label 
+        self.__x2                = x2
+        self.__delta2            = delta2 
 
 
     def __pre_calc(self):
@@ -1558,7 +1607,7 @@ class EffectSizeDataFrame(object):
 
                 reprs.append(text_repr)
 
-        if self.__delta2:
+        if self.__delta2 and self.__effect_size == "mean_diff":
             delta = TwoGroupsEffectSize(out[0]["bootstraps"], 
                                     out[1]["bootstraps"],
                                     self.__effect_size,
@@ -1567,19 +1616,20 @@ class EffectSizeDataFrame(object):
                                     self.__resamples,
                                     self.__permutation_count,
                                     self.__random_seed,
-                                    self.__first,
                                     self.__delta2
                                     )
             r_dict = delta.to_dict()
-            r_dict["control"]   = self.__experiment[1]
-            r_dict["test"]      = self.__experiment[0]
+            r_dict["control"]   = self.__experiment_label[0]
+            r_dict["test"]      = self.__experiment_label[1]
             r_dict["control_N"] = self.__resamples
             r_dict["test_N"]    = self.__resamples
             out.append(r_dict)
-            to_replace = "between {} and {} is".format(self.__experiment[0], self.__experiment[1])
+            to_replace = "between {} and {} is".format(self.__experiment_label[0], self.__experiment_label[1])
             text_repr = text_repr.replace("is", to_replace, 1)
             reprs.append(text_repr)
-
+        else:
+            err0 = 'The calculation of delta-delta is not supported for {}.'.format(self.__effect_size)
+            raise ValueError(err0)
         varname = get_varname(self.__dabest_obj)
         lastline = "To get the results of all valid statistical tests, " +\
         "use `{}.{}.statistical_tests`".format(varname, self.__effect_size)
@@ -1626,7 +1676,6 @@ class EffectSizeDataFrame(object):
 
         self.__results   = out_.reindex(columns=columns_in_order)
         self.__results.dropna(axis="columns", how="all", inplace=True)
-        
 
 
 
@@ -1906,7 +1955,7 @@ class EffectSizeDataFrame(object):
             self.__pre_calc()
 
         if self.__delta2:
-            color_col = self.__second
+            color_col = self.__x2
 
         if self.__proportional:
             raw_marker_size = 0.01
@@ -1991,18 +2040,18 @@ class EffectSizeDataFrame(object):
         return self.__ci
 
     @property
-    def first(self):
-        return self.__first
+    def x1_level(self):
+        return self.__x1_level
 
 
     @property
-    def second(self):
-        return self.__second
+    def x2(self):
+        return self.__x2
 
 
     @property
-    def experiment(self):
-        return self.__experiment
+    def experiment_label(self):
+        return self.__experiment_label
     
 
     @property

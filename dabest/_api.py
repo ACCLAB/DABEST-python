@@ -6,7 +6,8 @@
 
 def load(data, idx=None, x=None, y=None, paired=None, id_col=None,
         ci=95, resamples=5000, random_seed=12345, proportional=False, 
-        delta2 = False, experiment = None):
+        delta2 = False, experiment = None, experiment_label = None,
+        x1_level = None):
     '''
     Loads data in preparation for estimation statistics.
 
@@ -82,4 +83,4 @@ def load(data, idx=None, x=None, y=None, paired=None, id_col=None,
     '''
     from ._classes import Dabest
 
-    return Dabest(data, idx, x, y, paired, id_col, ci, resamples, random_seed, proportional, delta2, experiment)
+    return Dabest(data, idx, x, y, paired, id_col, ci, resamples, random_seed, proportional, delta2, experiment, experiment_label, x1_level)

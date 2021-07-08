@@ -65,8 +65,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     yvar       = EffectSizeDataFrame.yvar
     is_paired  = EffectSizeDataFrame.is_paired
     delta2     = EffectSizeDataFrame.delta2
-    first      = EffectSizeDataFrame.first
-    experiment = EffectSizeDataFrame.experiment
 
     all_plot_groups = dabest_obj._all_plot_groups
     idx             = dabest_obj.idx
@@ -363,20 +361,20 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                     current_pair = pivoted_plot_data
                 else:
                     current_pair = pivoted_plot_data[yvar]
-                    
             grp_count = len(current_tuple)
             # Iterate through the data for the current tuple.
             for ID, observation in current_pair.iterrows():
                 x_points = [t for t in range(x_start,x_start+grp_count)]
                 y_points = observation.tolist()
-    
+
                 if color_col is None:
                     slopegraph_kwargs['color'] = ytick_color
                 else:
                     color_key = pivoted_plot_data[color_col,
                                                   current_tuple[0]].loc[ID]
-                    slopegraph_kwargs['color']  = plot_palette_raw[color_key]
-                    slopegraph_kwargs['label']  = color_key
+                    if not pd.isna(color_key):
+                        slopegraph_kwargs['color']  = plot_palette_raw[color_key]
+                        slopegraph_kwargs['label']  = color_key
             
                 rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
             x_start  = x_start + grp_count
@@ -454,7 +452,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist() 
         ticks_to_skip_contrast = np.cumsum([(len(t)-1)*2 for t in idx])[:-1].tolist()
         ticks_to_skip_contrast.insert(0, 0)
-
+        if delta2:
+            ticks_to_skip_contrast.append(max(ticks_to_skip_contrast)+2)
     else:
         ticks_to_skip   = np.cumsum([len(t) for t in idx])[:-1].tolist()
         ticks_to_skip.insert(0, 0)
@@ -529,7 +528,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     if float_contrast is True:
         contrast_axes.set_xlim(0.5, 1.5)
-    elif delta2:
+    elif not is_paired and delta2:
         temp = rawdata_axes.get_xlim()
         contrast_axes.set_xlim(temp[0], temp[1]+2)
         rawdata_axes.set_xlim(temp[0], temp[1]+2)
