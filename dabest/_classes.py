@@ -933,10 +933,11 @@ class TwoGroupsEffectSize(object):
             bootstraps = ci2g.compute_bootstrapped_diff(
                             control, test, is_paired, effect_size,
                             resamples, random_seed)
-            self.__bootstraps = npsort(bootstraps)
+            self.__bootstraps = bootstraps
         else:
-            self.__bootstraps = npsort(self.__test-self.__control)
+            self.__bootstraps = self.__test-self.__control
         
+        sorted_bootstraps = npsort(self.__bootstraps)
         # Added in v0.2.6.
         # Raises a UserWarning if there are any infiinities in the bootstraps.
         num_infinities = len(self.__bootstraps[isinf(self.__bootstraps)])
@@ -962,8 +963,8 @@ class TwoGroupsEffectSize(object):
         self.__bca_interval_idx = (bca_idx_low, bca_idx_high)
 
         if ~isnan(bca_idx_low) and ~isnan(bca_idx_high):
-            self.__bca_low  = self.__bootstraps[bca_idx_low]
-            self.__bca_high = self.__bootstraps[bca_idx_high]
+            self.__bca_low  = sorted_bootstraps[bca_idx_low]
+            self.__bca_high = sorted_bootstraps[bca_idx_high]
 
             err1 = "The $lim_type limit of the interval"
             err2 = "was in the $loc 10 values."
@@ -1001,8 +1002,8 @@ class TwoGroupsEffectSize(object):
             pct_idx_high = int((1-(self.__alpha/2)) * resamples)
 
             self.__pct_interval_idx = (pct_idx_low, pct_idx_high)
-            self.__pct_low  = self.__bootstraps[pct_idx_low]
-            self.__pct_high = self.__bootstraps[pct_idx_high]
+            self.__pct_low  = sorted_bootstraps[pct_idx_low]
+            self.__pct_high = sorted_bootstraps[pct_idx_high]
         
         else:
             self.__pct_interval_idx = None
