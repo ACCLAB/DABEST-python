@@ -1753,8 +1753,8 @@ class EffectSizeDataFrame(object):
 
             raw_marker_size=6, es_marker_size=9,
 
-            swarm_label=None, barchart_label=None, contrast_label=None,
-            swarm_ylim=None, barchart_ylim=None, contrast_ylim=None,
+            swarm_label=None, barchart_label=None, contrast_label=None, delta_label=None,
+            swarm_ylim=None, barchart_ylim=None, contrast_ylim=None, delta_ylim=None,
 
             custom_palette=None, swarm_desat=0.5, barchart_desat=0.5, halfviolin_desat=1,
             halfviolin_alpha=0.8, 
@@ -1790,15 +1790,16 @@ class EffectSizeDataFrame(object):
         es_marker_size : float, default 9
             The size (in points) of the effect size points on the difference
             axes.
-        swarm_label, contrast_label : strings, default None
+        swarm_label, contrast_label, delta_label : strings, default None
             Set labels for the y-axis of the swarmplot and the contrast plot,
             respectively. If `swarm_label` is not specified, it defaults to
             "value", unless a column name was passed to `y`. If
             `contrast_label` is not specified, it defaults to the effect size
-            being plotted.
-        swarm_ylim, contrast_ylim : tuples, default None
-            The desired y-limits of the raw data (swarmplot) axes and the
-            difference axes respectively, as a tuple. These will be autoscaled
+            being plotted. If `delta_label` is not specifed, it defaults to 
+            "delta - delta"
+        swarm_ylim, contrast_ylim, delta_ylim : tuples, default None
+            The desired y-limits of the raw data (swarmplot) axes, the
+            difference axes and the delta-delta axes respectively, as a tuple. These will be autoscaled
             to sensible values if they are not specified.
         custom_palette : dict, list, or matplotlib color palette, default None
             This keyword accepts a dictionary with {'group':'color'} pairings,
