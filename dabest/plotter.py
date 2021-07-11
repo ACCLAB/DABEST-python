@@ -769,6 +769,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_ylim_high, contrast_ylim_low = contrast_axes_ylim
         if contrast_ylim_low < 0 < contrast_ylim_high:
             contrast_axes.axhline(y=0, **reflines_kwargs)
+            delta_axes.axhline(y=0, xmin = 0.25, xmax = 1.5, **reflines_kwargs)
 
 
         if delta2 and plot_kwargs['delta_ylim'] is not None:
@@ -789,14 +790,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             else:
                 delta_axes.set_ylim(custom_delta_ylim)
 
-        if delta2:
-            delta_axes_ylim = delta_axes.get_ylim()
-            if delta_axes_ylim[0] < delta_axes_ylim[1]:
-                delta_ylim_low, delta_ylim_high = delta_axes_ylim
-            else:
-                delta_ylim_high, delta_ylim_low = delta_axes_ylim
-            if delta_ylim_low < 0 < delta_ylim_high:
-                delta_axes.axhline(y=0, xmin = 0.25, xmax = 1.5, **reflines_kwargs)
 
         if is_paired == "baseline" and show_pairs == True:
             rightend_ticks_raw = np.array([len(i)-1 for i in temp_idx]) + np.array(temp_ticks_to_skip)
