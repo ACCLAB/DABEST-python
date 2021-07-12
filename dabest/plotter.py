@@ -794,6 +794,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             ylim_delta = delta_axes.get_ylim()
             ylim=(min(ylim_contrast[0], ylim_delta[0]), max(ylim_contrast[1], ylim_delta[1]))
             contrast_axes.set_ylim(ylim)
+            delta_axes.set_ylim(ylim)
 
         if is_paired == "baseline" and show_pairs == True:
             rightend_ticks_raw = np.array([len(i)-1 for i in temp_idx]) + np.array(temp_ticks_to_skip)
@@ -852,6 +853,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         sns.despine(ax=delta_axes, bottom=True)
 
         xlim = delta_axes.get_xlim()
+        ylim = delta_axes.get_ylim()
         redraw_axes_kwargs['y'] = ylim[0]
 
         delta_axes.hlines(xmin=0, xmax=0.5, **redraw_axes_kwargs)
