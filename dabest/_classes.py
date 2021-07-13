@@ -368,7 +368,7 @@ class Dabest(object):
                     comparisons.append("{} minus {}".format(test_name, control_name))
 
         if self.__delta2:
-            comparison.append("{} minus {}".format(self.__experiment_label[1], self.__experiment_label[0]))
+            comparisons.append("{} minus {} (only for mean difference)".format(self.__experiment_label[1], self.__experiment_label[0]))
         
         for j, g in enumerate(comparisons):
             out.append("{}. {}".format(j+1, g))
@@ -782,6 +782,9 @@ class TwoGroupsEffectSize(object):
             `random_seed` is used to seed the random number generator during
             bootstrap resampling. This ensures that the confidence intervals
             reported are replicable.
+        delta2 : boolean, default False
+            Indicate if the control and test data are boostrap deltas that can be
+            used to calculate delta-delta.
 
 
         Returns
@@ -1145,7 +1148,7 @@ class TwoGroupsEffectSize(object):
                       "paired_status": PAIRED_STATUS[str(self.__is_paired)]}
         
         if self.__delta2:
-            out1 = "The delta-delta {es}"
+            out1 = "The delta-delta "
         else:
             out1 = "The {paired_status} {es} {rm_status}".format(**first_line)
         
@@ -1594,8 +1597,12 @@ class EffectSizeDataFrame(object):
                 r_dict["test_N"]    = int(len(test))
                 out.append(r_dict)
                 if j == len(idx)-1 and ix == len(current_tuple)-2:
-                    resamp_count = True
-                    def_pval     = True
+                    if not self.__delta2:
+                        resamp_count = True
+                        def_pval     = True
+                    else:
+                        resamp_count = False
+                        def_pval     = False
                 else:
                     resamp_count = False
                     def_pval     = False
@@ -1612,25 +1619,30 @@ class EffectSizeDataFrame(object):
             delta = TwoGroupsEffectSize(out[0]["bootstraps"], 
                                     out[1]["bootstraps"],
                                     self.__effect_size,
-                                    True,
+                                    "baseline",
                                     self.__ci,
                                     self.__resamples,
                                     self.__permutation_count,
                                     self.__random_seed,
                                     self.__delta2
                                     )
+
             r_dict = delta.to_dict()
             r_dict["control"]   = self.__experiment_label[0]
             r_dict["test"]      = self.__experiment_label[1]
             r_dict["control_N"] = self.__resamples
             r_dict["test_N"]    = self.__resamples
             out.append(r_dict)
+            resamp_count = True
+            def_pval     = True
+            text_repr = delta.__repr__(show_resample_count=resamp_count,
+                                            define_pval=def_pval)
             to_replace = "between {} and {} is".format(self.__experiment_label[0], self.__experiment_label[1])
             text_repr = text_repr.replace("is", to_replace, 1)
             reprs.append(text_repr)
         else:
-            err0 = 'The calculation of delta-delta is not supported for {}.'.format(self.__effect_size)
-            raise ValueError(err0)
+            self.__delta2 = False
+
         varname = get_varname(self.__dabest_obj)
         lastline = "To get the results of all valid statistical tests, " +\
         "use `{}.{}.statistical_tests`".format(varname, self.__effect_size)
