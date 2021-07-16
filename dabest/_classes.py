@@ -922,7 +922,7 @@ class TwoGroupsEffectSize(object):
         self.__random_seed       = random_seed
         self.__ci                = ci
         self.__alpha             = ci2g._compute_alpha_from_ci(ci)
-        self.__delta2              = delta2
+        self.__delta2            = delta2
 
         self.__difference = es.two_group_difference(
                                 control, test, is_paired, effect_size)
@@ -1187,7 +1187,9 @@ class TwoGroupsEffectSize(object):
         #                                                         pval_rounded)
         
         
-        pvalue = "The p-value of the two-sided permutation t-test is {}. ".format(pval_rounded)
+        p1 = "The p-value of the two-sided permutation t-test is {}, ".format(pval_rounded)
+        p2 = "calculated for legacy purposes only. "
+        pvalue = p1 + p2
                                                                 
         bs1 = "{} bootstrap samples were taken; ".format(self.__resamples)
         bs2 = "the confidence interval is bias-corrected and accelerated."
@@ -1224,6 +1226,9 @@ class TwoGroupsEffectSize(object):
         return out
 
 
+    @property
+    def delta2(self):
+        return self.__delta2
 
 
     @property
@@ -1590,7 +1595,6 @@ class EffectSizeDataFrame(object):
                                              self.__permutation_count,
                                              self.__random_seed)
                 r_dict = result.to_dict()
-
                 r_dict["control"]   = cname
                 r_dict["test"]      = tname
                 r_dict["control_N"] = int(len(control))
@@ -1606,7 +1610,7 @@ class EffectSizeDataFrame(object):
                 else:
                     resamp_count = False
                     def_pval     = False
-
+                
                 text_repr = result.__repr__(show_resample_count=resamp_count,
                                             define_pval=def_pval)
 
@@ -1710,6 +1714,7 @@ class EffectSizeDataFrame(object):
         dat  = db_obj._plot_data
         xvar = db_obj._xvar
         yvar = db_obj._yvar
+        delta2 = self.__delta2
         
 
         out = []
@@ -1757,7 +1762,18 @@ class EffectSizeDataFrame(object):
                                 "pvalue_lqrt_unequal_var"    : lqrt_unequal_var_result.pvalue,
                                 "statistic_lqrt_unequal_var" : lqrt_unequal_var_result.statistic,
                                 })
-                                
+        if delta2:
+            lqrt_result = lqrt.lqrtest_rel(self.results["bootstraps"][0], 
+                                           self.results["bootstraps"][1], 
+                                           random_state=rnd_seed)
+                    
+            out.append({"control": self.__experiment_label[0], 
+                        "test": self.__experiment_label[1], 
+                        "control_N": self.__resamples, 
+                        "test_N": self.__resamples,
+                        "pvalue_paired_lqrt": lqrt_result.pvalue,
+                        "statistic_paired_lqrt": lqrt_result.statistic
+                        })                        
         self.__lqrt_results = pd.DataFrame(out)
 
 
@@ -1766,7 +1782,7 @@ class EffectSizeDataFrame(object):
             raw_marker_size=6, es_marker_size=9,
 
             swarm_label=None, barchart_label=None, contrast_label=None, delta_label=None,
-            swarm_ylim=None, barchart_ylim=None, contrast_ylim=None, delta_ylim=None,
+            swarm_ylim=None, barchart_ylim=None, contrast_ylim=None, 
 
             custom_palette=None, swarm_desat=0.5, barchart_desat=0.5, halfviolin_desat=1,
             halfviolin_alpha=0.8, 
@@ -1809,7 +1825,7 @@ class EffectSizeDataFrame(object):
             `contrast_label` is not specified, it defaults to the effect size
             being plotted. If `delta_label` is not specifed, it defaults to 
             "delta - delta"
-        swarm_ylim, contrast_ylim, delta_ylim : tuples, default None
+        swarm_ylim, contrast_ylim : tuples, default None
             The desired y-limits of the raw data (swarmplot) axes, the
             difference axes and the delta-delta axes respectively, as a tuple. These will be autoscaled
             to sensible values if they are not specified.

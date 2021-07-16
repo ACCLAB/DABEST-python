@@ -86,6 +86,53 @@ def create_demo_dataset_rm(seed=9999, N=20):
     return df
 
 
+def create_demo_dataset_delta(seed=9999, N=20):
+    
+    import numpy as np
+    import pandas as pd
+    from scipy.stats import norm # Used in generation of populations.
+
+    np.random.seed(seed) # Fix the seed so the results are replicable.
+    # pop_size = 10000 # Size of each population.
+
+    from scipy.stats import norm # Used in generation of populations.
+
+    # Create samples
+    y = norm.rvs(loc=3, scale=0.4, size=N*2)
+
+    # Add experiment column
+    e1 = np.repeat('Control', N).tolist()
+    e2 = np.repeat('Test', N).tolist()
+    experiment = e1 + e2 
+
+    # Add a `Light` column as the first variable
+    light = []
+    for i in range(N):
+        light.append('L1')
+        light.append('L2')
+
+    # Add a `genotype` column as the second variable
+    g1 = np.repeat('G1', N/2).tolist()
+    g2 = np.repeat('G2', N/2).tolist()
+    g3 = np.repeat('G3', N).tolist()
+    genotype = g1 + g2 + g3
+
+    # Add an `id` column for paired data plotting.
+    id_col = []
+    for i in range(N):
+        id_col.append(i)
+        id_col.append(i)
+
+    # Combine samples and gender into a DataFrame.
+    df = pd.DataFrame({'ID'        : id_col,
+                      'Light'      : light,
+                       'Genotype'  : genotype, 
+                       'Experiment': experiment,
+                       'Y'         : y
+                    })
+                      
+    return df
+
 
 def get_swarm_yspans(coll, round_result=False, decimals=12):
     """

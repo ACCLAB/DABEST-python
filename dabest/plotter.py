@@ -15,7 +15,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         color_col=None
         raw_marker_size=6, es_marker_size=9,
         swarm_label=None, contrast_label=None, delta_label=None,
-        swarm_ylim=None, contrast_ylim=None, delta_ylim=None, 
+        swarm_ylim=None, contrast_ylim=None,
         custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
         halfviolin_alpha=0.8, 
         float_contrast=True,
@@ -781,30 +781,15 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             if delta2:
                 delta_axes.axhline(y=0, xmin = 0.25, xmax = 1.5, **reflines_kwargs)
 
-
-        if delta2 and plot_kwargs['delta_ylim'] is not None:
-            custom_delta_ylim = plot_kwargs['delta_ylim']
-
-            if len(custom_delta_ylim) != 2:
-                err1 = "Please check `delta_ylim` consists of "
-                err2 = "exactly two numbers."
-                raise ValueError(err1 + err2)
-
-            if effect_size_type == "cliffs_delta":
-                # Ensure the ylims for a cliffs_delta plot never exceed [-1, 1].
-                l = plot_kwargs['delta_ylim'][0]
-                h = plot_kwargs['delta_ylim'][1]
-                low = -1 if l < -1 else l
-                high = 1 if h > 1 else h
-                delta_axes.set_ylim(low, high)
+        if delta2:
+            if plot_kwargs['contrast_ylim'] is None:
+                ylim_contrast = contrast_axes.get_ylim()
+                ylim_delta = delta_axes.get_ylim()
+                ylim=(min(ylim_contrast[0], ylim_delta[0]), max(ylim_contrast[1], ylim_delta[1]))
+                contrast_axes.set_ylim(ylim)
+                delta_axes.set_ylim(ylim)
             else:
-                delta_axes.set_ylim(custom_delta_ylim)
-        if delta2 and plot_kwargs['delta_ylim'] is None and plot_kwargs['contrast_ylim'] is None:
-            ylim_contrast = contrast_axes.get_ylim()
-            ylim_delta = delta_axes.get_ylim()
-            ylim=(min(ylim_contrast[0], ylim_delta[0]), max(ylim_contrast[1], ylim_delta[1]))
-            contrast_axes.set_ylim(ylim)
-            delta_axes.set_ylim(ylim)
+                delta_axes.set_ylim(contrast_axes.get_ylim())
 
         if is_paired == "baseline" and show_pairs == True:
             rightend_ticks_raw = np.array([len(i)-1 for i in temp_idx]) + np.array(ticks_to_skip)
