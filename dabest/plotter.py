@@ -14,12 +14,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     **plot_kwargs:
         color_col=None
         raw_marker_size=6, es_marker_size=9,
-        swarm_label=None, contrast_label=None,
+        swarm_label=None, contrast_label=None, delta_label=None,
         swarm_ylim=None, contrast_ylim=None,
         custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
         halfviolin_alpha=0.8, 
         float_contrast=True,
         show_pairs=True,
+        show_delta2=True,
         group_summaries=None,
         group_summaries_offset=0.1,
         fig_size=None,
@@ -59,23 +60,30 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     ytick_color = plt.rcParams["ytick.color"]
     axes_facecolor = plt.rcParams['axes.facecolor']
 
-    dabest_obj = EffectSizeDataFrame.dabest_obj
-    plot_data  = EffectSizeDataFrame._plot_data
-    xvar       = EffectSizeDataFrame.xvar
-    yvar       = EffectSizeDataFrame.yvar
-    is_paired  = EffectSizeDataFrame.is_paired
-
+    dabest_obj  = EffectSizeDataFrame.dabest_obj
+    plot_data   = EffectSizeDataFrame._plot_data
+    xvar        = EffectSizeDataFrame.xvar
+    yvar        = EffectSizeDataFrame.yvar
+    is_paired   = EffectSizeDataFrame.is_paired
+    delta2      = EffectSizeDataFrame.delta2
+    effect_size = EffectSizeDataFrame.effect_size
 
     all_plot_groups = dabest_obj._all_plot_groups
     idx             = dabest_obj.idx
 
 
 
+    if effect_size != "mean_diff" or not delta2:
+        show_delta2 = False
+    else:
+        show_delta2 = plot_kwargs["show_delta2"]
+
+
 
 
 
     # Disable Gardner-Altman plotting if any of the idxs comprise of more than
-    # two groups.
+    # two groups or if it is a delta-delta plot.
     float_contrast   = plot_kwargs["float_contrast"]
     effect_size_type = EffectSizeDataFrame.effect_size
     if len(idx) > 1 or len(idx[0]) > 2:
@@ -84,10 +92,15 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if effect_size_type in ['cliffs_delta']:
         float_contrast = False
 
+    if show_delta2:
+        float_contrast = False
+
     if not is_paired:
         show_pairs = False
     else:
         show_pairs = plot_kwargs["show_pairs"]
+
+
 
     # Set default kwargs first, then merge with user-dictated ones.
     default_swarmplot_kwargs = {'size': plot_kwargs["raw_marker_size"]}
@@ -109,6 +122,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                             plot_kwargs["violinplot_kwargs"])
 
 
+
     # slopegraph kwargs.
     default_slopegraph_kwargs = {'lw':1, 'alpha':0.5}
     if plot_kwargs["slopegraph_kwargs"] is None:
@@ -116,7 +130,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         slopegraph_kwargs = merge_two_dicts(default_slopegraph_kwargs,
                                             plot_kwargs["slopegraph_kwargs"])
-
 
 
 
@@ -217,10 +230,14 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     plot_palette_contrast = dict(zip(names, contrast_colors))
 
 
+
     # Infer the figsize.
     fig_size   = plot_kwargs["fig_size"]
     if fig_size is None:
         all_groups_count = np.sum([len(i) for i in dabest_obj.idx])
+        # Increase the width for delta-delta graph
+        if show_delta2:
+            all_groups_count += 2
         if is_paired and show_pairs is True:
             frac = 0.75
         else:
@@ -234,7 +251,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         width_inches = (each_group_width_inches * all_groups_count)
         fig_size = (width_inches, height_inches)
-
 
 
     # Initialise the figure.
@@ -295,7 +311,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                     gridspec_kw={"width_ratios": width_ratios_ga,
                                  "wspace": 0},
                                  **init_fig_kwargs)
-
         else:
             fig, axx = plt.subplots(nrows=2,
                                     gridspec_kw={"hspace": 0.3},
@@ -306,11 +321,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_ax_ylim_low = list()
             contrast_ax_ylim_high = list()
             contrast_ax_ylim_tickintervals = list()
-        rawdata_axes  = axx[0]
-        contrast_axes = axx[1]
-
+    rawdata_axes  = axx[0]
+    contrast_axes = axx[1]
     rawdata_axes.set_frame_on(False)
     contrast_axes.set_frame_on(False)
+
 
     redraw_axes_kwargs = {'colors'     : ytick_color,
                           'facecolors' : ytick_color,
@@ -359,20 +374,20 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                     current_pair = pivoted_plot_data
                 else:
                     current_pair = pivoted_plot_data[yvar]
-                    
             grp_count = len(current_tuple)
             # Iterate through the data for the current tuple.
             for ID, observation in current_pair.iterrows():
                 x_points = [t for t in range(x_start,x_start+grp_count)]
                 y_points = observation.tolist()
-    
+
                 if color_col is None:
                     slopegraph_kwargs['color'] = ytick_color
                 else:
                     color_key = pivoted_plot_data[color_col,
                                                   current_tuple[0]].loc[ID]
-                    slopegraph_kwargs['color']  = plot_palette_raw[color_key]
-                    slopegraph_kwargs['label']  = color_key
+                    if not pd.isna(color_key):
+                        slopegraph_kwargs['color']  = plot_palette_raw[color_key]
+                        slopegraph_kwargs['label']  = color_key
             
                 rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
             x_start  = x_start + grp_count
@@ -450,7 +465,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist() 
         ticks_to_skip_contrast = np.cumsum([(len(t)-1)*2 for t in idx])[:-1].tolist()
         ticks_to_skip_contrast.insert(0, 0)
-
     else:
         ticks_to_skip   = np.cumsum([len(t) for t in idx])[:-1].tolist()
         ticks_to_skip.insert(0, 0)
@@ -458,6 +472,12 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         # Then obtain the ticks where we have to plot the effect sizes.
         ticks_to_plot = [t for t in range(0, len(all_plot_groups))
                         if t not in ticks_to_skip]
+    
+    ticks_to_plot_violin = ticks_to_plot.copy()
+    ticks_to_skip_violin = ticks_to_skip.copy()
+    if show_delta2:
+        ticks_to_plot_violin.append(max(ticks_to_plot)+2)
+        ticks_to_skip_violin.append(max(ticks_to_skip)+2)
 
 
     # Plot the bootstraps, then the effect sizes and CIs.
@@ -467,8 +487,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     results      = EffectSizeDataFrame.results
     contrast_xtick_labels = []
-
-    for j, tick in enumerate(ticks_to_plot):
+    
+    for j, tick in enumerate(ticks_to_plot_violin):
         current_group     = results.test[j]
         current_control   = results.control[j]
         current_bootstrap = results.bootstraps[j]
@@ -507,19 +527,35 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                                    current_control))
 
 
-    # Make sure the contrast_axes x-lims match the rawdata_axes xlims.
-    contrast_axes.set_xticks(rawdata_axes.get_xticks())
+    # Make sure the contrast_axes x-lims match the rawdata_axes xlims,
+    # and add an extra violinplot tick for delta-delta plot.
+    if not show_delta2:
+        contrast_axes.set_xticks(rawdata_axes.get_xticks())
+    else:
+        temp = rawdata_axes.get_xticks()
+        temp = np.append(temp, [max(temp)+1, max(temp)+2])
+        contrast_axes.set_xticks(temp)
+
+
     if show_pairs is True:
         max_x = contrast_axes.get_xlim()[1]
         rawdata_axes.set_xlim(-0.375, max_x)
 
     if float_contrast is True:
         contrast_axes.set_xlim(0.5, 1.5)
+    elif show_delta2:
+        # Increase the xlim of raw data by 2
+        temp = rawdata_axes.get_xlim()
+        if show_pairs:
+            rawdata_axes.set_xlim(temp[0], temp[1]+0.25)
+        else:
+            rawdata_axes.set_xlim(temp[0], temp[1]+2)
+        contrast_axes.set_xlim(rawdata_axes.get_xlim())
     else:
         contrast_axes.set_xlim(rawdata_axes.get_xlim())
 
     # Properly label the contrast ticks.
-    for t in ticks_to_skip:
+    for t in ticks_to_skip_violin:
         contrast_xtick_labels.insert(t, "")
     contrast_axes.set_xticklabels(contrast_xtick_labels)
 
@@ -693,7 +729,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 contrast_axes.set_ylim(low, high)
             else:
                 contrast_axes.set_ylim(custom_contrast_ylim)
-
+        
         # If 0 lies within the ylim of the contrast axes,
         # draw a zero reference line.
         contrast_axes_ylim = contrast_axes.get_ylim()
@@ -720,8 +756,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         
                 ax.set_ylim(ylim)
                 del redraw_axes_kwargs['y']
-
-            rightend_ticks_contrast = np.array([(len(i)-1)*2-1 for i in idx]) + np.array(ticks_to_skip_contrast)
+            
+            temp_length = [(len(i)-1)*2-1 for i in idx]
+            rightend_ticks_contrast = np.array(temp_length) + np.array(ticks_to_skip_contrast)
             for ax in [contrast_axes]:
                 sns.despine(ax=ax, bottom=True)
         
@@ -741,11 +778,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             rightend_ticks = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
             for ax in [rawdata_axes, contrast_axes]:
                 sns.despine(ax=ax, bottom=True)
-        
+    
                 ylim = ax.get_ylim()
                 xlim = ax.get_xlim()
                 redraw_axes_kwargs['y'] = ylim[0]
-        
+
                 for k, start_tick in enumerate(ticks_to_skip):
                     end_tick = rightend_ticks[k]
                     ax.hlines(xmin=start_tick, xmax=end_tick,
@@ -754,8 +791,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 ax.set_ylim(ylim)
                 del redraw_axes_kwargs['y']
 
-
-
+    if show_delta2 is True:
+        ylim = contrast_axes.get_ylim()
+        redraw_axes_kwargs['y'] = ylim[0]
+        x_ticks = contrast_axes.get_xticks()
+        contrast_axes.hlines(xmin=x_ticks[-2], xmax=x_ticks[-1],
+                              **redraw_axes_kwargs)
+        del redraw_axes_kwargs['y']
 
     # Set raw axes y-label.
     swarm_label = plot_kwargs['swarm_label']
@@ -771,7 +813,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                            'hedges_g'     : "Hedges' g",
                            'cliffs_delta' : "Cliff's delta"}
     default_contrast_label = contrast_label_dict[EffectSizeDataFrame.effect_size]
-
+    
     if plot_kwargs['contrast_label'] is None:
         if is_paired:
             contrast_label = "paired\n{}".format(default_contrast_label)
@@ -784,7 +826,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     contrast_axes.set_ylabel(contrast_label)
     if float_contrast is True:
         contrast_axes.yaxis.set_label_position("right")
-
 
     # Set the rawdata axes labels appropriately        
     rawdata_axes.set_ylabel(swarm_label)
@@ -812,11 +853,26 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                          **redraw_axes_kwargs)
 
 
+    if show_delta2 is True:
+        if plot_kwargs['delta_label'] is None:
+            delta_label = "delta - delta"
+        else: 
+            delta_label = plot_kwargs['delta_label']
+        delta_axes = contrast_axes.twinx()
+        delta_axes.set_frame_on(False)
+        delta_axes.set_ylabel(delta_label)
+        og_xlim_delta = contrast_axes.get_xlim()
+        og_ylim_delta = contrast_axes.get_ylim()
+        delta_axes.set_ylim(og_ylim_delta)
+        delta_axes.vlines(og_xlim_delta[1],
+                         og_ylim_delta[0], og_ylim_delta[1],
+                         **redraw_axes_kwargs)
 
     # Make sure no stray ticks appear!
     rawdata_axes.xaxis.set_ticks_position('bottom')
     rawdata_axes.yaxis.set_ticks_position('left')
     contrast_axes.xaxis.set_ticks_position('bottom')
+
     if float_contrast is False:
         contrast_axes.yaxis.set_ticks_position('left')
 
