@@ -1789,6 +1789,7 @@ class EffectSizeDataFrame(object):
 
             float_contrast=True,
             show_pairs=True,
+            show_delta2=True,
             group_summaries=None,
             group_summaries_offset=0.1,
 
