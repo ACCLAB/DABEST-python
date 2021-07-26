@@ -236,8 +236,8 @@ class Dabest(object):
 
         greeting_header = print_greeting()
 
-        RM_STATUS = {'baseline'  : 'for repeated measures against baseline', 
-                     'sequential': 'for the sequential design of repeated-measures experiment',
+        RM_STATUS = {'baseline'  : 'for repeated measures against baseline \n', 
+                     'sequential': 'for the sequential design of repeated-measures experiment \n',
                      'None'      : ''
                     }
 
@@ -249,7 +249,7 @@ class Dabest(object):
         first_line = {"rm_status"    : RM_STATUS[str(self.__is_paired)],
                       "paired_status": PAIRED_STATUS[str(self.__is_paired)]}
 
-        s1 = "{paired_status}ffect size(s) {rm_status} ".format(**first_line)
+        s1 = "{paired_status}ffect size(s) {rm_status}".format(**first_line)
         s2 = "with {}% confidence intervals will be computed for:".format(self.__ci)
         desc_line = s1 + s2
 
@@ -765,7 +765,7 @@ class TwoGroupsEffectSize(object):
             err2 = "is not one of {}".format(kosher_es)
             raise ValueError(" ".join([err1, err2]))
 
-        if effect_size == "cliffs_delta" and paired:
+        if effect_size == "cliffs_delta" and is_paired:
             err1 = "`paired` is not None; therefore Cliff's delta is not defined."
             raise ValueError(err1)
 
@@ -987,8 +987,8 @@ class TwoGroupsEffectSize(object):
         #                      "Brunner-Munzel" :  "pvalue_brunner_munzel",
         #                      "Wilcoxon"       :  "pvalue_wilcoxon"}
         
-        RM_STATUS = {'baseline'  : 'for repeated measures against baseline', 
-                     'sequential': 'for the sequential design of repeated-measures experiment',
+        RM_STATUS = {'baseline'  : 'for repeated measures against baseline \n', 
+                     'sequential': 'for the sequential design of repeated-measures experiment \n',
                      'None'      : ''
                     }
 
@@ -1001,7 +1001,7 @@ class TwoGroupsEffectSize(object):
                       "es"           : self.__EFFECT_SIZE_DICT[self.__effect_size],
                       "paired_status": PAIRED_STATUS[str(self.__is_paired)]}
         
-        out1 = "The {paired_status} {es} {rm_status} ".format(**first_line)
+        out1 = "The {paired_status} {es} {rm_status}".format(**first_line)
         
         base_string_fmt = "{:." + str(sigfig) + "}"
         if "." in str(self.__ci):
