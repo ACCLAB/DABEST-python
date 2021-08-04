@@ -16,7 +16,7 @@ import matplotlib.ticker as Ticker
 
 
 from .._api import load
-from .utils import create_demo_dataset, create_demo_dataset_rm, create_demo_dataset_delta
+from .utils import create_demo_dataset_delta
 
 
 
@@ -53,7 +53,7 @@ def test_49_cummings_baseline_delta_delta_meandiff():
 def test_50_delta_plot_ylabel():
     return baseline.mean_diff.plot(swarm_label="This is my\nrawdata",
                                    contrast_label="The bootstrap\ndistribtions!", 
-                                   delta_label="This is delta!");
+                                   delta2_label="This is delta!");
 
 
 @pytest.mark.mpl_image_compare(tolerance=10)
@@ -88,3 +88,21 @@ def test_55_delta_median_diff():
 @pytest.mark.mpl_image_compare(tolerance=10)
 def test_56_delta_cohens_d():
     return unpaired.cohens_d.plot();
+
+
+@pytest.mark.mpl_image_compare(tolerance=10)
+def test_57_delta_show_delta2():
+    return unpaired.mean_diff.plot(show_delta2=False);
+
+
+@pytest.mark.mpl_image_compare(tolerance=10)
+def test_58_delta_axes_invert_ylim():
+    return unpaired.mean_diff.plot(delta2_ylim=(2, -2),
+                                   delta2_label="More negative is better!");
+
+                            
+@pytest.mark.mpl_image_compare(tolerance=10)
+def test_59_delta_axes_invert_ylim_not_showing_delta2():
+    return unpaired.mean_diff.plot(delta2_ylim=(2, -2),
+                                   delta2_label="More negative is better!",
+                                   show_delta2=False);

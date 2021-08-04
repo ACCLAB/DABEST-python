@@ -57,9 +57,8 @@ df_test_treatment1 = df_test_treatment1.pivot(index="ID", columns="Time", values
 # kwargs for Dabest class init.
 dabest_default_kwargs = dict(ci=95, 
                             resamples=5000, random_seed=12345,
-                            idx=None, proportional=False
+                            idx=None, proportional=False, mini_meta=False
                             )
-
 
 # example of unpaired delta-delta calculation
 unpaired = Dabest(data = df_test, x = ["Time", "Drug"], y = "Heart Rate", 

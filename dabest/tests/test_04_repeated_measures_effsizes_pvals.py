@@ -39,7 +39,7 @@ df = pd.DataFrame({'Group' : group,
 dabest_default_kwargs = dict(x=None, y=None, ci=95, 
                             resamples=5000, random_seed=12345, proportional=False,
                             delta2 = False, experiment=None, 
-                            experiment_label=None, x1_level=None)
+                            experiment_label=None, x1_level=None, mini_meta=False)
 
 # example of sequential repeated measures
 sequential = Dabest(df, id_col = "ID",
