@@ -36,7 +36,7 @@ N=6 # Size of each group
 dabest_default_kwargs = dict(x=None, y=None, ci=95, 
                             resamples=5000, random_seed=12345,
                             proportional=False, delta2=False, experiment=None, 
-                            experiment_label=None, x1_level=None, paired=False,
+                            experiment_label=None, x1_level=None, paired=None,
                             id_col=None
                             )
 
@@ -56,28 +56,28 @@ def test_mean_diff():
 
 
 def test_variances():
-    mini_meta_deltas = unpaired.mean_diff.mini_meta_deltas
+    mini_meta_delta = unpaired.mean_diff.mini_meta_delta
 
-    control_var    = mini_meta_deltas.control_var
+    control_var    = mini_meta_delta.control_var
     np_control_var = [np.var(rep1_no, ddof=1),
                       np.var(rep2_no, ddof=1)]
     assert control_var == pytest.approx(np_control_var)
 
-    test_var    = mini_meta_deltas.test_var
+    test_var    = mini_meta_delta.test_var
     np_test_var = [np.var(rep1_yes, ddof=1),
                    np.var(rep2_yes, ddof=1)]
     assert test_var == pytest.approx(np_test_var)
 
-    group_var    = mini_meta_deltas.group_var
+    group_var    = mini_meta_delta.group_var
     np_group_var = [ci2g.calculate_group_var(control_var[i], N,
                                              test_var[i], N)
                     for i in range(0, 2)]
-    assert group_var == pygroup.approx(np_group_var)
+    assert group_var == pytest.approx(np_group_var)
 
 
 
 def test_weighted_mean_delta():
-    difference = unpaired.mean_diff.mini_meta_deltas.difference
+    difference = unpaired.mean_diff.mini_meta_delta.difference
 
     np_means = [np.mean(rep1_yes)-np.mean(rep1_no), 
                 np.mean(rep2_yes)-np.mean(rep2_no)]
@@ -85,13 +85,14 @@ def test_weighted_mean_delta():
                 np.var(rep2_yes, ddof=1)/N+np.var(rep2_no, ddof=1)/N]
 
     np_difference = effsize.weighted_delta(np_means, np_var)
-    assert difference == pygroup.approx(np_difference)
+
+    assert difference == pytest.approx(np_difference)
 
 
 def test_unpaired_permutation_test():
-    mini_meta_deltas   = unpaired.mean_diff.mini_meta_deltas
-    pvalue             = mini_meta_deltas.pvalue_permutation
-    permutations_delta = mini_meta_deltas.permutations_weighted_delta
+    mini_meta_delta   = unpaired.mean_diff.mini_meta_delta
+    pvalue             = mini_meta_delta.pvalue_permutation
+    permutations_delta = mini_meta_delta.permutations_weighted_delta
 
     perm_test_1 = PermutationTest(rep1_no, rep1_yes, 
                                 effect_size="mean_diff", 
@@ -104,21 +105,22 @@ def test_unpaired_permutation_test():
     permutations_1_var = perm_test_1.permutations_var
     permutations_2_var = perm_test_2.permutations_var
 
-    weight_1 = 1/permutations_1_var
-    weight_2 = 1/permutations_2_var
+    weight_1 = np.true_divide(1,permutations_1_var)
+    weight_2 = np.true_divide(1,permutations_2_var)
     
     weighted_deltas = (weight_1*permutations_1 + weight_2*permutations_2)/(weight_1+weight_2)
-    assert permutations_delta == pygroup.approx(weighted_deltas)
+    assert permutations_delta == pytest.approx(weighted_deltas)
 
 
     np_means = [np.mean(rep1_yes)-np.mean(rep1_no), 
                 np.mean(rep2_yes)-np.mean(rep2_no)]
     np_var   = [np.var(rep1_yes, ddof=1)/N+np.var(rep1_no, ddof=1)/N,
                 np.var(rep2_yes, ddof=1)/N+np.var(rep2_no, ddof=1)/N]
-    np_weight=1/np_var
+    np_weight= np.true_divide(1, np_var)
 
-    np_difference = np.sum(np_means*np_weight)/np.sum(weight)
+    np_difference = np.sum(np_means*np_weight)/np.sum(np_weight)
 
-    np_pvalues = len(list(filter(lambda x: x>np_difference, 
+    np_pvalues = len(list(filter(lambda x: x>np.abs(np_difference), 
                                 weighted_deltas)))/len(weighted_deltas)
+
     assert pvalue == pytest.approx(np_pvalues)

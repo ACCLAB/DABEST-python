@@ -390,5 +390,6 @@ def _compute_hedges_correction_factor(n1, n2):
 
 def weighted_delta(difference, group_var):
     import numpy as np
-    weight = 1/group_var
+
+    weight = np.true_divide(1, group_var)
     return np.sum(difference*weight)/np.sum(weight)

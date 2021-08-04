@@ -2648,7 +2648,7 @@ class EffectSizeDataFrame(object):
 
     
     @property
-    def mini_meta_deltas(self):
+    def mini_meta_delta(self):
         """
         Returns the mini_meta results.
         """

@@ -536,11 +536,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Plot mini-meta violin
     if show_mini_meta:
-        mini_meta_deltas = EffectSizeDataFrame.mini_meta_deltas
-        weighted_deltas  = mini_meta_deltas.weighted_diff_from_boots
-        difference       = mini_meta_deltas.difference
-        ci_low           = mini_meta_deltas.bca_low
-        ci_high          = mini_meta_deltas.bca_high
+        mini_meta_delta = EffectSizeDataFrame.mini_meta_delta
+        weighted_deltas = mini_meta_delta.weighted_diff_from_boots
+        difference      = mini_meta_delta.difference
+        ci_low          = mini_meta_delta.bca_low
+        ci_high         = mini_meta_delta.bca_high
 
         #Create the violinplot.
         #New in v0.2.6: drop negative infinities before plotting.
