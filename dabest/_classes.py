@@ -933,7 +933,13 @@ class MiniMetaDelta(object):
 
 
 
-    def __repr__(self, sigfig=3):
+    def __repr__(self, header=True, sigfig=3):
+        from .__init__ import __version__
+        import datetime as dt
+        import numpy as np
+
+        from .misc_tools import print_greeting
+
         
         RM_STATUS = {'baseline'  : 'for repeated measures against baseline \n', 
                      'sequential': 'for the sequential design of repeated-measures experiment \n',
@@ -963,6 +969,9 @@ class MiniMetaDelta(object):
         
         out2 = "is {es} [{ci}%CI {bca_low}, {bca_high}].".format(**ci_out)
         out = out1 + out2
+
+        if header is True:
+            out = print_greeting() + "\n" + "\n" + out
 
 
         pval_rounded = base_string_fmt.format(self.pvalue_permutation)
@@ -2169,7 +2178,7 @@ class EffectSizeDataFrame(object):
             self.__mini_meta_delta = MiniMetaDelta(self,
                                                      self.__permutation_count,
                                                      self.__ci)
-            reprs.append(self.__mini_meta_delta.__repr__())
+            reprs.append(self.__mini_meta_delta.__repr__(header=False))
         elif self.__effect_size != "mean_diff":
             self.__mini_meta_delta = "Weighted delta is not supported for {}.".format(self.__effect_size)
         else:
