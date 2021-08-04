@@ -832,22 +832,22 @@ class MiniMetaDelta(object):
                                                  self.__test_var, 
                                                  self.__test_N)
 
-        self.__weighted_diff_from_boots = ci2g.calculate_weighted_delta(
+        self.__bootstraps_weighted_delta = ci2g.calculate_weighted_delta(
                                                           self.__group_var, 
                                                           self.__bootstraps, 
                                                           self.__resamples)
 
-        self.__difference      = es.weighted_delta(self.__effsizedf["difference"],
+        self.__difference = es.weighted_delta(self.__effsizedf["difference"],
                                                    self.__group_var)
 
-        sorted_weighted_deltas = npsort(self.__weighted_diff_from_boots)
+        sorted_weighted_deltas = npsort(self.__bootstraps_weighted_delta)
 
 
         self.__bias_correction = ci2g.compute_meandiff_bias_correction(
-                                    self.__weighted_diff_from_boots, self.__difference)
+                                    self.__bootstraps_weighted_delta, self.__difference)
         
         self.__jackknives = np.array(ci1g.compute_1group_jackknife(
-                                                self.__weighted_diff_from_boots, 
+                                                self.__bootstraps_weighted_delta, 
                                                 np.mean))
 
         self.__acceleration_value = ci2g._calc_accel(self.__jackknives)
@@ -1123,13 +1123,13 @@ class MiniMetaDelta(object):
 
 
     @property
-    def weighted_diff_from_boots(self):
+    def bootstraps_weighted_delta(self):
         '''
         Return the weighted mean differences calculated from the bootstrapped 
         deltas and weights across the experiment groups, where the weights are 
         the inverse of the pooled group variances.
         '''
-        return self.__weighted_diff_from_boots
+        return self.__bootstraps_weighted_delta
 
 
     @property
