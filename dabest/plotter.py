@@ -479,12 +479,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         # Then obtain the ticks where we have to plot the effect sizes.
         ticks_to_plot = [t for t in range(0, len(all_plot_groups))
                         if t not in ticks_to_skip]
-    
-    ticks_to_plot_violin = ticks_to_plot.copy()
-    ticks_to_skip_violin = ticks_to_skip.copy()
-    if show_delta2:
-        ticks_to_plot_violin.append(max(ticks_to_plot)+2)
-        ticks_to_skip_violin.append(max(ticks_to_skip)+2)
 
 
     # Plot the bootstraps, then the effect sizes and CIs.
@@ -495,7 +489,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     results      = EffectSizeDataFrame.results
     contrast_xtick_labels = []
     
-    for j, tick in enumerate(ticks_to_plot_violin):
+    for j, tick in enumerate(ticks_to_plot):
         current_group     = results.test[j]
         current_control   = results.control[j]
         current_bootstrap = results.bootstraps[j]
@@ -535,17 +529,23 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
     # Plot mini-meta violin
-    if show_mini_meta:
-        mini_meta_delta = EffectSizeDataFrame.mini_meta_delta
-        weighted_deltas = mini_meta_delta.bootstraps_weighted_delta
-        difference      = mini_meta_delta.difference
-        ci_low          = mini_meta_delta.bca_low
-        ci_high         = mini_meta_delta.bca_high
-
+    if show_mini_meta or show_delta2:
+        if show_mini_meta:
+            mini_meta_delta = EffectSizeDataFrame.mini_meta_delta
+            data            = mini_meta_delta.bootstraps_weighted_delta
+            difference      = mini_meta_delta.difference
+            ci_low          = mini_meta_delta.bca_low
+            ci_high         = mini_meta_delta.bca_high
+        else: 
+            delta_delta     = EffectSizeDataFrame.delta_delta
+            data            = delta_delta.bootstraps_delta_delta
+            difference      = delta_delta.difference
+            ci_low          = delta_delta.bca_low
+            ci_high         = delta_delta.bca_high
         #Create the violinplot.
         #New in v0.2.6: drop negative infinities before plotting.
         position = max(rawdata_axes.get_xticks())+2
-        v = contrast_axes.violinplot(weighted_deltas[~np.isinf(weighted_deltas)],
+        v = contrast_axes.violinplot(data[~np.isinf(data)],
                                      positions=[position],
                                      **violinplot_kwargs)
 
@@ -563,8 +563,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                            linestyle="-",
                            color=ytick_color,
                            linewidth=group_summary_kwargs['lw'])
-
-        contrast_xtick_labels.extend(["","Weighted delta"])
+        if show_mini_meta:
+            contrast_xtick_labels.extend(["","Weighted delta"])
+        else:
+            contrast_xtick_labels.extend(["","delta-delta"])
 
 
     # Make sure the contrast_axes x-lims match the rawdata_axes xlims,
@@ -595,7 +597,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         contrast_axes.set_xlim(rawdata_axes.get_xlim())
 
     # Properly label the contrast ticks.
-    for t in ticks_to_skip_violin:
+    for t in ticks_to_skip:
         contrast_xtick_labels.insert(t, "")
     contrast_axes.set_xticklabels(contrast_xtick_labels)
 

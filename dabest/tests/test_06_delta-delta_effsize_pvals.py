@@ -86,8 +86,7 @@ def test_mean_diff_delta_unpaired():
     all_mean_diff = mean_diff_results['difference'].to_list()
     diff1 = np.mean(df_test_treatment1["T2"])-np.mean(df_test_treatment1["T1"])
     diff2 = np.mean(df_test_control["T2"])-np.mean(df_test_control["T1"])
-    diff3 = np.mean(mean_diff_results['bootstraps'][1]) - np.mean(mean_diff_results['bootstraps'][0])
-    np_result = [diff1, diff2, diff3]
+    np_result = [diff1, diff2]
     assert all_mean_diff == pytest.approx(np_result)
 
 
@@ -96,8 +95,7 @@ def test_mean_diff_delta_paired():
     all_mean_diff = mean_diff_results['difference'].to_list()
     diff1 = np.mean(df_test_treatment1["T2"]-df_test_treatment1["T1"])
     diff2 = np.mean(df_test_control["T2"]-df_test_control["T1"])
-    diff3 = np.mean(mean_diff_results['bootstraps'][1] - mean_diff_results['bootstraps'][0])
-    np_result = [diff1, diff2, diff3]
+    np_result = [diff1, diff2]
     assert all_mean_diff == pytest.approx(np_result)
 
 
@@ -106,8 +104,7 @@ def test_mean_diff_delta_paired_specified_level():
     all_mean_diff = mean_diff_results['difference'].to_list()
     diff1 = np.mean(df_test_control["T1"]-df_test_control["T2"])
     diff2 = np.mean(df_test_treatment1["T1"]-df_test_treatment1["T2"])
-    diff3 = np.mean(mean_diff_results['bootstraps'][1] - mean_diff_results['bootstraps'][0])
-    np_result = [diff1, diff2, diff3]
+    np_result = [diff1, diff2]
     assert all_mean_diff == pytest.approx(np_result)
 
 
@@ -210,96 +207,118 @@ def test_hedges_g_paired_specified_level():
     assert hedges_g == pytest.approx(np_result)
 
 
-def test_paired_stats_unpaired():
-    np_result = unpaired.mean_diff.results
+def test_unpaired_delta_delta():
+    delta_delta = unpaired.mean_diff.delta_delta.difference
+
+    diff1 = np.mean(df_test_treatment1["T2"])-np.mean(df_test_treatment1["T1"])
+    diff2 = np.mean(df_test_control["T2"])-np.mean(df_test_control["T1"])
+    np_result = diff2-diff1
+
+    assert delta_delta == pytest.approx(np_result)
+
+
+def test_paired_delta_delta():
+    delta_delta = paired.mean_diff.delta_delta.difference
+
+    diff1 = np.mean(df_test_treatment1["T2"] - df_test_treatment1["T1"])
+    diff2 = np.mean(df_test_control["T2"] - df_test_control["T1"])
+    np_result = diff2-diff1
+
+    assert delta_delta == pytest.approx(np_result)
+
+
+def test_paired_specified_level_delta_delta():
+    delta_delta = paired_specified_level.mean_diff.delta_delta.difference
+
+    diff1 = np.mean(df_test_control["T1"] - df_test_control["T2"])
+    diff2 = np.mean(df_test_treatment1["T1"] - df_test_treatment1["T2"])
+    np_result = diff2-diff1
+
+    assert delta_delta == pytest.approx(np_result)
+
+
+def test_unpaired_permutation_test():
+    delta_delta              = unpaired.mean_diff.delta_delta
+    pvalue                   = delta_delta.pvalue_permutation
+    permutations_delta_delta = delta_delta.permutations_delta_delta
+
+    perm_test_1 = PermutationTest(df_test_treatment1["T1"], 
+                                  df_test_treatment1["T2"], 
+                                  effect_size="mean_diff", 
+                                  is_paired=False)
+    perm_test_2 = PermutationTest(df_test_control["T1"], 
+                                  df_test_control["T2"], 
+                                  effect_size="mean_diff", 
+                                  is_paired=False)
+    permutations_1 = perm_test_1.permutations
+    permutations_2 = perm_test_2.permutations
     
-    p1 = sp.stats.ttest_rel(np_result["bootstraps"][0], \
-                np_result["bootstraps"][1], nan_policy='omit').pvalue
-    assert np_result["pvalue_paired_students_t"].to_list()[2] == pytest.approx(p1)
+    delta_deltas = permutations_2-permutations_1
+    assert permutations_delta_delta == pytest.approx(delta_deltas)
+
+    diff1 = np.mean(df_test_treatment1["T2"])-np.mean(df_test_treatment1["T1"])
+    diff2 = np.mean(df_test_control["T2"])-np.mean(df_test_control["T1"])
+    np_diff = diff2-diff1
+
+    np_pvalues = len(list(filter(lambda x: x>np.abs(np_diff), 
+                                delta_deltas)))/len(delta_deltas)
+
+    assert pvalue == pytest.approx(np_pvalues)
+
+
+def test_paired_permutation_test():
+    delta_delta              = paired.mean_diff.delta_delta
+    pvalue                   = delta_delta.pvalue_permutation
+    permutations_delta_delta = delta_delta.permutations_delta_delta
+
+    perm_test_1 = PermutationTest(df_test_treatment1["T1"], 
+                                  df_test_treatment1["T2"], 
+                                  effect_size="mean_diff", 
+                                  is_paired="sequential")
+    perm_test_2 = PermutationTest(df_test_control["T1"], 
+                                  df_test_control["T2"], 
+                                  effect_size="mean_diff", 
+                                  is_paired="sequential")
+    permutations_1 = perm_test_1.permutations
+    permutations_2 = perm_test_2.permutations
     
-    p2 = sp.stats.wilcoxon(np_result["bootstraps"][0], \
-                np_result["bootstraps"][1],).pvalue
-    assert np_result["pvalue_wilcoxon"].to_list()[2] == pytest.approx(p2)
+    delta_deltas = permutations_2-permutations_1
+    assert permutations_delta_delta == pytest.approx(delta_deltas)
+
+    diff1 = np.mean(df_test_treatment1["T2"]-df_test_treatment1["T1"])
+    diff2 = np.mean(df_test_control["T2"]-df_test_control["T1"])
+    np_diff = diff2-diff1
+
+    np_pvalues = len(list(filter(lambda x: x>np.abs(np_diff), 
+                                delta_deltas)))/len(delta_deltas)
+
+    assert pvalue == pytest.approx(np_pvalues)
 
 
-def test_paired_stats_paired():
-    np_result = paired.mean_diff.results
-    p1 = sp.stats.ttest_rel(df_test_treatment1["T1"], \
-                df_test_treatment1["T2"], nan_policy='omit').pvalue
-    p2 = sp.stats.ttest_rel(df_test_control["T1"], \
-                df_test_control["T2"], nan_policy='omit').pvalue
-    p3 = sp.stats.ttest_rel(np_result["bootstraps"][0], \
-                np_result["bootstraps"][1], nan_policy='omit').pvalue
-    assert np_result["pvalue_paired_students_t"].to_list() == pytest.approx([p1, p2, p3])
+def test_paired_specified_level_permutation_test():
+    delta_delta              = paired_specified_level.mean_diff.delta_delta
+    pvalue                   = delta_delta.pvalue_permutation
+    permutations_delta_delta = delta_delta.permutations_delta_delta
+
+    perm_test_1 = PermutationTest(df_test_control["T2"], 
+                                  df_test_control["T1"], 
+                                  effect_size="mean_diff", 
+                                  is_paired="sequential")
+    perm_test_2 = PermutationTest(df_test_treatment1["T2"], 
+                                  df_test_treatment1["T1"], 
+                                  effect_size="mean_diff", 
+                                  is_paired="sequential")
+    permutations_1 = perm_test_1.permutations
+    permutations_2 = perm_test_2.permutations
     
-    p1 = sp.stats.wilcoxon(df_test_treatment1["T1"], \
-                df_test_treatment1["T2"]).pvalue
-    p2 = sp.stats.wilcoxon(df_test_control["T1"], \
-                df_test_control["T2"]).pvalue
-    p3 = sp.stats.wilcoxon(np_result["bootstraps"][0], \
-                np_result["bootstraps"][1]).pvalue
-    assert np_result["pvalue_wilcoxon"].to_list() == pytest.approx([p1, p2, p3])
+    delta_deltas = permutations_2-permutations_1
+    assert permutations_delta_delta == pytest.approx(delta_deltas)
 
+    diff1 = np.mean(df_test_control["T1"]-df_test_control["T2"])
+    diff2 = np.mean(df_test_treatment1["T1"]-df_test_treatment1["T2"])
+    np_diff = diff2-diff1
 
-def test_paired_stats_paired_speficied_level():
-    np_result = paired_specified_level.mean_diff.results
-    p1 = sp.stats.ttest_rel(df_test_control["T2"], \
-                df_test_control["T1"], nan_policy='omit').pvalue
-    p2 = sp.stats.ttest_rel(df_test_treatment1["T2"], \
-                df_test_treatment1["T1"], nan_policy='omit').pvalue
-    p3 = sp.stats.ttest_rel(np_result["bootstraps"][0], \
-                np_result["bootstraps"][1], nan_policy='omit').pvalue
-    assert np_result["pvalue_paired_students_t"].to_list() == pytest.approx([p1, p2, p3])
-    
-    p1 = sp.stats.wilcoxon(df_test_control["T2"], \
-                df_test_control["T1"]).pvalue
-    p2 = sp.stats.wilcoxon(df_test_treatment1["T2"], \
-                df_test_treatment1["T1"]).pvalue
-    p3 = sp.stats.wilcoxon(np_result["bootstraps"][0], \
-                np_result["bootstraps"][1]).pvalue
-    assert np_result["pvalue_wilcoxon"].to_list() == pytest.approx([p1, p2, p3])
+    np_pvalues = len(list(filter(lambda x: x>np.abs(np_diff), 
+                                delta_deltas)))/len(delta_deltas)
 
-
-def test_lqrt_delta_unpaired():
-    all_mean_diff = unpaired.mean_diff
-    lqrt_result = all_mean_diff.lqrt["pvalue_paired_lqrt"].to_list()[2]
-                             
-    p1 = lqrt.lqrtest_rel(all_mean_diff.results["bootstraps"][0], 
-          all_mean_diff.results["bootstraps"][1], 
-          random_state=12345).pvalue
-    
-    assert lqrt_result == pytest.approx(p1)
-
-
-def test_lqrt_delta_paired():
-    all_mean_diff = paired.mean_diff
-    lqrt_result = all_mean_diff.lqrt["pvalue_paired_lqrt"].to_list()
-
-    p1 = lqrt.lqrtest_rel(df_test_treatment1["T2"], 
-                df_test_treatment1["T1"], 
-          random_state=12345).pvalue
-    p2 = lqrt.lqrtest_rel(df_test_control["T2"], 
-                df_test_control["T1"], 
-          random_state=12345).pvalue
-    p3 = lqrt.lqrtest_rel(all_mean_diff.results["bootstraps"][0], 
-          all_mean_diff.results["bootstraps"][1], 
-          random_state=12345).pvalue
-    
-    assert lqrt_result == pytest.approx([p1, p2, p3])
-
-def test_lqrt_delta_paired_specified_level():
-    all_mean_diff = paired_specified_level.mean_diff
-    lqrt_result = all_mean_diff.lqrt["pvalue_paired_lqrt"].to_list()
-
-    p1 = lqrt.lqrtest_rel(df_test_control["T2"], 
-                df_test_control["T1"], 
-          random_state=12345).pvalue
-    p2 = lqrt.lqrtest_rel(df_test_treatment1["T2"], 
-                df_test_treatment1["T1"], 
-          random_state=12345).pvalue
-    p3 = lqrt.lqrtest_rel(all_mean_diff.results["bootstraps"][0], 
-          all_mean_diff.results["bootstraps"][1], 
-          random_state=12345).pvalue
-    
-    assert lqrt_result == pytest.approx([p1, p2, p3])
-
+    assert pvalue == pytest.approx(np_pvalues)
