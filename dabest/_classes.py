@@ -930,8 +930,9 @@ class DeltaDelta(object):
         bs2 = "the confidence interval is bias-corrected and accelerated."
         bs = bs1 + bs2
 
-        pval_def1 = "The p-value(s) reported are the likelihood(s) of observing the " + \
-                  "effect size(s),\nif the null hypothesis of zero difference is true."
+        pval_def1 = "Any p-value reported is the probability of observing the" + \
+                    "effect size (or greater),\nassuming the null hypothesis of" + \
+                    "zero difference is true."
         pval_def2 = "\nFor each p-value, 5000 reshuffles of the " + \
                     "control and test labels were performed."
         pval_def = pval_def1 + pval_def2
@@ -1295,8 +1296,9 @@ class MiniMetaDelta(object):
         bs2 = "the confidence interval is bias-corrected and accelerated."
         bs = bs1 + bs2
 
-        pval_def1 = "The p-value(s) reported are the likelihood(s) of observing the " + \
-                  "effect size(s),\nif the null hypothesis of zero difference is true."
+        pval_def1 = "Any p-value reported is the probability of observing the" + \
+                    "effect size (or greater),\nassuming the null hypothesis of" + \
+                    "zero difference is true."
         pval_def2 = "\nFor each p-value, 5000 reshuffles of the " + \
                     "control and test labels were performed."
         pval_def = pval_def1 + pval_def2
@@ -1966,8 +1968,9 @@ class TwoGroupsEffectSize(object):
         bs2 = "the confidence interval is bias-corrected and accelerated."
         bs = bs1 + bs2
 
-        pval_def1 = "The p-value(s) reported are the likelihood(s) of observing the " + \
-                  "effect size(s),\nif the null hypothesis of zero difference is true."
+        pval_def1 = "Any p-value reported is the probability of observing the" + \
+                    "effect size (or greater),\nassuming the null hypothesis of" + \
+                    "zero difference is true."
         pval_def2 = "\nFor each p-value, 5000 reshuffles of the " + \
                     "control and test labels were performed."
         pval_def = pval_def1 + pval_def2
