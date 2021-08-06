@@ -895,23 +895,10 @@ class DeltaDelta(object):
 
         from .misc_tools import print_greeting
 
-        
-        RM_STATUS = {'baseline'  : 'for repeated measures against baseline \n', 
-                     'sequential': 'for the sequential design of repeated-measures experiment \n',
-                     'None'      : ''
-                    }
-
-        PAIRED_STATUS = {'baseline'   : 'paired', 
-                         'sequential' : 'paired',
-                         'None'       : 'unpaired'
-        }
-
-        first_line = {"rm_status"    : RM_STATUS[str(self.__dabest_obj.is_paired)],
-                      "paired_status": PAIRED_STATUS[str(self.__dabest_obj.is_paired)],
-                      "control"      : self.__control,
+        first_line = {"control"      : self.__control,
                       "test"         : self.__test}
         
-        out1 = "The {paired_status} delta-delta between {control} and {test} ".format(**first_line)
+        out1 = "The delta-delta between {control} and {test} ".format(**first_line)
         
         base_string_fmt = "{:." + str(sigfig) + "}"
         if "." in str(self.__ci):
@@ -1697,22 +1684,8 @@ class Delta2(object):
         import numpy as np
 
         from .misc_tools import print_greeting
-
         
-        RM_STATUS = {'baseline'  : 'for repeated measures against baseline \n', 
-                     'sequential': 'for the sequential design of repeated-measures experiment \n',
-                     'None'      : ''
-                    }
-
-        PAIRED_STATUS = {'baseline'   : 'paired', 
-                         'sequential' : 'paired',
-                         'None'       : 'unpaired'
-        }
-
-        first_line = {"rm_status"    : RM_STATUS[str(self.__dabest_obj.is_paired)],
-                      "paired_status": PAIRED_STATUS[str(self.__dabest_obj.is_paired)]}
-        
-        out1 = "The {paired_status} weighted mean differences {rm_status}".format(**first_line)
+        out1 = "The weighted mean differences ".format(**first_line)
         
         base_string_fmt = "{:." + str(sigfig) + "}"
         if "." in str(self.__ci):
