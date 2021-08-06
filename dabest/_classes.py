@@ -883,7 +883,7 @@ class DeltaDelta(object):
 
         self.__permutations_delta_delta = np.array(self.__permutations[1]-self.__permutations[0])
 
-        self.__pvalue_permutation = len(list(filter(lambda x: x>THRESHOLD, 
+        self.__pvalue_permutation = len(list(filter(lambda x: np.abs(x)>THRESHOLD, 
                                                     self.__permutations_delta_delta)))/self.__permutation_count
 
 
@@ -1254,7 +1254,7 @@ class MiniMetaDelta(object):
         
         self.__permutations_weighted_delta = np.array(output)
 
-        self.__pvalue_permutation = len(list(filter(lambda x: x>THRESHOLD, 
+        self.__pvalue_permutation = len(list(filter(lambda x: np.abs(x)>THRESHOLD, 
                                                     output)))/self.__permutation_count
 
 
