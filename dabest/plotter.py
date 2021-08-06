@@ -328,8 +328,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_ax_ylim_low = list()
             contrast_ax_ylim_high = list()
             contrast_ax_ylim_tickintervals = list()
-    rawdata_axes  = axx[0]
-    contrast_axes = axx[1]
+        rawdata_axes  = axx[0]
+        contrast_axes = axx[1]
     rawdata_axes.set_frame_on(False)
     contrast_axes.set_frame_on(False)
 
