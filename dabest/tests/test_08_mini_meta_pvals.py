@@ -120,7 +120,7 @@ def test_unpaired_permutation_test():
 
     np_difference = np.sum(np_means*np_weight)/np.sum(np_weight)
 
-    np_pvalues = len(list(filter(lambda x: x>np.abs(np_difference), 
+    np_pvalues = len(list(filter(lambda x: np.abs(x)>np.abs(np_difference), 
                                 weighted_deltas)))/len(weighted_deltas)
 
     assert pvalue == pytest.approx(np_pvalues)

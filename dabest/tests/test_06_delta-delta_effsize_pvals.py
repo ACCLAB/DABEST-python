@@ -260,7 +260,7 @@ def test_unpaired_permutation_test():
     diff2 = np.mean(df_test_control["T2"])-np.mean(df_test_control["T1"])
     np_diff = diff2-diff1
 
-    np_pvalues = len(list(filter(lambda x: x>np.abs(np_diff), 
+    np_pvalues = len(list(filter(lambda x: np.abs(x)>np.abs(np_diff), 
                                 delta_deltas)))/len(delta_deltas)
 
     assert pvalue == pytest.approx(np_pvalues)
@@ -289,7 +289,7 @@ def test_paired_permutation_test():
     diff2 = np.mean(df_test_control["T2"]-df_test_control["T1"])
     np_diff = diff2-diff1
 
-    np_pvalues = len(list(filter(lambda x: x>np.abs(np_diff), 
+    np_pvalues = len(list(filter(lambda x: np.abs(x)>np.abs(np_diff), 
                                 delta_deltas)))/len(delta_deltas)
 
     assert pvalue == pytest.approx(np_pvalues)
@@ -318,7 +318,7 @@ def test_paired_specified_level_permutation_test():
     diff2 = np.mean(df_test_treatment1["T1"]-df_test_treatment1["T2"])
     np_diff = diff2-diff1
 
-    np_pvalues = len(list(filter(lambda x: x>np.abs(np_diff), 
+    np_pvalues = len(list(filter(lambda x: np.abs(x)>np.abs(np_diff), 
                                 delta_deltas)))/len(delta_deltas)
 
     assert pvalue == pytest.approx(np_pvalues)
