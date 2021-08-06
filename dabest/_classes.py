@@ -1252,22 +1252,8 @@ class MiniMetaDelta(object):
         import numpy as np
 
         from .misc_tools import print_greeting
-
         
-        RM_STATUS = {'baseline'  : 'for repeated measures against baseline \n', 
-                     'sequential': 'for the sequential design of repeated-measures experiment \n',
-                     'None'      : ''
-                    }
-
-        PAIRED_STATUS = {'baseline'   : 'paired', 
-                         'sequential' : 'paired',
-                         'None'       : 'unpaired'
-        }
-
-        first_line = {"rm_status"    : RM_STATUS[str(self.__dabest_obj.is_paired)],
-                      "paired_status": PAIRED_STATUS[str(self.__dabest_obj.is_paired)]}
-        
-        out1 = "The {paired_status} weighted-average delta {rm_status}".format(**first_line)
+        out1 = "The weighted-average delta "\
         
         base_string_fmt = "{:." + str(sigfig) + "}"
         if "." in str(self.__ci):
