@@ -2437,7 +2437,8 @@ class EffectSizeDataFrame(object):
                            ]
         self.__results   = out_.reindex(columns=columns_in_order)
         self.__results.dropna(axis="columns", how="all", inplace=True)
-
+        if self.is_paired is None:
+            self.__results.insert(5, 'is_paired', self.__results.apply(lambda _: None, axis=1))
         if self.__delta2 is True and self.__effect_size == "mean_diff":
             self.__delta_delta = DeltaDelta(self,
                                             self.__permutation_count,

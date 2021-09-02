@@ -21,7 +21,7 @@ Load Libraries
 
 .. parsed-literal::
 
-    We're using DABEST v0.3.1
+    We're using DABEST v0.3.9999
 
 
 Create dataset for demo
@@ -226,11 +226,11 @@ the comparisons that can be computed.
 
 .. parsed-literal::
 
-    DABEST v0.3.1
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:12:44 2020.
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Sun Aug 29 18:00:54 2021.
 
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -242,44 +242,8 @@ the comparisons that can be computed.
 Changing statistical parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If the dataset contains paired data (ie. repeated observations), specify
-this with the ``paired`` keyword. You must also pass a column in the
-dataset that indicates the identity of each observation, using the
-``id_col`` keyword.
-
-.. code-block:: python3
-  :linenos:
-
-
-    two_groups_paired = dabest.load(df, idx=("Control 1", "Test 1"),
-                                  paired=True, id_col="ID")
-
-.. code-block:: python3
-  :linenos:
-
-
-    two_groups_paired
-
-
-
-
-.. parsed-literal::
-
-    DABEST v0.3.1
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:12:44 2020.
-
-    Paired effect size(s) with 95% confidence intervals will be computed for:
-    1. Test 1 minus Control 1
-
-    5000 resamples will be used to generate the effect size bootstraps.
-
-
-
-You can also change the width of the confidence interval that will be
-produced.
+You can change the width of the confidence interval that will be
+produced by manipulating the ``ci`` argument.
 
 .. code-block:: python3
   :linenos:
@@ -334,18 +298,18 @@ Each of these are attributes of the ``Dabest`` object.
 
 .. parsed-literal::
 
-    DABEST v0.3.1
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:12:44 2020.
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Sun Aug 29 18:10:44 2021.
 
     The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.221, 0.768].
-    The p-value of the two-sided permutation t-test is 0.001.
+    The p-value of the two-sided permutation t-test is 0.001, calculated for legacy purposes only. 
 
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
-    The p-value(s) reported are the likelihood(s) of observing the effect size(s),
-    if the null hypothesis of zero difference is true.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
     For each p-value, 5000 reshuffles of the control and test labels were performed.
 
     To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
@@ -407,11 +371,13 @@ For unpaired comparisons, the p-values and test statistics of `Welch's t test <h
           <th>pct_low</th>
           <th>pct_high</th>
           <th>pct_interval_idx</th>
-          <th>pvalue_permutation</th>
-          <th>permutation_count</th>
           <th>bootstraps</th>
           <th>resamples</th>
           <th>random_seed</th>
+          <th>permutations</th>
+          <th>pvalue_permutation</th>
+          <th>permutation_count</th>
+          <th>permutations_var</th>
           <th>pvalue_welch</th>
           <th>statistic_welch</th>
           <th>pvalue_students_t</th>
@@ -428,7 +394,7 @@ For unpaired comparisons, the p-values and test statistics of `Welch's t test <h
           <td>20</td>
           <td>20</td>
           <td>mean difference</td>
-          <td>False</td>
+          <td>None</td>
           <td>0.48029</td>
           <td>95</td>
           <td>0.220869</td>
@@ -437,11 +403,13 @@ For unpaired comparisons, the p-values and test statistics of `Welch's t test <h
           <td>0.215697</td>
           <td>0.761716</td>
           <td>(125, 4875)</td>
-          <td>0.001</td>
-          <td>5000</td>
-          <td>[-0.157303571150468, -0.025932185794146356, 0....</td>
+          <td>[0.6686169333655454, 0.4382051534234943, 0.665...</td>
           <td>5000</td>
           <td>12345</td>
+          <td>[-0.17259843762502491, 0.03802293852634886, -0...</td>
+          <td>0.001</td>
+          <td>5000</td>
+          <td>[0.026356588154404337, 0.027102495439046997, 0...</td>
           <td>0.002094</td>
           <td>-3.308806</td>
           <td>0.002057</td>
@@ -511,7 +479,7 @@ For unpaired comparisons, the p-values and test statistics of `Welch's t test <h
           <td>20</td>
           <td>20</td>
           <td>mean difference</td>
-          <td>False</td>
+          <td>None</td>
           <td>0.48029</td>
           <td>95</td>
           <td>0.220869</td>
@@ -543,18 +511,18 @@ Let’s compute the Hedges’ *g* for our comparison.
 
 .. parsed-literal::
 
-    DABEST v0.3.0
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:12:46 2020.
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Sun Aug 29 18:12:17 2021.
 
     The unpaired Hedges' g between Control 1 and Test 1 is 1.03 [95%CI 0.349, 1.62].
-    The p-value of the two-sided permutation t-test is 0.001.
+    The p-value of the two-sided permutation t-test is 0.001, calculated for legacy purposes only. 
 
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
-    The p-value(s) reported are the likelihood(s) of observing the effect size(s),
-    if the null hypothesis of zero difference is true.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
     For each p-value, 5000 reshuffles of the control and test labels were performed.
 
     To get the results of all valid statistical tests, use `.hedges_g.statistical_tests`
@@ -604,11 +572,13 @@ Let’s compute the Hedges’ *g* for our comparison.
           <th>pct_low</th>
           <th>pct_high</th>
           <th>pct_interval_idx</th>
-          <th>pvalue_permutation</th>
-          <th>permutation_count</th>
           <th>bootstraps</th>
           <th>resamples</th>
           <th>random_seed</th>
+          <th>permutations</th>
+          <th>pvalue_permutation</th>
+          <th>permutation_count</th>
+          <th>permutations_var</th>
           <th>pvalue_welch</th>
           <th>statistic_welch</th>
           <th>pvalue_students_t</th>
@@ -625,7 +595,7 @@ Let’s compute the Hedges’ *g* for our comparison.
           <td>20</td>
           <td>20</td>
           <td>Hedges' g</td>
-          <td>False</td>
+          <td>None</td>
           <td>1.025525</td>
           <td>95</td>
           <td>0.349394</td>
@@ -634,11 +604,13 @@ Let’s compute the Hedges’ *g* for our comparison.
           <td>0.472844</td>
           <td>1.74166</td>
           <td>(125, 4875)</td>
-          <td>0.001</td>
-          <td>5000</td>
-          <td>[-0.3617512915188043, -0.06120428036887727, 0....</td>
+          <td>[1.1337301267831184, 0.8311210968422604, 1.539...</td>
           <td>5000</td>
           <td>12345</td>
+          <td>[-0.3295089865590538, 0.07158401210924781, -0....</td>
+          <td>0.001</td>
+          <td>5000</td>
+          <td>[0.026356588154404337, 0.027102495439046997, 0... </td>
           <td>0.002094</td>
           <td>-3.308806</td>
           <td>0.002057</td>
@@ -702,33 +674,6 @@ Tufte’s dictum to maximise the data-ink ratio.
 .. image:: _images/tutorial_30_0.png
 
 
-For paired data, we use
-`slopegraphs <https://www.edwardtufte.com/bboard/q-and-a-fetch-msg?msg_id=0003nk>`__
-(another innovation from Edward Tufte) to connect paired observations.
-Both Gardner-Altman and Cumming plots support this.
-
-.. code-block:: python3
-  :linenos:
-
-
-    two_groups_paired.mean_diff.plot();
-
-
-
-.. image:: _images/tutorial_32_0.png
-
-
-.. code-block:: python3
-  :linenos:
-
-
-    two_groups_paired.mean_diff.plot(float_contrast=False);
-
-
-
-.. image:: _images/tutorial_33_0.png
-
-
 The ``dabest`` package also implements a range of estimation plot
 designs aimed at depicting common experimental designs.
 
@@ -753,25 +698,6 @@ meta-analyses to aggregate and compare data from different experiments.
 
 
 .. image:: _images/tutorial_35_0.png
-
-
-The multi-two-group design also accomodates paired comparisons.
-
-.. code-block:: python3
-  :linenos:
-
-
-    multi_2group_paired = dabest.load(df, idx=(("Control 1", "Test 1"),
-                                               ("Control 2", "Test 2")
-                                              ),
-                                      paired=True, id_col="ID"
-                                     )
-
-    multi_2group_paired.mean_diff.plot();
-
-
-
-.. image:: _images/tutorial_37_0.png
 
 
 The **shared control plot** displays another common experimental
@@ -801,11 +727,11 @@ to ``idx`` has more than two data columns.
 
 .. parsed-literal::
 
-    DABEST v0.3.0
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:12:54 2020.
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Tue Aug 31 23:39:22 2021.
 
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -830,33 +756,33 @@ to ``idx`` has more than two data columns.
 
 .. parsed-literal::
 
-    DABEST v0.3.0
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:12:58 2020.
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Tue Aug 31 23:42:39 2021.
 
     The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.221, 0.768].
-    The p-value of the two-sided permutation t-test is 0.001.
+    The p-value of the two-sided permutation t-test is 0.001, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 1 and Test 2 is -0.542 [95%CI -0.914, -0.211].
-    The p-value of the two-sided permutation t-test is 0.0042.
+    The p-value of the two-sided permutation t-test is 0.0042, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 1 and Test 3 is 0.174 [95%CI -0.295, 0.628].
-    The p-value of the two-sided permutation t-test is 0.479.
+    The p-value of the two-sided permutation t-test is 0.479, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 1 and Test 4 is 0.79 [95%CI 0.306, 1.31].
-    The p-value of the two-sided permutation t-test is 0.0042.
+    The p-value of the two-sided permutation t-test is 0.0042, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 1 and Test 5 is 0.265 [95%CI 0.0137, 0.497].
-    The p-value of the two-sided permutation t-test is 0.0404.
+    The p-value of the two-sided permutation t-test is 0.0404, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 1 and Test 6 is 0.288 [95%CI -0.00441, 0.515].
-    The p-value of the two-sided permutation t-test is 0.0324.
+    The p-value of the two-sided permutation t-test is 0.0324, calculated for legacy purposes only. 
 
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
-    The p-value(s) reported are the likelihood(s) of observing the effect size(s),
-    if the null hypothesis of zero difference is true.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
     For each p-value, 5000 reshuffles of the control and test labels were performed.
 
     To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
@@ -898,11 +824,11 @@ complex visualizations and statistics.
 
 .. parsed-literal::
 
-    DABEST v0.3.0
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:12:58 2020.
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Tue Aug 31 23:47:40 2021.
 
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -927,33 +853,33 @@ complex visualizations and statistics.
 
 .. parsed-literal::
 
-    DABEST v0.3.0
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:13:02 2020.
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Tue Aug 31 23:48:17 2021.
 
     The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.221, 0.768].
-    The p-value of the two-sided permutation t-test is 0.001.
+    The p-value of the two-sided permutation t-test is 0.001, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 2 and Test 2 is -1.38 [95%CI -1.93, -0.895].
-    The p-value of the two-sided permutation t-test is 0.0.
+    The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 2 and Test 3 is -0.666 [95%CI -1.3, -0.103].
-    The p-value of the two-sided permutation t-test is 0.0352.
+    The p-value of the two-sided permutation t-test is 0.0352, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 3 and Test 4 is 0.362 [95%CI -0.114, 0.887].
-    The p-value of the two-sided permutation t-test is 0.161.
+    The p-value of the two-sided permutation t-test is 0.161, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 3 and Test 5 is -0.164 [95%CI -0.404, 0.0742].
-    The p-value of the two-sided permutation t-test is 0.208.
+    The p-value of the two-sided permutation t-test is 0.208, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 3 and Test 6 is -0.14 [95%CI -0.398, 0.102].
-    The p-value of the two-sided permutation t-test is 0.282.
+    The p-value of the two-sided permutation t-test is 0.282, calculated for legacy purposes only. 
 
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
-    The p-value(s) reported are the likelihood(s) of observing the effect size(s),
-    if the null hypothesis of zero difference is true.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
     For each p-value, 5000 reshuffles of the control and test labels were performed.
 
     To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
@@ -1091,11 +1017,11 @@ When your data is in this format, you will need to specify the ``x`` and
 
 .. parsed-literal::
 
-    DABEST v0.3.0
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:13:03 2020.
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Tue Aug 31 23:51:12 2021.
 
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -1113,6 +1039,867 @@ When your data is in this format, you will need to specify the ``x`` and
 
 
 .. image:: _images/tutorial_52_0.png
+
+
+
+
+Repeated-measures function
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Since v0.4.0, DABEST will support the repeated-measures feature, which allows 
+the visualization of paired experiments with one control and multiple test 
+groups. This is an enhanced version of the paired data computation function 
+in the former version where computations involving one control group and one
+test group are supported.
+
+The repeated-measures function supports the calculation of effect sizes for
+paired data, either based on sequential comparisons (group i vs group i + 1) 
+or baseline comparisons (control vs group i). To use the repeated-measures function, 
+you can simply declare ``paired = "sequential"`` or ``paired = "baseline"`` 
+correspondingly. Same as in the previous version, you must also pass a column in 
+the dataset that indicates the identity of each observation, using the 
+``id_col`` keyword. (Please note that ``paired = True`` and ``paired = False``
+are no longer valid in the v0.4.0.)
+
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_paired_sequential = dabest.load(df, idx=("Control 1", "Test 1"),
+                                               paired="sequential", id_col="ID")
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_paired_sequential
+
+
+
+
+.. parsed-literal::
+
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Mon Aug 30 00:09:54 2021.
+
+    Paired effect size(s) for the sequential design of repeated-measures experiment 
+    with 95% confidence intervals will be computed for:
+    1. Test 1 minus Control 1
+
+    5000 resamples will be used to generate the effect size bootstraps.
+
+
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_paired_baseline = dabest.load(df, idx=("Control 1", "Test 1"),
+                                  paired="baseline", id_col="ID")
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_paired_baseline
+
+
+
+
+.. parsed-literal::
+
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Mon Aug 30 00:13:17 2021.
+
+    Paired effect size(s) for repeated measures against baseline 
+    with 95% confidence intervals will be computed for:
+    1. Test 1 minus Control 1
+
+    5000 resamples will be used to generate the effect size bootstraps.
+
+
+
+When only 2 paired data groups are involved, assigning either ``baseline``
+or ``sequential`` to ``paired`` will give you the same numerical results.
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_paired_sequential.mean_diff
+
+
+
+
+.. parsed-literal::
+
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Mon Aug 30 00:14:44 2021.
+
+    The paired mean difference for the sequential design of repeated-measures experiment 
+    between Control 1 and Test 1 is 0.48 [95%CI 0.237, 0.73].
+    The p-value of the two-sided permutation t-test is 0.001, calculated for legacy purposes only. 
+
+    5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
+    For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+    To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
+
+
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_paired_baseline.mean_diff
+
+
+
+
+.. parsed-literal::
+
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Mon Aug 30 00:18:09 2021.
+
+    The paired mean difference for repeated measures against baseline 
+    between Control 1 and Test 1 is 0.48 [95%CI 0.237, 0.73].
+    The p-value of the two-sided permutation t-test is 0.001, calculated for legacy purposes only. 
+
+    5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
+    For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+    To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
+
+
+
+For paired data, we use
+`slopegraphs <https://www.edwardtufte.com/bboard/q-and-a-fetch-msg?msg_id=0003nk>`__
+(another innovation from Edward Tufte) to connect paired observations.
+Both Gardner-Altman and Cumming plots support this.
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_paired_sequential.mean_diff.plot();
+
+
+
+.. image:: _images/tutorial_32_0.png
+
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_paired_sequential.mean_diff.plot(float_contrast=False);
+
+
+
+.. image:: _images/tutorial_33_0.png
+
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_paired_baseline.mean_diff.plot();
+
+
+
+.. image:: _images/tutorial_32_0.png
+
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_paired_baseline.mean_diff.plot(float_contrast=False);
+
+
+
+.. image:: _images/tutorial_33_0.png
+
+You can also create repeated-measures plots with multiple test groups.In
+this case, declaring ``paired`` to be ``sequential`` or ``baseline`` will
+generate different results.
+
+.. code-block:: python3
+  :linenos:
+
+    sequential_repeated_measures = dabest.load(df, idx=("Control 1", "Test 1", "Test 2", "Test 3"),
+                                               paired="sequential", id_col="ID")
+
+.. code-block:: python3
+  :linenos:
+  
+    sequential_repeated_measures.mean_diff
+
+
+.. parsed-literal::
+
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Mon Aug 30 00:51:21 2021.
+
+    The paired mean difference for the sequential design of repeated-measures experiment 
+    between Control 1 and Test 1 is 0.48 [95%CI 0.237, 0.73].
+    The p-value of the two-sided permutation t-test is 0.001, calculated for legacy purposes only. 
+
+    The paired mean difference for the sequential design of repeated-measures experiment 
+    between Test 1 and Test 2 is -1.02 [95%CI -1.36, -0.716].
+    The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
+
+    The paired mean difference for the sequential design of repeated-measures experiment 
+    between Test 2 and Test 3 is 0.716 [95%CI 0.14, 1.22].
+    The p-value of the two-sided permutation t-test is 0.022, calculated for legacy purposes only. 
+
+    5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
+    For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+    To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
+
+
+
+.. code-block:: python3
+  :linenos:
+
+    sequential_repeated_measures.mean_diff.plot();
+
+
+
+.. image:: _images/tutorial_103_0.png
+
+
+.. code-block:: python3
+  :linenos:
+
+    baseline_repeated_measures = dabest.load(df, idx=("Control 1", "Test 1", "Test 2", "Test 3"),
+                                               paired="baseline", id_col="ID")
+
+
+
+.. code-block:: python3
+  :linenos:
+    baseline_repeated_measures.mean_diff
+
+
+
+.. parsed-literal::
+
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Mon Aug 30 00:56:37 2021.
+
+    The paired mean difference for repeated measures against baseline 
+    between Control 1 and Test 1 is 0.48 [95%CI 0.237, 0.73].
+    The p-value of the two-sided permutation t-test is 0.001, calculated for legacy purposes only. 
+
+    The paired mean difference for repeated measures against baseline 
+    between Control 1 and Test 2 is -0.542 [95%CI -0.975, -0.198].
+    The p-value of the two-sided permutation t-test is 0.014, calculated for legacy purposes only. 
+
+    The paired mean difference for repeated measures against baseline 
+    between Control 1 and Test 3 is 0.174 [95%CI -0.297, 0.706].
+    The p-value of the two-sided permutation t-test is 0.505, calculated for legacy purposes only. 
+
+    5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
+    For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+    To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
+
+
+
+
+.. code-block:: python3
+  :linenos:
+
+    baseline_repeated_measures.mean_diff.plot();
+
+
+
+.. image:: _images/tutorial_104_0.png
+
+Same as that for unpaired data, DABEST empowers you to perform complex 
+visualizations and statistics for paired data as well.
+
+.. code-block:: python3
+  :linenos:
+
+    multi_baseline_repeated_measures = dabest.load(df, idx=(("Control 1", "Test 1", "Test 2", "Test 3"),
+                                                      ("Control 2", "Test 4", "Test 5", "Test 6")),
+                                               paired="baseline", id_col="ID")
+    multi_baseline_repeated_measures.mean_diff.plot();
+
+
+
+.. image:: _images/tutorial_105_0.png
+
+
+
+Mini-meta function
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In v.0.4.0, DABEST also supports the computation and plotting of weighted-average
+mean differences for both paired and unpaired data.Here the weights are the 
+inverses of the group variance of 2 experiment groups involved. However, this is 
+limited to comparisons between 2 experiment groups or in the multi-2-groups 
+situation. Also, it does not allow the computation of other weighted effect sizes. 
+More details on weighted differences can be found in this 
+`Wikipedia article <https://en.wikipedia.org/wiki/Weighted_arithmetic_mean>`__. 
+
+You can calculate weighted average mean differences by setting ``mini_meta=True`` in 
+``dabest.load()``.
+
+.. code-block:: python3
+  :linenos:
+
+
+    mini_meta_unpaired = dabest.load(df, idx=(("Control 1", "Test 1"), 
+                                              ("Control 2", "Test 2"), 
+                                              ("Control 3", "Test 3")),
+                                     mini_meta=True)
+
+
+
+
+.. code-block:: python3
+  :linenos:
+
+
+    mini_meta_unpaired
+
+
+
+
+Now you can see from the greeting that the calculation of weighted average is 
+enabled.
+
+.. parsed-literal::
+
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Sun Aug 29 00:37:19 2021.
+
+    Effect size(s) with 95% confidence intervals will be computed for:
+    1. Test 1 minus Control 1
+    2. Test 2 minus Control 2
+    3. Test 3 minus Control 3
+    4. weighted delta (only for mean difference)
+
+    5000 resamples will be used to generate the effect size bootstraps.
+
+
+
+.. code-block:: python3
+  :linenos:
+
+
+    mini_meta_unpaired.mean_diff
+
+
+
+
+You can read off the exact weighted average as well as the confidence 
+intervals from the greeting.
+
+.. parsed-literal::
+
+    DABEST v0.3.9999
+    ================
+                
+    Good evening! 
+    The current time is Sun Aug 29 00:31:43 2021.
+
+    The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.221, 0.768].
+    The p-value of the two-sided permutation t-test is 0.001, calculated for legacy purposes only. 
+
+    The unpaired mean difference between Control 2 and Test 2 is -1.38 [95%CI -1.93, -0.895].
+    The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
+
+    The unpaired mean difference between Control 3 and Test 3 is -0.255 [95%CI -0.717, 0.196].
+    The p-value of the two-sided permutation t-test is 0.293, calculated for legacy purposes only. 
+
+    The weighted-average unpaired mean differences is -0.0104 [95%CI -0.222, 0.215].
+    The p-value of the two-sided permutation t-test is 0.937, calculated for legacy purposes only. 
+
+    5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
+    For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+    To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
+
+
+
+In a mini-meta plot, there will be a half-violin plot of the weighted averages
+added on the right side of the bootstraps plots with a shared y-axis.
+
+.. code-block:: python3
+  :linenos:
+
+
+    mini_meta_unpaired.mean_diff.plot()
+
+
+
+.. image:: _images/tutorial_100_0.png
+
+
+In addition, all the information of the weighted average is stored in an attribute 
+named ``mini_meta_delta`` of the effect size object. 
+
+
+.. code-block:: python3
+  :linenos:
+
+
+    mini_meta_delta = mini_meta_unpaired.mean_diff.mini_meta_delta
+    mini_meta_delta
+
+
+
+.. parsed-literal::
+
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Sun Aug 29 00:53:21 2021.
+
+    The weighted-average unpaired mean differences is -0.0104 [95%CI -0.222, 0.215].
+    The p-value of the two-sided permutation t-test is 0.937, calculated for legacy purposes only. 
+
+    5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
+    For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+
+``mini_meta_delta`` has its own attributes, containing various information pertaining to the weighted average:
+  - ``group_var``: the pooled group variances of each set of 2 experiment groups
+  - ``difference``: the weighted mean difference calculated based on the raw data
+  - ``bootstraps``: the deltas of each set of 2 experiment groups calculated based on the bootstraps
+  - ``bootstraps_weighted_delta``: the weighted deltas calculated based on the bootstraps
+  - ``permutations``: the deltas of each set of 2 experiment groups calculated based on the permutation data
+  - ``permutations_var``: the pooled group variances of each set of 2 experiment groups calculated based on permutation data
+  - ``permutations_weighted_delta``: the weighted deltas calculated based on the permutation data
+
+``mini_meta_delta.to_dict()`` will return to you all the attributes in a dictionary format.
+
+The calculation of weighted avaerage is supported for paired data as well. You can 
+declare ``paired`` to be either ``baseline`` or ``sequential``.
+
+.. code-block:: python3
+  :linenos:
+
+    mini_meta_paired = dabest.load(df, id_col = "ID",
+                                   idx=(("Control 1", "Test 1"),
+                                        ("Control 2", "Test 2"),
+                                        ("Control 3", "Test 3")),
+                                   paired = "baseline", mini_meta=True)
+    mini_meta_paired.mean_diff
+
+
+
+
+.. parsed-literal::
+
+    DABEST v0.3.9999
+    ================
+                
+    Good morning!
+    The current time is Sun Aug 29 01:24:06 2021.
+
+    The paired mean difference for repeated measures against baseline 
+    between Control 1 and Test 1 is 0.48 [95%CI 0.237, 0.73].
+    The p-value of the two-sided permutation t-test is 0.001, calculated for legacy purposes only. 
+
+    The paired mean difference for repeated measures against baseline 
+    between Control 2 and Test 2 is -1.38 [95%CI -1.86, -0.899].
+    The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
+
+    The paired mean difference for repeated measures against baseline 
+    between Control 3 and Test 3 is -0.255 [95%CI -0.717, 0.235].
+    The p-value of the two-sided permutation t-test is 0.323, calculated for legacy purposes only. 
+
+    The weighted-average paired mean differences is -0.0104 [95%CI -0.246, 0.222].
+    The p-value of the two-sided permutation t-test is 0.941, calculated for legacy purposes only. 
+
+    5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
+    For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+    To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
+
+
+
+
+.. code-block:: python3
+  :linenos:
+
+
+    mini_meta_paired.mean_diff.plot()
+
+
+
+.. image:: _images/tutorial_101_0.png
+
+
+
+
+Delta - delta function
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Since v0.4.0, DABEST also supports the testing of 2 independent categorical
+variables on the dataset. 
+
+Here, we need to create another dataset for a better illustration of this 
+function. 
+
+.. code-block:: python3
+  :linenos:
+    
+    import numpy as np
+    import pandas as pd
+    from scipy.stats import norm # Used in generation of populations.
+    N = 20
+    np.random.seed(9999) # Fix the seed so the results are replicable.
+
+    # Create samples
+    y = norm.rvs(loc=3, scale=0.4, size=N*2)
+
+    # Add an `experiment` column as the experiment group label
+    e1 = np.repeat('Control', N).tolist()
+    e2 = np.repeat('Test', N).tolist()
+    experiment = e1 + e2 
+
+    # Add a `Light` column as the first variable
+    # This will be the variable plotted along the horizontal aixs
+    light = []
+    for i in range(N):
+        light.append('L1')
+        light.append('L2')
+
+    # Add a `genotype` column as the second variable
+    # This will the variable controlling the color of dots for scattered 
+    # plots or the color of lines for slopegraphs
+    g1 = np.repeat('G1', N/2).tolist()
+    g2 = np.repeat('G2', N/2).tolist()
+    g3 = np.repeat('G3', N).tolist()
+    genotype = g1 + g2 + g3
+
+    # Add an `id` column for paired data plotting.
+    id_col = []
+    for i in range(N):
+        id_col.append(i)
+        id_col.append(i)
+
+    # Combine samples and gender into a DataFrame.
+    df_delta2 = pd.DataFrame({'ID'        : id_col,
+                      'Light'      : light,
+                       'Genotype'  : genotype, 
+                       'Experiment': experiment,
+                       'Y'         : y
+                    })
+
+
+There are 2 experiment groups, ``control`` and ``test``. ``genotype``
+differs between these two groups: objects in the ``control`` group are of ``G1`` 
+or ``G2`` type, while all the objects in the ``test`` group are of ``G3`` type. 
+Each group has been investigated under both light status ``L1`` and ``L2`` 
+situations. ``Y`` is the experiment result obtained.
+
+
+.. code-block:: python3
+  :linenos:
+
+
+    df_delta2.head()
+
+
+
+
+.. raw:: html
+
+
+ <div>
+    <style scoped>
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+
+        .dataframe tbody tr th {
+            vertical-align: top;
+        }
+
+        .dataframe thead th {
+            text-align: right;
+        }
+    </style>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>ID</th>
+          <th>Light</th>
+          <th>Genotype</th>
+          <th>Experiment</th>
+          <th>Y</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>0</th>
+          <td>0</td>
+          <td>L1</td>
+          <td>G1</td>
+          <td>Control</td>
+          <td>2.793984</td>
+        </tr>
+        <tr>
+          <th>1</th>
+          <td>0</td>
+          <td>L2</td>
+          <td>G1</td>
+          <td>Control</td>
+          <td>3.236759</td>
+        </tr>
+        <tr>
+          <th>2</th>
+          <td>1</td>
+          <td>L1</td>
+          <td>G1</td>
+          <td>Control</td>
+          <td>3.019149</td>
+        </tr>
+        <tr>
+          <th>3</th>
+          <td>1</td>
+          <td>L2</td>
+          <td>G1</td>
+          <td>Control</td>
+          <td>2.804638</td>
+        </tr>
+        <tr>
+          <th>4</th>
+          <td>2</td>
+          <td>L1</td>
+          <td>G1</td>
+          <td>Control</td>
+          <td>2.858019</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+
+
+To use the delta-delta function, you can simply set ``delta2 = True`` in the 
+``dabest.load()`` function. However, here ``x`` needs to be declared as a list
+consisting of 2 elements rather than 1 in most of the cases. The first element
+in ``x`` will be the variable plotted along the horizontal aixs, and the second
+one will determine the color of dots for scattered plots or the color of lines
+for slopegraphs. The ``experiment`` is required to differentiate the group 
+types.
+
+.. code-block:: python3
+  :linenos:
+
+    unpaired_delta2 = dabest.load(data = df_delta2, x = ["Light", "Genotype"], y = "Y", 
+                           delta2 = True, experiment = "Experiment")
+
+
+    
+.. code-block:: python3
+  :linenos:
+
+    unpaired_delta2
+    
+
+.. parsed-literal::
+
+    DABEST v0.3.9999
+    ================
+                
+    Good evening!
+    The current time is Tue Aug 31 00:56:23 2021.
+
+    Effect size(s) with 95% confidence intervals will be computed for:
+    1. L2 Control minus L1 Control
+    2. L2 Test minus L1 Test
+    3. Test minus Control (only for mean difference)
+
+    5000 resamples will be used to generate the effect size bootstraps.
+ 
+
+
+.. code-block:: python3
+  :linenos:
+
+
+    unpaired_delta2.mean_diff.plot()
+
+
+
+.. image:: _images/tutorial_106_0.png
+
+As shown by the above plot, the horizonal aixs represents the ``Light`` status
+and the dot color is specified by ``Genotype`` as default. The left pair of 
+scattered plots is based on the ``control`` data while the right pair is based
+on the ``test`` data. The mean difference bootstraps between the ``control`` 
+and ``test`` group are plotted at the right bottom with a seperate y-axis from
+other bootstrap plots.
+
+You can manipulate the orders of experiment groups as well as the horizontal
+axis variable by setting ``experiment_label`` and ``x1_level``.
+
+
+.. code-block:: python3
+  :linenos:
+
+    unpaired_delta2_specified = dabest.load(data = df_delta2, 
+                                            x = ["Light", "Genotype"], y = "Y", 
+                                            delta2 = True, experiment = "Experiment",
+                                            experiment_label = ["Test", "Control"],
+                                            x1_level = ["L2", "L1"])
+
+
+    
+.. code-block:: python3
+  :linenos:
+
+    unpaired_delta2_specified.mean_diff
+    
+
+.. parsed-literal::
+
+    DABEST v0.3.9999
+    ================
+                
+    Good morning!
+    The current time is Tue Aug 31 01:15:27 2021.
+
+    The unpaired mean difference between L2 Test and L1 Test is -0.113 [95%CI -0.529, 0.347].
+    The p-value of the two-sided permutation t-test is 0.645, calculated for legacy purposes only. 
+
+    The unpaired mean difference between L2 Control and L1 Control is 0.366 [95%CI 0.0685, 0.706].
+    The p-value of the two-sided permutation t-test is 0.0514, calculated for legacy purposes only. 
+
+    The delta-delta between Test and Control is 0.48 [95%CI -0.103, 1.02].
+    The p-value of the two-sided permutation t-test is 0.133, calculated for legacy purposes only. 
+
+    5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
+    For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+    To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
+    
+
+
+.. code-block:: python3
+  :linenos:
+
+
+    unpaired_delta2_specified.mean_diff.plot()
+
+
+
+.. image:: _images/tutorial_107_0.png
+
+
+This delta - delta function also supports paired data.
+
+.. code-block:: python3
+  :linenos:
+
+    paired_delta2 = dabest.load(data = df_delta2, 
+                                paired = "baseline", id_col="ID",
+                                x = ["Light", "Genotype"], y = "Y", 
+                                delta2 = True, experiment = "Experiment")
+
+
+  
+.. code-block:: python3
+  :linenos:
+
+
+    paired_delta2.mean_diff.plot()
+
+
+
+.. image:: _images/tutorial_108_0.png
+
+Since the delta-delta function is only applicable to mean differences, plots 
+of other effect sizes will not include a delta-delta bootstrap plot.
+
+.. code-block:: python3
+  :linenos:
+
+
+    paired_delta2.median_diff.plot()
+
+
+
+.. image:: _images/tutorial_109_0.png
+
+Similar as the mini-meta function, you can also find all the information 
+of delta - delta by assessing the attribute named ``delta_delta`` of the 
+effect size object.
+
+.. code-block:: python3
+  :linenos:
+
+    paired_delta2.mean_diff.delta_delta
+
+
+.. parsed-literal::
+
+    DABEST v0.3.9999
+    ================
+                
+    Good morning!
+    The current time is Wed Sep  1 01:44:14 2021.
+
+    The delta-delta between Control and Test is 0.48 [95%CI -0.188, 1.17].
+    The p-value of the two-sided permutation t-test is 0.236, calculated for legacy purposes only. 
+
+    5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
+    For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+
+``delta_delta`` has its own attributes, containing various information of delta - delta.
+``delta_delta.to_dict()`` will return to you all the attributes in a dictionary format.
 
 
 Controlling plot aesthetics
@@ -1149,7 +1936,7 @@ Color the rawdata according to another column in the dataframe.
   :linenos:
 
 
-    two_groups_paired.mean_diff.plot(color_col="Gender");
+    two_groups_paired_baseline.mean_diff.plot(color_col="Gender");
 
 
 
@@ -1272,6 +2059,37 @@ better outcome), you can simply invert the tuple passed to
 .. image:: _images/tutorial_71_0.png
 
 
+The contrast axes share the same y-limits as that of the delta - delta plot
+and thus the y axis of the delta - delta plot changes as well.
+
+.. code-block:: python3
+  :linenos:
+
+
+    paired_delta2.mean_diff.plot(contrast_ylim=(3, -3),
+                                 contrast_label="More negative is better!");
+
+
+
+.. image:: _images/tutorial_112_0.png
+
+
+You can also change the y-limits and y-label for the delta - delta plot.
+
+.. code-block:: python3
+  :linenos:
+
+
+    paired_delta2.mean_diff.plot(delta2_ylim=(3, -3),
+                                 delta2_label="More negative is better!");
+
+
+
+.. image:: _images/tutorial_111_0.png
+
+ 
+
+
 You can add minor ticks and also change the tick frequency by accessing
 the axes directly.
 
@@ -1322,7 +2140,30 @@ effect size differences.
 .. image:: _images/tutorial_74_0.png
 
 
-.. _inset plot:
+
+For mini-meta plots, you can hide the weighted avergae plot by setting 
+``show_mini_meta=False`` in the ``plot()`` function.
+
+.. code-block:: python3
+  :linenos:
+
+
+    mini_meta_paired.mean_diff.plot(show_mini_meta=False)
+
+.. image:: _images/tutorial_102_0.png
+
+
+Similarly, you can also hide the delta-delta plot by setting 
+``show_delta2=False`` in the ``plot()`` function.
+
+.. code-block:: python3
+  :linenos:
+
+
+    paired_delta2.mean_diff.plot(show_delta2=False)
+
+.. image:: _images/tutorial_113_0.png
+
 
 Creating estimation plots in existing axes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1374,7 +2215,6 @@ In this case, to access the individual rawdata axes, use
 
 
 .. image:: _images/tutorial_78_0.png
-
 
 
 Applying style sheets
