@@ -1301,6 +1301,7 @@ generate different results.
 
 .. code-block:: python3
   :linenos:
+  
     baseline_repeated_measures.mean_diff
 
 

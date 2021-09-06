@@ -16,7 +16,12 @@ class bootstrap:
             the two groups (x2-x1) is computed.
             NaNs are automatically discarded.
         paired: boolean, default False
-            Whether or not x1 and x2 are paired samples.
+            Whether or not x1 and x2 are paired samples. If 'paired' is None then
+            the data will not be treated as paired data in the subsequent calculations. 
+            If 'paired' is 'baseline', then in each tuple of x, other groups will be
+            paired up with the first group (as control). If 'paired' is 'sequential', 
+            then in each tuple of x, each group will be paired up with the previous 
+            group (as control).
         statfunction: callable, default np.mean
             The summary statistic called on data.
         smoothboot: boolean, default False

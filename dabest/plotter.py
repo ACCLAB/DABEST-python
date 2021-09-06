@@ -73,7 +73,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     idx             = dabest_obj.idx
 
 
-
+    # Support mini-meta plot or delta-delta plot only for mean differences
     if effect_size != "mean_diff" or not delta2:
         show_delta2 = False
     else:
@@ -85,6 +85,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         show_mini_meta = plot_kwargs["show_mini_meta"]
 
+    # Do not allow plotting both mini-meta distribution and delta-delta distribution
+    # at the same time
     if show_delta2 and show_mini_meta:
         err0 = "`show_delta2` and `show_mini_meta` cannot be True at the same time."
         raise ValueError(err0)
@@ -242,7 +244,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     fig_size   = plot_kwargs["fig_size"]
     if fig_size is None:
         all_groups_count = np.sum([len(i) for i in dabest_obj.idx])
-        # Increase the width for delta-delta graph
+        # Increase the width for delta-delta graph and mini-meta graph
         if show_delta2 or show_mini_meta:
             all_groups_count += 2
         if is_paired and show_pairs is True:
@@ -512,7 +514,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                                    current_control))
 
 
-    # Plot mini-meta violin
+    # Plot the bootstraps, then the effect sizes and CIs for mini-meta delta
+    # or delta-delta.
     if show_mini_meta or show_delta2:
         if show_mini_meta:
             mini_meta_delta = EffectSizeDataFrame.mini_meta_delta
@@ -526,8 +529,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             difference      = delta_delta.difference
             ci_low          = delta_delta.bca_low
             ci_high         = delta_delta.bca_high
+        
         #Create the violinplot.
-        #New in v0.2.6: drop negative infinities before plotting.
         position = max(rawdata_axes.get_xticks())+2
         v = contrast_axes.violinplot(data[~np.isinf(data)],
                                      positions=[position],
@@ -554,7 +557,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
     # Make sure the contrast_axes x-lims match the rawdata_axes xlims,
-    # and add an extra violinplot tick for delta-delta plot.
+    # and add an extra violinplot tick for delta-delta plot and mini-
+    # meta plot.
     if show_delta2 is False and show_mini_meta is False :
         contrast_axes.set_xticks(rawdata_axes.get_xticks())
     else:
@@ -570,7 +574,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if float_contrast is True:
         contrast_axes.set_xlim(0.5, 1.5)
     elif show_delta2 or show_mini_meta:
-        # Increase the xlim of raw data by 2
+        # Increase the xlim for delta-delta plots and mini-meta plots
         temp = rawdata_axes.get_xlim()
         if show_pairs:
             rawdata_axes.set_xlim(temp[0], temp[1]+0.25)
@@ -795,6 +799,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             ax.set_ylim(ylim)
             del redraw_axes_kwargs['y']
 
+    # Draw the x-axis for mini-meta plot or delta-delta plot
     if show_delta2 is True or show_mini_meta is True:
         ylim = contrast_axes.get_ylim()
         redraw_axes_kwargs['y'] = ylim[0]
@@ -856,7 +861,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                          og_ylim_contrast[0], og_ylim_contrast[1],
                          **redraw_axes_kwargs)
 
-
+    # Plot a seperate y-axis for the delta-delta plot
     if show_delta2 is True:
         if plot_kwargs['delta2_label'] is None:
             delta2_label = "delta - delta"
