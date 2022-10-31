@@ -13,7 +13,10 @@ A range of functions to compute various effect sizes.
 """
 
 
-def two_group_difference(control, test, is_paired=False,
+from tkinter import PhotoImage
+
+
+def two_group_difference(control, test, is_paired=False, is_directional=True,
                         effect_size="mean_diff"):
     """
     Computes the following metrics for control and test:
@@ -23,6 +26,7 @@ def two_group_difference(control, test, is_paired=False,
             * Hedges' g
         - Median difference
         - Cliff's Delta
+        - Cohen's h (distance between two proportions)
 
     See the Wikipedia entry here: https://bit.ly/2LzWokf
 
@@ -79,6 +83,9 @@ def two_group_difference(control, test, is_paired=False,
 
     elif effect_size == "cohens_d":
         return cohens_d(control, test, is_paired)
+
+    elif effect_size == "cohens_h":
+        return cohens_h(control, test, is_directional)
 
     elif effect_size == "hedges_g":
         return hedges_g(control, test, is_paired)
@@ -226,6 +233,58 @@ def cohens_d(control, test, is_paired=False):
     return M / divisor
 
 
+
+def cohens_h(control, test, is_directional=True):
+    '''
+    Computes Cohen's h for test v.s. control.
+    See https://en.wikipedia.org/wiki/Cohen%27s_h for reference.
+
+    Keywords
+    --------
+    control, test: List, tuple, or array.
+
+    Returns
+    -------
+        h: float.
+
+    Notes
+    -----
+        Assuming the input data type is binary, i.e. a series of 0s and 1s,
+        and a dict for mapping the 0s and 1s to the actual labels, e.g.
+        {1: "Smoker", 
+        0: "Non-smoker"}
+    '''
+
+    import numpy as np
+    import pandas as pd
+
+    # Check whether dataframe contains only 0s and 1s.
+    if pd.unique(control) != [0, 1] or pd.unique(test) != [0, 1]:
+        raise ValueError("Input data must be 0 or 1.")
+
+    # Convert to numpy arrays for speed.
+    # NaNs are automatically dropped.
+    # Aligned with cohens_d calculation.
+    if control.__class__ != np.ndarray:
+        control = np.array(control)
+    if test.__class__ != np.ndarray:
+        test = np.array(test)
+    control = control[~np.isnan(control)]
+    test = test[~np.isnan(test)]
+
+    prop_control = sum(control)/len(control)
+    prop_test = sum(test)/len(test)
+
+    # Arcsine transformation
+    phi_control = 2 * np.arcsin(np.sqrt(prop_control))
+    phi_test = 2 * np.arcsin(np.sqrt(prop_test))
+
+    if is_directional:
+        return phi_test - phi_control
+    else:
+        return abs(phi_test - phi_control)
+
+    
 
 def hedges_g(control, test, is_paired=False):
     """
