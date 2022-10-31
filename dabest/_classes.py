@@ -1503,9 +1503,14 @@ class EffectSizeDataFrame(object):
 
             swarm_label=None, contrast_label=None,
             swarm_ylim=None, contrast_ylim=None,
+            bar_label=None,
 
             custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
-            halfviolin_alpha=0.8, 
+            bar_desat=0.2,
+            halfviolin_alpha=0.8,
+
+            # error bar
+            errwidth=1.5, errcolor="0", capsize=0.05, ci=90,
 
             float_contrast=True,
             show_pairs=True,
@@ -1517,6 +1522,7 @@ class EffectSizeDataFrame(object):
             ax=None,
 
             swarmplot_kwargs=None,
+            barplot_kwargs=None,
             violinplot_kwargs=None,
             slopegraph_kwargs=None,
             reflines_kwargs=None,

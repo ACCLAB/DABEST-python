@@ -113,6 +113,14 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         swarmplot_kwargs = merge_two_dicts(default_swarmplot_kwargs,
                                            plot_kwargs["swarmplot_kwargs"])
 
+    default_barplot_kwargs = {"estimator": np.mean, "errwidth": plot_kwargs["errwidth"],
+                              "errcolor": plot_kwargs["errcolor"], "capsize": plot_kwargs["capsize"],
+                              "ci": plot_kwargs["ci"]}
+    if plot_kwargs["barplot_kwargs"] is None:
+        barplot_kwargs = default_barplot_kwargs
+    else:
+        barplot_kwargs = merge_two_dicts(default_barplot_kwargs,
+                                         plot_kwargs["barplot_kwargs"])
 
 
     # Violinplot kwargs.
@@ -190,6 +198,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     n_groups = len(color_groups)
     custom_pal = plot_kwargs["custom_palette"]
     swarm_desat = plot_kwargs["swarm_desat"]
+    bar_desat = plot_kwargs["bar_desat"]
     contrast_desat = plot_kwargs["halfviolin_desat"]
 
     if custom_pal is None:
@@ -228,6 +237,12 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
     plot_palette_raw = dict(zip(names, swarm_colors))
+
+    bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
+    bar_colors1 = [bar_color[0], bar_color[0]]
+    bar_colors2 = [bar_color[1], bar_color[1]]
+    plot_palette_bar1 = dict(zip(names, bar_colors1))
+    plot_palette_bar2 = dict(zip(names, bar_colors2))
 
     contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
     plot_palette_contrast = dict(zip(names, contrast_colors))
@@ -385,12 +400,39 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
     else:
-        # Plot the raw data as a swarmplot.
-        rawdata_plot = sns.swarmplot(data=plot_data, x=xvar, y=yvar,
-                                     ax=rawdata_axes,
-                                     order=all_plot_groups, hue=color_col,
-                                     palette=plot_palette_raw, zorder=1,
-                                     **swarmplot_kwargs)
+        if (pd.unique(plot_data["value"])==np.array([0,1])).all()==False:
+            is_proportion = False
+            # Plot the raw data as a swarmplot.
+            rawdata_plot = sns.swarmplot(data=plot_data, x=xvar, y=yvar,
+                                         ax=rawdata_axes,
+                                         order=all_plot_groups, hue=color_col,
+                                         palette=plot_palette_raw, zorder=1,
+                                         **swarmplot_kwargs)
+        else:
+            is_proportion = True
+            # Plot the raw data as a barplot.
+            df_new = plot_data.copy()
+            bar1_df = df_new.groupby("group").count().reset_index()
+            bar1_df['proportion'] = [i / j for i, j in zip(bar1_df['value'], bar1_df['value'])]
+            bar1 = sns.barplot(data=bar1_df, x=xvar, y="proportion",
+                               ax=rawdata_axes,
+                               order=all_plot_groups,
+                               palette=plot_palette_bar1,
+                               zorder=1)
+            bar2 = sns.barplot(data=plot_data, x=xvar, y=yvar,
+                               ax=rawdata_axes,
+                               order=all_plot_groups,
+                               palette=plot_palette_bar2,
+                               zorder=1,
+                               **barplot_kwargs)
+            # adjust the width of bars
+            newwidth = 0.5
+            for bar in bar1.patches:
+                x = bar.get_x()
+                width = bar.get_width()
+                centre = x + width / 2.
+                bar.set_x(centre - newwidth / 2.)
+                bar.set_width(newwidth)
 
         # Plot the gapped line summaries, if this is not a Cumming plot.
         # Also, we will not plot gapped lines for paired plots. For now.
@@ -726,14 +768,23 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         swarm_label = "value"
     elif swarm_label is None and yvar is not None:
         swarm_label = yvar
-        
+
+    bar_label = plot_kwargs['bar_label']
+    if bar_label is None:
+        bar_label = "proportion of success"
+
     # Place contrast axes y-label.
     contrast_label_dict = {'mean_diff'    : "mean difference",
                            'median_diff'  : "median difference",
                            'cohens_d'     : "Cohen's d",
                            'hedges_g'     : "Hedges' g",
                            'cliffs_delta' : "Cliff's delta"}
-    default_contrast_label = contrast_label_dict[EffectSizeDataFrame.effect_size]
+
+    if is_proportion==False:
+        default_contrast_label = contrast_label_dict[EffectSizeDataFrame.effect_size]
+    else:
+        default_contrast_label = "proportion difference"
+
 
     if plot_kwargs['contrast_label'] is None:
         if is_paired is True:
@@ -748,9 +799,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if float_contrast is True:
         contrast_axes.yaxis.set_label_position("right")
 
-
-    # Set the rawdata axes labels appropriately        
-    rawdata_axes.set_ylabel(swarm_label)
+    # Set the rawdata axes labels appropriately
+    if is_proportion == False:
+        rawdata_axes.set_ylabel(swarm_label)
+    else:
+        rawdata_axes.set_ylabel(bar_label)
     rawdata_axes.set_xlabel("")
 
 
