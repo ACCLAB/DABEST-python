@@ -19,7 +19,7 @@ def load(data, idx, x=None, y=None, paired=False, id_col=None,
         (if 'x' is supplied). This can be expressed as a tuple of tuples,
         with each individual tuple producing its own contrast plot
     x : string, default None
-    y : string, default None
+    y : string, def ault None
         Column names for data to be plotted on the x-axis and y-axis.
     paired : boolean, default False.
     id_col : default None.

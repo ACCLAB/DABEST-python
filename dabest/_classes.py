@@ -194,6 +194,9 @@ class Dabest(object):
         self.__cohens_d     = EffectSizeDataFrame(self, "cohens_d",
                                                 **EffectSizeDataFrame_kwargs)
 
+        self.__cohens_h     = EffectSizeDataFrame(self, "cohens_h",
+                                                **EffectSizeDataFrame_kwargs)                                       
+
         self.__hedges_g     = EffectSizeDataFrame(self, "hedges_g",
                                                 **EffectSizeDataFrame_kwargs)
 
@@ -367,6 +370,44 @@ class Dabest(object):
         return self.__cohens_d
     
     
+    @property
+    def cohens_h(self):
+        """
+        Returns an :py:class:`EffectSizeDataFrame` for the standardized mean difference Cohen's `h`, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `directional` argument in `dabest.load()`.
+
+        Example
+        -------
+        >>> from scipy.stats import randint
+        >>> import pandas as pd
+        >>> import dabest
+        >>> control = randint.rvs(0, 2, size=30, random_state=12345)
+        >>> test    = randint.rvs(0, 2, size=30, random_state=12345)
+        >>> my_df   = pd.DataFrame({"control": control,
+                                    "test": test})
+        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test")
+        >>> my_dabest_object.cohens_h
+
+        Notes
+        -----
+        Cohen's 'h' uses the information of proportion in the control and test groups to calculate the distance between two proportions.
+        It can be used to describe the difference between two proportions as "small", "medium", or "large".
+        It can be used to determine if the difference between two proportions is "meaningful".
+
+        A directional Cohen's 'h' is computed with the following equation:
+
+        .. math::
+            h = 2 * \\arcsin{\\sqrt{proportion_{Test}}} - 2 * \\arcsin{\\sqrt{proportion_{Control}}}
+
+        For a non-directional Cohen's 'h', the equation is:
+        .. math::
+            h = \\abs{2 * \\arcsin{\\sqrt{proportion_{Test}}}} - \\abs{2 * \\arcsin{\\sqrt{proportion_{Control}}}}
+        
+        References:
+            https://en.wikipedia.org/wiki/Cohen%27s_h
+        """
+        return self.__cohens_h
+
+
     @property  
     def hedges_g(self):
         """
@@ -555,7 +596,7 @@ class TwoGroupsEffectSize(object):
     """
 
     def __init__(self, control, test, effect_size,
-                 is_paired=False, ci=95,
+                 is_paired=False, is_directional=True, ci=95,
                  resamples=5000, 
                  permutation_count=5000, 
                  random_seed=12345):
@@ -692,6 +733,7 @@ class TwoGroupsEffectSize(object):
         self.__EFFECT_SIZE_DICT =  {"mean_diff" : "mean difference",
                                     "median_diff" : "median difference",
                                     "cohens_d" : "Cohen's d",
+                                    "cohens_h" : "Cohen's h",
                                     "hedges_g" : "Hedges' g",
                                     "cliffs_delta" : "Cliff's delta"}
 
@@ -830,7 +872,7 @@ class TwoGroupsEffectSize(object):
                 self.__pvalue_paired_students_t = paired_t.pvalue
                 self.__statistic_paired_students_t = paired_t.statistic
 
-                standardized_es = es.cohens_d(control, test, is_paired=True)
+                self.__standardized_es = es.cohens_d(control, test, is_paired=True)
                 # self.__power = power.tt_solve_power(standardized_es,
                 #                                     len(control),
                 #                                     alpha=self.__alpha)
@@ -897,7 +939,8 @@ class TwoGroupsEffectSize(object):
 #             self.__statistic_lqrt_unequal_var = lqrt_unequal_var_result.statistic
                     
 
-            standardized_es = es.cohens_d(control, test, is_paired=False)
+            self.__standardized_es = es.cohens_d(control, test, is_paired=False)
+            self.__proportional_difference = es.cohens_h(control, test, is_directional=True)
             
             # self.__power = power.tt_ind_solve_power(standardized_es,
             #                                         len(control),
@@ -1236,6 +1279,25 @@ class TwoGroupsEffectSize(object):
         return self.__PermutationTest_result.permutation_count
 
 
+    #
+    #
+    @property
+    def standardized_es(self):
+        from numpy import nan as npnan
+        try:
+            return self.__standardized_es
+        except AttributeError:
+            return npnan
+
+    @property
+    def proportional_difference(self):
+        from numpy import nan as npnan
+        try:
+            return self.__proportional_difference
+        except AttributeError:
+            return npnan
+
+
 
     # Introduced in v0.2.8, removed in v0.3.0 for performance issues.
 #     @property
@@ -1424,6 +1486,8 @@ class EffectSizeDataFrame(object):
 
                             'pvalue_kruskal',
                             'statistic_kruskal',
+                            'standardized_es',
+                            'proportional_difference'
                            ]
 
         self.__results   = out_.reindex(columns=columns_in_order)
