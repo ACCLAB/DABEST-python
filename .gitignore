@@ -121,7 +121,6 @@ fontList-v300.json
 
 # tex folders
 tex.cache/
-.Rproj.user
 
-# test_file
-dabest/PropPlotter.py
+# Visual Studio
+.vscode/

@@ -596,7 +596,7 @@ class TwoGroupsEffectSize(object):
     """
 
     def __init__(self, control, test, effect_size,
-                 is_paired=False, is_directional=True, ci=95,
+                 is_paired=False, ci=95,
                  resamples=5000, 
                  permutation_count=5000, 
                  random_seed=12345):
@@ -939,9 +939,14 @@ class TwoGroupsEffectSize(object):
 #             self.__statistic_lqrt_unequal_var = lqrt_unequal_var_result.statistic
                     
 
-            self.__standardized_es = es.cohens_d(control, test, is_paired=False)
-            self.__proportional_difference = es.cohens_h(control, test, is_directional=True)
+            self.__standardized_es = es.cohens_d(control, test, is_paired=False)            
             
+            # The Cohen's h calculation is for binary categorical data
+            try:
+                self.__proportional_difference = es.cohens_h(control, test)
+            except ValueError:
+                # Occur only when the data consists not only 0's and 1's.
+                pass
             # self.__power = power.tt_ind_solve_power(standardized_es,
             #                                         len(control),
             #                                         alpha=self.__alpha,
