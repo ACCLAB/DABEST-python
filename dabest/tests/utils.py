@@ -39,6 +39,42 @@ def create_demo_dataset(seed=9999, N=20):
     return df
 
 
+def create_demo_prop_dataset(seed=9999, N=40):
+    import numpy as np
+    import pandas as pd
+
+    np.random.seed(9999)  # Fix the seed so the results are replicable.
+    # Create samples
+    n = 1
+    c1 = np.random.binomial(n, 0.2, size=N)
+    c2 = np.random.binomial(n, 0.2, size=N)
+    c3 = np.random.binomial(n, 0.8, size=N)
+
+    t1 = np.random.binomial(n, 0.5, size=N)
+    t2 = np.random.binomial(n, 0.2, size=N)
+    t3 = np.random.binomial(n, 0.3, size=N)
+    t4 = np.random.binomial(n, 0.4, size=N)
+    t5 = np.random.binomial(n, 0.5, size=N)
+    t6 = np.random.binomial(n, 0.6, size=N)
+
+    # Add a `gender` column for coloring the data.
+    females = np.repeat('Female', N / 2).tolist()
+    males = np.repeat('Male', N / 2).tolist()
+    gender = females + males
+
+    # Add an `id` column for paired data plotting.
+    id_col = pd.Series(range(1, N + 1))
+
+    # Combine samples and gender into a DataFrame.
+    df = pd.DataFrame({'Control 1': c1, 'Test 1': t1,
+                       'Control 2': c2, 'Test 2': t2,
+                       'Control 3': c3, 'Test 3': t3,
+                       'Test 4': t4, 'Test 5': t5, 'Test 6': t6,
+                       'Gender': gender, 'ID': id_col
+                       })
+
+    return df
+
 
 def get_swarm_yspans(coll, round_result=False, decimals=12):
     """
