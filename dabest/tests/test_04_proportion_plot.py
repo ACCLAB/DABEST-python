@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 import matplotlib as mpl
-# mpl.use('Agg')
+mpl.use('Agg')
 import matplotlib.ticker as Ticker
 import matplotlib.pyplot as plt
 from .._api import load
@@ -35,29 +35,37 @@ multi_groups = load(df, idx=(("Control 1", "Test 1",),
                              )
                     )
 
+@pytest.mark.mpl_image_compare
 def test_101_gardner_altman_unpaired_propdiff():
     return two_groups_unpaired.mean_diff.plot();
 
+@pytest.mark.mpl_image_compare
 def test_102_gardner_altman_paired_propdiff():
     return two_groups_paired.mean_diff.plot();
 
+@pytest.mark.mpl_image_compare
 def test_103_cummings_two_group_unpaired_propdiff():
     return two_groups_unpaired.mean_diff.plot(fig_size=(4, 6),
                                               float_contrast=False);
 
+@pytest.mark.mpl_image_compare
 def test_104_cummings_two_group_paired_propdiff():
     return two_groups_paired.mean_diff.plot(fig_size=(6, 6),
                                             float_contrast=False);
 
+@pytest.mark.mpl_image_compare
 def test_105_cummings_multi_group_unpaired__propdiff():
     return multi_2group.mean_diff.plot();
 
+@pytest.mark.mpl_image_compare
 def test_106_cummings_shared_control_propdiff():
     return shared_control.mean_diff.plot();
 
+@pytest.mark.mpl_image_compare
 def test_107_cummings_multi_groups_propdiff():
     return multi_groups.mean_diff.plot();
 
+@pytest.mark.mpl_image_compare
 def test_108_inset_plots_propdiff():
 
     # Load the titanic dataset. Requires internet access.
@@ -82,14 +90,17 @@ def test_108_inset_plots_propdiff():
     titanic_dabest2.mean_diff.plot(ax=ax.flat[3], float_contrast=False);
     return fig
 
+@pytest.mark.mpl_image_compare
 def test_109_gardner_altman_ylabel():
     return two_groups_unpaired.mean_diff.plot(bar_label="This is my\nrawdata",
                                    contrast_label="The bootstrap\ndistribtions!");
 
+@pytest.mark.mpl_image_compare
 def test_110_change_fig_size():
     return two_groups_unpaired.mean_diff.plot(fig_size=(6, 6),
                                             custom_palette="Dark2");
 
+@pytest.mark.mpl_image_compare
 def test_111_change_palette_b():
     return multi_2group.mean_diff.plot(custom_palette="Paired");
 
@@ -100,21 +111,26 @@ my_color_palette = {"Control 1" : "blue",
                 "Test 2"    : (0., 0.7, 0.2) # This is a RGB tuple.
                 }
 
+@pytest.mark.mpl_image_compare
 def test_112_change_palette_c():
     return multi_2group.mean_diff.plot(custom_palette=my_color_palette);
 
+@pytest.mark.mpl_image_compare
 def test_113_desat():
     return multi_2group.mean_diff.plot(custom_palette=my_color_palette,
                             bar_desat=0.1,
                             halfviolin_desat=0.25);
 
+@pytest.mark.mpl_image_compare
 def test_114_change_ylims():
     return multi_2group.mean_diff.plot(contrast_ylim=(-2, 2));
 
+@pytest.mark.mpl_image_compare
 def test_115_invert_ylim():
     return multi_2group.mean_diff.plot(contrast_ylim=(2, -2),
                                        contrast_label="More negative is better!");
 
+@pytest.mark.mpl_image_compare
 def test_116_ticker_gardner_altman():
 
     fig = two_groups_unpaired.mean_diff.plot()
@@ -129,12 +145,15 @@ def test_116_ticker_gardner_altman():
     contrast_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(0.25))
     return fig
 
+@pytest.mark.mpl_image_compare
 def test_117_err_color():
     return two_groups_unpaired.mean_diff.plot(err_color="purple");
 
+@pytest.mark.mpl_image_compare
 def test_118_cummings_two_group_unpaired_meandiff_bar_width():
     return two_groups_unpaired.mean_diff.plot(bar_width=0.4,float_contrast=False);
 
+@pytest.mark.mpl_image_compare
 def test_119_ticker_cumming():
     fig = multi_2group.mean_diff.plot(bar_ylim=(0,1.5), contrast_ylim=(-1, 1))
 
@@ -165,6 +184,7 @@ long_df = pd.melt(wide_df,
                 var_name="group")
 long_df['dummy'] = np.repeat(np.nan, len(long_df))
 
+@pytest.mark.mpl_image_compare
 def test_120_wide_df_nan():
 
     wide_df_dabest = load(wide_df,
@@ -173,6 +193,7 @@ def test_120_wide_df_nan():
 
     return wide_df_dabest.mean_diff.plot();
 
+@pytest.mark.mpl_image_compare
 def test_121_long_df_nan():
 
     long_df_dabest = load(long_df, x="group", y="value",
@@ -181,6 +202,7 @@ def test_121_long_df_nan():
 
     return long_df_dabest.mean_diff.plot();
 
+@pytest.mark.mpl_image_compare
 def test_122_style_sheets():
     # Perform this test last so we don't have to reset the plot style.
     plt.style.use("dark_background")
