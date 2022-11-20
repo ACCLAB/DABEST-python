@@ -23,6 +23,7 @@ def two_group_difference(control, test, is_paired=False,
             * Hedges' g
         - Median difference
         - Cliff's Delta
+        - Cohen's h (distance between two proportions)
 
     See the Wikipedia entry here: https://bit.ly/2LzWokf
 
@@ -79,6 +80,9 @@ def two_group_difference(control, test, is_paired=False,
 
     elif effect_size == "cohens_d":
         return cohens_d(control, test, is_paired)
+
+    elif effect_size == "cohens_h":
+        return cohens_h(control, test)
 
     elif effect_size == "hedges_g":
         return hedges_g(control, test, is_paired)
@@ -226,6 +230,58 @@ def cohens_d(control, test, is_paired=False):
     return M / divisor
 
 
+
+def cohens_h(control, test):
+    '''
+    Computes Cohen's h for test v.s. control.
+    See https://en.wikipedia.org/wiki/Cohen%27s_h for reference.
+
+    Keywords
+    --------
+    control, test: List, tuple, or array.
+
+    Returns
+    -------
+        h: float.
+
+    Notes
+    -----
+        Assuming the input data type is binary, i.e. a series of 0s and 1s,
+        and a dict for mapping the 0s and 1s to the actual labels, e.g.
+        {1: "Smoker", 
+        0: "Non-smoker"}
+    '''
+
+    import numpy as np
+    import pandas as pd
+
+    # Check whether dataframe contains only 0s and 1s.
+    try:
+        pd.unique(control)==np.array([0,1]).all()==False and (pd.unique(test)==np.array([0,1])).all()==False
+    except:
+        pass
+
+    # Convert to numpy arrays for speed.
+    # NaNs are automatically dropped.
+    # Aligned with cohens_d calculation.
+    if control.__class__ != np.ndarray:
+        control = np.array(control)
+    if test.__class__ != np.ndarray:
+        test = np.array(test)
+    control = control[~np.isnan(control)]
+    test = test[~np.isnan(test)]
+
+    prop_control = sum(control)/len(control)
+    prop_test = sum(test)/len(test)
+
+    # Arcsine transformation
+    phi_control = 2 * np.arcsin(np.sqrt(prop_control))
+    phi_test = 2 * np.arcsin(np.sqrt(prop_test))
+
+    
+    return phi_control - phi_test
+
+    
 
 def hedges_g(control, test, is_paired=False):
     """
