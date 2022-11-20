@@ -121,4 +121,6 @@ fontList-v300.json
 
 # tex folders
 tex.cache/
-.Rproj.user
+
+# Visual Studio
+.vscode/

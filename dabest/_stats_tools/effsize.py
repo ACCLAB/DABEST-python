@@ -13,10 +13,7 @@ A range of functions to compute various effect sizes.
 """
 
 
-from tkinter import PhotoImage
-
-
-def two_group_difference(control, test, is_paired=False, is_directional=True,
+def two_group_difference(control, test, is_paired=False,
                         effect_size="mean_diff"):
     """
     Computes the following metrics for control and test:
@@ -85,7 +82,7 @@ def two_group_difference(control, test, is_paired=False, is_directional=True,
         return cohens_d(control, test, is_paired)
 
     elif effect_size == "cohens_h":
-        return cohens_h(control, test, is_directional)
+        return cohens_h(control, test)
 
     elif effect_size == "hedges_g":
         return hedges_g(control, test, is_paired)
@@ -234,7 +231,7 @@ def cohens_d(control, test, is_paired=False):
 
 
 
-def cohens_h(control, test, is_directional=True):
+def cohens_h(control, test):
     '''
     Computes Cohen's h for test v.s. control.
     See https://en.wikipedia.org/wiki/Cohen%27s_h for reference.
@@ -259,8 +256,10 @@ def cohens_h(control, test, is_directional=True):
     import pandas as pd
 
     # Check whether dataframe contains only 0s and 1s.
-    if pd.unique(control) != [0, 1] or pd.unique(test) != [0, 1]:
-        raise ValueError("Input data must be 0 or 1.")
+    try:
+        pd.unique(control)==np.array([0,1]).all()==False and (pd.unique(test)==np.array([0,1])).all()==False
+    except:
+        pass
 
     # Convert to numpy arrays for speed.
     # NaNs are automatically dropped.
@@ -279,10 +278,8 @@ def cohens_h(control, test, is_directional=True):
     phi_control = 2 * np.arcsin(np.sqrt(prop_control))
     phi_test = 2 * np.arcsin(np.sqrt(prop_test))
 
-    if is_directional:
-        return phi_test - phi_control
-    else:
-        return abs(phi_test - phi_control)
+    
+    return phi_control - phi_test
 
     
 
