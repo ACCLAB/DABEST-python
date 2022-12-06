@@ -8,24 +8,32 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     """
     Custom function that creates an estimation plot from an EffectSizeDataFrame.
+
     Keywords
     --------
     EffectSizeDataFrame: A `dabest` EffectSizeDataFrame object.
+
     **plot_kwargs:
         color_col=None
+
         raw_marker_size=6, es_marker_size=9,
+
         swarm_label=None, contrast_label=None, delta2_label=None,
         swarm_ylim=None, contrast_ylim=None, delta2_ylim=None,
+
         custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
         halfviolin_alpha=0.8, 
+
         float_contrast=True,
         show_pairs=True,
         show_delta2=True,
         group_summaries=None,
         group_summaries_offset=0.1,
+
         fig_size=None,
         dpi=100,
         ax=None,
+
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
         slopegraph_kwargs=None,
@@ -40,7 +48,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     import pandas as pd
 
     from .misc_tools import merge_two_dicts
-    from .plot_tools import halfviolin, get_swarm_spans, gapped_lines, proportion_error_bar
+    from .plot_tools import halfviolin, get_swarm_spans, gapped_lines,proportion_error_bar
     from ._stats_tools.effsize import _compute_standardizers, _compute_hedges_correction_factor
 
     import logging
@@ -60,15 +68,14 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     ytick_color = plt.rcParams["ytick.color"]
     axes_facecolor = plt.rcParams['axes.facecolor']
 
-    dabest_obj      = EffectSizeDataFrame.dabest_obj
-    plot_data       = EffectSizeDataFrame._plot_data
-    xvar            = EffectSizeDataFrame.xvar
-    yvar            = EffectSizeDataFrame.yvar
-    is_paired       = EffectSizeDataFrame.is_paired
-    proportional    = EffectSizeDataFrame.proportional
-    delta2          = EffectSizeDataFrame.delta2
-    mini_meta       = EffectSizeDataFrame.mini_meta
-    effect_size     = EffectSizeDataFrame.effect_size
+    dabest_obj  = EffectSizeDataFrame.dabest_obj
+    plot_data   = EffectSizeDataFrame._plot_data
+    xvar        = EffectSizeDataFrame.xvar
+    yvar        = EffectSizeDataFrame.yvar
+    is_paired   = EffectSizeDataFrame.is_paired
+    delta2      = EffectSizeDataFrame.delta2
+    mini_meta   = EffectSizeDataFrame.mini_meta
+    effect_size = EffectSizeDataFrame.effect_size
 
     all_plot_groups = dabest_obj._all_plot_groups
     idx             = dabest_obj.idx
@@ -90,6 +97,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         err0 = "`show_delta2` and `show_mini_meta` cannot be True at the same time."
         raise ValueError(err0)
 
+
+
     # Disable Gardner-Altman plotting if any of the idxs comprise of more than
     # two groups or if it is a delta-delta plot.
     float_contrast   = plot_kwargs["float_contrast"]
@@ -101,13 +110,18 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         float_contrast = False
 
     if show_delta2 or show_mini_meta:
-        float_contrast = False
+        float_contrast = False  
 
-    if not is_paired:
+
+    # Disable slopegraph plotting if any of the idxs comprise of more than
+    # two groups.
+    if np.all([len(i)==2 for i in idx]) is False:
+        is_paired = False
+    # if paired is False, set show_pairs as False.
+    if is_paired is False:
         show_pairs = False
     else:
         show_pairs = plot_kwargs["show_pairs"]
-
 
 
     # Set default kwargs first, then merge with user-dictated ones.
@@ -137,7 +151,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                             plot_kwargs["violinplot_kwargs"])
 
 
-
     # slopegraph kwargs.
     default_slopegraph_kwargs = {'lw':1, 'alpha':0.5}
     if plot_kwargs["slopegraph_kwargs"] is None:
@@ -145,6 +158,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         slopegraph_kwargs = merge_two_dicts(default_slopegraph_kwargs,
                                             plot_kwargs["slopegraph_kwargs"])
+
 
 
 
@@ -252,7 +266,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     plot_palette_contrast = dict(zip(names, contrast_colors))
 
 
-
     # Infer the figsize.
     fig_size   = plot_kwargs["fig_size"]
     if fig_size is None:
@@ -273,6 +286,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         width_inches = (each_group_width_inches * all_groups_count)
         fig_size = (width_inches, height_inches)
+
 
 
     # Initialise the figure.
@@ -333,6 +347,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                     gridspec_kw={"width_ratios": width_ratios_ga,
                                  "wspace": 0},
                                  **init_fig_kwargs)
+
         else:
             fig, axx = plt.subplots(nrows=2,
                                     gridspec_kw={"hspace": 0.3},
@@ -343,11 +358,12 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_ax_ylim_low = list()
             contrast_ax_ylim_high = list()
             contrast_ax_ylim_tickintervals = list()
+
         rawdata_axes  = axx[0]
         contrast_axes = axx[1]
+
     rawdata_axes.set_frame_on(False)
     contrast_axes.set_frame_on(False)
-
 
     redraw_axes_kwargs = {'colors'     : ytick_color,
                           'facecolors' : ytick_color,
@@ -364,8 +380,20 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         rawdata_axes.set_ylim(bar_ylim)
 
     if show_pairs is True:
-        # if np.isin(plot_data[yvar], [0, 1]).all() == False:
-        if proportional == False:
+        if is_paired == "baseline":
+            temp_idx = []
+            for i in idx:
+                control = i[0]
+                temp_idx.extend(((control, test) for test in i[1:]))
+            temp_idx = tuple(temp_idx)
+
+            temp_all_plot_groups = []
+            for i in temp_idx:
+                temp_all_plot_groups.extend(list(i))
+        else:
+            temp_idx = idx
+            temp_all_plot_groups = all_plot_groups
+        if np.isin(plot_data[yvar], [0, 1]).all() == False:
             # Plot the raw data as a slopegraph.
             # Pivot the long (melted) data.
             is_proportion = False
@@ -374,20 +402,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             else:
                 pivot_values = [yvar, color_col]
             pivoted_plot_data = pd.pivot(data=plot_data, index=dabest_obj.id_col,
-                                        columns=xvar, values=pivot_values)
-            if is_paired == "baseline":
-                temp_idx = []
-                for i in idx:
-                    control = i[0]
-                    temp_idx.extend(((control, test) for test in i[1:]))
-                temp_idx = tuple(temp_idx)
-
-                temp_all_plot_groups = []
-                for i in temp_idx:
-                    temp_all_plot_groups.extend(list(i))
-            else:
-                temp_idx = idx
-                temp_all_plot_groups = all_plot_groups
+                                         columns=xvar, values=pivot_values)
             
             x_start = 0
             for ii, current_tuple in enumerate(temp_idx):
@@ -412,13 +427,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                         slopegraph_kwargs['color'] = ytick_color
                     else:
                         color_key = pivoted_plot_data[color_col,
-                                                    current_tuple[0]].loc[ID]
+                                                      current_tuple[0]].loc[ID]
                         if not pd.isna(color_key):
                             slopegraph_kwargs['color']  = plot_palette_raw[color_key]
                             slopegraph_kwargs['label']  = color_key
-                
+
                     rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
-                x_start  = x_start + grp_count
+                x_start = x_start + grp_count
             # Set the tick labels, because the slopegraph plotting doesn't.
             rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
             rawdata_axes.set_xticklabels(temp_all_plot_groups)
@@ -464,8 +479,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
     else:
-        # if np.isin(plot_data[yvar], [0, 1]).all() == False:
-        if proportional == False:
+        if np.isin(plot_data[yvar], [0, 1]).all()==False:
             is_proportion = False
             # Plot the raw data as a swarmplot.
             rawdata_plot = sns.swarmplot(data=plot_data, x=xvar, y=yvar,
@@ -575,10 +589,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         ticks_to_skip   = np.cumsum([len(t) for t in idx])[:-1].tolist()
         ticks_to_skip.insert(0, 0)
 
-    # Then obtain the ticks where we have to plot the effect sizes.
-    ticks_to_plot = [t for t in range(0, len(all_plot_groups))
+        # Then obtain the ticks where we have to plot the effect sizes.
+        ticks_to_plot = [t for t in range(0, len(all_plot_groups))
                     if t not in ticks_to_skip]
-
 
     # Plot the bootstraps, then the effect sizes and CIs.
     es_marker_size   = plot_kwargs["es_marker_size"]
@@ -625,7 +638,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         contrast_xtick_labels.append("{}\nminus\n{}".format(current_group,
                                                    current_control))
-
 
     # Plot mini-meta violin
     if show_mini_meta or show_delta2:
@@ -859,7 +871,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 custom_contrast_ylim = plot_kwargs['contrast_ylim']
                 if plot_kwargs['delta2_ylim'] is not None and show_delta2:
                     custom_delta2_ylim = plot_kwargs['delta2_ylim']
-                    if custom_contrast_ylim!=custom_delta2_ylim:
+                    if custom_contrast_ylim!=custom_deltas_ylim:
                         err1 = "Please check if `contrast_ylim` and `delta2_ylim` are assigned"
                         err2 = "with same values."
                         raise ValueError(err1 + err2)
@@ -929,6 +941,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         else:
             # Compute the end of each x-axes line.
             rightend_ticks = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
+        
             for ax in [rawdata_axes, contrast_axes]:
                 sns.despine(ax=ax, bottom=True)
             
@@ -1037,7 +1050,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     rawdata_axes.xaxis.set_ticks_position('bottom')
     rawdata_axes.yaxis.set_ticks_position('left')
     contrast_axes.xaxis.set_ticks_position('bottom')
-
     if float_contrast is False:
         contrast_axes.yaxis.set_ticks_position('left')
 

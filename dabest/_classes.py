@@ -2831,8 +2831,8 @@ class EffectSizeDataFrame(object):
         if self.__delta2:
             color_col = self.__x2
 
-        if self.__proportional:
-            raw_marker_size = 0.01
+        # if self.__proportional:
+        #     raw_marker_size = 0.01
             
         all_kwargs = locals()
         del all_kwargs["self"]
