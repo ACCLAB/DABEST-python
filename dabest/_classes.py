@@ -2608,11 +2608,11 @@ class EffectSizeDataFrame(object):
 
             raw_marker_size=6, es_marker_size=9,
 
-            swarm_label=None, contrast_label=None,
-            swarm_ylim=None, contrast_ylim=None,
+            swarm_label=None, barchart_label=None, contrast_label=None, delta2_label=None,
+            swarm_ylim=None, barchart_ylim=None, contrast_ylim=None, delta2_ylim=None,
 
             custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
-            halfviolin_alpha=0.8,
+            halfviolin_alpha=0.8, 
 
             #bar plot
             bar_label=None, bar_desat=0.5, bar_width = 0.5,bar_ylim = None,
@@ -2637,6 +2637,7 @@ class EffectSizeDataFrame(object):
             reflines_kwargs=None,
             group_summary_kwargs=None,
             legend_kwargs=None):
+
         """
         Creates an estimation plot for the effect size of interest.
         

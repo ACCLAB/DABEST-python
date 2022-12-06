@@ -13,7 +13,7 @@ df = create_demo_prop_dataset()
 two_groups_unpaired = load(df, idx=("Control 1", "Test 1"))
 
 two_groups_paired   = load(df, idx=("Control 1", "Test 1"),
-                           paired=True, id_col="ID")
+                           paired="baseline", id_col="ID")
 
 multi_2group = load(df, idx=(("Control 1", "Test 1",),
                              ("Control 2", "Test 2"))
@@ -22,7 +22,7 @@ multi_2group = load(df, idx=(("Control 1", "Test 1",),
 multi_2group_paired = load(df,
                             idx=(("Control 1", "Test 1"),
                                  ("Control 2", "Test 2")),
-                            paired=True, id_col="ID")
+                            paired="baseline", id_col="ID")
 
 shared_control = load(df, idx=("Control 1", "Test 1",
                                 "Test 2", "Test 3",
