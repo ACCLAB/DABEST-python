@@ -4,8 +4,10 @@
 # Email : joseshowh@gmail.com
 
 
-def load(data, idx, x=None, y=None, paired=False, id_col=None,
-        ci=95, resamples=5000, random_seed=12345):
+def load(data, idx=None, x=None, y=None, paired=None, id_col=None,
+        ci=95, resamples=5000, random_seed=12345, proportional=False, 
+        delta2 = False, experiment = None, experiment_label = None,
+        x1_level = None, mini_meta=False):
     '''
     Loads data in preparation for estimation statistics.
 
@@ -18,10 +20,14 @@ def load(data, idx, x=None, y=None, paired=False, id_col=None,
         List of column names (if 'x' is not supplied) or of category names
         (if 'x' is supplied). This can be expressed as a tuple of tuples,
         with each individual tuple producing its own contrast plot
-    x : string, default None
-    y : string, def ault None
+    x : string or list, default None
+        Column name(s) of the independent variable. This can be expressed as
+        a list of 2 elements if and only if 'delta2' is True; otherwise it 
+        can only be a string.
+    y : string, default None
         Column names for data to be plotted on the x-axis and y-axis.
-    paired : boolean, default False.
+    paired : string, default None
+        The type of the experiment under which the data are obtained
     id_col : default None.
         Required if `paired` is True.
     ci : integer, default 95
@@ -34,6 +40,23 @@ def load(data, idx, x=None, y=None, paired=False, id_col=None,
         This integer is used to seed the random number generator during
         bootstrap resampling, ensuring that the confidence intervals
         reported are replicable.
+    proportional : boolean, default False. 
+        TO INCLUDE MORE DESCRIPTION ABOUT DATA FORMAT
+    delta2 : boolean, default False
+        Indicator of delta-delta experiment
+    experiment : String, default None
+        The name of the column of the dataframe which contains the label of 
+        experiments
+    experiment_lab : list, default None
+        A list of String to specify the order of subplots for delta-delta plots.
+        This can be expressed as a list of 2 elements if and only if 'delta2' 
+        is True; otherwise it can only be a string. 
+    x1_level : list, default None
+        A list of String to specify the order of subplots for delta-delta plots.
+        This can be expressed as a list of 2 elements if and only if 'delta2' 
+        is True; otherwise it can only be a string. 
+    mini_meta : boolean, default False
+        Indicator of weighted delta calculation.
 
     Returns
     -------
@@ -62,4 +85,5 @@ def load(data, idx, x=None, y=None, paired=False, id_col=None,
     '''
     from ._classes import Dabest
 
-    return Dabest(data, idx, x, y, paired, id_col, ci, resamples, random_seed)
+    return Dabest(data, idx, x, y, paired, id_col, ci, resamples, random_seed, proportional, delta2, experiment, experiment_label, x1_level, mini_meta)
+

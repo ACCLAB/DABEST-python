@@ -9,7 +9,7 @@ A range of functions to compute bootstraps for a single sample.
 def create_bootstrap_indexes(array, resamples=5000, random_seed=12345):
     """Given an array-like, returns a generator of bootstrap indexes
     to be used for resampling.
-    """i
+    """
     import numpy as np
     from numpy.random import PCG64, RandomState
     rng = RandomState(PCG64(random_seed))

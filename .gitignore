@@ -121,6 +121,14 @@ fontList-v300.json
 
 # tex folders
 tex.cache/
+.Rproj.user
+testtt.py
+real.py
+0to2_beforeduringafter.csv
 
+TEST.ipynb
+TrhCsCh.csv
+Untitled.ipynb
+tt.py
 # Visual Studio
 .vscode/

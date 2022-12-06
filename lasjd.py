@@ -40,7 +40,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     import pandas as pd
 
     from .misc_tools import merge_two_dicts
-    from .plot_tools import halfviolin, get_swarm_spans, gapped_lines, proportion_error_bar
+    from .plot_tools import halfviolin, get_swarm_spans, gapped_lines
     from ._stats_tools.effsize import _compute_standardizers, _compute_hedges_correction_factor
 
     import logging
@@ -60,15 +60,14 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     ytick_color = plt.rcParams["ytick.color"]
     axes_facecolor = plt.rcParams['axes.facecolor']
 
-    dabest_obj      = EffectSizeDataFrame.dabest_obj
-    plot_data       = EffectSizeDataFrame._plot_data
-    xvar            = EffectSizeDataFrame.xvar
-    yvar            = EffectSizeDataFrame.yvar
-    is_paired       = EffectSizeDataFrame.is_paired
-    proportional    = EffectSizeDataFrame.proportional
-    delta2          = EffectSizeDataFrame.delta2
-    mini_meta       = EffectSizeDataFrame.mini_meta
-    effect_size     = EffectSizeDataFrame.effect_size
+    dabest_obj  = EffectSizeDataFrame.dabest_obj
+    plot_data   = EffectSizeDataFrame._plot_data
+    xvar        = EffectSizeDataFrame.xvar
+    yvar        = EffectSizeDataFrame.yvar
+    is_paired   = EffectSizeDataFrame.is_paired
+    delta2      = EffectSizeDataFrame.delta2
+    mini_meta   = EffectSizeDataFrame.mini_meta
+    effect_size = EffectSizeDataFrame.effect_size
 
     all_plot_groups = dabest_obj._all_plot_groups
     idx             = dabest_obj.idx
@@ -118,13 +117,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         swarmplot_kwargs = merge_two_dicts(default_swarmplot_kwargs,
                                            plot_kwargs["swarmplot_kwargs"])
 
-    default_barplot_kwargs = {"estimator": np.mean,"ci": plot_kwargs["ci"]}
-
-    if plot_kwargs["barplot_kwargs"] is None:
-        barplot_kwargs = default_barplot_kwargs
-    else:
-        barplot_kwargs = merge_two_dicts(default_barplot_kwargs,
-                                         plot_kwargs["barplot_kwargs"])
 
 
     # Violinplot kwargs.
@@ -202,7 +194,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     n_groups = len(color_groups)
     custom_pal = plot_kwargs["custom_palette"]
     swarm_desat = plot_kwargs["swarm_desat"]
-    bar_desat = plot_kwargs["bar_desat"]
     contrast_desat = plot_kwargs["halfviolin_desat"]
 
     if custom_pal is None:
@@ -241,12 +232,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
     plot_palette_raw = dict(zip(names, swarm_colors))
-
-    bar_desat_desat = bar_desat*0.4
-    bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
-    bar_color_desaturate = [sns.desaturate(c, bar_desat_desat) for c in unsat_colors]
-    plot_palette_bar1 = dict(zip(names, bar_color_desaturate))
-    plot_palette_bar2 = dict(zip(names, bar_color))
 
     contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
     plot_palette_contrast = dict(zip(names, contrast_colors))
@@ -356,148 +341,75 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                           'clip_on' : False}
 
     swarm_ylim = plot_kwargs["swarm_ylim"]
-    bar_ylim = plot_kwargs["bar_ylim"]
 
     if swarm_ylim is not None:
         rawdata_axes.set_ylim(swarm_ylim)
-    if bar_ylim is not None:
-        rawdata_axes.set_ylim(bar_ylim)
 
     if show_pairs is True:
-        # if np.isin(plot_data[yvar], [0, 1]).all() == False:
-        if proportional == False:
-            # Plot the raw data as a slopegraph.
-            # Pivot the long (melted) data.
-            is_proportion = False
-            if color_col is None:
-                pivot_values = yvar
-            else:
-                pivot_values = [yvar, color_col]
-            pivoted_plot_data = pd.pivot(data=plot_data, index=dabest_obj.id_col,
-                                        columns=xvar, values=pivot_values)
-            if is_paired == "baseline":
-                temp_idx = []
-                for i in idx:
-                    control = i[0]
-                    temp_idx.extend(((control, test) for test in i[1:]))
-                temp_idx = tuple(temp_idx)
+        # Plot the raw data as a slopegraph.
+        # Pivot the long (melted) data.
+        if color_col is None:
+            pivot_values = yvar
+        else:
+            pivot_values = [yvar, color_col]
+        pivoted_plot_data = pd.pivot(data=plot_data, index=dabest_obj.id_col,
+                                     columns=xvar, values=pivot_values)
+        if is_paired == "baseline":
+            temp_idx = []
+            for i in idx:
+                control = i[0]
+                temp_idx.extend(((control, test) for test in i[1:]))
+            temp_idx = tuple(temp_idx)
 
-                temp_all_plot_groups = []
-                for i in temp_idx:
-                    temp_all_plot_groups.extend(list(i))
-            else:
-                temp_idx = idx
-                temp_all_plot_groups = all_plot_groups
-            
-            x_start = 0
-            for ii, current_tuple in enumerate(temp_idx):
-                if len(temp_idx) > 1:
-                    # Select only the data for the current tuple.
-                    if color_col is None:
-                        current_pair = pivoted_plot_data.reindex(columns=current_tuple)
-                    else:
-                        current_pair = pivoted_plot_data[yvar].reindex(columns=current_tuple)
+            temp_all_plot_groups = []
+            for i in temp_idx:
+                temp_all_plot_groups.extend(list(i))
+        else:
+            temp_idx = idx
+            temp_all_plot_groups = all_plot_groups
+        
+        x_start = 0
+        for ii, current_tuple in enumerate(temp_idx):
+            if len(temp_idx) > 1:
+                # Select only the data for the current tuple.
+                if color_col is None:
+                    current_pair = pivoted_plot_data.reindex(columns=current_tuple)
                 else:
-                    if color_col is None:
-                        current_pair = pivoted_plot_data
-                    else:
-                        current_pair = pivoted_plot_data[yvar]
-                grp_count = len(current_tuple)
-                # Iterate through the data for the current tuple.
-                for ID, observation in current_pair.iterrows():
-                    x_points = [t for t in range(x_start,x_start+grp_count)]
-                    y_points = observation.tolist()
+                    current_pair = pivoted_plot_data[yvar].reindex(columns=current_tuple)
+            else:
+                if color_col is None:
+                    current_pair = pivoted_plot_data
+                else:
+                    current_pair = pivoted_plot_data[yvar]
+            grp_count = len(current_tuple)
+            # Iterate through the data for the current tuple.
+            for ID, observation in current_pair.iterrows():
+                x_points = [t for t in range(x_start,x_start+grp_count)]
+                y_points = observation.tolist()
 
-                    if color_col is None:
-                        slopegraph_kwargs['color'] = ytick_color
-                    else:
-                        color_key = pivoted_plot_data[color_col,
-                                                    current_tuple[0]].loc[ID]
-                        if not pd.isna(color_key):
-                            slopegraph_kwargs['color']  = plot_palette_raw[color_key]
-                            slopegraph_kwargs['label']  = color_key
-                
-                    rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
-                x_start  = x_start + grp_count
-            # Set the tick labels, because the slopegraph plotting doesn't.
-            rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
-            rawdata_axes.set_xticklabels(temp_all_plot_groups)
-
-        else: # proportional plot
-            is_proportion = True
-            # Plot the raw data as a barplot.
-            df_new = plot_data.copy()
-            bar1_df = df_new.groupby(xvar).count().reset_index()
-            bar1_df['proportion'] = [i / j for i, j in zip(bar1_df[yvar], bar1_df[yvar])]
-            bar1 = sns.barplot(data=bar1_df, x=xvar, y="proportion",
-                               ax=rawdata_axes,
-                               order=all_plot_groups,
-                               palette=plot_palette_bar1,
-                               zorder=1)
-            bar2 = sns.barplot(data=plot_data, x=xvar, y=yvar,
-                               ax=rawdata_axes,
-                               order=all_plot_groups,
-                               palette=plot_palette_bar2,
-                               zorder=1,
-                               **barplot_kwargs)
-            # adjust the width of bars
-            newwidth = 0.5
-            for bar in bar1.patches:
-                x = bar.get_x()
-                width = bar.get_width()
-                centre = x + width / 2.
-                bar.set_x(centre - newwidth / 2.)
-                bar.set_width(newwidth)
-
-            group_summaries = plot_kwargs["group_summaries"]
-            if group_summaries is None:
-                group_summaries = "mean_sd"
-            err_color = plot_kwargs["err_color"]
-            if err_color == None:
-                err_color="black"
-            proportion_error_bar(plot_data, x=xvar, y=yvar,
-                                 offset=0,
-                                 gap_width_percent=1.5,
-                                 line_color=err_color,
-                                 type=group_summaries, ax=rawdata_axes,
-                                 **group_summary_kwargs)
+                if color_col is None:
+                    slopegraph_kwargs['color'] = ytick_color
+                else:
+                    color_key = pivoted_plot_data[color_col,
+                                                  current_tuple[0]].loc[ID]
+                    if not pd.isna(color_key):
+                        slopegraph_kwargs['color']  = plot_palette_raw[color_key]
+                        slopegraph_kwargs['label']  = color_key
+            
+                rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
+            x_start  = x_start + grp_count
+        # Set the tick labels, because the slopegraph plotting doesn't.
+        rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
+        rawdata_axes.set_xticklabels(temp_all_plot_groups)
 
 
     else:
-        # if np.isin(plot_data[yvar], [0, 1]).all() == False:
-        if proportional == False:
-            is_proportion = False
-            # Plot the raw data as a swarmplot.
-            rawdata_plot = sns.swarmplot(data=plot_data, x=xvar, y=yvar,
-                                         ax=rawdata_axes,
-                                         order=all_plot_groups, hue=color_col,
-                                         palette=plot_palette_raw, zorder=1,
-                                         **swarmplot_kwargs)
-        else:
-            is_proportion = True
-            # Plot the raw data as a barplot.
-            df_new = plot_data.copy()
-            bar1_df = df_new.groupby(xvar).count().reset_index()
-            bar1_df['proportion'] = [i / j for i, j in zip(bar1_df[yvar], bar1_df[yvar])]
-            bar1 = sns.barplot(data=bar1_df, x=xvar, y="proportion",
-                               ax=rawdata_axes,
-                               order=all_plot_groups,
-                               palette=plot_palette_bar1,
-                               zorder=1)
-            bar2 = sns.barplot(data=plot_data, x=xvar, y=yvar,
-                               ax=rawdata_axes,
-                               order=all_plot_groups,
-                               palette=plot_palette_bar2,
-                               zorder=1,
-                               **barplot_kwargs)
-            # adjust the width of bars
-            bar_width = plot_kwargs["bar_width"]
-            for bar in bar1.patches:
-                x = bar.get_x()
-                width = bar.get_width()
-                centre = x + width / 2.
-                bar.set_x(centre - bar_width / 2.)
-                bar.set_width(bar_width)
+        # Plot the raw data as a swarmplot.
+        rawdata_plot = sns.swarmplot(data=plot_data, x=xvar, y=yvar,
+                                     ax=rawdata_axes,
+                                     order=all_plot_groups, hue=color_col,
+                                     palette=plot_palette_raw, zorder=1,
+                                     **swarmplot_kwargs)
 
         # Plot the gapped line summaries, if this is not a Cumming plot.
         # Also, we will not plot gapped lines for paired plots. For now.
@@ -505,7 +417,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         if float_contrast is False and group_summaries is None:
             group_summaries = "mean_sd"
 
-        if group_summaries is not None and is_proportion==False:
+        if group_summaries is not None:
             # Create list to gather xspans.
             xspans = []
             line_colors = []
@@ -532,17 +444,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                          type=group_summaries, ax=rawdata_axes,
                          **group_summary_kwargs)
 
-        if group_summaries is not None and is_proportion==True:
-
-            err_color = plot_kwargs["err_color"]
-            if err_color == None:
-                err_color = "black"
-            proportion_error_bar(plot_data, x=xvar, y=yvar,
-                         offset=0,
-                         line_color=err_color,
-                         gap_width_percent=1.5,
-                         type=group_summaries, ax=rawdata_axes,
-                         **group_summary_kwargs)
 
     # Add the counts to the rawdata axes xticks.
     counts = plot_data.groupby(xvar).count()[yvar]
@@ -575,9 +476,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         ticks_to_skip   = np.cumsum([len(t) for t in idx])[:-1].tolist()
         ticks_to_skip.insert(0, 0)
 
-    # Then obtain the ticks where we have to plot the effect sizes.
-    ticks_to_plot = [t for t in range(0, len(all_plot_groups))
-                    if t not in ticks_to_skip]
+        # Then obtain the ticks where we have to plot the effect sizes.
+        ticks_to_plot = [t for t in range(0, len(all_plot_groups))
+                        if t not in ticks_to_skip]
 
 
     # Plot the bootstraps, then the effect sizes and CIs.
@@ -587,7 +488,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     results      = EffectSizeDataFrame.results
     contrast_xtick_labels = []
-
+    
     for j, tick in enumerate(ticks_to_plot):
         current_group     = results.test[j]
         current_control   = results.control[j]
@@ -859,7 +760,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 custom_contrast_ylim = plot_kwargs['contrast_ylim']
                 if plot_kwargs['delta2_ylim'] is not None and show_delta2:
                     custom_delta2_ylim = plot_kwargs['delta2_ylim']
-                    if custom_contrast_ylim!=custom_delta2_ylim:
+                    if custom_contrast_ylim!=custom_deltas_ylim:
                         err1 = "Please check if `contrast_ylim` and `delta2_ylim` are assigned"
                         err2 = "with same values."
                         raise ValueError(err1 + err2)
@@ -882,7 +783,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 contrast_axes.set_ylim(low, high)
             else:
                 contrast_axes.set_ylim(custom_contrast_ylim)
-
+        
         # If 0 lies within the ylim of the contrast axes,
         # draw a zero reference line.
         contrast_axes_ylim = contrast_axes.get_ylim()
@@ -931,16 +832,16 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             rightend_ticks = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
             for ax in [rawdata_axes, contrast_axes]:
                 sns.despine(ax=ax, bottom=True)
-            
+    
                 ylim = ax.get_ylim()
                 xlim = ax.get_xlim()
                 redraw_axes_kwargs['y'] = ylim[0]
-            
+
                 for k, start_tick in enumerate(ticks_to_skip):
                     end_tick = rightend_ticks[k]
                     ax.hlines(xmin=start_tick, xmax=end_tick,
-                            **redraw_axes_kwargs)
-            
+                              **redraw_axes_kwargs)
+        
                 ax.set_ylim(ylim)
                 del redraw_axes_kwargs['y']
 
@@ -958,24 +859,15 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         swarm_label = "value"
     elif swarm_label is None and yvar is not None:
         swarm_label = yvar
-
-    bar_label = plot_kwargs['bar_label']
-    if bar_label is None:
-        bar_label = "proportion of success"
-
+        
     # Place contrast axes y-label.
     contrast_label_dict = {'mean_diff'    : "mean difference",
                            'median_diff'  : "median difference",
                            'cohens_d'     : "Cohen's d",
                            'hedges_g'     : "Hedges' g",
                            'cliffs_delta' : "Cliff's delta"}
-
-    if is_proportion==False:
-        default_contrast_label = contrast_label_dict[EffectSizeDataFrame.effect_size]
-    else:
-        default_contrast_label = "proportion difference"
-
-
+    default_contrast_label = contrast_label_dict[EffectSizeDataFrame.effect_size]
+    
     if plot_kwargs['contrast_label'] is None:
         if is_paired:
             contrast_label = "paired\n{}".format(default_contrast_label)
@@ -989,11 +881,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if float_contrast is True:
         contrast_axes.yaxis.set_label_position("right")
 
-    # Set the rawdata axes labels appropriately
-    if is_proportion == False:
-        rawdata_axes.set_ylabel(swarm_label)
-    else:
-        rawdata_axes.set_ylabel(bar_label)
+    # Set the rawdata axes labels appropriately        
+    rawdata_axes.set_ylabel(swarm_label)
     rawdata_axes.set_xlabel("")
 
 
