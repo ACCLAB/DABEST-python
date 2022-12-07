@@ -259,7 +259,7 @@ def cohens_h(control, test):
     try:
         pd.unique(control)==np.array([0,1]).all()==False and (pd.unique(test)==np.array([0,1])).all()==False
     except:
-        pass
+        return None
 
     # Convert to numpy arrays for speed.
     # NaNs are automatically dropped.
