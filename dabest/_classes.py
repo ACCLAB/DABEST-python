@@ -1570,7 +1570,7 @@ class TwoGroupsEffectSize(object):
     mean differences between two groups.
     """
 
-    def __init__(self, control, test, effect_size,
+    def __init__(self, control, test, effect_size,proportional,
                  is_paired=None, ci=95,
                  resamples=5000, 
                  permutation_count=5000, 
@@ -1730,6 +1730,14 @@ class TwoGroupsEffectSize(object):
 
         if effect_size == "cliffs_delta" and is_paired:
             err1 = "`paired` is not None; therefore Cliff's delta is not defined."
+            raise ValueError(err1)
+
+        if proportional==True and effect_size not in ['mean_diff','cohens_h']:
+            err1 = "`proportional` is True; therefore effect size other than mean_diff and cohens_h is not defined."
+            raise ValueError(err1)
+
+        if proportional==True and (np.isin(control, [0, 1]).all() == False or np.isin(test, [0, 1]).all() == False):
+            err1 = "`proportional` is True; Only accept binary data consisting of 0 and 1."
             raise ValueError(err1)
 
         # Convert to numpy arrays for speed.
@@ -2425,6 +2433,7 @@ class EffectSizeDataFrame(object):
 
                 result = TwoGroupsEffectSize(control, test,
                                              self.__effect_size,
+                                             self.__proportional,
                                              self.__is_paired,
                                              self.__ci,
                                              self.__resamples,

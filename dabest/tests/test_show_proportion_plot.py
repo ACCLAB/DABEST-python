@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 import matplotlib as mpl
-mpl.use('Agg')
+# mpl.use('Agg')
 import matplotlib.ticker as Ticker
 import matplotlib.pyplot as plt
 from .._api import load
@@ -34,37 +34,53 @@ multi_groups = load(df, idx=(("Control 1", "Test 1",),
                              ),proportional=True
                     )
 
-@pytest.mark.mpl_image_compare
+def test_unpaired():
+    from .utils import create_demo_dataset
+    df = create_demo_dataset()
+
+    two_groups_unpaired = load(df, idx=("Control 1", "Test 1"))
+    two_groups_unpaired.mean_diff.plot();
+    plt.show()
+
+def test_paired():
+    from .utils import create_demo_dataset
+    df = create_demo_dataset()
+    two_groups_paired = load(df, idx=("Control 1", "Test 1"),
+                             paired="baseline", id_col="ID")
+    two_groups_paired.mean_diff.plot();
+    plt.show()
+
+
 def test_101_gardner_altman_unpaired_propdiff():
-    return two_groups_unpaired.mean_diff.plot();
+    two_groups_unpaired.mean_diff.plot();
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_102_gardner_altman_paired_propdiff():
-    return two_groups_paired.mean_diff.plot();
+    two_groups_paired.mean_diff.plot();
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_103_cummings_two_group_unpaired_propdiff():
-    return two_groups_unpaired.mean_diff.plot(fig_size=(4, 6),
+    two_groups_unpaired.mean_diff.plot(fig_size=(4, 6),
                                               float_contrast=False);
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_104_cummings_two_group_paired_propdiff():
-    return two_groups_paired.mean_diff.plot(fig_size=(6, 6),
+    two_groups_paired.mean_diff.plot(fig_size=(4, 6),
                                             float_contrast=False);
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_105_cummings_multi_group_unpaired__propdiff():
-    return multi_2group.mean_diff.plot();
+    multi_2group.mean_diff.plot();
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_106_cummings_shared_control_propdiff():
-    return shared_control.mean_diff.plot();
+    shared_control.mean_diff.plot();
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_107_cummings_multi_groups_propdiff():
-    return multi_groups.mean_diff.plot();
+    multi_groups.mean_diff.plot();
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_108_inset_plots_propdiff():
 
     # Load the titanic dataset. Requires internet access.
@@ -76,9 +92,9 @@ def test_108_inset_plots_propdiff():
                            id_vars=["sex", "index"], var_name="metric")
 
     titanic_dabest1 = load(data=titanic, x="sex", y="survived",
-                              idx=("female","male"), proportional=True)
+                              idx=("female","male"))
     titanic_dabest2 = load(data=titanic, x="sex", y="alone",
-                           idx=("female", "male"), proportional=True)
+                           idx=("female", "male"))
     # Create Figure.
     fig, ax = plt.subplots(nrows=2, ncols=2,
                            figsize=(15, 15),
@@ -87,21 +103,22 @@ def test_108_inset_plots_propdiff():
     titanic_dabest2.mean_diff.plot(ax=ax.flat[1]);
     titanic_dabest1.mean_diff.plot(ax=ax.flat[2], float_contrast=False);
     titanic_dabest2.mean_diff.plot(ax=ax.flat[3], float_contrast=False);
-    return fig
 
-@pytest.mark.mpl_image_compare
+    plt.show()
+
 def test_109_gardner_altman_ylabel():
-    return two_groups_unpaired.mean_diff.plot(bar_label="This is my\nrawdata",
+    two_groups_unpaired.mean_diff.plot(bar_label="This is my\nrawdata",
                                    contrast_label="The bootstrap\ndistribtions!");
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_110_change_fig_size():
-    return two_groups_unpaired.mean_diff.plot(fig_size=(6, 6),
+    two_groups_unpaired.mean_diff.plot(fig_size=(6, 6),
                                             custom_palette="Dark2");
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_111_change_palette_b():
-    return multi_2group.mean_diff.plot(custom_palette="Paired");
+    multi_2group.mean_diff.plot(custom_palette="Paired");
+    plt.show()
 
 
 my_color_palette = {"Control 1" : "blue",
@@ -110,26 +127,25 @@ my_color_palette = {"Control 1" : "blue",
                 "Test 2"    : (0., 0.7, 0.2) # This is a RGB tuple.
                 }
 
-@pytest.mark.mpl_image_compare
 def test_112_change_palette_c():
-    return multi_2group.mean_diff.plot(custom_palette=my_color_palette);
+    multi_2group.mean_diff.plot(custom_palette=my_color_palette);
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_113_desat():
-    return multi_2group.mean_diff.plot(custom_palette=my_color_palette,
+    multi_2group.mean_diff.plot(custom_palette=my_color_palette,
                             bar_desat=0.1,
                             halfviolin_desat=0.25);
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_114_change_ylims():
-    return multi_2group.mean_diff.plot(contrast_ylim=(-2, 2));
+    multi_2group.mean_diff.plot(contrast_ylim=(-2, 2));
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_115_invert_ylim():
-    return multi_2group.mean_diff.plot(contrast_ylim=(2, -2),
+    multi_2group.mean_diff.plot(contrast_ylim=(2, -2),
                                        contrast_label="More negative is better!");
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_116_ticker_gardner_altman():
 
     fig = two_groups_unpaired.mean_diff.plot()
@@ -142,17 +158,16 @@ def test_116_ticker_gardner_altman():
 
     contrast_axes.yaxis.set_major_locator(Ticker.MultipleLocator(0.5))
     contrast_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(0.25))
-    return fig
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_117_err_color():
-    return two_groups_unpaired.mean_diff.plot(err_color="purple");
+    two_groups_unpaired.mean_diff.plot(err_color="purple");
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_118_cummings_two_group_unpaired_meandiff_bar_width():
-    return two_groups_unpaired.mean_diff.plot(bar_width=0.4,float_contrast=False);
+    two_groups_unpaired.mean_diff.plot(bar_width=0.4,float_contrast=False);
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_119_ticker_cumming():
     fig = multi_2group.mean_diff.plot(bar_ylim=(0,1.5), contrast_ylim=(-1, 1))
 
@@ -165,7 +180,7 @@ def test_119_ticker_cumming():
     contrast_axes.yaxis.set_major_locator(Ticker.MultipleLocator(0.5))
     contrast_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(0.25))
 
-    return fig
+    plt.show()
 
 np.random.seed(9999)
 Ns = [20, 10, 21, 20]
@@ -183,37 +198,56 @@ long_df = pd.melt(wide_df,
                 var_name="group")
 long_df['dummy'] = np.repeat(np.nan, len(long_df))
 
-@pytest.mark.mpl_image_compare
 def test_120_wide_df_nan():
 
     wide_df_dabest = load(wide_df,
                           idx=("Control", "Test 1", "Test 2", "Test 3")
                           )
 
-    return wide_df_dabest.mean_diff.plot();
+    wide_df_dabest.mean_diff.plot();
+    plt.show()
 
-@pytest.mark.mpl_image_compare
 def test_121_long_df_nan():
 
     long_df_dabest = load(long_df, x="group", y="value",
                           idx=("Control", "Test 1", "Test 2", "Test 3")
                           )
 
-    return long_df_dabest.mean_diff.plot();
+    long_df_dabest.mean_diff.plot();
+    plt.show()
 
-@pytest.mark.mpl_image_compare
-def test_122_cohens_h_gardner_altman():
-    return two_groups_unpaired.cohens_h.plot()
-
-@pytest.mark.mpl_image_compare
-def test_123_cohens_h_cummings():
-    return two_groups_unpaired.cohens_h.plot(float_contrast=False)
-
-@pytest.mark.mpl_image_compare
-def test_124_style_sheets():
+def test_122_style_sheets():
     # Perform this test last so we don't have to reset the plot style.
     plt.style.use("dark_background")
 
-    return multi_2group.mean_diff.plot();
+    multi_2group.mean_diff.plot();
+    plt.show()
+
+def test_123_cohens_gardner_altman():
+    two_groups_unpaired.cohens_h.plot()
+    plt.show()
+
+def test_124_cohens_cummings():
+    two_groups_unpaired.cohens_h.plot(float_contrast=False)
+    plt.show()
+
+def test_126_binary_data():
+    df["Control 1"][df["Control 1"] == 1] = 'A'
+    df["Control 1"][df["Control 1"] == 0] = 'B'
+    df["Test 1"][df["Test 1"] == 1] = 'A'
+    df["Test 1"][df["Test 1"] == 0] = 'B'
+    two_groups_unpaired = load(df, idx=("Control 1", "Test 1"), proportional=True)
+    two_groups_unpaired.mean_diff.plot();
+    plt.show()
+
+def test_125_other_effectsize_on_binary_data():
+    return two_groups_unpaired.cohens_d.results
+
+
+
+
+
+
+
 
 
