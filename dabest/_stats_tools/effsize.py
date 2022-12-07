@@ -256,10 +256,8 @@ def cohens_h(control, test):
     import pandas as pd
 
     # Check whether dataframe contains only 0s and 1s.
-    try:
-        pd.unique(control)==np.array([0,1]).all()==False and (pd.unique(test)==np.array([0,1])).all()==False
-    except:
-        return None
+    if pd.unique(control)==np.array([0,1]).all()==False and (pd.unique(test)==np.array([0,1])).all()==False:
+        raise ValueError("Input data must be binary.")
 
     # Convert to numpy arrays for speed.
     # NaNs are automatically dropped.
