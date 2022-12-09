@@ -226,7 +226,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
     plot_palette_raw = dict(zip(names, swarm_colors))
 
-    bar_desat_desat = bar_desat * 0.4
+    bar_desat_desat = bar_desat * 0.1
     bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
     bar_color_desaturate = [sns.desaturate(c, bar_desat_desat) for c in unsat_colors]
     plot_palette_bar1 = dict(zip(names, bar_color_desaturate))

@@ -2624,7 +2624,7 @@ class EffectSizeDataFrame(object):
             halfviolin_alpha=0.8, 
 
             #bar plot
-            bar_label=None, bar_desat=0.5, bar_width = 0.5,bar_ylim = None,
+            bar_label=None, bar_desat=0.8, bar_width = 0.5,bar_ylim = None,
             # error bar of proportion plot
             ci=None, err_color=None,
 
