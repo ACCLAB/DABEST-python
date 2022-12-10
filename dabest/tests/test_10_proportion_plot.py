@@ -202,7 +202,15 @@ def test_121_long_df_nan():
     return long_df_dabest.mean_diff.plot();
 
 @pytest.mark.mpl_image_compare
-def test_122_style_sheets():
+def test_122_cohens_h_gardner_altman():
+    return two_groups_unpaired.cohens_h.plot()
+
+@pytest.mark.mpl_image_compare
+def test_123_cohens_h_cummings():
+    return two_groups_unpaired.cohens_h.plot(float_contrast=False)
+
+@pytest.mark.mpl_image_compare
+def test_124_style_sheets():
     # Perform this test last so we don't have to reset the plot style.
     plt.style.use("dark_background")
 

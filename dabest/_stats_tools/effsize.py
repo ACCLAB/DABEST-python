@@ -276,7 +276,6 @@ def cohens_h(control, test):
     phi_control = 2 * np.arcsin(np.sqrt(prop_control))
     phi_test = 2 * np.arcsin(np.sqrt(prop_test))
 
-    
     return phi_test - phi_control
 
     

@@ -5,35 +5,26 @@
 
 
 def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
-
     """
     Custom function that creates an estimation plot from an EffectSizeDataFrame.
-
     Keywords
     --------
     EffectSizeDataFrame: A `dabest` EffectSizeDataFrame object.
-
     **plot_kwargs:
         color_col=None
-
         raw_marker_size=6, es_marker_size=9,
-
         swarm_label=None, contrast_label=None, delta2_label=None,
         swarm_ylim=None, contrast_ylim=None, delta2_ylim=None,
-
         custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
-        halfviolin_alpha=0.8, 
-
+        halfviolin_alpha=0.8,
         float_contrast=True,
         show_pairs=True,
         show_delta2=True,
         group_summaries=None,
         group_summaries_offset=0.1,
-
         fig_size=None,
         dpi=100,
         ax=None,
-
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
         slopegraph_kwargs=None,
@@ -43,6 +34,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     """
 
     import numpy as np
+    np.seterr(divide='ignore', invalid='ignore')  # avoid message warnings when plotting
     import seaborn as sns
     import matplotlib.pyplot as plt
     import pandas as pd
@@ -64,7 +56,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     plt.rcParams['axes.grid'] = False
 
-
     ytick_color = plt.rcParams["ytick.color"]
     axes_facecolor = plt.rcParams['axes.facecolor']
 
@@ -76,17 +67,15 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     delta2      = EffectSizeDataFrame.delta2
     mini_meta   = EffectSizeDataFrame.mini_meta
     effect_size = EffectSizeDataFrame.effect_size
+    proportional = EffectSizeDataFrame.proportional
 
     all_plot_groups = dabest_obj._all_plot_groups
     idx             = dabest_obj.idx
-
-
 
     if effect_size != "mean_diff" or not delta2:
         show_delta2 = False
     else:
         show_delta2 = plot_kwargs["show_delta2"]
-
 
     if effect_size != "mean_diff" or not mini_meta:
         show_mini_meta = False
@@ -96,8 +85,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if show_delta2 and show_mini_meta:
         err0 = "`show_delta2` and `show_mini_meta` cannot be True at the same time."
         raise ValueError(err0)
-
-
 
     # Disable Gardner-Altman plotting if any of the idxs comprise of more than
     # two groups or if it is a delta-delta plot.
@@ -112,17 +99,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if show_delta2 or show_mini_meta:
         float_contrast = False  
 
-
-    # Disable slopegraph plotting if any of the idxs comprise of more than
-    # two groups.
-    if np.all([len(i)==2 for i in idx]) is False:
-        is_paired = False
-    # if paired is False, set show_pairs as False.
-    if is_paired is False:
+    if not is_paired:
         show_pairs = False
     else:
         show_pairs = plot_kwargs["show_pairs"]
-
 
     # Set default kwargs first, then merge with user-dictated ones.
     default_swarmplot_kwargs = {'size': plot_kwargs["raw_marker_size"]}
@@ -132,14 +112,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         swarmplot_kwargs = merge_two_dicts(default_swarmplot_kwargs,
                                            plot_kwargs["swarmplot_kwargs"])
 
-    default_barplot_kwargs = {"estimator": np.mean,"ci": plot_kwargs["ci"]}
+    default_barplot_kwargs = {"estimator": np.mean, "ci": plot_kwargs["ci"]}
 
     if plot_kwargs["barplot_kwargs"] is None:
         barplot_kwargs = default_barplot_kwargs
     else:
         barplot_kwargs = merge_two_dicts(default_barplot_kwargs,
                                          plot_kwargs["barplot_kwargs"])
-
 
     # Violinplot kwargs.
     default_violinplot_kwargs = {'widths':0.5, 'vert':True,
@@ -150,7 +129,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         violinplot_kwargs = merge_two_dicts(default_violinplot_kwargs,
                                             plot_kwargs["violinplot_kwargs"])
 
-
     # slopegraph kwargs.
     default_slopegraph_kwargs = {'lw':1, 'alpha':0.5}
     if plot_kwargs["slopegraph_kwargs"] is None:
@@ -158,9 +136,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         slopegraph_kwargs = merge_two_dicts(default_slopegraph_kwargs,
                                             plot_kwargs["slopegraph_kwargs"])
-
-
-
 
     # Zero reference-line kwargs.
     default_reflines_kwargs = {'linestyle':'solid', 'linewidth':0.75,
@@ -172,8 +147,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         reflines_kwargs = merge_two_dicts(default_reflines_kwargs,
                                           plot_kwargs["reflines_kwargs"])
 
-
-
     # Legend kwargs.
     default_legend_kwargs = {'loc': 'upper left', 'frameon': False}
     if plot_kwargs["legend_kwargs"] is None:
@@ -181,7 +154,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         legend_kwargs = merge_two_dicts(default_legend_kwargs,
                                         plot_kwargs["legend_kwargs"])
-
 
     gs_default = {'mean_sd', 'median_quartiles', None}
     if plot_kwargs["group_summaries"] not in gs_default:
@@ -195,8 +167,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         group_summary_kwargs = merge_two_dicts(default_group_summary_kwargs,
                                                plot_kwargs["group_summary_kwargs"])
-
-
 
     # Create color palette that will be shared across subplots.
     color_col = plot_kwargs["color_col"]
@@ -256,7 +226,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
     plot_palette_raw = dict(zip(names, swarm_colors))
 
-    bar_desat_desat = bar_desat*0.4
+    bar_desat_desat = bar_desat * 0.1
     bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
     bar_color_desaturate = [sns.desaturate(c, bar_desat_desat) for c in unsat_colors]
     plot_palette_bar1 = dict(zip(names, bar_color_desaturate))
@@ -264,7 +234,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
     plot_palette_contrast = dict(zip(names, contrast_colors))
-
 
     # Infer the figsize.
     fig_size   = plot_kwargs["fig_size"]
@@ -286,8 +255,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         width_inches = (each_group_width_inches * all_groups_count)
         fig_size = (width_inches, height_inches)
-
-
 
     # Initialise the figure.
     # sns.set(context="talk", style='ticks')
@@ -361,7 +328,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         rawdata_axes  = axx[0]
         contrast_axes = axx[1]
-
     rawdata_axes.set_frame_on(False)
     contrast_axes.set_frame_on(False)
 
@@ -372,12 +338,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                           'clip_on' : False}
 
     swarm_ylim = plot_kwargs["swarm_ylim"]
-    bar_ylim = plot_kwargs["bar_ylim"]
 
     if swarm_ylim is not None:
         rawdata_axes.set_ylim(swarm_ylim)
-    if bar_ylim is not None:
-        rawdata_axes.set_ylim(bar_ylim)
 
     if show_pairs is True:
         if is_paired == "baseline":
@@ -393,17 +356,16 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         else:
             temp_idx = idx
             temp_all_plot_groups = all_plot_groups
-        if np.isin(plot_data[yvar], [0, 1]).all() == False:
-            # Plot the raw data as a slopegraph.
-            # Pivot the long (melted) data.
-            is_proportion = False
+
+        if proportional==False:
+        # Plot the raw data as a slopegraph.
+        # Pivot the long (melted) data.
             if color_col is None:
                 pivot_values = yvar
             else:
                 pivot_values = [yvar, color_col]
             pivoted_plot_data = pd.pivot(data=plot_data, index=dabest_obj.id_col,
                                          columns=xvar, values=pivot_values)
-            
             x_start = 0
             for ii, current_tuple in enumerate(temp_idx):
                 if len(temp_idx) > 1:
@@ -420,7 +382,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 grp_count = len(current_tuple)
                 # Iterate through the data for the current tuple.
                 for ID, observation in current_pair.iterrows():
-                    x_points = [t for t in range(x_start,x_start+grp_count)]
+                    x_points = [t for t in range(x_start, x_start + grp_count)]
                     y_points = observation.tolist()
 
                     if color_col is None:
@@ -428,18 +390,15 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                     else:
                         color_key = pivoted_plot_data[color_col,
                                                       current_tuple[0]].loc[ID]
-                        if not pd.isna(color_key):
-                            slopegraph_kwargs['color']  = plot_palette_raw[color_key]
-                            slopegraph_kwargs['label']  = color_key
+                        if isinstance(color_key, str) == True:
+                            slopegraph_kwargs['color'] = plot_palette_raw[color_key]
+                            slopegraph_kwargs['label'] = color_key
 
                     rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
                 x_start = x_start + grp_count
             # Set the tick labels, because the slopegraph plotting doesn't.
-            rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
-            rawdata_axes.set_xticklabels(temp_all_plot_groups)
 
-        else: # proportional plot
-            is_proportion = True
+        else:
             # Plot the raw data as a barplot.
             df_new = plot_data.copy()
             bar1_df = df_new.groupby(xvar).count().reset_index()
@@ -456,20 +415,20 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                zorder=1,
                                **barplot_kwargs)
             # adjust the width of bars
-            newwidth = 0.5
+            bar_width = plot_kwargs["bar_width"]
             for bar in bar1.patches:
                 x = bar.get_x()
                 width = bar.get_width()
                 centre = x + width / 2.
-                bar.set_x(centre - newwidth / 2.)
-                bar.set_width(newwidth)
+                bar.set_x(centre - bar_width / 2.)
+                bar.set_width(bar_width)
 
             group_summaries = plot_kwargs["group_summaries"]
             if group_summaries is None:
                 group_summaries = "mean_sd"
             err_color = plot_kwargs["err_color"]
             if err_color == None:
-                err_color="black"
+                err_color = "black"
             proportion_error_bar(plot_data, x=xvar, y=yvar,
                                  offset=0,
                                  gap_width_percent=1.5,
@@ -477,10 +436,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                  type=group_summaries, ax=rawdata_axes,
                                  **group_summary_kwargs)
 
+        # Set the tick labels, because the slopegraph plotting doesn't.
+        rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
+        rawdata_axes.set_xticklabels(temp_all_plot_groups)
+
 
     else:
-        if np.isin(plot_data[yvar], [0, 1]).all()==False:
-            is_proportion = False
+        if proportional==False:
             # Plot the raw data as a swarmplot.
             rawdata_plot = sns.swarmplot(data=plot_data, x=xvar, y=yvar,
                                          ax=rawdata_axes,
@@ -488,7 +450,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                          palette=plot_palette_raw, zorder=1,
                                          **swarmplot_kwargs)
         else:
-            is_proportion = True
             # Plot the raw data as a barplot.
             df_new = plot_data.copy()
             bar1_df = df_new.groupby(xvar).count().reset_index()
@@ -516,10 +477,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         # Plot the gapped line summaries, if this is not a Cumming plot.
         # Also, we will not plot gapped lines for paired plots. For now.
         group_summaries = plot_kwargs["group_summaries"]
-        if float_contrast is False and group_summaries is None:
+        if group_summaries is None:
             group_summaries = "mean_sd"
 
-        if group_summaries is not None and is_proportion==False:
+        if group_summaries is not None and proportional==False:
             # Create list to gather xspans.
             xspans = []
             line_colors = []
@@ -546,7 +507,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                          type=group_summaries, ax=rawdata_axes,
                          **group_summary_kwargs)
 
-        if group_summaries is not None and is_proportion==True:
+        if group_summaries is not None and proportional == True:
 
             err_color = plot_kwargs["err_color"]
             if err_color == None:
@@ -568,8 +529,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         ticks_with_counts.append("{}\nN = {}".format(t, N))
 
     rawdata_axes.set_xticklabels(ticks_with_counts)
-
-
 
     # Save the handles and labels for the legend.
     handles, labels = rawdata_axes.get_legend_handles_labels()
@@ -679,7 +638,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         else:
             contrast_xtick_labels.extend(["","delta-delta"])
 
-
     # Make sure the contrast_axes x-lims match the rawdata_axes xlims,
     # and add an extra violinplot tick for delta-delta plot.
     if show_delta2 is False and show_mini_meta is False :
@@ -688,7 +646,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         temp = rawdata_axes.get_xticks()
         temp = np.append(temp, [max(temp)+1, max(temp)+2])
         contrast_axes.set_xticks(temp)
-
 
     if show_pairs is True:
         max_x = contrast_axes.get_xlim()[1]
@@ -711,7 +668,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     for t in ticks_to_skip:
         contrast_xtick_labels.insert(t, "")
     contrast_axes.set_xticklabels(contrast_xtick_labels)
-
 
     if bootstraps_color_by_group is False:
         legend_labels_unique = np.unique(legend_labels)
@@ -739,8 +695,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 for line in leg.get_lines():
                     line.set_linewidth(3.0)
 
-
-
     og_ylim_raw = rawdata_axes.get_ylim()
 
     if float_contrast is True:
@@ -748,7 +702,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         # Normalize ylims and despine the floating contrast axes.
         # Check that the effect size is within the swarm ylims.
-        if effect_size_type in ["mean_diff", "cohens_d", "hedges_g"]:
+        if effect_size_type in ["mean_diff", "cohens_d", "hedges_g","cohens_h"]:
             control_group_summary = plot_data.groupby(xvar)\
                                              .mean().loc[current_control, yvar]
             test_group_summary = plot_data.groupby(xvar)\
@@ -818,8 +772,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
             contrast_axes.set_xlim(contrast_xlim_max-1, contrast_xlim_max)
 
-
-
         # Draw summary lines for control and test groups..
         for jj, axx in enumerate([rawdata_axes, contrast_axes]):
 
@@ -878,7 +830,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             else:
                 custom_delta2_ylim = plot_kwargs['delta2_ylim']
                 custom_contrast_ylim = custom_delta2_ylim
-
 
             if len(custom_contrast_ylim) != 2:
                 err1 = "Please check `contrast_ylim` consists of "
@@ -973,20 +924,23 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         swarm_label = yvar
 
     bar_label = plot_kwargs['bar_label']
-    if bar_label is None:
+    if bar_label is None and effect_size_type != "cohens_h":
         bar_label = "proportion of success"
+    elif bar_label is None and effect_size_type == "cohens_h":
+        bar_label = "value"
 
     # Place contrast axes y-label.
-    contrast_label_dict = {'mean_diff'    : "mean difference",
-                           'median_diff'  : "median difference",
-                           'cohens_d'     : "Cohen's d",
-                           'hedges_g'     : "Hedges' g",
-                           'cliffs_delta' : "Cliff's delta"}
+    contrast_label_dict = {'mean_diff': "mean difference",
+                           'median_diff': "median difference",
+                           'cohens_d': "Cohen's d",
+                           'hedges_g': "Hedges' g",
+                           'cliffs_delta': "Cliff's delta",
+                           'cohens_h': "Cohen's h"}
 
-    if is_proportion==False:
-        default_contrast_label = contrast_label_dict[EffectSizeDataFrame.effect_size]
-    else:
+    if proportional == True and effect_size_type != "cohens_h":
         default_contrast_label = "proportion difference"
+    else:
+        default_contrast_label = contrast_label_dict[EffectSizeDataFrame.effect_size]
 
 
     if plot_kwargs['contrast_label'] is None:
@@ -1003,13 +957,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         contrast_axes.yaxis.set_label_position("right")
 
     # Set the rawdata axes labels appropriately
-    if is_proportion == False:
+    if proportional == False:
         rawdata_axes.set_ylabel(swarm_label)
     else:
         rawdata_axes.set_ylabel(bar_label)
     rawdata_axes.set_xlabel("")
-
-
 
     # Because we turned the axes frame off, we also need to draw back
     # the y-spine for both axes.
@@ -1053,13 +1005,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if float_contrast is False:
         contrast_axes.yaxis.set_ticks_position('left')
 
-
-
     # Reset rcParams.
     for parameter in _changed_rcParams:
         plt.rcParams[parameter] = original_rcParams[parameter]
-
-
 
     # Return the figure.
     return fig
