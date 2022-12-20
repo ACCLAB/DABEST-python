@@ -228,4 +228,4 @@ epub_copyright = copyright
 epub_exclude_files = ['search.html']
 
 def setup(app):
-    app.add_stylesheet('css/alabaster-custom.css')
+    app.add_css_file('css/alabaster-custom.css')
