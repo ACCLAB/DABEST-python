@@ -253,6 +253,7 @@ def cohens_h(control, test):
     '''
 
     import numpy as np
+    np.seterr(divide='ignore', invalid='ignore')
     import pandas as pd
 
     # Check whether dataframe contains only 0s and 1s.
