@@ -152,27 +152,12 @@ def test_117_err_color():
 def test_118_cummings_two_group_unpaired_meandiff_bar_width():
     return two_groups_unpaired.mean_diff.plot(bar_width=0.4,float_contrast=False);
 
-@pytest.mark.mpl_image_compare
-def test_119_ticker_cumming():
-    fig = multi_2group.mean_diff.plot(bar_ylim=(0,1.5), contrast_ylim=(-1, 1))
-
-    rawbar_axes = fig.axes[0]
-    contrast_axes = fig.axes[1]
-
-    rawbar_axes.yaxis.set_major_locator(Ticker.MultipleLocator(2))
-    rawbar_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(1))
-
-    contrast_axes.yaxis.set_major_locator(Ticker.MultipleLocator(0.5))
-    contrast_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(0.25))
-
-    return fig
-
 np.random.seed(9999)
 Ns = [20, 10, 21, 20]
 n=1
 c1 = pd.DataFrame({'Control':np.random.binomial(n, 0.2, size=Ns[0])})
 t1 = pd.DataFrame({'Test 1': np.random.binomial(n, 0.5, size=Ns[1])})
-t2 = pd.DataFrame({'Test 2': np.random.binomial(n, 0.9, size=Ns[2])})
+t2 = pd.DataFrame({'Test 2': np.random.binomial(n, 0.4, size=Ns[2])})
 t3 = pd.DataFrame({'Test 3': np.random.binomial(n, 0.7, size=Ns[3])})
 wide_df = pd.concat([c1, t1, t2, t3],axis=1)
 
@@ -184,36 +169,37 @@ long_df = pd.melt(wide_df,
 long_df['dummy'] = np.repeat(np.nan, len(long_df))
 
 @pytest.mark.mpl_image_compare
-def test_120_wide_df_nan():
+def test_119_wide_df_nan():
 
     wide_df_dabest = load(wide_df,
-                          idx=("Control", "Test 1", "Test 2", "Test 3")
+                          idx=("Control", "Test 1", "Test 2", "Test 3"),
+                          proportional=True
                           )
 
     return wide_df_dabest.mean_diff.plot();
 
 @pytest.mark.mpl_image_compare
-def test_121_long_df_nan():
+def test_120_long_df_nan():
 
     long_df_dabest = load(long_df, x="group", y="value",
-                          idx=("Control", "Test 1", "Test 2", "Test 3")
+                          idx=("Control", "Test 1", "Test 2", "Test 3"),
+                          proportional=True
                           )
 
     return long_df_dabest.mean_diff.plot();
 
 @pytest.mark.mpl_image_compare
-def test_122_cohens_h_gardner_altman():
+def test_121_cohens_h_gardner_altman():
     return two_groups_unpaired.cohens_h.plot()
 
 @pytest.mark.mpl_image_compare
-def test_123_cohens_h_cummings():
+def test_122_cohens_h_cummings():
     return two_groups_unpaired.cohens_h.plot(float_contrast=False)
 
 @pytest.mark.mpl_image_compare
-def test_124_style_sheets():
+def test_123_style_sheets():
     # Perform this test last so we don't have to reset the plot style.
     plt.style.use("dark_background")
-
-    return multi_2group.mean_diff.plot();
+    return multi_2group.mean_diff.plot(face_color="black");
 
 

@@ -17,6 +17,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         swarm_ylim=None, contrast_ylim=None, delta2_ylim=None,
         custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
         halfviolin_alpha=0.8,
+        face_color = None,
+        bar_label=None, bar_desat=0.8, bar_width = 0.5,bar_ylim = None,
+        ci=None, err_color=None,
         float_contrast=True,
         show_pairs=True,
         show_delta2=True,
@@ -34,7 +37,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     """
 
     import numpy as np
-    np.seterr(divide='ignore', invalid='ignore')  # avoid message warnings when plotting
     import seaborn as sns
     import matplotlib.pyplot as plt
     import pandas as pd
@@ -57,7 +59,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     plt.rcParams['axes.grid'] = False
 
     ytick_color = plt.rcParams["ytick.color"]
-    axes_facecolor = plt.rcParams['axes.facecolor']
+    face_color = plot_kwargs["face_color"]
+    if plot_kwargs["face_color"] is None:
+        face_color = "white"
 
     dabest_obj  = EffectSizeDataFrame.dabest_obj
     plot_data   = EffectSizeDataFrame._plot_data
@@ -223,17 +227,24 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 err2 = ' is not a matplotlib palette. Please check.'
                 raise ValueError(err1 + err2)
 
-    swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
-    plot_palette_raw = dict(zip(names, swarm_colors))
+    if custom_pal is None and color_col is None:
+        swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
+        plot_palette_raw = dict(zip(names.categories, swarm_colors))
 
-    bar_desat_desat = bar_desat * 0.1
-    bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
-    bar_color_desaturate = [sns.desaturate(c, bar_desat_desat) for c in unsat_colors]
-    plot_palette_bar1 = dict(zip(names, bar_color_desaturate))
-    plot_palette_bar2 = dict(zip(names, bar_color))
+        bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
+        plot_palette_bar = dict(zip(names.categories, bar_color))
 
-    contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
-    plot_palette_contrast = dict(zip(names, contrast_colors))
+        contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
+        plot_palette_contrast = dict(zip(names.categories, contrast_colors))
+    else:
+        swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
+        plot_palette_raw = dict(zip(names, swarm_colors))
+
+        bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
+        plot_palette_bar = dict(zip(names, bar_color))
+
+        contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
+        plot_palette_contrast = dict(zip(names, contrast_colors))
 
     # Infer the figsize.
     fig_size   = plot_kwargs["fig_size"]
@@ -242,7 +253,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         # Increase the width for delta-delta graph
         if show_delta2 or show_mini_meta:
             all_groups_count += 2
-        if is_paired and show_pairs is True:
+        if is_paired and show_pairs is True and proportional is False:
             frac = 0.75
         else:
             frac = 1
@@ -258,8 +269,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Initialise the figure.
     # sns.set(context="talk", style='ticks')
-    init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"],
-                           tight_layout=True)
+    init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"])
+                           # ,tight_layout=True)
 
     width_ratios_ga = [2.5, 1]
     h_space_cummings = 0.3
@@ -272,6 +283,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         ax_position = rawdata_axes.get_position()  # [[x0, y0], [x1, y1]]
         
         fig = rawdata_axes.get_figure()
+        fig.patch.set_facecolor(face_color)
         
         if float_contrast is True:
             axins = rawdata_axes.inset_axes(
@@ -314,11 +326,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                     gridspec_kw={"width_ratios": width_ratios_ga,
                                  "wspace": 0},
                                  **init_fig_kwargs)
+            fig.patch.set_facecolor(face_color)
 
         else:
             fig, axx = plt.subplots(nrows=2,
                                     gridspec_kw={"hspace": 0.3},
                                     **init_fig_kwargs)
+            fig.patch.set_facecolor(face_color)
             # If the contrast axes are NOT floating, create lists to store
             # raw ylims and raw tick intervals, so that I can normalize
             # their ylims later.
@@ -330,6 +344,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         contrast_axes = axx[1]
     rawdata_axes.set_frame_on(False)
     contrast_axes.set_frame_on(False)
+    fig.set_tight_layout(False)
 
     redraw_axes_kwargs = {'colors'     : ytick_color,
                           'facecolors' : ytick_color,
@@ -406,12 +421,12 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             bar1 = sns.barplot(data=bar1_df, x=xvar, y="proportion",
                                ax=rawdata_axes,
                                order=all_plot_groups,
-                               palette=plot_palette_bar1,
+                               linewidth=2, facecolor=(1, 1, 1, 0), edgecolor=bar_color,
                                zorder=1)
             bar2 = sns.barplot(data=plot_data, x=xvar, y=yvar,
                                ax=rawdata_axes,
                                order=all_plot_groups,
-                               palette=plot_palette_bar2,
+                               palette=plot_palette_bar,
                                zorder=1,
                                **barplot_kwargs)
             # adjust the width of bars
@@ -457,12 +472,12 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             bar1 = sns.barplot(data=bar1_df, x=xvar, y="proportion",
                                ax=rawdata_axes,
                                order=all_plot_groups,
-                               palette=plot_palette_bar1,
+                               linewidth=2, facecolor=(1, 1, 1, 0), edgecolor=bar_color,
                                zorder=1)
             bar2 = sns.barplot(data=plot_data, x=xvar, y=yvar,
                                ax=rawdata_axes,
                                order=all_plot_groups,
-                               palette=plot_palette_bar2,
+                               palette=plot_palette_bar,
                                zorder=1,
                                **barplot_kwargs)
             # adjust the width of bars
@@ -672,7 +687,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if bootstraps_color_by_group is False:
         legend_labels_unique = np.unique(legend_labels)
         unique_idx = np.unique(legend_labels, return_index=True)[1]
-        legend_handles_unique = (pd.Series(legend_handles).loc[unique_idx]).tolist()
+        legend_handles_unique = (pd.Series(legend_handles,dtype='float64').loc[unique_idx]).tolist()
 
         if len(legend_handles_unique) > 0:
             if float_contrast is True:
@@ -739,7 +754,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_axes.set_ylim(og_ylim_contrast)
             contrast_axes.set_xlim(contrast_xlim_max-1, contrast_xlim_max)
 
-        elif effect_size_type in ["cohens_d", "hedges_g"]:
+        elif effect_size_type in ["cohens_d", "hedges_g","cohens_h"]:
             if is_paired:
                 which_std = 1
             else:
@@ -761,7 +776,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 hg_correction_factor = _compute_hedges_correction_factor(len_control, len_test)
                             
                 ylim_scale_factor = pooled_sd / hg_correction_factor
-                
+
+            elif effect_size_type == "cohens_h":
+                ylim_scale_factor = (np.mean(temp_test)-np.mean(temp_control))/ difference
+
             else:
                 ylim_scale_factor = pooled_sd
                 
@@ -794,9 +812,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                        **reflines_kwargs)
                         
             # Draw effect size line.
-            axx.hlines(diff, effsize_line_start, xlimhigh,
+            axx.hlines(diff,
+                       effsize_line_start, xlimhigh,
                        **reflines_kwargs)
-
+        rawdata_axes.set_xlim(-0.5,1.5) # to aligh the axis
         # Despine appropriately.
         sns.despine(ax=rawdata_axes,  bottom=True)
         sns.despine(ax=contrast_axes, left=True, right=False)
@@ -823,7 +842,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 custom_contrast_ylim = plot_kwargs['contrast_ylim']
                 if plot_kwargs['delta2_ylim'] is not None and show_delta2:
                     custom_delta2_ylim = plot_kwargs['delta2_ylim']
-                    if custom_contrast_ylim!=custom_deltas_ylim:
+                    if custom_contrast_ylim!=custom_delta2_ylim:
                         err1 = "Please check if `contrast_ylim` and `delta2_ylim` are assigned"
                         err2 = "with same values."
                         raise ValueError(err1 + err2)
@@ -869,7 +888,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                     end_tick = rightend_ticks_raw[k]
                     ax.hlines(xmin=start_tick, xmax=end_tick,
                               **redraw_axes_kwargs)
-        
                 ax.set_ylim(ylim)
                 del redraw_axes_kwargs['y']
             
@@ -965,6 +983,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Because we turned the axes frame off, we also need to draw back
     # the y-spine for both axes.
+    if float_contrast==False:
+        rawdata_axes.set_xlim(contrast_axes.get_xlim())
     og_xlim_raw = rawdata_axes.get_xlim()
     rawdata_axes.vlines(og_xlim_raw[0],
                          og_ylim_raw[0], og_ylim_raw[1],

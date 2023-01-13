@@ -1845,7 +1845,7 @@ class TwoGroupsEffectSize(object):
                                                         is_paired,
                                                         permutation_count)
         
-        if is_paired:
+        if is_paired and proportional is False:
             # Wilcoxon, a non-parametric version of the paired T-test.
             wilcoxon = spstats.wilcoxon(control, test)
             self.__pvalue_wilcoxon = wilcoxon.pvalue
@@ -1869,6 +1869,21 @@ class TwoGroupsEffectSize(object):
                 #                                     len(control),
                 #                                     alpha=self.__alpha)
 
+        elif is_paired and proportional is True:
+            # for binary paired data, use McNemar's test
+            # References:
+            # https://en.wikipedia.org/wiki/McNemar%27s_test
+            from statsmodels.stats.contingency_tables import mcnemar
+            import pandas as pd
+            df_temp = pd.DataFrame({'control': control, 'test': test})
+            x1 = len(df_temp[(df_temp['control'] == 0)&(df_temp['test'] == 0)])
+            x2 = len(df_temp[(df_temp['control'] == 0)&(df_temp['test'] == 1)])
+            x3 = len(df_temp[(df_temp['control'] == 1)&(df_temp['test'] == 0)])
+            x4 = len(df_temp[(df_temp['control'] == 1)&(df_temp['test'] == 1)])
+            table =  [[x1,x2],[x3,x4]]
+            _mcnemar = mcnemar(table, exact=True, correction=True)
+            self.__pvalue_mcnemar = _mcnemar.pvalue
+            self.__statistic_mcnemar = _mcnemar.statistic
 
         elif effect_size == "cliffs_delta":
             # Let's go with Brunner-Munzel!
@@ -2180,6 +2195,22 @@ class TwoGroupsEffectSize(object):
         from numpy import nan as npnan
         try:
             return self.__statistic_wilcoxon
+        except AttributeError:
+            return npnan
+
+    @property
+    def pvalue_mcnemar(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_mcnemar
+        except AttributeError:
+            return npnan
+
+    @property
+    def statistic_mcnemar(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_mcnemar
         except AttributeError:
             return npnan
 
@@ -2504,6 +2535,9 @@ class EffectSizeDataFrame(object):
                             'pvalue_wilcoxon',
                             'statistic_wilcoxon',
 
+                            'pvalue_mcnemar',
+                            'statistic_mcnemar',
+
                             'pvalue_paired_students_t',
                             'statistic_paired_students_t',
 
@@ -2623,8 +2657,9 @@ class EffectSizeDataFrame(object):
             custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
             halfviolin_alpha=0.8, 
 
+            face_color = None,
             #bar plot
-            bar_label=None, bar_desat=0.8, bar_width = 0.5,bar_ylim = None,
+            bar_label=None, bar_desat=0.5, bar_width = 0.5,bar_ylim = None,
             # error bar of proportion plot
             ci=None, err_color=None,
 
