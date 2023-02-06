@@ -42,7 +42,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     import pandas as pd
 
     from .misc_tools import merge_two_dicts
-    from .plot_tools import halfviolin, get_swarm_spans, gapped_lines,proportion_error_bar
+    from .plot_tools import halfviolin, get_swarm_spans, gapped_lines, proportion_error_bar, sankeydiag
     from ._stats_tools.effsize import _compute_standardizers, _compute_hedges_correction_factor
 
     import logging
@@ -116,6 +116,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         swarmplot_kwargs = merge_two_dicts(default_swarmplot_kwargs,
                                            plot_kwargs["swarmplot_kwargs"])
 
+    # Barplot kwargs
     default_barplot_kwargs = {"estimator": np.mean, "ci": plot_kwargs["ci"]}
 
     if plot_kwargs["barplot_kwargs"] is None:
@@ -123,6 +124,16 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         barplot_kwargs = merge_two_dicts(default_barplot_kwargs,
                                          plot_kwargs["barplot_kwargs"])
+
+    # Sankey Diagram kwargs
+    default_sankey_kwargs = {"width": 0.5, "align": "center",
+                            "alpha": 0.65, "rightColor": False}
+    if plot_kwargs["sankey_kwargs"] is None:
+        sankey_kwargs = default_sankey_kwargs
+    else:
+        sankey_kwargs = merge_two_dicts(default_sankey_kwargs,
+                                        plot_kwargs["sankey_kwargs"])
+                
 
     # Violinplot kwargs.
     default_violinplot_kwargs = {'widths':0.5, 'vert':True,
@@ -159,6 +170,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         legend_kwargs = merge_two_dicts(default_legend_kwargs,
                                         plot_kwargs["legend_kwargs"])
 
+    # Group summaries kwargs.
     gs_default = {'mean_sd', 'median_quartiles', None}
     if plot_kwargs["group_summaries"] not in gs_default:
         raise ValueError('group_summaries must be one of'
@@ -368,9 +380,16 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             temp_all_plot_groups = []
             for i in temp_idx:
                 temp_all_plot_groups.extend(list(i))
+            # TODO - Figure out how to draw sankey diagram for baseline paired.
+            # sankey_control_group = [all_plot_groups[0]]
+            # sankey_test_group = all_plot_groups.copy()
+            # sankey_test_group.pop(0)
         else:
             temp_idx = idx
             temp_all_plot_groups = all_plot_groups
+            sankey_control_group = [all_plot_groups[0]]
+            sankey_test_group = all_plot_groups.copy()
+            sankey_test_group.pop(0)
 
         if proportional==False:
         # Plot the raw data as a slopegraph.
@@ -412,31 +431,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                     rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
                 x_start = x_start + grp_count
             # Set the tick labels, because the slopegraph plotting doesn't.
-
+            rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
+            rawdata_axes.set_xticklabels(temp_all_plot_groups)
         else:
-            # Plot the raw data as a barplot.
-            df_new = plot_data.copy()
-            bar1_df = df_new.groupby(xvar).count().reset_index()
-            bar1_df['proportion'] = [i / j for i, j in zip(bar1_df[yvar], bar1_df[yvar])]
-            bar1 = sns.barplot(data=bar1_df, x=xvar, y="proportion",
-                               ax=rawdata_axes,
-                               order=all_plot_groups,
-                               linewidth=2, facecolor=(1, 1, 1, 0), edgecolor=bar_color,
-                               zorder=1)
-            bar2 = sns.barplot(data=plot_data, x=xvar, y=yvar,
-                               ax=rawdata_axes,
-                               order=all_plot_groups,
-                               palette=plot_palette_bar,
-                               zorder=1,
-                               **barplot_kwargs)
-            # adjust the width of bars
-            bar_width = plot_kwargs["bar_width"]
-            for bar in bar1.patches:
-                x = bar.get_x()
-                width = bar.get_width()
-                centre = x + width / 2.
-                bar.set_x(centre - bar_width / 2.)
-                bar.set_width(bar_width)
+            # Plot the raw data as a set of Sankey Diagrams aligned like barplot.
 
             group_summaries = plot_kwargs["group_summaries"]
             if group_summaries is None:
@@ -444,17 +442,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             err_color = plot_kwargs["err_color"]
             if err_color == None:
                 err_color = "black"
-            proportion_error_bar(plot_data, x=xvar, y=yvar,
-                                 offset=0,
-                                 gap_width_percent=1.5,
-                                 line_color=err_color,
-                                 type=group_summaries, ax=rawdata_axes,
-                                 **group_summary_kwargs)
 
-        # Set the tick labels, because the slopegraph plotting doesn't.
-        rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
-        rawdata_axes.set_xticklabels(temp_all_plot_groups)
-
+            # Replace the paired proportional plot with sankey diagram
+            sankey = sankeydiag(plot_data, xvar=xvar, yvar=yvar, 
+                                ax=rawdata_axes, 
+                                left_idx=sankey_control_group, 
+                                right_idx=sankey_test_group,
+                                **sankey_kwargs)
 
     else:
         if proportional==False:
@@ -539,9 +533,15 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     ticks_with_counts = []
     for xticklab in rawdata_axes.xaxis.get_ticklabels():
         t = xticklab.get_text()
-        N = str(counts.loc[t])
+        if t.rfind("\n") != -1:
+            te = t[t.rfind("\n") + len("\n"):]
+            N = str(counts.loc[te])
+            te = t
+        else:
+            te = t
+            N = str(counts.loc[te])
 
-        ticks_with_counts.append("{}\nN = {}".format(t, N))
+        ticks_with_counts.append("{}\nN = {}".format(te, N))
 
     rawdata_axes.set_xticklabels(ticks_with_counts)
 
@@ -552,15 +552,20 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if bootstraps_color_by_group is False:
         rawdata_axes.legend().set_visible(False)
 
+
+    #TODO: There is a bug for setting `is_paired` to be "baseline": Cannot achieve multiple tests vs. one control.
     # Plot effect sizes and bootstraps.
     # Take note of where the `control` groups are.
     if is_paired == "baseline" and show_pairs == True:
         ticks_to_skip = np.arange(0, len(temp_all_plot_groups), 2).tolist()
-        ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist() 
+        ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist()
         ticks_to_skip_contrast = np.cumsum([(len(t)-1)*2 for t in idx])[:-1].tolist()
         ticks_to_skip_contrast.insert(0, 0)
+    # elif is_paired == "sequential" and proportional == True:
+    #     ticks_to_skip = []
+    #     ticks_to_plot = np.arange(0, len(all_plot_groups)-1).tolist()
     else:
-        ticks_to_skip   = np.cumsum([len(t) for t in idx])[:-1].tolist()
+        ticks_to_skip = np.cumsum([len(t) for t in idx])[:-1].tolist()
         ticks_to_skip.insert(0, 0)
 
         # Then obtain the ticks where we have to plot the effect sizes.
@@ -575,6 +580,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     results      = EffectSizeDataFrame.results
     contrast_xtick_labels = []
 
+    #TODO: The contrast axes xticks is still to be fixed
     for j, tick in enumerate(ticks_to_plot):
         current_group     = results.test[j]
         current_control   = results.control[j]
@@ -583,6 +589,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         current_ci_low    = results.bca_low[j]
         current_ci_high   = results.bca_high[j]
 
+        #TODO: Warnings for bias-corrected and accelerated confidence intervals
+        
         # Create the violinplot.
         # New in v0.2.6: drop negative infinities before plotting.
         v = contrast_axes.violinplot(current_bootstrap[~np.isinf(current_bootstrap)],
@@ -680,8 +688,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         contrast_axes.set_xlim(rawdata_axes.get_xlim())
 
     # Properly label the contrast ticks.
-    for t in ticks_to_skip:
-        contrast_xtick_labels.insert(t, "")
+    if not (proportional==True and is_paired is not None):
+        for t in ticks_to_skip:
+            contrast_xtick_labels.insert(t, "")
     contrast_axes.set_xticklabels(contrast_xtick_labels)
 
     if bootstraps_color_by_group is False:

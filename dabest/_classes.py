@@ -1706,6 +1706,7 @@ class TwoGroupsEffectSize(object):
         import scipy.stats as spstats
 
         # import statsmodels.stats.power as power
+        import statsmodels
 
         from string import Template
         import warnings
@@ -2678,6 +2679,7 @@ class EffectSizeDataFrame(object):
             barplot_kwargs=None,
             violinplot_kwargs=None,
             slopegraph_kwargs=None,
+            sankey_kwargs=None,
             reflines_kwargs=None,
             group_summary_kwargs=None,
             legend_kwargs=None):
@@ -2778,6 +2780,12 @@ class EffectSizeDataFrame(object):
             accepted by matplotlib `plot()` function here, as a dict.
             If None, the following keywords are
             passed to plot() : {'linewidth':1, 'alpha':0.5}.
+        sankey_kwargs: dict, default None
+            Whis will change the appearance of the sankey diagram used to depict
+            paired proportional data when `show_pairs=True` and `proportional=True`. 
+            Pass any keyword arguments accepted by plot_tools.sankeydiag() function
+            here, as a dict. If None, the following keywords are passed to sankey diagram:
+            {"width": 0.5, "align": "center", "alpha": 0.65, "rightColor": False}
         reflines_kwargs : dict, default None
             This will change the appearance of the zero reference lines. Pass
             any keyword arguments accepted by the matplotlib Axes `hlines`
