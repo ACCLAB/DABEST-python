@@ -422,6 +422,8 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
 
     '''
     Make a single Sankey diagram showing proportion flow from left to right
+    Original code from: https://github.com/anazalea/pySankey
+    Changes are added to normalize each diagram's height to be 1
 
     Keywords
     --------
@@ -501,7 +503,6 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
     else:
         check_data_matches_labels(leftLabels, dataFrame['right'], 'right')
 
-    #TODO: Align with the given method of setting color palette
     # If no colorDict given, make one
     if colorDict is None:
         colorDict = {}
@@ -512,7 +513,7 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
     else:
         missing = [label for label in allLabels if label not in colorDict.keys()]
         if missing:
-            msg = "The colorDict parameter is missing values for the following labels : "
+            msg = "The palette parameter is missing values for the following labels : "
             msg += '{}'.format(', '.join(missing))
             raise ValueError(msg)
 
@@ -601,7 +602,7 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
     # Plot vertical bars for each label
     for leftLabel in leftLabels:
         ax.fill_between(
-            [leftpos + (-0.02 * xMax), leftpos],
+            [leftpos + (-0.05 * xMax), leftpos],
             2 * [leftWidths_norm[leftLabel]["bottom"]],
             2 * [leftWidths_norm[leftLabel]["bottom"] + leftWidths_norm[leftLabel]["left"]],
             color=colorDict[leftLabel],
@@ -609,7 +610,7 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
         )
     for rightLabel in rightLabels:
         ax.fill_between(
-            [xMax + leftpos, leftpos + (1.02 * xMax)], 
+            [xMax + leftpos, leftpos + (1.05 * xMax)], 
             2 * [rightWidths_norm[rightLabel]['bottom']],
             2 * [rightWidths_norm[rightLabel]['bottom'] + rightWidths_norm[rightLabel]['right']],
             color=colorDict[rightLabel],
@@ -643,7 +644,8 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
                 )
                 
 def sankeydiag(data, xvar, yvar, left_idx, right_idx, 
-                leftLabels=None, rightLabels=None, 
+                leftLabels=None, rightLabels=None,  
+                palette=None,
                 ax=None, width=0.5, rightColor=False,
                 align='center', alpha=0.65, **kwargs):
     '''
@@ -651,10 +653,38 @@ def sankeydiag(data, xvar, yvar, left_idx, right_idx,
     using the value in column yvar according to the value in column xvar
     left_idx in the column xvar is on the left side of each sankey diagram
     right_idx in the column xvar is on the right side of each sankey diagram
+
+    Keywords
+    --------
+    data: pd.DataFrame
+        input data, melted dataframe created by dabest.load()
+    left_idx: str
+        the value in column xvar that is on the left side of each sankey diagram
+    right_idx: str
+        the value in column xvar that is on the right side of each sankey diagram
+        if len(left_idx) == 1, it will be broadcasted to the same length as right_idx
+        otherwise it should have the same length as right_idx
+    leftLabels: list
+        labels for the left side of the diagram. The diagram will be sorted by these labels.
+    rightLabels: list
+        labels for the right side of the diagram. The diagram will be sorted by these labels.
+    palette: str or dict
+    ax: matplotlib axes to be drawn on
+    width: float
+        the width of each sankey diagram
+    align: str
+        the alignment of each sankey diagram, can be 'center' or 'left'
+    alpha: float
+        the transparency of each strip
+    rightColor: bool
+        if True, each strip of the diagram will be colored according to the corresponding left labels
+    colorDict: dictionary of colors for each label
+        input format: {'label': 'color'}
     '''
 
     import numpy as np
     import pandas as pd
+    import seaborn as sns
     import matplotlib.pyplot as plt
 
     if "width" in kwargs:
@@ -671,6 +701,8 @@ def sankeydiag(data, xvar, yvar, left_idx, right_idx,
 
     if ax is None:
         fig, ax = plt.subplots()
+
+    allLabels = data[yvar].unique()
         
     # Check if all the elements in left_idx and right_idx are in xvar column
     if not all(elem in data[xvar].unique() for elem in left_idx):
@@ -679,12 +711,34 @@ def sankeydiag(data, xvar, yvar, left_idx, right_idx,
         raise ValueError(f"{right_idx} not found in {xvar} column")
 
     xpos = 0
-    broadcasted_left = np.broadcast_to(left_idx, len(right_idx))
+
+    # For baseline comparison, broadcast left_idx to the same length as right_idx
+    # so that the left of sankey diagram will be the same
+    # For sequential comparison, left_idx and right_idx can have anything different 
+    # but should have the same length
+    if len(left_idx) == 1:
+        broadcasted_left = np.broadcast_to(left_idx, len(right_idx))
+    elif len(left_idx) != len(right_idx):
+        raise ValueError(f"left_idx and right_idx should have the same length")
+    else:
+        broadcasted_left = left_idx
+
+    if isinstance(palette, dict):
+        if not all(key in allLabels for key in palette.keys()):
+            raise ValueError(f"keys in palette should be in {yvar} column")
+        else: 
+            plot_palette = palette
+    elif isinstance(palette, str):
+        plot_palette = {}
+        colorPalette = sns.color_palette(palette, len(allLabels))
+        for i, label in enumerate(allLabels):
+            plot_palette[label] = colorPalette[i]
 
     for left, right in zip(broadcasted_left, right_idx):
         single_sankey(data[data[xvar]==left][yvar], data[data[xvar]==right][yvar], 
-                        xpos=xpos, ax=ax, width=width, leftLabels=leftLabels, 
-                        rightLabels=rightLabels, rightColor=rightColor, 
+                        xpos=xpos, ax=ax, colorDict=plot_palette, width=width, 
+                        leftLabels=leftLabels, rightLabels=rightLabels, 
+                        rightColor=rightColor, 
                         align=align, alpha=alpha)
         xpos += 1
 

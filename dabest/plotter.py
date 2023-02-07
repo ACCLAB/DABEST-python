@@ -31,6 +31,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
         slopegraph_kwargs=None,
+        sankey_kwargs=None,
         reflines_kwargs=None,
         group_summary_kwargs=None,
         legend_kwargs=None,
@@ -248,6 +249,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
         plot_palette_contrast = dict(zip(names.categories, contrast_colors))
+
+        # For Sankey Diagram plot, no need to worry about the color, each bar will have the same two colors
+        # default color palette will be set to "hls"
+        plot_palette_sankey = None
+        
     else:
         swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
         plot_palette_raw = dict(zip(names, swarm_colors))
@@ -257,6 +263,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
         plot_palette_contrast = dict(zip(names, contrast_colors))
+
+        plot_palette_sankey = custom_pal
 
     # Infer the figsize.
     fig_size   = plot_kwargs["fig_size"]
@@ -445,9 +453,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
             # Replace the paired proportional plot with sankey diagram
             sankey = sankeydiag(plot_data, xvar=xvar, yvar=yvar, 
-                                ax=rawdata_axes, 
                                 left_idx=sankey_control_group, 
                                 right_idx=sankey_test_group,
+                                palette=plot_palette_sankey,
+                                ax=rawdata_axes, 
                                 **sankey_kwargs)
 
     else:
@@ -561,9 +570,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist()
         ticks_to_skip_contrast = np.cumsum([(len(t)-1)*2 for t in idx])[:-1].tolist()
         ticks_to_skip_contrast.insert(0, 0)
-    # elif is_paired == "sequential" and proportional == True:
-    #     ticks_to_skip = []
-    #     ticks_to_plot = np.arange(0, len(all_plot_groups)-1).tolist()
     else:
         ticks_to_skip = np.cumsum([len(t) for t in idx])[:-1].tolist()
         ticks_to_skip.insert(0, 0)
@@ -590,7 +596,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         current_ci_high   = results.bca_high[j]
 
         #TODO: Warnings for bias-corrected and accelerated confidence intervals
-        
+
         # Create the violinplot.
         # New in v0.2.6: drop negative infinities before plotting.
         v = contrast_axes.violinplot(current_bootstrap[~np.isinf(current_bootstrap)],
