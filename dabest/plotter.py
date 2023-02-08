@@ -128,7 +128,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Sankey Diagram kwargs
     default_sankey_kwargs = {"width": 0.5, "align": "center",
-                            "alpha": 0.65, "rightColor": False}
+                            "alpha": 0.4, "rightColor": False,
+                            "bar_width":0.1}
     if plot_kwargs["sankey_kwargs"] is None:
         sankey_kwargs = default_sankey_kwargs
     else:
@@ -253,7 +254,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         # For Sankey Diagram plot, no need to worry about the color, each bar will have the same two colors
         # default color palette will be set to "hls"
         plot_palette_sankey = None
-        
+
     else:
         swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
         plot_palette_raw = dict(zip(names, swarm_colors))
@@ -388,16 +389,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             temp_all_plot_groups = []
             for i in temp_idx:
                 temp_all_plot_groups.extend(list(i))
-            # TODO - Figure out how to draw sankey diagram for baseline paired.
-            # sankey_control_group = [all_plot_groups[0]]
-            # sankey_test_group = all_plot_groups.copy()
-            # sankey_test_group.pop(0)
         else:
             temp_idx = idx
             temp_all_plot_groups = all_plot_groups
-            sankey_control_group = [all_plot_groups[0]]
-            sankey_test_group = all_plot_groups.copy()
-            sankey_test_group.pop(0)
 
         if proportional==False:
         # Plot the raw data as a slopegraph.
@@ -450,6 +444,17 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             err_color = plot_kwargs["err_color"]
             if err_color == None:
                 err_color = "black"
+
+            if show_pairs is True:
+                if is_paired == "baseline":
+                    sankey_control_group = []
+                    sankey_test_group = []
+                    for i in temp_idx:
+                        sankey_control_group.append(i[0])
+                        sankey_test_group.append(i[1])                   
+                else:
+                    sankey_control_group = all_plot_groups[:-1]
+                    sankey_test_group = all_plot_groups[1:]
 
             # Replace the paired proportional plot with sankey diagram
             sankey = sankeydiag(plot_data, xvar=xvar, yvar=yvar, 
@@ -562,17 +567,24 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         rawdata_axes.legend().set_visible(False)
 
 
-    #TODO: There is a bug for setting `is_paired` to be "baseline": Cannot achieve multiple tests vs. one control.
+    #TODO: When setting 'baseline', the plot is shrinked together and the contrast axes position should be fixed
     # Plot effect sizes and bootstraps.
     # Take note of where the `control` groups are.
     if is_paired == "baseline" and show_pairs == True:
-        ticks_to_skip = np.arange(0, len(temp_all_plot_groups), 2).tolist()
-        ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist()
-        ticks_to_skip_contrast = np.cumsum([(len(t)-1)*2 for t in idx])[:-1].tolist()
-        ticks_to_skip_contrast.insert(0, 0)
+        if proportional == True:
+            ticks_to_skip = []
+            ticks_to_plot = np.arange(0, len(temp_all_plot_groups)/2).tolist()
+        else:
+            ticks_to_skip = np.arange(0, len(temp_all_plot_groups), 2).tolist()
+            ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist()
+            ticks_to_skip_contrast = np.cumsum([(len(t)-1)*2 for t in idx])[:-1].tolist()
+            ticks_to_skip_contrast.insert(0, 0)
     else:
-        ticks_to_skip = np.cumsum([len(t) for t in idx])[:-1].tolist()
-        ticks_to_skip.insert(0, 0)
+        if proportional == True:
+            ticks_to_skip = [len(sankey_control_group)]
+        else:
+            ticks_to_skip = np.cumsum([len(t) for t in idx])[:-1].tolist()
+            ticks_to_skip.insert(0, 0)
 
         # Then obtain the ticks where we have to plot the effect sizes.
         ticks_to_plot = [t for t in range(0, len(all_plot_groups))
@@ -585,6 +597,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     results      = EffectSizeDataFrame.results
     contrast_xtick_labels = []
+
+    #TODO: Why is there always two plots showing together
 
     #TODO: The contrast axes xticks is still to be fixed
     for j, tick in enumerate(ticks_to_plot):
@@ -694,9 +708,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         contrast_axes.set_xlim(rawdata_axes.get_xlim())
 
     # Properly label the contrast ticks.
-    if not (proportional==True and is_paired is not None):
-        for t in ticks_to_skip:
-            contrast_xtick_labels.insert(t, "")
+    for t in ticks_to_skip:
+        contrast_xtick_labels.insert(t, "")
     contrast_axes.set_xticklabels(contrast_xtick_labels)
 
     if bootstraps_color_by_group is False:

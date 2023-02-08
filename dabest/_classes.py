@@ -2785,7 +2785,7 @@ class EffectSizeDataFrame(object):
             paired proportional data when `show_pairs=True` and `proportional=True`. 
             Pass any keyword arguments accepted by plot_tools.sankeydiag() function
             here, as a dict. If None, the following keywords are passed to sankey diagram:
-            {"width": 0.5, "align": "center", "alpha": 0.65, "rightColor": False}
+            {"width": 0.5, "align": "center", "alpha": 0.4, "bar_width": 0.1, "rightColor": False}
         reflines_kwargs : dict, default None
             This will change the appearance of the zero reference lines. Pass
             any keyword arguments accepted by the matplotlib Axes `hlines`

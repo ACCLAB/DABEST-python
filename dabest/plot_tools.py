@@ -418,7 +418,7 @@ def check_data_matches_labels(labels, data, side):
 
 def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None, 
             colorDict=None, leftLabels=None, rightLabels=None, ax=None, 
-            width=0.5, alpha=0.65, rightColor=False, align='center'):
+            width=0.5, alpha=0.65, bar_width=0.1, rightColor=False, align='center'):
 
     '''
     Make a single Sankey diagram showing proportion flow from left to right
@@ -489,17 +489,17 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
         raise Exception('Sankey graph does not support null values.')
 
     # Identify all labels that appear 'left' or 'right'
-    allLabels = pd.Series(np.r_[dataFrame.left.unique(), dataFrame.right.unique()]).unique()
+    allLabels = pd.Series(np.sort(np.r_[dataFrame.left.unique(), dataFrame.right.unique()])[::-1]).unique()
 
     # Identify left labels
     if len(leftLabels) == 0:
-        leftLabels = pd.Series(np.sort(dataFrame.left.unique())).unique()
+        leftLabels = pd.Series(np.sort(dataFrame.left.unique())[::-1]).unique()
     else:
         check_data_matches_labels(leftLabels, dataFrame['left'], 'left')
 
     # Identify right labels
     if len(rightLabels) == 0:
-        rightLabels = pd.Series(np.sort(dataFrame.right.unique())).unique()
+        rightLabels = pd.Series(np.sort(dataFrame.right.unique())[::-1]).unique()
     else:
         check_data_matches_labels(leftLabels, dataFrame['right'], 'right')
 
@@ -602,7 +602,7 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
     # Plot vertical bars for each label
     for leftLabel in leftLabels:
         ax.fill_between(
-            [leftpos + (-0.05 * xMax), leftpos],
+            [leftpos + (-(bar_width) * xMax), leftpos],
             2 * [leftWidths_norm[leftLabel]["bottom"]],
             2 * [leftWidths_norm[leftLabel]["bottom"] + leftWidths_norm[leftLabel]["left"]],
             color=colorDict[leftLabel],
@@ -610,7 +610,7 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
         )
     for rightLabel in rightLabels:
         ax.fill_between(
-            [xMax + leftpos, leftpos + (1.05 * xMax)], 
+            [xMax + leftpos, leftpos + ((1 + bar_width) * xMax)], 
             2 * [rightWidths_norm[rightLabel]['bottom']],
             2 * [rightWidths_norm[rightLabel]['bottom'] + rightWidths_norm[rightLabel]['right']],
             color=colorDict[rightLabel],
@@ -698,11 +698,14 @@ def sankeydiag(data, xvar, yvar, left_idx, right_idx,
     
     if "rightColor" in kwargs:
         rightColor = kwargs["rightColor"]
+    
+    if "bar_width" in kwargs:
+        bar_width = kwargs["bar_width"]
 
     if ax is None:
         fig, ax = plt.subplots()
 
-    allLabels = data[yvar].unique()
+    allLabels = pd.Series(np.sort(data[yvar].unique())[::-1]).unique()
         
     # Check if all the elements in left_idx and right_idx are in xvar column
     if not all(elem in data[xvar].unique() for elem in left_idx):
@@ -733,12 +736,14 @@ def sankeydiag(data, xvar, yvar, left_idx, right_idx,
         colorPalette = sns.color_palette(palette, len(allLabels))
         for i, label in enumerate(allLabels):
             plot_palette[label] = colorPalette[i]
+    else:
+        plot_palette = None
 
     for left, right in zip(broadcasted_left, right_idx):
         single_sankey(data[data[xvar]==left][yvar], data[data[xvar]==right][yvar], 
                         xpos=xpos, ax=ax, colorDict=plot_palette, width=width, 
                         leftLabels=leftLabels, rightLabels=rightLabels, 
-                        rightColor=rightColor, 
+                        rightColor=rightColor, bar_width=bar_width,
                         align=align, alpha=alpha)
         xpos += 1
 
