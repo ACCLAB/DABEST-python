@@ -687,7 +687,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if bootstraps_color_by_group is False:
         legend_labels_unique = np.unique(legend_labels)
         unique_idx = np.unique(legend_labels, return_index=True)[1]
-        legend_handles_unique = (pd.Series(legend_handles,dtype='float64').loc[unique_idx]).tolist()
+        legend_handles_unique = (pd.Series(legend_handles, dtype="object").loc[unique_idx]).tolist()
 
         if len(legend_handles_unique) > 0:
             if float_contrast is True:
@@ -711,6 +711,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                     line.set_linewidth(3.0)
 
     og_ylim_raw = rawdata_axes.get_ylim()
+    og_xlim_raw = rawdata_axes.get_xlim()
 
     if float_contrast is True:
         # For Gardner-Altman plots only.
@@ -815,7 +816,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             axx.hlines(diff,
                        effsize_line_start, xlimhigh,
                        **reflines_kwargs)
-        rawdata_axes.set_xlim(-0.5,1.5) # to aligh the axis
+        rawdata_axes.set_xlim(og_xlim_raw) # to aligh the axis
         # Despine appropriately.
         sns.despine(ax=rawdata_axes,  bottom=True)
         sns.despine(ax=contrast_axes, left=True, right=False)
