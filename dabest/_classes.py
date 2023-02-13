@@ -1570,7 +1570,8 @@ class TwoGroupsEffectSize(object):
     mean differences between two groups.
     """
 
-    def __init__(self, control, test, effect_size,proportional,
+    def __init__(self, control, test, effect_size,
+                 proportional=False,
                  is_paired=None, ci=95,
                  resamples=5000, 
                  permutation_count=5000, 
@@ -2662,7 +2663,7 @@ class EffectSizeDataFrame(object):
             #bar plot
             bar_label=None, bar_desat=0.5, bar_width = 0.5,bar_ylim = None,
             # error bar of proportion plot
-            ci=None, err_color=None,
+            ci=None, ci_type='bca', err_color=None,
 
             float_contrast=True,
             show_pairs=True,

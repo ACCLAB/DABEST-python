@@ -449,6 +449,9 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
         vertical extent of the diagram in units of horizontal extent
     rightColor: bool
         if True, each strip of the diagram will be colored according to the corresponding left labels
+    align: bool
+        if 'center', the diagram will be centered on each xtick, 
+        if 'edge', the diagram will be aligned with the left edge of each xtick
     '''
     
     from collections import defaultdict
@@ -510,6 +513,8 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
         colorPalette = sns.color_palette(palette, len(allLabels))
         for i, label in enumerate(allLabels):
             colorDict[label] = colorPalette[i]
+        fail_color = {0:"grey"}
+        colorDict.update(fail_color)
     else:
         missing = [label for label in allLabels if label not in colorDict.keys()]
         if missing:
@@ -527,6 +532,8 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
             raise TypeError(f'the dtypes of parameters x ({xpos.dtype}) '
                             f'and width ({width.dtype}) '
                             f'are incompatible') from e
+    else: 
+        leftpos = xpos
 
 
     # Determine positions of left label patches and total widths
@@ -640,13 +647,14 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
                 rightWidths_norm[rightLabel]['bottom'] += ns_r_norm[leftLabel][rightLabel]
                 ax.fill_between(
                     np.linspace(leftpos, leftpos + xMax, len(ys_d)), ys_d, ys_u, alpha=alpha,
-                    color=colorDict[labelColor]
+                    color=colorDict[labelColor], edgecolor='none'
                 )
                 
 def sankeydiag(data, xvar, yvar, left_idx, right_idx, 
                 leftLabels=None, rightLabels=None,  
-                palette=None,
-                ax=None, width=0.5, rightColor=False,
+                palette=None, ax=None, 
+                one_sankey=False,
+                width=0.5, rightColor=False,
                 align='center', alpha=0.65, **kwargs):
     '''
     Read in melted pd.DataFrame, and draw multiple sankey diagram on a single axes
@@ -670,6 +678,9 @@ def sankeydiag(data, xvar, yvar, left_idx, right_idx,
         labels for the right side of the diagram. The diagram will be sorted by these labels.
     palette: str or dict
     ax: matplotlib axes to be drawn on
+    one_sankey: bool 
+        determined by the driver function on plotter.py. 
+        if True, draw the sankey diagram across the whole raw data axes
     width: float
         the width of each sankey diagram
     align: str
@@ -703,7 +714,7 @@ def sankeydiag(data, xvar, yvar, left_idx, right_idx,
         bar_width = kwargs["bar_width"]
 
     if ax is None:
-        fig, ax = plt.subplots()
+        ax = plt.gca()
 
     allLabels = pd.Series(np.sort(data[yvar].unique())[::-1]).unique()
         
@@ -740,13 +751,27 @@ def sankeydiag(data, xvar, yvar, left_idx, right_idx,
         plot_palette = None
 
     for left, right in zip(broadcasted_left, right_idx):
-        single_sankey(data[data[xvar]==left][yvar], data[data[xvar]==right][yvar], 
-                        xpos=xpos, ax=ax, colorDict=plot_palette, width=width, 
-                        leftLabels=leftLabels, rightLabels=rightLabels, 
-                        rightColor=rightColor, bar_width=bar_width,
-                        align=align, alpha=alpha)
-        xpos += 1
+        if one_sankey == False:
+            single_sankey(data[data[xvar]==left][yvar], data[data[xvar]==right][yvar], 
+                            xpos=xpos, ax=ax, colorDict=plot_palette, width=width, 
+                            leftLabels=leftLabels, rightLabels=rightLabels, 
+                            rightColor=rightColor, bar_width=bar_width,
+                            align=align, alpha=alpha)
+            xpos += 1
+        else:
+            xpos = 0 + bar_width/2
+            width = 1 - bar_width
+            single_sankey(data[data[xvar]==left][yvar], data[data[xvar]==right][yvar], 
+                            xpos=xpos, ax=ax, colorDict=plot_palette, width=width, 
+                            leftLabels=leftLabels, rightLabels=rightLabels, 
+                            rightColor=rightColor, bar_width=bar_width,
+                            align='edge', alpha=alpha)
 
-    sankey_ticks = [f"{left}\n v.s.\n{right}" for left, right in zip(broadcasted_left, right_idx)]
-    ax.get_xaxis().set_ticks(np.arange(len(right_idx)))
-    ax.get_xaxis().set_ticklabels(sankey_ticks)
+    if one_sankey == False:
+        sankey_ticks = [f"{left}\n v.s.\n{right}" for left, right in zip(broadcasted_left, right_idx)]
+        ax.get_xaxis().set_ticks(np.arange(len(right_idx)))
+        ax.get_xaxis().set_ticklabels(sankey_ticks)
+    else:
+        sankey_ticks = [broadcasted_left[0], right_idx[0]]
+        ax.set_xticks([0, 1])
+        ax.set_xticklabels(sankey_ticks)
