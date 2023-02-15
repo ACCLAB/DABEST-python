@@ -190,11 +190,11 @@ def test_120_long_df_nan():
 
 @pytest.mark.mpl_image_compare
 def test_121_cohens_h_gardner_altman():
-    return two_groups_unpaired.cohens_h.plot()
+    return two_groups_unpaired.cohens_h.plot();
 
 @pytest.mark.mpl_image_compare
 def test_122_cohens_h_cummings():
-    return two_groups_unpaired.cohens_h.plot(float_contrast=False)
+    return two_groups_unpaired.cohens_h.plot(float_contrast=False);
 
 @pytest.mark.mpl_image_compare
 def test_123_style_sheets():

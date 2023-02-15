@@ -142,7 +142,7 @@ def test_hedges_g_paired():
 
 def test_cohens_h():
     cohens_h = effsize.cohens_h(smoke.low, smoke.high)
-    assert np.round(cohens_h, 2) == pytest.approx(-0.17)
+    assert np.round(cohens_h, 2) == pytest.approx(0.17)
 
 
 

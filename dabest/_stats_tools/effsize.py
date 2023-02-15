@@ -7,6 +7,7 @@ A range of functions to compute various effect sizes.
 
     two_group_difference
     cohens_d
+    cohens_h
     hedges_g
     cliffs_delta
     func_difference
@@ -71,11 +72,19 @@ def two_group_difference(control, test, is_paired=False,
         float: The desired effect size.
     """
     import numpy as np
+    import warnings
 
     if effect_size == "mean_diff":
         return func_difference(control, test, np.mean, is_paired)
 
     elif effect_size == "median_diff":
+        mes1 = "Using median as the statistic in bootstrapping may \
+                result in a biased estimate and cause problems with \
+                BCa confidence intervals. Consider using a different statistic, such as the mean.\n"
+        mes2 = "When plotting, please consider using percetile confidence intervals\
+                by specifying `ci_type='percentile'`. For detailed information, \
+                refer to https://github.com/ACCLAB/DABEST-python/issues/129"
+        warnings.warn(message=mes1+mes2, category=UserWarning)
         return func_difference(control, test, np.median, is_paired)
 
     elif effect_size == "cohens_d":
@@ -257,7 +266,7 @@ def cohens_h(control, test):
     import pandas as pd
 
     # Check whether dataframe contains only 0s and 1s.
-    if pd.unique(control)==np.array([0,1]).all()==False and (pd.unique(test)==np.array([0,1])).all()==False:
+    if np.isin(control, [0, 1]).all() == False or np.isin(test, [0, 1]).all() == False:
         raise ValueError("Input data must be binary.")
 
     # Convert to numpy arrays for speed.
