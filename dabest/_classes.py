@@ -2548,7 +2548,9 @@ class EffectSizeDataFrame(object):
                             'proportional_difference'
                            ]
         self.__results   = out_.reindex(columns=columns_in_order)
-        self.__results.dropna(axis="columns", how="all", inplace=True)
+        # The is_paired column could be NaNs, so we keep it.
+        subset_cols = columns_in_order.remove('is_paired')
+        self.__results.dropna(axis="columns", subset=subset_cols, how="all", inplace=True)
 
         if self.__delta2 is True and self.__effect_size == "mean_diff":
             self.__delta_delta = DeltaDelta(self,
