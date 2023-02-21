@@ -415,9 +415,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         else:
             # Plot the raw data as a barplot.
-            df_new = plot_data.copy()
-            bar1_df = df_new.groupby(xvar).count().reset_index()
-            bar1_df['proportion'] = [i / j for i, j in zip(bar1_df[yvar], bar1_df[yvar])]
+            bar1_df = pd.DataFrame({xvar: all_plot_groups, 'proportion': np.ones(len(all_plot_groups))})
             bar1 = sns.barplot(data=bar1_df, x=xvar, y="proportion",
                                ax=rawdata_axes,
                                order=all_plot_groups,
@@ -466,9 +464,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                          **swarmplot_kwargs)
         else:
             # Plot the raw data as a barplot.
-            df_new = plot_data.copy()
-            bar1_df = df_new.groupby(xvar).count().reset_index()
-            bar1_df['proportion'] = [i / j for i, j in zip(bar1_df[yvar], bar1_df[yvar])]
+            bar1_df = pd.DataFrame({xvar: all_plot_groups, 'proportion': np.ones(len(all_plot_groups))})
             bar1 = sns.barplot(data=bar1_df, x=xvar, y="proportion",
                                ax=rawdata_axes,
                                order=all_plot_groups,
@@ -720,9 +716,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         # Check that the effect size is within the swarm ylims.
         if effect_size_type in ["mean_diff", "cohens_d", "hedges_g","cohens_h"]:
             control_group_summary = plot_data.groupby(xvar)\
-                                             .mean().loc[current_control, yvar]
+                                             .mean(numeric_only=True).loc[current_control, yvar]
             test_group_summary = plot_data.groupby(xvar)\
-                                          .mean().loc[current_group, yvar]
+                                          .mean(numeric_only=True).loc[current_group, yvar]
         elif effect_size_type == "median_diff":
             control_group_summary = plot_data.groupby(xvar)\
                                              .median().loc[current_control, yvar]
