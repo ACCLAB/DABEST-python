@@ -12,16 +12,9 @@ df = create_demo_prop_dataset()
 
 two_groups_unpaired = load(df, idx=("Control 1", "Test 1"), proportional=True)
 
-two_groups_paired   = load(df, idx=("Control 1", "Test 1"),
-                           paired="baseline", id_col="ID",proportional=True)
-
 multi_2group = load(df, idx=(("Control 1", "Test 1",),
                              ("Control 2", "Test 2")),
                     proportional=True)
-
-multi_2group_paired = load(df, idx=(("Control 1", "Test 1"),
-                                 ("Control 2", "Test 2")),
-                            paired="baseline", id_col="ID", proportional=True)
 
 shared_control = load(df, idx=("Control 1", "Test 1",
                                 "Test 2", "Test 3",
@@ -31,8 +24,32 @@ shared_control = load(df, idx=("Control 1", "Test 1",
 multi_groups = load(df, idx=(("Control 1", "Test 1",),
                              ("Control 2", "Test 2","Test 3"),
                              ("Control 3", "Test 4","Test 5", "Test 6")
-                             ),proportional=True
-                    )
+                             ),proportional=True)
+
+two_groups_paired   = load(df, idx=("Control 1", "Test 1"),
+                           paired="baseline", id_col="ID",proportional=True)
+
+multi_2group_paired = load(df, idx=(("Control 1", "Test 1"),
+                                 ("Control 2", "Test 2")),
+                            paired="baseline", id_col="ID", proportional=True)
+
+multi_groups_paired = load(df, idx=(("Control 1", "Test 1",),
+                             ("Control 2", "Test 2","Test 3"),
+                             ("Control 3", "Test 4","Test 5", "Test 6")
+                             ),paired="baseline", id_col="ID", proportional=True)
+
+two_groups_sequential   = load(df, idx=("Control 1", "Test 1"),
+                           paired="sequential", id_col="ID",proportional=True)
+
+multi_2group_sequential = load(df, idx=(("Control 1", "Test 1"),
+                                 ("Control 2", "Test 2")),
+                            paired="sequential", id_col="ID", proportional=True)
+
+multi_groups_sequential = load(df, idx=(("Control 1", "Test 1",),
+                             ("Control 2", "Test 2","Test 3"),
+                             ("Control 3", "Test 4","Test 5", "Test 6")
+                             ),paired="sequential", id_col="ID", proportional=True)
+
 
 @pytest.mark.mpl_image_compare
 def test_101_gardner_altman_unpaired_propdiff():
