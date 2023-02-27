@@ -260,12 +260,16 @@ def compute_interval_limits(bias, acceleration, n_boots, ci=95):
 
 
 def calculate_group_var(control_var, control_N,test_var, test_N):
+    '''
+    Compute the pooled group difference.
+    '''
     return control_var/control_N + test_var/test_N
 
 
 def calculate_weighted_delta(group_var, differences, resamples):
     '''
-    Compute the weighted deltas.
+    Compute the weighted deltas where the weight is the inverse of the
+    pooled group difference.
     '''
     import numpy as np
 

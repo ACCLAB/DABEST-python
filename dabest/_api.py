@@ -27,7 +27,12 @@ def load(data, idx=None, x=None, y=None, paired=None, id_col=None,
     y : string, default None
         Column names for data to be plotted on the x-axis and y-axis.
     paired : string, default None
-        The type of the experiment under which the data are obtained
+        The type of the experiment under which the data are obtained. If 'paired' 
+        is None then the data will not be treated as paired data in the subsequent
+        calculations. If 'paired' is 'baseline', then in each tuple of x, other 
+        groups will be paired up with the first group (as control). If 'paired' is 
+        'sequential', then in each tuple of x, each group will be paired up with
+        its previous group (as control).
     id_col : default None.
         Required if `paired` is True.
     ci : integer, default 95
