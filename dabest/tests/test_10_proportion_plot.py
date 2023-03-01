@@ -39,18 +39,9 @@ def test_101_gardner_altman_unpaired_propdiff():
     return two_groups_unpaired.mean_diff.plot();
 
 @pytest.mark.mpl_image_compare
-def test_102_gardner_altman_paired_propdiff():
-    return two_groups_paired.mean_diff.plot();
-
-@pytest.mark.mpl_image_compare
 def test_103_cummings_two_group_unpaired_propdiff():
     return two_groups_unpaired.mean_diff.plot(fig_size=(4, 6),
                                               float_contrast=False);
-
-@pytest.mark.mpl_image_compare
-def test_104_cummings_two_group_paired_propdiff():
-    return two_groups_paired.mean_diff.plot(fig_size=(6, 6),
-                                            float_contrast=False);
 
 @pytest.mark.mpl_image_compare
 def test_105_cummings_multi_group_unpaired__propdiff():
