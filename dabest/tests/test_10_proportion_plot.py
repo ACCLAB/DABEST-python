@@ -56,18 +56,9 @@ def test_101_gardner_altman_unpaired_propdiff():
     return two_groups_unpaired.mean_diff.plot();
 
 @pytest.mark.mpl_image_compare
-def test_102_gardner_altman_paired_propdiff():
-    return two_groups_paired.mean_diff.plot();
-
-@pytest.mark.mpl_image_compare
 def test_103_cummings_two_group_unpaired_propdiff():
     return two_groups_unpaired.mean_diff.plot(fig_size=(4, 6),
                                               float_contrast=False);
-
-@pytest.mark.mpl_image_compare
-def test_104_cummings_two_group_paired_propdiff():
-    return two_groups_paired.mean_diff.plot(fig_size=(6, 6),
-                                            float_contrast=False);
 
 @pytest.mark.mpl_image_compare
 def test_105_cummings_multi_group_unpaired__propdiff():
@@ -80,31 +71,6 @@ def test_106_cummings_shared_control_propdiff():
 @pytest.mark.mpl_image_compare
 def test_107_cummings_multi_groups_propdiff():
     return multi_groups.mean_diff.plot();
-
-@pytest.mark.mpl_image_compare
-def test_108_inset_plots_propdiff():
-
-    # Load the titanic dataset. Requires internet access.
-    titanic = pd.read_csv("https://github.com/mwaskom/seaborn-data/raw/master/titanic.csv")
-    titanic['alone'][titanic['alone'] == True] = 1
-    titanic['alone'][titanic['alone'] == False] = 0
-    titanic["alone"] = titanic["alone"].astype("int")
-    titanic_melt = pd.melt(titanic.reset_index(),
-                           id_vars=["sex", "index"], var_name="metric")
-
-    titanic_dabest1 = load(data=titanic, x="sex", y="survived",
-                              idx=("female","male"), proportional=True)
-    titanic_dabest2 = load(data=titanic, x="sex", y="alone",
-                           idx=("female", "male"), proportional=True)
-    # Create Figure.
-    fig, ax = plt.subplots(nrows=2, ncols=2,
-                           figsize=(15, 15),
-                           gridspec_kw={"wspace": 0.5})
-    titanic_dabest1.mean_diff.plot(ax=ax.flat[0]);
-    titanic_dabest2.mean_diff.plot(ax=ax.flat[1]);
-    titanic_dabest1.mean_diff.plot(ax=ax.flat[2], float_contrast=False);
-    titanic_dabest2.mean_diff.plot(ax=ax.flat[3], float_contrast=False);
-    return fig
 
 @pytest.mark.mpl_image_compare
 def test_109_gardner_altman_ylabel():

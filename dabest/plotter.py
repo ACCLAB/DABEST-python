@@ -290,8 +290,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Initialise the figure.
     # sns.set(context="talk", style='ticks')
-    init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"])
-                           # ,tight_layout=True)
+    init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"]
+                            ,tight_layout=True)
 
     width_ratios_ga = [2.5, 1]
     h_space_cummings = 0.3
@@ -365,7 +365,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         contrast_axes = axx[1]
     rawdata_axes.set_frame_on(False)
     contrast_axes.set_frame_on(False)
-    fig.set_tight_layout(False)
+    # fig.set_tight_layout(False)
 
     redraw_axes_kwargs = {'colors'     : ytick_color,
                           'facecolors' : ytick_color,
