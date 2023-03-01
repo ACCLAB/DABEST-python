@@ -1,9 +1,9 @@
-.. _Proportion Plot:
+.. _(Paired) Proportion PLot:
 
 
-===============
-Proportion Plot
-===============
+========================
+(Paired) Proportion Plot
+========================
 
 It's important to note that the code we provided only supports numerical proportion data, 
 where the values are limited to 0 and 1. This means that the code may not be suitable for 
@@ -51,11 +51,6 @@ Create dataset for demo
                        'Test 4': t4, 'Test 5': t5, 'Test 6': t6,
                        'Gender': gender, 'ID': id_col
                        })
-
-    .. code-block:: python3
-  :linenos:
-
-
     df.head()
 
 
@@ -266,8 +261,8 @@ Let’s compute the Cohen's h for our comparison.
     To get the results of all valid statistical tests, use `.cohens_h.statistical_tests`
 
 
-Producing estimation plots
---------------------------
+Producing Proportional Plots
+----------------------------
 
 To produce a **Gardner-Altman estimation plot**, simply use the
 ``.plot()`` method. 
@@ -325,3 +320,90 @@ You can also modify the width of bars as you expect by setting ``bar_width`` in 
 
 .. image:: _images/prop_4.png
 
+Producing Paired Proportion Plots
+---------------------------------
+For paired version of proportional plot, we adapt the style of Sankey Diagram. The width of each bar in each xticks represent 
+the proportion of corresponding label in the group, and the strip denotes the paired relationship for each observation.
+
+Similar to the unpaired version, the ``.plot()`` method is used to produce a **Gardner-Altman estimation plot**, the only difference is that
+the ``is_paired`` parameter is set to either ``baseline`` or  ``sequential`` when loading data.
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_baseline = dabest.load(df, idx=("Control 1", "Test 1"), 
+                                  proportional=True, paired="baseline", id_col="ID")
+    
+    two_groups_baseline.mean_diff.plot();
+
+.. image:: _images/sankey_1.png
+
+The paired proportional plot also supports the ``float_contrast`` parameter, which can be set to ``False`` to produce a **Cumming estimation plot**.
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_baseline.mean_diff.plot(float_contrast=False);
+
+
+
+.. image:: _images/sankey_2.png
+
+
+The upper part (grey part) of the bar represents the proportion of observations in the dataset that do not belong to the category, which is
+equivalent to the proportion of 0 in the data. The lower part, on the other hand, represents the proportion of observations that belong to the category, which is
+or **success**, which is equivalent to the proportion of 1 in the data. 
+
+
+Repeated measures is also supported in paired proportional plot, by changing the ``is_paired`` parameter, two types of plot can be produced.
+
+
+.. code-block:: python3
+  :linenos:
+
+  multi_group_baseline = dabest.load(df, idx=((("Control 1", "Test 1","Test 2", "Test 3"),
+                                ("Test 4", "Test 5", "Test 6"))),
+                    proportional=True, paired="baseline", id_col="ID")
+
+  multi_group_baseline.mean_diff.plot();
+
+.. image:: _images/sankey_3.png
+
+.. code-block:: python3
+  :linenos:
+
+  multi_group_sequential = dabest.load(df, idx=((("Control 1", "Test 1","Test 2", "Test 3"),
+                                ("Test 4", "Test 5", "Test 6"))),
+                    proportional=True, paired="baseline", id_col="ID")
+
+  multi_group_sequential.mean_diff.plot();
+
+.. image:: _images/sankey_4.png
+
+.. code-block:: python3
+  :linenos:
+
+  multi_group_baseline_specify = dabest.load(df, idx=(("Control 1", "Test 1","Test 2", "Test 3",
+                                "Test 4", "Test 5", "Test 6")),
+                    proportional=True, paired="baseline", id_col="ID")
+
+  multi_group_baseline_specify.mean_diff.plot();
+
+.. image:: _images/sankey_5.png
+
+Several exclusive parameters can be supplied to the ``plot()`` method to customize the paired proportional plot.
+By updating the sankey_kwargs parameter, you can customize the Sankey plot. The following parameters are supported:
+
+- **width**: The width of each Sankey bar. Default is 0.5.
+- **align**: The alignment of each Sankey bar. Default is "center".
+- **alpha**: The transparency of each Sankey bar. Default is 0.4.
+- **bar_width**: The width of each bar on the side in the plot. Default is 0.1.
+
+.. code-block:: python3
+  :linenos:
+
+  two_groups_baseline.mean_diff.plot(sankey_kwargs = {"alpha": 0.2});
+
+.. image:: _images/sankey_6.png
