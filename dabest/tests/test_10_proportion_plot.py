@@ -61,7 +61,7 @@ def test_103_cummings_two_group_unpaired_propdiff():
                                               float_contrast=False);
 
 @pytest.mark.mpl_image_compare
-def test_105_cummings_multi_group_unpaired__propdiff():
+def test_105_cummings_multi_group_unpaired_propdiff():
     return multi_2group.mean_diff.plot();
 
 @pytest.mark.mpl_image_compare
@@ -180,7 +180,32 @@ def test_122_cohens_h_cummings():
     return two_groups_unpaired.cohens_h.plot(float_contrast=False);
 
 @pytest.mark.mpl_image_compare
-def test_123_style_sheets():
+def test_123_sankey_gardner_altman():
+    return two_groups_paired.mean_diff.plot();
+
+@pytest.mark.mpl_image_compare
+def test_124_sankey_cummings():
+    return two_groups_paired.mean_diff.plot(float_contrast=False);
+
+@pytest.mark.mpl_image_compare
+def test_125_sankey_2paired_groups():
+    return multi_2group_paired.mean_diff.plot();
+
+@pytest.mark.mpl_image_compare
+def test_126_sankey_2sequential_groups():
+    return multi_2group_sequential.mean_diff.plot();
+
+@pytest.mark.mpl_image_compare
+def test_127_sankey_multi_group_paired():
+    return multi_groups_paired.mean_diff.plot();
+
+@pytest.mark.mpl_image_compare
+def test_128_sankey_transparency():
+    return two_groups_paired.mean_diff.plot(sankey_kwargs = {"alpha": 0.2});
+
+
+@pytest.mark.mpl_image_compare
+def test_129_style_sheets():
     # Perform this test last so we don't have to reset the plot style.
     plt.style.use("dark_background")
     return multi_2group.mean_diff.plot(face_color="black");
