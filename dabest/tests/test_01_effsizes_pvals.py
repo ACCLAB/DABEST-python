@@ -33,6 +33,18 @@ paired_wellbeing = pd.DataFrame(paired_wb)
 
 
 
+# Data for testing Cohen's calculation.
+# Only work with binary data.
+# See Venables, W. N. and Ripley, B. D. (2002) Modern Applied Statistics with S. Fourth edition. Springer.
+# Make two groups of `smoke` by choosing `low` as a standard, and the data is trimed from the back.
+sk = {  "low":  [0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 
+                 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0],
+        "high": [1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 
+                 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1]}
+smoke = pd.DataFrame(sk)
+
+
+
 # Data from Hogarty and Kromrey (1999)
 # Kromrey, Jeffrey D., and Kristine Y. Hogarty. 1998.
 # “Analysis Options for Testing Group Differences on Ordered Categorical
@@ -125,6 +137,12 @@ def test_hedges_g_paired():
     hedges_g = effsize.hedges_g(paired_wellbeing.pre, paired_wellbeing.post,
                                 is_paired="baseline")
     assert np.round(hedges_g, 2) == pytest.approx(0.33)
+    
+
+
+def test_cohens_h():
+    cohens_h = effsize.cohens_h(smoke.low, smoke.high)
+    assert np.round(cohens_h, 2) == pytest.approx(0.17)
 
 
 

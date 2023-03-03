@@ -23,4 +23,4 @@ from ._api import load
 from ._stats_tools import effsize as effsize
 from ._classes import TwoGroupsEffectSize, PermutationTest
 
-__version__ = "0.3.9999"
+__version__ = "2023.02.14"

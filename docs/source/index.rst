@@ -56,6 +56,7 @@ Contents
   bootstraps
   getting-started
   tutorial
+  proportion-plot
   release-notes
   api
   about

@@ -67,7 +67,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'dabest'
-copyright = '2017-2020, Joses W. Ho'
+copyright = '2017-2023, Joses W. Ho'
 author = 'Joses W. Ho'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -143,7 +143,7 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static/css']
+html_static_path = ['_static']
 
 
 

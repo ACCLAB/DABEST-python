@@ -125,7 +125,7 @@ def test_unpaired_ci(reps=30, ci=95):
         # print(i) # for debug.
         # pick a random seed
         rnd_sd = np.random.randint(0, 999999)
-        load_kwargs = dict(ci=ci, random_seed=rnd_sd, paired=None)
+        load_kwargs = dict(ci=ci, random_seed=rnd_sd)
 
         std_diff_data = load(data=std_diff_df, idx=("Control", "Test"), **load_kwargs)
         cd = std_diff_data.cohens_d.results

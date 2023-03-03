@@ -341,6 +341,9 @@ class Dabest(object):
         self.__cohens_d     = EffectSizeDataFrame(self, "cohens_d",
                                                 **EffectSizeDataFrame_kwargs)
 
+        self.__cohens_h     = EffectSizeDataFrame(self, "cohens_h",
+                                                **EffectSizeDataFrame_kwargs)                                       
+
         self.__hedges_g     = EffectSizeDataFrame(self, "hedges_g",
                                                 **EffectSizeDataFrame_kwargs)
 
@@ -550,6 +553,44 @@ class Dabest(object):
         return self.__cohens_d
     
     
+    @property
+    def cohens_h(self):
+        """
+        Returns an :py:class:`EffectSizeDataFrame` for the standardized mean difference Cohen's `h`, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `directional` argument in `dabest.load()`.
+
+        Example
+        -------
+        >>> from scipy.stats import randint
+        >>> import pandas as pd
+        >>> import dabest
+        >>> control = randint.rvs(0, 2, size=30, random_state=12345)
+        >>> test    = randint.rvs(0, 2, size=30, random_state=12345)
+        >>> my_df   = pd.DataFrame({"control": control,
+                                    "test": test})
+        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test")
+        >>> my_dabest_object.cohens_h
+
+        Notes
+        -----
+        Cohen's 'h' uses the information of proportion in the control and test groups to calculate the distance between two proportions.
+        It can be used to describe the difference between two proportions as "small", "medium", or "large".
+        It can be used to determine if the difference between two proportions is "meaningful".
+
+        A directional Cohen's 'h' is computed with the following equation:
+
+        .. math::
+            h = 2 * \\arcsin{\\sqrt{proportion_{Test}}} - 2 * \\arcsin{\\sqrt{proportion_{Control}}}
+
+        For a non-directional Cohen's 'h', the equation is:
+        .. math::
+            h = \\abs{2 * \\arcsin{\\sqrt{proportion_{Test}}}} - \\abs{2 * \\arcsin{\\sqrt{proportion_{Control}}}}
+        
+        References:
+            https://en.wikipedia.org/wiki/Cohen%27s_h
+        """
+        return self.__cohens_h
+
+
     @property  
     def hedges_g(self):
         """
@@ -1627,6 +1668,7 @@ class TwoGroupsEffectSize(object):
     """
 
     def __init__(self, control, test, effect_size,
+                 proportional=False,
                  is_paired=None, ci=95,
                  resamples=5000, 
                  permutation_count=5000, 
@@ -1762,6 +1804,7 @@ class TwoGroupsEffectSize(object):
         import scipy.stats as spstats
 
         # import statsmodels.stats.power as power
+        import statsmodels
 
         from string import Template
         import warnings
@@ -1773,6 +1816,7 @@ class TwoGroupsEffectSize(object):
         self.__EFFECT_SIZE_DICT =  {"mean_diff" : "mean difference",
                                     "median_diff" : "median difference",
                                     "cohens_d" : "Cohen's d",
+                                    "cohens_h" : "Cohen's h",
                                     "hedges_g" : "Hedges' g",
                                     "cliffs_delta" : "Cliff's delta"}
 
@@ -1785,6 +1829,14 @@ class TwoGroupsEffectSize(object):
 
         if effect_size == "cliffs_delta" and is_paired:
             err1 = "`paired` is not None; therefore Cliff's delta is not defined."
+            raise ValueError(err1)
+
+        if proportional==True and effect_size not in ['mean_diff','cohens_h']:
+            err1 = "`proportional` is True; therefore effect size other than mean_diff and cohens_h is not defined."
+            raise ValueError(err1)
+
+        if proportional==True and (np.isin(control, [0, 1]).all() == False or np.isin(test, [0, 1]).all() == False):
+            err1 = "`proportional` is True; Only accept binary data consisting of 0 and 1."
             raise ValueError(err1)
 
         # Convert to numpy arrays for speed.
@@ -1892,7 +1944,7 @@ class TwoGroupsEffectSize(object):
                                                         is_paired,
                                                         permutation_count)
         
-        if is_paired:
+        if is_paired and proportional is False:
             # Wilcoxon, a non-parametric version of the paired T-test.
             wilcoxon = spstats.wilcoxon(control, test)
             self.__pvalue_wilcoxon = wilcoxon.pvalue
@@ -1916,6 +1968,21 @@ class TwoGroupsEffectSize(object):
                 #                                     len(control),
                 #                                     alpha=self.__alpha)
 
+        elif is_paired and proportional is True:
+            # for binary paired data, use McNemar's test
+            # References:
+            # https://en.wikipedia.org/wiki/McNemar%27s_test
+            from statsmodels.stats.contingency_tables import mcnemar
+            import pandas as pd
+            df_temp = pd.DataFrame({'control': control, 'test': test})
+            x1 = len(df_temp[(df_temp['control'] == 0)&(df_temp['test'] == 0)])
+            x2 = len(df_temp[(df_temp['control'] == 0)&(df_temp['test'] == 1)])
+            x3 = len(df_temp[(df_temp['control'] == 1)&(df_temp['test'] == 0)])
+            x4 = len(df_temp[(df_temp['control'] == 1)&(df_temp['test'] == 1)])
+            table =  [[x1,x2],[x3,x4]]
+            _mcnemar = mcnemar(table, exact=True, correction=True)
+            self.__pvalue_mcnemar = _mcnemar.pvalue
+            self.__statistic_mcnemar = _mcnemar.statistic
 
         elif effect_size == "cliffs_delta":
             # Let's go with Brunner-Munzel!
@@ -1980,6 +2047,12 @@ class TwoGroupsEffectSize(object):
 
             standardized_es = es.cohens_d(control, test, is_paired = None)
             
+            # The Cohen's h calculation is for binary categorical data
+            try:
+                self.__proportional_difference = es.cohens_h(control, test)
+            except ValueError:
+                # Occur only when the data consists not only 0's and 1's.
+                pass
             # self.__power = power.tt_ind_solve_power(standardized_es,
             #                                         len(control),
             #                                         alpha=self.__alpha,
@@ -2224,6 +2297,22 @@ class TwoGroupsEffectSize(object):
         except AttributeError:
             return npnan
 
+    @property
+    def pvalue_mcnemar(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_mcnemar
+        except AttributeError:
+            return npnan
+
+    @property
+    def statistic_mcnemar(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_mcnemar
+        except AttributeError:
+            return npnan
+
 
 
     @property
@@ -2339,6 +2428,15 @@ class TwoGroupsEffectSize(object):
     @property
     def permutations_var(self):
         return self.__PermutationTest_result.permutations_var
+
+
+    @property
+    def proportional_difference(self):
+        from numpy import nan as npnan
+        try:
+            return self.__proportional_difference
+        except AttributeError:
+            return npnan
 
 
 
@@ -2468,6 +2566,7 @@ class EffectSizeDataFrame(object):
 
                 result = TwoGroupsEffectSize(control, test,
                                              self.__effect_size,
+                                             self.__proportional,
                                              self.__is_paired,
                                              self.__ci,
                                              self.__resamples,
@@ -2492,7 +2591,7 @@ class EffectSizeDataFrame(object):
                 else:
                     resamp_count = False
                     def_pval     = False
-                
+
                 text_repr = result.__repr__(show_resample_count=resamp_count,
                                             define_pval=def_pval)
 
@@ -2500,6 +2599,15 @@ class EffectSizeDataFrame(object):
                 text_repr = text_repr.replace("is", to_replace, 1)
 
                 reprs.append(text_repr)
+
+        varname = get_varname(self.__dabest_obj)
+        lastline = "To get the results of all valid statistical tests, " +\
+        "use `{}.{}.statistical_tests`".format(varname, self.__effect_size)
+        reprs.append(lastline)
+
+        reprs.insert(0, print_greeting())
+
+        self.__for_print = "\n\n".join(reprs)
 
         out_             = pd.DataFrame(out)
 
@@ -2529,11 +2637,15 @@ class EffectSizeDataFrame(object):
                             'pvalue_wilcoxon',
                             'statistic_wilcoxon',
 
+                            'pvalue_mcnemar',
+                            'statistic_mcnemar',
+
                             'pvalue_paired_students_t',
                             'statistic_paired_students_t',
 
                             'pvalue_kruskal',
                             'statistic_kruskal',
+                            'proportional_difference'
                            ]
         self.__results   = out_.reindex(columns=columns_in_order)
         self.__results.dropna(axis="columns", how="all", inplace=True)
@@ -2651,8 +2763,14 @@ class EffectSizeDataFrame(object):
             swarm_label=None, barchart_label=None, contrast_label=None, delta2_label=None,
             swarm_ylim=None, barchart_ylim=None, contrast_ylim=None, delta2_ylim=None,
 
-            custom_palette=None, swarm_desat=0.5, barchart_desat=0.5, halfviolin_desat=1,
+            custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
             halfviolin_alpha=0.8, 
+
+            face_color = None,
+            #bar plot
+            bar_label=None, bar_desat=0.5, bar_width = 0.5,bar_ylim = None,
+            # error bar of proportion plot
+            ci=None, ci_type='bca', err_color=None,
 
             float_contrast=True,
             show_pairs=True,
@@ -2665,14 +2783,15 @@ class EffectSizeDataFrame(object):
             dpi=100,
             ax=None,
 
-
-            barchartplot_kwargs=None,
             swarmplot_kwargs=None,
+            barplot_kwargs=None,
             violinplot_kwargs=None,
             slopegraph_kwargs=None,
+            sankey_kwargs=None,
             reflines_kwargs=None,
             group_summary_kwargs=None,
             legend_kwargs=None):
+
         """
         Creates an estimation plot for the effect size of interest.
         
@@ -2769,6 +2888,12 @@ class EffectSizeDataFrame(object):
             accepted by matplotlib `plot()` function here, as a dict.
             If None, the following keywords are
             passed to plot() : {'linewidth':1, 'alpha':0.5}.
+        sankey_kwargs: dict, default None
+            Whis will change the appearance of the sankey diagram used to depict
+            paired proportional data when `show_pairs=True` and `proportional=True`. 
+            Pass any keyword arguments accepted by plot_tools.sankeydiag() function
+            here, as a dict. If None, the following keywords are passed to sankey diagram:
+            {"width": 0.5, "align": "center", "alpha": 0.4, "bar_width": 0.1, "rightColor": False}
         reflines_kwargs : dict, default None
             This will change the appearance of the zero reference lines. Pass
             any keyword arguments accepted by the matplotlib Axes `hlines`
@@ -2858,7 +2983,7 @@ class EffectSizeDataFrame(object):
 
         """
 
-        from .plotter import EffectSizeDataFramePlotter, ProportionalDataFramePlotter
+        from .plotter import EffectSizeDataFramePlotter
 
         if hasattr(self, "results") is False:
             self.__pre_calc()
@@ -2866,15 +2991,11 @@ class EffectSizeDataFrame(object):
         if self.__delta2:
             color_col = self.__x2
 
-        if self.__proportional:
-            raw_marker_size = 0.01
+        # if self.__proportional:
+        #     raw_marker_size = 0.01
             
         all_kwargs = locals()
         del all_kwargs["self"]
-
-        if self.__proportional:
-            out = ProportionalDataFramePlotter(self, **all_kwargs)
-            return out
 
         out = EffectSizeDataFramePlotter(self, **all_kwargs)
 
@@ -2936,7 +3057,7 @@ class EffectSizeDataFrame(object):
     @property
     def yvar(self):
         return self.__dabest_obj._yvar
-    
+
     @property
     def is_paired(self):
         return self.__is_paired
