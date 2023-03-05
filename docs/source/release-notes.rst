@@ -9,8 +9,9 @@ v2023.02.14
 
 This release introduces several new functions:
   - Additional plotting functions for repeated measures experimental designs:
-     - Plotting for paired comparisons of multiple test groups to a single control
-     - Plotting for repeated measures of the same experimental group
+     - Plotting for paired comparisons of multiple test groups to a single control (``"baseline"``)
+     - Plotting for repeated measures of the same experimental group (``"sequential"``)
+     - **Important note:** The ``paired`` argument for ``dabest.load()`` is no longer boolean, and now only accepts ``"baseline"`` or ``"sequential"`` as a string.
   - Calculating of Cohen's *h* and proportional plots for binary data
   - Calculating and plotting of weighted deltas for mini-meta-analysis of experimental replicates
   - Calculating and plotting delta-deltas for 2x2 experimental designs
