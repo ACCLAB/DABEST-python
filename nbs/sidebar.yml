@@ -17,5 +17,4 @@ website:
       - section: tutorials
         contents:
           - tutorials\index.qmd
-          - tutorials\End-To-End Walkthrough Documentation.ipynb
           - tutorials\proportion_plot.ipynb
