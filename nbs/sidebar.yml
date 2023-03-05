@@ -1,0 +1,21 @@
+website:
+  sidebar:
+    contents:
+      - getting_started.ipynb
+      - section: API
+        contents:
+          - API\index.qmd
+          - API\bootstrap.ipynb
+          - API\class.ipynb
+          - API\confint_1group.ipynb
+          - API\confint_diff.ipynb
+          - API\effsize.ipynb
+          - API\load.ipynb
+          - API\misc_tools.ipynb
+          - API\plot_tools.ipynb
+          - API\plotter.ipynb
+      - section: tutorials
+        contents:
+          - tutorials\index.qmd
+          - tutorials\End-To-End Walkthrough Documentation.ipynb
+          - tutorials\proportion_plot.ipynb
