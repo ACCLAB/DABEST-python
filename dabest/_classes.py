@@ -572,16 +572,17 @@ class Dabest(object):
 
         Notes
         -----
-        Cohen's 'h' uses the information of proportion in the control and test groups to calculate the distance between two proportions.
+        Cohen's *h* uses the information of proportion in the control and test groups to calculate the distance between two proportions.
         It can be used to describe the difference between two proportions as "small", "medium", or "large".
         It can be used to determine if the difference between two proportions is "meaningful".
 
-        A directional Cohen's 'h' is computed with the following equation:
+        A directional Cohen's *h* is computed with the following equation:
 
         .. math::
             h = 2 * \\arcsin{\\sqrt{proportion_{Test}}} - 2 * \\arcsin{\\sqrt{proportion_{Control}}}
 
         For a non-directional Cohen's 'h', the equation is:
+
         .. math::
             h = \\abs{2 * \\arcsin{\\sqrt{proportion_{Test}}}} - \\abs{2 * \\arcsin{\\sqrt{proportion_{Control}}}}
         
@@ -1201,7 +1202,55 @@ class DeltaDelta(object):
 
 class MiniMetaDelta(object):
     """
-    A class to compute and store the weighted mean differences.
+    A class to compute and store the weighted delta.
+    A weighted delta is calculated if the argument ``mini_meta=True`` is passed during ``dabest.load()``.
+
+    The weighted delta is calcuated as follows:
+
+    .. math::
+	\\theta_{\\text{weighted}} = \\frac{\\Sigma\\hat{\\theta_{i}}w_{i}}{{\\Sigma}w_{i}}
+    
+    where:
+
+    .. math::
+	\\hat{\\theta_{i}} = \\text{Mean difference for replicate }i
+
+    .. math::
+	w_{i} = \\text{Weight for replicate }i = \\frac{1}{s_{i}^2} 
+
+    .. math::
+	s_{i}^2 = \\text{Pooled variance for replicate }i = \\frac{(n_{test}-1)s_{test}^2+(n_{control}-1)s_{control}^2}{n_{test}+n_{control}-2}
+
+    .. math::
+	n = \\text{sample size and }s^2 = \\text{variance for control/test.}
+
+
+    Example
+    -------
+    >>> from scipy.stats import norm
+    >>> import pandas as pd
+    >>> import dabest
+    >>> c1 = norm.rvs(loc=3, scale=0.4, size=Ns)
+    >>> c2 = norm.rvs(loc=3.5, scale=0.75, size=Ns)
+    >>> c3 = norm.rvs(loc=3.25, scale=0.4, size=Ns)
+
+    >>> t1 = norm.rvs(loc=3.5, scale=0.5, size=Ns)
+    >>> t2 = norm.rvs(loc=2.5, scale=0.6, size=Ns)
+    >>> t3 = norm.rvs(loc=3, scale=0.75, size=Ns)
+    >>> my_df   = pd.DataFrame({'Control 1' : c1,     'Test 1' : t1,
+                       'Control 2' : c2,     'Test 2' : t2,
+                       'Control 3' : c3,     'Test 3' : t3})
+    >>> my_dabest_object = dabest.load(df, idx=(("Control 1", "Test 1"), ("Control 2", "Test 2"), ("Control 3", "Test 3")), mini_meta=True)
+    >>> my_dabest_object.mean_diff.mini_meta_delta
+
+    Notes
+    -----
+    As of version 2023.02.14, weighted delta can only be calculated for mean difference, and not for standardized measures such as Cohen's *d*.
+
+    Details about the calculated weighted delta are accessed as attributes of the ``mini_meta_delta`` class. See the :doc:`minimetadelta` for details on usage.
+
+    Refer to Chapter 10 of the Cochrane handbook for further information on meta-analysis: https://training.cochrane.org/handbook/current/chapter-10
+		
     """
 
     def __init__(self, effectsizedataframe, permutation_count,

@@ -56,7 +56,10 @@ Contents
   bootstraps
   getting-started
   tutorial
+  repeatedmeasures
   proportion-plot
+  minimetadelta
+  plotaesthetics
   release-notes
   api
   about

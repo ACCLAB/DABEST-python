@@ -4,6 +4,25 @@
 Release Notes
 =============
 
+v2023.02.14
+-----------
+
+This release introduces several new functions:
+  - Additional plotting functions for repeated measures experimental designs:
+     - Plotting for paired comparisons of multiple test groups to a single control
+     - Plotting for repeated measures of the same experimental group
+  - Calculating of Cohen's *h* and proportional plots for binary data
+  - Calculating and plotting of weighted deltas for mini-meta-analysis of experimental replicates
+  - Calculating and plotting delta-deltas for 2x2 experimental designs
+
+Please read the updated tutorials if you wish to use any of the above functions:
+
+:doc:`repeatedmeasures` 
+
+:doc:`proportion-plot` 
+
+:doc:`minimetadelta` 
+
 v0.3.1
 ------
 

@@ -88,6 +88,7 @@ def load(data, idx=None, x=None, y=None, paired=None, id_col=None,
     >>> my_data = dabest.load(df, idx=("Control 1", "Test 1"))
 
     For proportion plot.
+
     >>> np.random.seed(88888)
     >>> N = 10
     >>> c1 = np.random.binomial(1, 0.2, size=N)

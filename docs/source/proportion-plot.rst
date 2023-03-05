@@ -1,12 +1,12 @@
-.. _(Paired) Proportion PLot:
+.. _Proportion Plots:
 
 
-========================
-(Paired) Proportion Plot
-========================
+==========================
+Tutorial: Proportion Plots
+==========================
 
-It's important to note that the code we provided only supports numerical proportion data, 
-where the values are limited to 0 and 1. This means that the code may not be suitable for 
+As of v2023.02.14, DABEST can be used to produce Cohen's *h* and the corresponding proportion plot for binary data. It's important to note that the code we provide only supports numerical proportion data, 
+where the values are limited to 0 (failure) and 1 (success). This means that the code is not suitable for 
 analyzing proportion data that contains non-numeric values, such as strings like 'yes' and 'no'.
 
 Create dataset for demo
@@ -176,8 +176,8 @@ When loading data, specify ``proportional=True``.
 
 
 .. parsed-literal::
-    DABEST v0.3.1
-    =============
+    DABEST v2023.02.14
+    ==================
                 
     Good evening!
     The current time is Tue Feb 20 22:49:54 2023.
@@ -203,14 +203,8 @@ Each of these are attributes of the ``Dabest`` object.
     two_groups_unpaired.mean_diff
 
 .. parsed-literal::
-    DABEST v0.3.1
-    =============
-                
-    Good evening!
-    The current time is Tue Feb 20 22:55:04 2023.
-
-    DABEST v0.3.1
-    =============
+    DABEST v2023.02.14
+    ==================
                 
     Good evening!
     The current time is Tue Feb 21 22:55:04 2023.
@@ -235,15 +229,8 @@ Let’s compute the Cohen's h for our comparison.
   two_groups_unpaired.cohens_h
 
 .. parsed-literal::
-
-    DABEST v0.3.1
-    =============
-                
-    Good evening!
-    The current time is Tue Feb 20 22:57:31 2023.
-
-    DABEST v0.3.1
-    =============
+    DABEST v2023.02.14
+    ==================
                 
     Good evening!
     The current time is Tue Feb 21 22:57:31 2023.
