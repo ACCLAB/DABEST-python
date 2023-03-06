@@ -93,7 +93,7 @@ iris_dabest = dabest.load(data=iris, x="species", y="petal_width",
 # Produce a Cumming estimation plot.
 iris_dabest.mean_diff.plot();
 ```
-![A Cumming estimation plot of petal width from the iris dataset](https://github.com/ACCLAB/DABEST-python/blob/master/iris.png)
+![A Cumming estimation plot of petal width from the iris dataset](iris.png)
 
 Please refer to the official [tutorial](https://acclab.github.io/DABEST-python-docs/tutorial.html) for more useful code snippets.
 
