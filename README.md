@@ -6,6 +6,21 @@
 [![Free-to-view citation](https://zenodo.org/badge/DOI/10.1038/s41592-019-0470-3.svg)](https://rdcu.be/bHhJ4)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause--Clear-orange.svg)](https://spdx.org/licenses/BSD-3-Clause-Clear.html)
 
+## Upcoming Version Update
+
+On 20 March 2023, we will be officially releasing **DABEST v2023.02.14 for Python**. This new version will provide the following new features:
+
+1. **Repeated measures.** Augments the prior function for plotting (independent) multiple test groups versus a shared control; it can now do the same for repeated-measures experimental designs. Thus, together, these two methods can be used to replace both flavors of the 1-way ANOVA with an estimation analysis.
+
+2. **Proportional data.** Generates proportional bar plots, proportional differences, and calculates Cohen's h. Also enables plotting Sankey diagrams for paired binary data. This is the estimation equivalent to a bar chart with Fischer's exact test.
+
+3. **The ∆∆ plot.** Calculates the delta-delta (∆∆) for 2 × 2 experimental designs and plots the four groups with their relevant effect sizes. This design can be used as a replacement for the 2 × 2 ANOVA.
+
+4. **Mini-meta.** Calculates and plots a weighted delta (∆) for meta-analysis of experimental replicates. Useful for summarizing data from multiple replicated experiments, for example by different scientists in the same lab, or the same scientist at different times. When the observed values are known (and share a common metric), this makes meta-analysis available as a routinely accessible tool.
+
+Prior to the official update, users keen to try these features now are invited to download the v0.4dev branch. After 20 March 2023, the new version will be the one we recommend for all users.
+
+
 ## Contents
 <!-- TOC depthFrom:1 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
 - [About](#about)
