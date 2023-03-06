@@ -8,13 +8,12 @@ v2023.02.14
 -----------
 
 This release introduces several new functions:
-  - Additional plotting functions for repeated measures experimental designs:
-     - Plotting for paired comparisons of multiple test groups to a single control (``"baseline"``)
-     - Plotting for repeated measures of the same experimental group (``"sequential"``)
-     - **Important note:** The ``paired`` argument for ``dabest.load()`` is no longer boolean, and now only accepts ``"baseline"`` or ``"sequential"`` as a string.
-  - Calculating of Cohen's *h* and proportional plots for binary data
-  - Calculating and plotting of weighted deltas for mini-meta-analysis of experimental replicates
-  - Calculating and plotting delta-deltas for 2x2 experimental designs
+
+- **Repeated measures**: Augments the prior function for plotting (independent) multiple test groups versus a shared control (``"baseline"``); it can now do the same for repeated-measures experimental designs (``"sequential"``). Thus, together, these two methods can be used to replace both flavors of the 1-way ANOVA with an estimation analysis.
+    - **Deprecation notice:** The ``paired`` argument for ``dabest.load()`` is no longer boolean, and now only accepts ``"baseline"`` or ``"sequential"`` as a string.
+- **Proportional data**: Generates proportional bar plots, proportional differences, and calculates Cohen's *h*. Also enables plotting Sankey diagrams for paired binary data. This is the estimation equivalent to a bar chart with Fischer's exact test.
+- **The ∆∆ plot**: Calculates the delta-delta (∆∆) for 2 × 2 experimental designs and plots the four groups with their relevant effect sizes. This design can be used as a replacement for the 2 × 2 ANOVA.
+- **Mini-meta**: Calculates and plots a weighted delta (∆) for meta-analysis of experimental replicates. Useful for summarizing data from multiple replicated experiments, for example by different scientists in the same lab, or the same scientist at different times. When the observed values are known (and share a common metric), this makes meta-analysis available as a routinely accessible tool.
 
 Please read the updated tutorials if you wish to use any of the above functions:
 

@@ -6,6 +6,21 @@
 DABEST
 ======
 
+Update
+------
+**DABEST version 2023.02.14** has been released: 
+:doc:`release-notes`
+
+Briefly, this release introduces several new functions:
+
+  - Additional plotting functions for repeated measures experimental designs
+  - Calculating of Cohen's *h* and proportional plots for binary data
+  - Calculating and plotting delta-deltas for 2x2 experimental designs
+  - Calculating and plotting of weighted deltas for mini-meta-analysis of experimental replicates
+
+Refer to :doc:`release-notes` for full details.
+
+
 -----------------------------------------------
 Data Analysis with Bootstrap-coupled ESTimation
 -----------------------------------------------
@@ -18,8 +33,16 @@ Analyze your data with estimation statistics!
 
 News
 ----
+March 2023:
+  - **v2023.02.14** released. The following features have been added:
+     - Additional plotting functions for repeated measures experimental designs
+     - Calculating of Cohen's *h* and proportional plots for binary data
+     - Calculating and plotting delta-deltas for 2x2 experimental designs
+     - Calculating and plotting of weighted deltas for mini-meta-analysis of experimental replicates
+  - See :doc:`release-notes` for more details.
+
 October 2020:
-  - v0.3.1 released. The minimal versions of dependencies have been upgraded. Also, the minimal version of Python required is now 3.5.
+  - v0.3.1 released. The minimal versions of dependencies have been upgraded. Also, the minimal version of Python required is now 3.6.
 
 January 2020:
  - v0.3.0 released. Approximate permutation tests have been added, and are now the default p-values reported in the textual output. The LqRT tests were also refactored to a user-callable property. For more information, see the :doc:`release-notes`.
