@@ -267,6 +267,7 @@ Similarly, you can also hide the delta-delta plot by setting
 
 .. image:: _images/tutorial_113_0.png
 
+.. _inset plot:
 
 Creating estimation plots in existing axes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

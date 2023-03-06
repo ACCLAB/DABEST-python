@@ -71,7 +71,7 @@ v0.2.6
 ------
 
 Feature additions:
-  - It is now possible to specify a pre-determined :py:mod:`matplotlib` :py:class:`Axes` to create the estimation plot in. See :ref:`inset plot` in the :doc:`tutorial` (`Pull request #73 <https://github.com/ACCLAB/DABEST-python/pull/73>`_; thanks to Adam Nekimken (`@anekimken <https://github.com/anekimken>`_).
+  - It is now possible to specify a pre-determined :py:mod:`matplotlib` :py:class:`Axes` to create the estimation plot in. See :ref:`inset plot` in the :doc:`plotaesthetics` (`Pull request #73 <https://github.com/ACCLAB/DABEST-python/pull/73>`_; thanks to Adam Nekimken (`@anekimken <https://github.com/anekimken>`_).
   -
 
 

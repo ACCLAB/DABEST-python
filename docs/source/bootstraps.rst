@@ -1,4 +1,4 @@
-.. _Bootstrap Confidence Intervals:
+.. _bootstraps:
 
 
 ==============================
