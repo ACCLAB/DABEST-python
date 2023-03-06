@@ -2,6 +2,7 @@
 
 .. currentmodule:: dabest
 
+===
 API
 ===
 
@@ -15,10 +16,13 @@ Computing Effect Sizes
 ----------------------
 
 .. autoclass:: dabest._classes.Dabest
-  :members: mean_diff, median_diff, cohens_d, hedges_g, cliffs_delta
+  :members: mean_diff, median_diff, cohens_d, hedges_g, cliffs_delta, cohens_h
   :member-order: bysource
 
 .. .. autoclass:: dabest._classes.TwoGroupsEffectSize
+
+.. autoclass:: dabest._classes.MiniMetaDelta
+  :members: difference, bca_low, bca_high, bootstraps, to_dict
 
 
 Plotting Data

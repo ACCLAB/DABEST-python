@@ -109,7 +109,7 @@ This is one important difference between estimation plots created by DABEST, and
 the original Gardner-Altman design. Here, the 95% CI is computed through
 parametric methods, and displayed as a vertical error bar.
 
-Read more about this technique at :ref:`Bootstrap Confidence Intervals`.
+Read more about this technique at :doc:`bootstraps`.
 
 Introducing Estimation Statistics
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
