@@ -4,7 +4,7 @@
 Tutorial: Mini-Meta Delta
 =========================
 
-When scientists perform replicates of the same experiment, the effect size of each replicate often varies, which complicates interpretation of the results. As of v2023.02.14, Dabest can now compute the meta-analyzed weighted effect size given multiple replicates of the same experiment. This can help resolve differences between replicates and simplify interpretation.
+When scientists perform replicates of the same experiment, the effect size of each replicate often varies, which complicates interpretation of the results. As of v2023.02.14, DABEST can now compute the meta-analyzed weighted effect size given multiple replicates of the same experiment. This can help resolve differences between replicates and simplify interpretation.
 
 This function uses the generic *inverse-variance* method to calculate the effect size, as follows:
 
@@ -27,7 +27,7 @@ where:
 
 Note that this uses the *fixed-effects* model of meta-analysis, as opposed to the random-effects model; that is to say, all variation between the results of each replicate is assumed to be due solely to sampling error. We thus recommend that this function only be used for replications of the same experiment, i.e. situations where it can be safely assumed that each replicate estimates the same population mean :math:`\mu`. 
 
-Also note that as of v2023.02.14, Dabest can only compute weighted effect size *for mean difference only*, and not standardized measures such as Cohen's *d*.
+Also note that as of v2023.02.14, DABEST can only compute weighted effect size *for mean difference only*, and not standardized measures such as Cohen's *d*.
 
 For more information on meta-analysis, please refer to Chapter 10 of the Cochrane handbook: https://training.cochrane.org/handbook/current/chapter-10
 
