@@ -2,6 +2,7 @@
 
 .. currentmodule:: dabest
 
+===
 API
 ===
 
