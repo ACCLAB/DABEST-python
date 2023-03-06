@@ -584,7 +584,7 @@ class Dabest(object):
         For a non-directional Cohen's *h*, the equation is:
 
         .. math::
-            h = |2 * \\arcsin{\\sqrt{proportion_{Test}}}| - |2 * \\arcsin{\\sqrt{proportion_{Control}}}|
+            h = |2 * \\arcsin{\\sqrt{proportion_{Test}}} - 2 * \\arcsin{\\sqrt{proportion_{Control}}}|
         
         References:
             https://en.wikipedia.org/wiki/Cohen%27s_h
