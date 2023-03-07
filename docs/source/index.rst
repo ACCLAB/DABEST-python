@@ -82,6 +82,7 @@ Contents
   repeatedmeasures
   proportion-plot
   minimetadelta
+  deltadelta
   plotaesthetics
   release-notes
   api

@@ -98,39 +98,42 @@ def create_demo_dataset_delta(seed=9999, N=20):
     from scipy.stats import norm # Used in generation of populations.
 
     # Create samples
-    y = norm.rvs(loc=3, scale=0.4, size=N*2)
+    y = norm.rvs(loc=3, scale=0.4, size=N*4)
+    y[N:2*N] = y[N:2*N]+1
+    y[2*N:3*N] = y[2*N:3*N]-0.5
 
-    # Add experiment column
-    e1 = np.repeat('Control', N).tolist()
-    e2 = np.repeat('Test', N).tolist()
-    experiment = e1 + e2 
+    # Add drug column
+    t1 = np.repeat('Placebo', N*2).tolist()
+    t2 = np.repeat('Drug', N*2).tolist()
+    treatment = t1 + t2 
 
-    # Add a `Light` column as the first variable
-    light = []
-    for i in range(N):
-        light.append('L1')
-        light.append('L2')
+    # Add a `rep` column as the first variable for the 2 replicates of experiments done
+    rep = []
+    for i in range(N*2):
+        rep.append('Rep1')
+        rep.append('Rep2')
 
     # Add a `genotype` column as the second variable
-    g1 = np.repeat('G1', N/2).tolist()
-    g2 = np.repeat('G2', N/2).tolist()
-    g3 = np.repeat('G3', N).tolist()
-    genotype = g1 + g2 + g3
+    wt = np.repeat('W', N).tolist()
+    mt = np.repeat('M', N).tolist()
+    wt2 = np.repeat('W', N).tolist()
+    mt2 = np.repeat('M', N).tolist()
+
+
+    genotype = wt + mt + wt2 + mt2
 
     # Add an `id` column for paired data plotting.
-    id_col = []
-    for i in range(N):
-        id_col.append(i)
-        id_col.append(i)
+    id = list(range(0, N*2))
+    id_col = id + id 
 
-    # Combine samples and gender into a DataFrame.
+
+    # Combine all columns into a DataFrame.
     df = pd.DataFrame({'ID'        : id_col,
-                      'Light'      : light,
+                      'Rep'      : rep,
                        'Genotype'  : genotype, 
-                       'Experiment': experiment,
+                       'Treatment': treatment,
                        'Y'         : y
                     })
-                      
     return df
 
 

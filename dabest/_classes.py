@@ -857,7 +857,65 @@ class Dabest(object):
 
 class DeltaDelta(object):
     """
-    A class to compute and store the delta-delta statistics.
+    A class to compute and store the delta-delta statistics. In a 2-by-2 arrangement where two independent variables, A and B, each have two categorical values, two primary deltas are first calculated with one independent variable and a delta-delta effect size is calculated as a difference between the two primary deltas.
+
+    .. math::
+
+        \\hat{\\theta}_{B1} = \\overline{X}_{A2, B1} - \\overline{X}_{A1, B1}
+
+        \\hat{\\theta}_{B2} = \\overline{X}_{A2, B2} - \\overline{X}_{A1, B2}
+    
+    .. math::
+
+        \\hat{\\theta}_{\\theta} = \\hat{\\theta}_{B2} - \\hat{\\theta}_{B1}
+    
+    and:
+
+    .. math::
+
+        s_{\\theta} = \\frac{(n_{A2, B1}-1)s_{A2, B1}^2+(n_{A1, B1}-1)s_{A1, B1}^2+(n_{A2, B2}-1)s_{A2, B2}^2+(n_{A1, B2}-1)s_{A1, B2}^2}{(n_{A2, B1} - 1) + (n_{A1, B1} - 1) + (n_{A2, B2} - 1) + (n_{A1, B2} - 1)}
+
+    Example
+    -------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from scipy.stats import norm # Used in generation of populations.
+    >>> np.random.seed(9999) # Fix the seed so the results are replicable.
+    >>> from scipy.stats import norm # Used in generation of populations.
+    >>> N = 20
+    >>> # Create samples
+    >>> y = norm.rvs(loc=3, scale=0.4, size=N*4)
+    >>> y[N:2*N] = y[N:2*N]+1
+    >>> y[2*N:3*N] = y[2*N:3*N]-0.5
+    >>> # Add drug column
+    >>> t1 = np.repeat('Placebo', N*2).tolist()
+    >>> t2 = np.repeat('Drug', N*2).tolist()
+    >>> treatment = t1 + t2 
+    >>> # Add a `rep` column as the first variable for the 2 replicates of experiments done
+    >>> rep = []
+    >>> for i in range(N*2):
+    >>>     rep.append('Rep1')
+    >>>     rep.append('Rep2')
+    >>> # Add a `genotype` column as the second variable
+    >>> wt = np.repeat('W', N).tolist()
+    >>> mt = np.repeat('M', N).tolist()
+    >>> wt2 = np.repeat('W', N).tolist()
+    >>> mt2 = np.repeat('M', N).tolist()
+    >>> genotype = wt + mt + wt2 + mt2
+    >>> # Add an `id` column for paired data plotting.
+    >>> id = list(range(0, N*2))
+    >>> id_col = id + id 
+    >>> # Combine all columns into a DataFrame.
+    >>> df_delta2 = pd.DataFrame({'ID'        : id_col,
+    >>>                   'Rep'      : rep,
+    >>>                    'Genotype'  : genotype, 
+    >>>                    'Drug': treatment,
+    >>>                    'Y'         : y
+    >>>                 })
+
+
+
+
     """
 
     def __init__(self, effectsizedataframe, permutation_count,
@@ -1014,8 +1072,8 @@ class DeltaDelta(object):
         bs2 = "the confidence interval is bias-corrected and accelerated."
         bs = bs1 + bs2
 
-        pval_def1 = "Any p-value reported is the probability of observing the" + \
-                    "effect size (or greater),\nassuming the null hypothesis of" + \
+        pval_def1 = "Any p-value reported is the probability of observing the " + \
+                    "effect size (or greater),\nassuming the null hypothesis of " + \
                     "zero difference is true."
         pval_def2 = "\nFor each p-value, 5000 reshuffles of the " + \
                     "control and test labels were performed."

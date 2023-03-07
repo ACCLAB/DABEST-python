@@ -24,6 +24,8 @@ Computing Effect Sizes
 .. autoclass:: dabest._classes.MiniMetaDelta
   :members: difference, bca_low, bca_high, bootstraps, to_dict
 
+.. autoclass:: dabest._classes.DeltaDelta
+  :members: difference, bca_low, bca_high, bootstraps, bootstraps_delta_delta, to_dict
 
 Plotting Data
 -------------

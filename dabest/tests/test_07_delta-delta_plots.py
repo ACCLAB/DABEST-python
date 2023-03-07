@@ -22,21 +22,26 @@ from .utils import create_demo_dataset_delta
 
 df = create_demo_dataset_delta()
 
-unpaired = load(data = df, x = ["Light", "Genotype"], y = "Y", delta2 = True, 
-                experiment = "Experiment")
+unpaired = load(data = df, x = ["Genotype", "Genotype"], y = "Y", delta2 = True, 
+                experiment = "Treatment")
 
-baseline = load(data = df, x = ["Light", "Genotype"], y = "Y", delta2 = True, 
-                experiment = "Experiment",
+unpaired_specified = load(data = df, x = ["Genotype", "Genotype"], y = "Y", 
+					delta2 = True, experiment = "Treatment",
+                                        experiment_label = ["Drug", "Placebo"],
+                                        x1_level = ["M", "W"])
+
+baseline = load(data = df, x = ["Treatment", "Rep"], y = "Y", delta2 = True, 
+                experiment = "Genotype",
                 paired="baseline", id_col="ID")
 
-sequential = load(data = df, x = ["Light", "Genotype"], y = "Y", delta2 = True, 
-                experiment = "Experiment",
+sequential = load(data = df, x = ["Treatment", "Rep"], y = "Y", delta2 = True, 
+                experiment = "Genotype",
                 paired="sequential", id_col="ID")
 
 
 @pytest.mark.mpl_image_compare(tolerance=10)
 def test_47_cummings_unpaired_delta_delta_meandiff():
-    return unpaired.mean_diff.plot(fig_size=(12, 8), raw_marker_size=4);
+    return unpaired.mean_diff.plot();
 
 
 @pytest.mark.mpl_image_compare(tolerance=10)
@@ -62,14 +67,13 @@ def test_51_delta_plot_change_palette_a():
 
 
 @pytest.mark.mpl_image_compare(tolerance=10)
-def test_52_delta_dot_sizes():
-    return sequential.mean_diff.plot(show_pairs=False,raw_marker_size=3,
-                                       es_marker_size=12);
+def test_52_delta_specified():
+    return unpaired_specified.mean_diff.plot();
 
 
 @pytest.mark.mpl_image_compare(tolerance=10)
 def test_53_delta_change_ylims():
-    return sequential.mean_diff.plot(swarm_ylim=(0, 5),
+    return sequential.mean_diff.plot(swarm_ylim=(0, 9),
                                        contrast_ylim=(-2, 2),
                                        fig_size=(15,6));
 
