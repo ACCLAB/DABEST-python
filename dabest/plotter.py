@@ -40,6 +40,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     import seaborn as sns
     import matplotlib.pyplot as plt
     import pandas as pd
+    import warnings
+    warnings.filterwarnings('ignore', 'This figure includes Axes that are not compatible with tight_layout')
 
     from .misc_tools import merge_two_dicts
     from .plot_tools import halfviolin, get_swarm_spans, gapped_lines,proportion_error_bar
