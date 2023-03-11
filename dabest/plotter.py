@@ -43,10 +43,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     import pandas as pd
     import warnings
     warnings.filterwarnings('ignore', 'This figure includes Axes that are not compatible with tight_layout')
-
+    
     from .misc_tools import merge_two_dicts
-    from .plot_tools import halfviolin, get_swarm_spans, gapped_lines, proportion_error_bar, sankeydiag
-    from ._stats_tools.effsize import _compute_standardizers, _compute_hedges_correction_factor
+    from .plot_tools import halfviolin, get_swarm_spans, gapped_lines,proportion_error_bar
+    from .effsize import _compute_standardizers, _compute_hedges_correction_factor
 
     import logging
     # Have to disable logging of warning when get_legend_handles_labels()
