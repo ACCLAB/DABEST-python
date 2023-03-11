@@ -2596,10 +2596,10 @@ class EffectSizeDataFrame(object):
 
     def __repr__(self):
         try:
-            return self.__for_print
+            return self._for_print
         except AttributeError:
             self.__pre_calc()
-            return self.__for_print
+            return self._for_print
             
             
             
