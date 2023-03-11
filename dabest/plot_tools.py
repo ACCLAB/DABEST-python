@@ -144,8 +144,8 @@ def gapped_lines(data, x, y, type='mean_sd', offset=0.2, ax=None,
     else:
         group_order = pd.unique(data[x])
 
-    means    = data.groupby(x)[y].mean().reindex(index=group_order)
-    sd       = data.groupby(x)[y].std().reindex(index=group_order)
+    means    = data.groupby(x)[y].mean(numeric_only=True).reindex(index=group_order)
+    sd       = data.groupby(x)[y].std(numeric_only=True).reindex(index=group_order)
     lower_sd = means - sd
     upper_sd = means + sd
 
@@ -304,7 +304,7 @@ def proportion_error_bar(data, x, y, type='mean_sd', offset=0.2, ax=None,
     else:
         group_order = pd.unique(data[x])
 
-    means = data.groupby(x)[y].mean().reindex(index=group_order)
+    means = data.groupby(x)[y].mean(numeric_only=True).reindex(index=group_order)
     g = lambda x: np.sqrt((np.sum(x) * (len(x) - np.sum(x))) / (len(x) * len(x) * len(x)))
     sd = data.groupby(x)[y].apply(g)
     # sd = data.groupby(x)[y].std().reindex(index=group_order)
