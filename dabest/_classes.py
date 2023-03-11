@@ -2694,6 +2694,7 @@ class EffectSizeDataFrame(object):
             barplot_kwargs=None,
             violinplot_kwargs=None,
             slopegraph_kwargs=None,
+            sankey_kwargs=None,
             reflines_kwargs=None,
             group_summary_kwargs=None,
             legend_kwargs=None):

@@ -18,5 +18,7 @@ website:
         contents:
           - tutorials\index.qmd
           - tutorials\basics.ipynb
+          - tutorials\deltadelta.ipynb
+          - tutorials\mini_meta_delta.ipynb
           - tutorials\proportion_plot.ipynb
           - tutorials\repeated_measures.ipynb
