@@ -4,7 +4,7 @@
 __all__ = ['Dabest', 'DeltaDelta', 'MiniMetaDelta', 'TwoGroupsEffectSize', 'EffectSizeDataFrame', 'PermutationTest']
 
 # %% ../nbs/API/class.ipynb 4
-__version__ = "0.3.1"
+__version__ = "2023.02.14"
 
 # %% ../nbs/API/class.ipynb 5
 class Dabest(object):
@@ -47,13 +47,16 @@ class Dabest(object):
 
         # Check if it is a valid mini_meta case
         if mini_meta is True:
+
+            # Only mini_meta calculation but not proportional and delta-delta function
             if proportional is True:
                 err0 = '`proportional` and `mini_meta` cannot be True at the same time.'
                 raise ValueError(err0)
             elif delta2 is True:
                 err0 = '`delta` and `mini_meta` cannot be True at the same time.'
                 raise ValueError(err0)
-            
+
+            # Check if the columns stated are valid
             if all([isinstance(i, str) for i in idx]):
                 if len(pd.unique([t for t in idx]).tolist())!=2:
                     err0 = '`mini_meta` is True, but `idx` ({})'.format(idx) 
@@ -65,7 +68,7 @@ class Dabest(object):
                     err1 = "`mini_meta` is True, but some idx "
                     err2 = "in {} does not consist only of two groups.".format(idx)
                     raise ValueError(err1 + err2)
-            
+
 
 
         # Check if this is a 2x2 ANOVA case and x & y are valid columns
@@ -146,17 +149,17 @@ class Dabest(object):
                 new_col_name += "_"
             data_in[new_col_name] = data_in[x[0]].astype(str) + " " + data_in[experiment].astype(str)
 
-            #create idx            
+            #create idx and record the first and second x variable            
             idx = []
             for i in list(map(lambda x: str(x), experiment_label)):
                 temp = []
                 for j in list(map(lambda x: str(x), x1_level)):
                     temp.append(j + " " + i)
-                idx.append(temp)         
+                idx.append(temp)
+
             self.__idx = idx
             self.__x1  = x[0]
             self.__x2  = x[1]
-            # record the second variable and create idx
             x = new_col_name
         else:
             self.__idx = idx
@@ -201,7 +204,7 @@ class Dabest(object):
         #        raise ValueError(err1 + err2)
 
         # Check if there is a typo on paired
-        if paired:
+        if paired is not None:
             if paired not in ("baseline", "sequential"):
                 err = '{} assigned for `paired` is not valid.'.format(paired)
                 raise ValueError(err)
@@ -571,18 +574,18 @@ class Dabest(object):
 
         Notes
         -----
-        Cohen's 'h' uses the information of proportion in the control and test groups to calculate the distance between two proportions.
+        Cohen's *h* uses the information of proportion in the control and test groups to calculate the distance between two proportions.
         It can be used to describe the difference between two proportions as "small", "medium", or "large".
         It can be used to determine if the difference between two proportions is "meaningful".
 
-        A directional Cohen's 'h' is computed with the following equation:
+        A directional Cohen's *h* is computed with the following equation:
 
         .. math::
             h = 2 * \\arcsin{\\sqrt{proportion_{Test}}} - 2 * \\arcsin{\\sqrt{proportion_{Control}}}
 
-        For a non-directional Cohen's 'h', the equation is:
+        For a non-directional Cohen's *h*, the equation is:
         .. math::
-            h = \\abs{2 * \\arcsin{\\sqrt{proportion_{Test}}}} - \\abs{2 * \\arcsin{\\sqrt{proportion_{Control}}}}
+            h = |2 * \\arcsin{\\sqrt{proportion_{Test}}} - 2 * \\arcsin{\\sqrt{proportion_{Control}}}|
         
         References:
             https://en.wikipedia.org/wiki/Cohen%27s_h
@@ -1574,7 +1577,8 @@ class TwoGroupsEffectSize(object):
     mean differences between two groups.
     """
 
-    def __init__(self, control, test, effect_size,proportional,
+    def __init__(self, control, test, effect_size,
+                 proportional=False,
                  is_paired=None, ci=95,
                  resamples=5000, 
                  permutation_count=5000, 
@@ -1710,6 +1714,7 @@ class TwoGroupsEffectSize(object):
         import scipy.stats as spstats
 
         # import statsmodels.stats.power as power
+        import statsmodels
 
         from string import Template
         import warnings
@@ -2551,7 +2556,12 @@ class EffectSizeDataFrame(object):
                            ]
         self.__results   = out_.reindex(columns=columns_in_order)
         self.__results.dropna(axis="columns", how="all", inplace=True)
+        
+        # Add the is_paired column back when is_paired is None
+        if self.is_paired is None:
+            self.__results.insert(5, 'is_paired', self.__results.apply(lambda _: None, axis=1))
 
+        # Create and compute the delta-delta statistics
         if self.__delta2 is True and self.__effect_size == "mean_diff":
             self.__delta_delta = DeltaDelta(self,
                                             self.__permutation_count,
@@ -2562,6 +2572,7 @@ class EffectSizeDataFrame(object):
         else:
             self.__delta_delta = "`delta2` is False; delta-delta is therefore not calculated."
 
+        # Create and compute the weighted average statistics
         if self.__mini_meta is True and self.__effect_size == "mean_diff":
             self.__mini_meta_delta = MiniMetaDelta(self,
                                                      self.__permutation_count,
@@ -2571,7 +2582,8 @@ class EffectSizeDataFrame(object):
             self.__mini_meta_delta = "Weighted delta is not supported for {}.".format(self.__effect_size)
         else:
             self.__mini_meta_delta = "`mini_meta` is False; weighted delta is therefore not calculated."
-        
+
+
         varname = get_varname(self.__dabest_obj)
         lastline = "To get the results of all valid statistical tests, " +\
         "use `{}.{}.statistical_tests`".format(varname, self.__effect_size)
@@ -2782,6 +2794,12 @@ class EffectSizeDataFrame(object):
             accepted by matplotlib `plot()` function here, as a dict.
             If None, the following keywords are
             passed to plot() : {'linewidth':1, 'alpha':0.5}.
+        sankey_kwargs: dict, default None
+            Whis will change the appearance of the sankey diagram used to depict
+            paired proportional data when `show_pairs=True` and `proportional=True`. 
+            Pass any keyword arguments accepted by plot_tools.sankeydiag() function
+            here, as a dict. If None, the following keywords are passed to sankey diagram:
+            {"width": 0.5, "align": "center", "alpha": 0.4, "bar_width": 0.1, "rightColor": False}
         reflines_kwargs : dict, default None
             This will change the appearance of the zero reference lines. Pass
             any keyword arguments accepted by the matplotlib Axes `hlines`

@@ -30,7 +30,12 @@ def load(data, idx=None, x=None, y=None, paired=None, id_col=None,
     y : string, default None
         Column names for data to be plotted on the x-axis and y-axis.
     paired : string, default None
-        The type of the experiment under which the data are obtained
+        The type of the experiment under which the data are obtained. If 'paired' 
+        is None then the data will not be treated as paired data in the subsequent
+        calculations. If 'paired' is 'baseline', then in each tuple of x, other 
+        groups will be paired up with the first group (as control). If 'paired' is 
+        'sequential', then in each tuple of x, each group will be paired up with
+        its previous group (as control).
     id_col : default None.
         Required if `paired` is True.
     ci : integer, default 95
@@ -84,6 +89,14 @@ def load(data, idx=None, x=None, y=None, paired=None, id_col=None,
     Load the data.
 
     >>> my_data = dabest.load(df, idx=("Control 1", "Test 1"))
+    
+    For proportion plot.
+    >>> np.random.seed(88888)
+    >>> N = 10
+    >>> c1 = np.random.binomial(1, 0.2, size=N)
+    >>> t1 = np.random.binomial(1, 0.5, size=N)
+    >>> df = pd.DataFrame({'Control 1' : c1, 'Test 1': t1})
+    >>> my_data = dabest.load(df, idx=("Control 1", "Test 1"),proportional=True)
 
     '''
     from ._classes import Dabest

@@ -19,3 +19,4 @@ website:
           - tutorials\index.qmd
           - tutorials\basics.ipynb
           - tutorials\proportion_plot.ipynb
+          - tutorials\repeated_measures.ipynb
