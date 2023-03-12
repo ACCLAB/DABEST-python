@@ -45,7 +45,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     warnings.filterwarnings('ignore', 'This figure includes Axes that are not compatible with tight_layout')
     
     from .misc_tools import merge_two_dicts
-    from .plot_tools import halfviolin, get_swarm_spans, gapped_lines,proportion_error_bar
+    from .plot_tools import halfviolin, get_swarm_spans, gapped_lines,proportion_error_bar, sankeydiag
     from .effsize import _compute_standardizers, _compute_hedges_correction_factor
 
     import logging
