@@ -4,7 +4,7 @@
 __all__ = ['Dabest', 'DeltaDelta', 'MiniMetaDelta', 'TwoGroupsEffectSize', 'EffectSizeDataFrame', 'PermutationTest']
 
 # %% ../nbs/API/class.ipynb 4
-__version__ = "2023.02.14"
+__version__ = "0.3.1"
 
 # %% ../nbs/API/class.ipynb 5
 class Dabest(object):
@@ -47,8 +47,6 @@ class Dabest(object):
 
         # Check if it is a valid mini_meta case
         if mini_meta is True:
-
-            # Only mini_meta calculation but not proportional and delta-delta function
             if proportional is True:
                 err0 = '`proportional` and `mini_meta` cannot be True at the same time.'
                 raise ValueError(err0)
@@ -56,7 +54,6 @@ class Dabest(object):
                 err0 = '`delta` and `mini_meta` cannot be True at the same time.'
                 raise ValueError(err0)
             
-            # Check if the columns stated are valid
             if all([isinstance(i, str) for i in idx]):
                 if len(pd.unique([t for t in idx]).tolist())!=2:
                     err0 = '`mini_meta` is True, but `idx` ({})'.format(idx) 
@@ -149,24 +146,22 @@ class Dabest(object):
                 new_col_name += "_"
             data_in[new_col_name] = data_in[x[0]].astype(str) + " " + data_in[experiment].astype(str)
 
-            #create idx and record the first and second x variable            
+            #create idx            
             idx = []
             for i in list(map(lambda x: str(x), experiment_label)):
                 temp = []
                 for j in list(map(lambda x: str(x), x1_level)):
                     temp.append(j + " " + i)
-                idx.append(temp)
-                     
+                idx.append(temp)         
             self.__idx = idx
             self.__x1  = x[0]
             self.__x2  = x[1]
+            # record the second variable and create idx
             x = new_col_name
         else:
             self.__idx = idx
             self.__x1  = None
             self.__x2  = None
-
-
 
         # Determine the kind of estimation plot we need to produce.
         if all([isinstance(i, str) for i in idx]):
@@ -206,7 +201,7 @@ class Dabest(object):
         #        raise ValueError(err1 + err2)
 
         # Check if there is a typo on paired
-        if paired is not None:
+        if paired:
             if paired not in ("baseline", "sequential"):
                 err = '{} assigned for `paired` is not valid.'.format(paired)
                 raise ValueError(err)
@@ -576,19 +571,18 @@ class Dabest(object):
 
         Notes
         -----
-        Cohen's *h* uses the information of proportion in the control and test groups to calculate the distance between two proportions.
+        Cohen's 'h' uses the information of proportion in the control and test groups to calculate the distance between two proportions.
         It can be used to describe the difference between two proportions as "small", "medium", or "large".
         It can be used to determine if the difference between two proportions is "meaningful".
 
-        A directional Cohen's *h* is computed with the following equation:
+        A directional Cohen's 'h' is computed with the following equation:
 
         .. math::
             h = 2 * \\arcsin{\\sqrt{proportion_{Test}}} - 2 * \\arcsin{\\sqrt{proportion_{Control}}}
 
-        For a non-directional Cohen's *h*, the equation is:
-
+        For a non-directional Cohen's 'h', the equation is:
         .. math::
-            h = |2 * \\arcsin{\\sqrt{proportion_{Test}}} - 2 * \\arcsin{\\sqrt{proportion_{Control}}}|
+            h = \\abs{2 * \\arcsin{\\sqrt{proportion_{Test}}}} - \\abs{2 * \\arcsin{\\sqrt{proportion_{Control}}}}
         
         References:
             https://en.wikipedia.org/wiki/Cohen%27s_h
@@ -681,8 +675,6 @@ class Dabest(object):
     def data(self):
         """
         Returns the pandas DataFrame that was passed to `dabest.load()`.
-        When `delta2` is True, a new column is added to support the 
-        function. The name of this new column is indicated by `x`.
         """
         return self.__data
 
@@ -697,55 +689,31 @@ class Dabest(object):
 
     @property
     def x1(self):
-        """
-        Returns the first variable declared in x when it is a delta-delta
-        case; returns None otherwise.
-        """
         return self.__x1
 
 
     @property
     def x1_level(self):
-        """
-        Returns the levels of first variable declared in x when it is a 
-        delta-delta case; returns None otherwise.
-        """
         return self.__x1_level
 
 
     @property
     def x2(self):
-        """
-        Returns the second variable declared in x when it is a delta-delta
-        case; returns None otherwise.
-        """
         return self.__x2
 
 
     @property
     def experiment(self):
-        """
-        Returns the column name of experiment labels that was passed to 
-        `dabest.load()` when it is a delta-delta case; returns None otherwise.
-        """
         return self.__experiment
     
 
     @property
     def experiment_label(self):
-        """
-        Returns the experiment labels in order that was passed to `dabest.load()`
-        when it is a delta-delta case; returns None otherwise.
-        """
         return self.__experiment_label
 
 
     @property
     def delta2(self):
-        """
-        Returns the boolean parameter indicating if this is a delta-delta 
-        situation.
-        """
         return self.__delta2
 
 
@@ -794,9 +762,6 @@ class Dabest(object):
     def x(self):
         """
         Returns the x column that was passed to `dabest.load()`, if any.
-        When `delta2` is True, `x` returns the name of the new column created 
-        for the delta-delta situation. To retrieve the 2 variables passed into 
-        `x` when `delta2` is True, please call `x1` and `x2` instead.
         """
         return self.__x
 
@@ -861,65 +826,7 @@ class Dabest(object):
 
 class DeltaDelta(object):
     """
-    A class to compute and store the delta-delta statistics. In a 2-by-2 arrangement where two independent variables, A and B, each have two categorical values, two primary deltas are first calculated with one independent variable and a delta-delta effect size is calculated as a difference between the two primary deltas.
-
-    .. math::
-
-        \\hat{\\theta}_{B1} = \\overline{X}_{A2, B1} - \\overline{X}_{A1, B1}
-
-        \\hat{\\theta}_{B2} = \\overline{X}_{A2, B2} - \\overline{X}_{A1, B2}
-    
-    .. math::
-
-        \\hat{\\theta}_{\\theta} = \\hat{\\theta}_{B2} - \\hat{\\theta}_{B1}
-    
-    and:
-
-    .. math::
-
-        s_{\\theta} = \\frac{(n_{A2, B1}-1)s_{A2, B1}^2+(n_{A1, B1}-1)s_{A1, B1}^2+(n_{A2, B2}-1)s_{A2, B2}^2+(n_{A1, B2}-1)s_{A1, B2}^2}{(n_{A2, B1} - 1) + (n_{A1, B1} - 1) + (n_{A2, B2} - 1) + (n_{A1, B2} - 1)}
-
-    Example
-    -------
-    >>> import numpy as np
-    >>> import pandas as pd
-    >>> from scipy.stats import norm # Used in generation of populations.
-    >>> np.random.seed(9999) # Fix the seed so the results are replicable.
-    >>> from scipy.stats import norm # Used in generation of populations.
-    >>> N = 20
-    >>> # Create samples
-    >>> y = norm.rvs(loc=3, scale=0.4, size=N*4)
-    >>> y[N:2*N] = y[N:2*N]+1
-    >>> y[2*N:3*N] = y[2*N:3*N]-0.5
-    >>> # Add drug column
-    >>> t1 = np.repeat('Placebo', N*2).tolist()
-    >>> t2 = np.repeat('Drug', N*2).tolist()
-    >>> treatment = t1 + t2 
-    >>> # Add a `rep` column as the first variable for the 2 replicates of experiments done
-    >>> rep = []
-    >>> for i in range(N*2):
-    >>>     rep.append('Rep1')
-    >>>     rep.append('Rep2')
-    >>> # Add a `genotype` column as the second variable
-    >>> wt = np.repeat('W', N).tolist()
-    >>> mt = np.repeat('M', N).tolist()
-    >>> wt2 = np.repeat('W', N).tolist()
-    >>> mt2 = np.repeat('M', N).tolist()
-    >>> genotype = wt + mt + wt2 + mt2
-    >>> # Add an `id` column for paired data plotting.
-    >>> id = list(range(0, N*2))
-    >>> id_col = id + id 
-    >>> # Combine all columns into a DataFrame.
-    >>> df_delta2 = pd.DataFrame({'ID'        : id_col,
-    >>>                   'Rep'      : rep,
-    >>>                    'Genotype'  : genotype, 
-    >>>                    'Drug': treatment,
-    >>>                    'Y'         : y
-    >>>                 })
-
-
-
-
+    A class to compute and store the delta-delta statistics.
     """
 
     def __init__(self, effectsizedataframe, permutation_count,
@@ -946,13 +853,9 @@ class DeltaDelta(object):
         self.__test              = self.__dabest_obj.experiment_label[1]
 
 
-        # Compute the bootstrap delta-delta and the true dela-delta based on 
-        # the raw data 
         self.__bootstraps_delta_delta = self.__bootstraps[1] - self.__bootstraps[0]
 
         self.__difference = self.__effsizedf["difference"][1] - self.__effsizedf["difference"][0]
-
-
 
         sorted_delta_delta = npsort(self.__bootstraps_delta_delta)
 
@@ -1018,10 +921,6 @@ class DeltaDelta(object):
     
 
     def __permutation_test(self):
-        """
-        Perform a permutation test and obtain the permutation p-value
-        based on the permutation data.
-        """
         import numpy as np
         self.__permutations     = np.array(self.__effsizedf["permutations"])
 
@@ -1076,8 +975,8 @@ class DeltaDelta(object):
         bs2 = "the confidence interval is bias-corrected and accelerated."
         bs = bs1 + bs2
 
-        pval_def1 = "Any p-value reported is the probability of observing the " + \
-                    "effect size (or greater),\nassuming the null hypothesis of " + \
+        pval_def1 = "Any p-value reported is the probability of observing the" + \
+                    "effect size (or greater),\nassuming the null hypothesis of" + \
                     "zero difference is true."
         pval_def2 = "\nFor each p-value, 5000 reshuffles of the " + \
                     "control and test labels were performed."
@@ -1103,18 +1002,11 @@ class DeltaDelta(object):
 
     @property
     def ci(self):
-        """
-        Returns the width of the confidence interval, in percent.
-        """
         return self.__ci
 
 
     @property
     def alpha(self):
-        """
-        Returns the significance level of the statistical test as a float
-        between 0 and 1.
-        """
         return self.__alpha
 
 
@@ -1143,17 +1035,11 @@ class DeltaDelta(object):
 
     @property
     def bca_low(self):
-        """
-        The bias-corrected and accelerated confidence interval lower limit.
-        """
         return self.__bca_low
 
 
     @property
     def bca_high(self):
-        """
-        The bias-corrected and accelerated confidence interval upper limit.
-        """
         return self.__bca_high
 
 
@@ -1202,17 +1088,11 @@ class DeltaDelta(object):
 
     @property
     def pct_low(self):
-        """
-        The percentile confidence interval lower limit.
-        """
         return self.__pct_low
 
 
     @property
     def pct_high(self):
-        """
-        The percentile confidence interval lower limit.
-        """
         return self.__pct_high
 
 
@@ -1227,9 +1107,6 @@ class DeltaDelta(object):
 
     @property
     def permutation_count(self):
-        """
-        The number of permuations taken.
-        """
         return self.__permutation_count
 
     
@@ -1264,55 +1141,7 @@ class DeltaDelta(object):
 
 class MiniMetaDelta(object):
     """
-    A class to compute and store the weighted delta.
-    A weighted delta is calculated if the argument ``mini_meta=True`` is passed during ``dabest.load()``.
-
-    The weighted delta is calcuated as follows:
-
-    .. math::
-	\\theta_{\\text{weighted}} = \\frac{\\Sigma\\hat{\\theta_{i}}w_{i}}{{\\Sigma}w_{i}}
-    
-    where:
-
-    .. math::
-	\\hat{\\theta_{i}} = \\text{Mean difference for replicate }i
-
-    .. math::
-	w_{i} = \\text{Weight for replicate }i = \\frac{1}{s_{i}^2} 
-
-    .. math::
-	s_{i}^2 = \\text{Pooled variance for replicate }i = \\frac{(n_{test}-1)s_{test}^2+(n_{control}-1)s_{control}^2}{n_{test}+n_{control}-2}
-
-    .. math::
-	n = \\text{sample size and }s^2 = \\text{variance for control/test.}
-
-
-    Example
-    -------
-    >>> from scipy.stats import norm
-    >>> import pandas as pd
-    >>> import dabest
-    >>> c1 = norm.rvs(loc=3, scale=0.4, size=Ns)
-    >>> c2 = norm.rvs(loc=3.5, scale=0.75, size=Ns)
-    >>> c3 = norm.rvs(loc=3.25, scale=0.4, size=Ns)
-
-    >>> t1 = norm.rvs(loc=3.5, scale=0.5, size=Ns)
-    >>> t2 = norm.rvs(loc=2.5, scale=0.6, size=Ns)
-    >>> t3 = norm.rvs(loc=3, scale=0.75, size=Ns)
-    >>> my_df   = pd.DataFrame({'Control 1' : c1,     'Test 1' : t1,
-                       'Control 2' : c2,     'Test 2' : t2,
-                       'Control 3' : c3,     'Test 3' : t3})
-    >>> my_dabest_object = dabest.load(df, idx=(("Control 1", "Test 1"), ("Control 2", "Test 2"), ("Control 3", "Test 3")), mini_meta=True)
-    >>> my_dabest_object.mean_diff.mini_meta_delta
-
-    Notes
-    -----
-    As of version 2023.02.14, weighted delta can only be calculated for mean difference, and not for standardized measures such as Cohen's *d*.
-
-    Details about the calculated weighted delta are accessed as attributes of the ``mini_meta_delta`` class. See the :doc:`minimetadelta` for details on usage.
-
-    Refer to Chapter 10 of the Cochrane handbook for further information on meta-analysis: https://training.cochrane.org/handbook/current/chapter-10
-		
+    A class to compute and store the weighted mean differences.
     """
 
     def __init__(self, effectsizedataframe, permutation_count,
@@ -1346,7 +1175,6 @@ class MiniMetaDelta(object):
         xvar = self.__dabest_obj._xvar
         yvar = self.__dabest_obj._yvar
 
-        # compute the variances of each control group and each test group
         control_var=[]
         test_var=[]
         for j, current_tuple in enumerate(idx):
@@ -1357,25 +1185,19 @@ class MiniMetaDelta(object):
             tname = current_tuple[1]
             test = dat[dat[xvar] == tname][yvar].copy()
             test_var.append(np.var(test, ddof=1))
+        
         self.__control_var = np.array(control_var)
         self.__test_var    = np.array(test_var)
-
-        # Compute pooled group variances for each pair of experiment groups
-        # based on the raw data
         self.__group_var   = ci2g.calculate_group_var(self.__control_var, 
                                                  self.__control_N,
                                                  self.__test_var, 
                                                  self.__test_N)
 
-        # Compute the weighted average mean differences of the bootstrap data
-        # using the pooled group variances of the raw data as the inverse of 
-        # weights
         self.__bootstraps_weighted_delta = ci2g.calculate_weighted_delta(
                                                           self.__group_var, 
                                                           self.__bootstraps, 
                                                           self.__resamples)
 
-        # Compute the weighted average mean difference based on the raw data
         self.__difference = es.weighted_delta(self.__effsizedf["difference"],
                                                    self.__group_var)
 
@@ -1444,10 +1266,6 @@ class MiniMetaDelta(object):
     
 
     def __permutation_test(self):
-        """
-        Perform a permutation test and obtain the permutation p-value
-        based on the permutation data.
-        """
         import numpy as np
         self.__permutations     = np.array(self.__effsizedf["permutations"])
         self.__permutations_var = np.array(self.__effsizedf["permutations_var"])
@@ -1536,7 +1354,7 @@ class MiniMetaDelta(object):
 
     def to_dict(self):
         """
-        Returns all attributes of the `dabest.MiniMetaDelta` object as a
+        Returns the attributes of the `dabest.MiniMetaDelta` object as a
         dictionary.
         """
         # Only get public (user-facing) attributes.
@@ -1550,18 +1368,11 @@ class MiniMetaDelta(object):
 
     @property
     def ci(self):
-        """
-        Returns the width of the confidence interval, in percent.
-        """
         return self.__ci
 
 
     @property
     def alpha(self):
-        """
-        Returns the significance level of the statistical test as a float
-        between 0 and 1.
-        """
         return self.__alpha
 
 
@@ -1573,7 +1384,7 @@ class MiniMetaDelta(object):
     @property
     def bootstraps(self):
         '''
-        Return the bootstrapped differences from all the experiment groups.
+        Return the bootstrapped deltas from all the experiment groups.
         '''
         return self.__bootstraps
 
@@ -1590,17 +1401,11 @@ class MiniMetaDelta(object):
 
     @property
     def bca_low(self):
-        """
-        The bias-corrected and accelerated confidence interval lower limit.
-        """
         return self.__bca_low
 
 
     @property
     def bca_high(self):
-        """
-        The bias-corrected and accelerated confidence interval upper limit.
-        """
         return self.__bca_high
 
 
@@ -1698,17 +1503,11 @@ class MiniMetaDelta(object):
 
     @property
     def pct_low(self):
-        """
-        The percentile confidence interval lower limit.
-        """
         return self.__pct_low
 
 
     @property
     def pct_high(self):
-        """
-        The percentile confidence interval lower limit.
-        """
         return self.__pct_high
 
 
@@ -1723,9 +1522,6 @@ class MiniMetaDelta(object):
 
     @property
     def permutation_count(self):
-        """
-        The number of permuations taken.
-        """
         return self.__permutation_count
 
     
@@ -1778,8 +1574,7 @@ class TwoGroupsEffectSize(object):
     mean differences between two groups.
     """
 
-    def __init__(self, control, test, effect_size,
-                 proportional=False,
+    def __init__(self, control, test, effect_size,proportional,
                  is_paired=None, ci=95,
                  resamples=5000, 
                  permutation_count=5000, 
@@ -1915,7 +1710,6 @@ class TwoGroupsEffectSize(object):
         import scipy.stats as spstats
 
         # import statsmodels.stats.power as power
-        import statsmodels
 
         from string import Template
         import warnings
@@ -2525,9 +2319,6 @@ class TwoGroupsEffectSize(object):
     # 
     @property
     def permutation_count(self):
-        """
-        The number of permuations taken.
-        """
         return self.__PermutationTest_result.permutation_count
 
     
@@ -2618,8 +2409,8 @@ class TwoGroupsEffectSize(object):
     #     except AttributeError:
     #         return npnan
 
-        
-        
+
+# %% ../nbs/API/class.ipynb 6
 class EffectSizeDataFrame(object):
     """A class that generates and stores the results of bootstrapped effect
     sizes for several comparisons."""
@@ -2760,12 +2551,7 @@ class EffectSizeDataFrame(object):
                            ]
         self.__results   = out_.reindex(columns=columns_in_order)
         self.__results.dropna(axis="columns", how="all", inplace=True)
-        
-        # Add the is_paired column back when is_paired is None
-        if self.is_paired is None:
-            self.__results.insert(5, 'is_paired', self.__results.apply(lambda _: None, axis=1))
-        
-        # Create and compute the delta-delta statistics
+
         if self.__delta2 is True and self.__effect_size == "mean_diff":
             self.__delta_delta = DeltaDelta(self,
                                             self.__permutation_count,
@@ -2776,7 +2562,6 @@ class EffectSizeDataFrame(object):
         else:
             self.__delta_delta = "`delta2` is False; delta-delta is therefore not calculated."
 
-        # Create and compute the weighted average statistics
         if self.__mini_meta is True and self.__effect_size == "mean_diff":
             self.__mini_meta_delta = MiniMetaDelta(self,
                                                      self.__permutation_count,
@@ -2786,7 +2571,6 @@ class EffectSizeDataFrame(object):
             self.__mini_meta_delta = "Weighted delta is not supported for {}.".format(self.__effect_size)
         else:
             self.__mini_meta_delta = "`mini_meta` is False; weighted delta is therefore not calculated."
-        
         
         varname = get_varname(self.__dabest_obj)
         lastline = "To get the results of all valid statistical tests, " +\
@@ -2881,7 +2665,7 @@ class EffectSizeDataFrame(object):
             #bar plot
             bar_label=None, bar_desat=0.5, bar_width = 0.5,bar_ylim = None,
             # error bar of proportion plot
-            ci=None, ci_type='bca', err_color=None,
+            ci=None, err_color=None,
 
             float_contrast=True,
             show_pairs=True,
@@ -2898,7 +2682,6 @@ class EffectSizeDataFrame(object):
             barplot_kwargs=None,
             violinplot_kwargs=None,
             slopegraph_kwargs=None,
-            sankey_kwargs=None,
             reflines_kwargs=None,
             group_summary_kwargs=None,
             legend_kwargs=None):
@@ -2999,12 +2782,6 @@ class EffectSizeDataFrame(object):
             accepted by matplotlib `plot()` function here, as a dict.
             If None, the following keywords are
             passed to plot() : {'linewidth':1, 'alpha':0.5}.
-        sankey_kwargs: dict, default None
-            Whis will change the appearance of the sankey diagram used to depict
-            paired proportional data when `show_pairs=True` and `proportional=True`. 
-            Pass any keyword arguments accepted by plot_tools.sankeydiag() function
-            here, as a dict. If None, the following keywords are passed to sankey diagram:
-            {"width": 0.5, "align": "center", "alpha": 0.4, "bar_width": 0.1, "rightColor": False}
         reflines_kwargs : dict, default None
             This will change the appearance of the zero reference lines. Pass
             any keyword arguments accepted by the matplotlib Axes `hlines`
