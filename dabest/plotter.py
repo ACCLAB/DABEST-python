@@ -127,9 +127,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                          plot_kwargs["barplot_kwargs"])
 
     # Sankey Diagram kwargs
-    default_sankey_kwargs = {"width": 0.5, "align": "center",
+    default_sankey_kwargs = {"width": 0.4, "align": "center",
                             "alpha": 0.4, "rightColor": False,
-                            "bar_width":0.1}
+                            "bar_width":0.2}
     if plot_kwargs["sankey_kwargs"] is None:
         sankey_kwargs = default_sankey_kwargs
     else:

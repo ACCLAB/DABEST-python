@@ -363,7 +363,7 @@ Repeated measures is also supported in paired proportional plot, by changing the
 
   multi_group_sequential = dabest.load(df, idx=((("Control 1", "Test 1","Test 2", "Test 3"),
                                 ("Test 4", "Test 5", "Test 6"))),
-                    proportional=True, paired="baseline", id_col="ID")
+                    proportional=True, paired="sequential", id_col="ID")
 
   multi_group_sequential.mean_diff.plot();
 
