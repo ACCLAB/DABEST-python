@@ -404,6 +404,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             for i in temp_idx:
                 temp_all_plot_groups.extend(list(i))
         if proportional==False:
+            temp_idx = idx
+            temp_all_plot_groups = all_plot_groups
         # Plot the raw data as a slopegraph.
         # Pivot the long (melted) data.
             if color_col is None:
