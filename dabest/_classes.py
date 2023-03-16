@@ -188,7 +188,7 @@ class Dabest(object):
                 raise ValueError(err0 + err1 + err2)
 
         else: # mix of string and tuple?
-            err = 'There seems to be a problem with the idx you'
+            err = 'There seems to be a problem with the idx you '\
             'entered--{}.'.format(idx)
             raise ValueError(err)
 
