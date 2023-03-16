@@ -225,7 +225,7 @@ def test_paired_permutation_test():
     
 def test_lqrt_unpaired():
     unpaired_dabest = Dabest(wellbeing, idx=("control", "expt"), 
-                             paired=False, id_col=None, 
+                             paired=None, id_col=None,
                              **dabest_default_kwargs)
     lqrt_result = unpaired_dabest.mean_diff.lqrt
                    
