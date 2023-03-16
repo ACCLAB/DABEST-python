@@ -47,6 +47,18 @@ multi_groups = load(df, idx=(("Control 1", "Test 1",),
                              )
                     )
 
+multi_groups_baseline = load(df, idx=(("Control 1", "Test 1",),
+                             ("Control 2", "Test 2","Test 3"),
+                             ("Control 3", "Test 4","Test 5", "Test 6")
+                             ), paired="baseline", id_col="ID"
+                    )
+
+multi_groups_sequential = load(df, idx=(("Control 1", "Test 1",),
+                             ("Control 2", "Test 2","Test 3"),
+                             ("Control 3", "Test 4","Test 5", "Test 6")
+                             ), paired="sequential", id_col="ID"
+                    )
+
 
 
 @pytest.mark.mpl_image_compare(tolerance=10)
@@ -340,7 +352,7 @@ def test_28_unpaired_cumming_reflines_kwargs():
 
 
 @pytest.mark.mpl_image_compare(tolerance=10)
-def test_28_paired_cumming_slopegraph_reflines_kwargs():
+def test_29_paired_cumming_slopegraph_reflines_kwargs():
 
     return two_groups_paired.mean_diff.plot(float_contrast=False,
                                  color_col="Gender",
@@ -349,6 +361,14 @@ def test_28_paired_cumming_slopegraph_reflines_kwargs():
                                                       linewidth=2),
                                  contrast_ylim=(-1, 1)
                                  );
+
+@pytest.mark.mpl_image_compare(tolerance=10)
+def test_30_sequential_cumming_slopegraph():
+    return multi_groups_sequential.mean_diff.plot();
+
+@pytest.mark.mpl_image_compare(tolerance=10)
+def test_31_baseline_cumming_slopegraph():
+    return multi_groups_baseline.mean_diff.plot();
 
 
 @pytest.mark.mpl_image_compare(tolerance=10)
