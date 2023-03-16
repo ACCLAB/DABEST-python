@@ -41,6 +41,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     import seaborn as sns
     import matplotlib.pyplot as plt
     import pandas as pd
+    import warnings
+    warnings.filterwarnings('ignore', 'This figure includes Axes that are not compatible with tight_layout')
 
     from .misc_tools import merge_two_dicts
     from .plot_tools import halfviolin, get_swarm_spans, gapped_lines, proportion_error_bar, sankeydiag
@@ -365,7 +367,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         contrast_axes = axx[1]
     rawdata_axes.set_frame_on(False)
     contrast_axes.set_frame_on(False)
-    # fig.set_tight_layout(False)
 
     redraw_axes_kwargs = {'colors'     : ytick_color,
                           'facecolors' : ytick_color,
