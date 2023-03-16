@@ -9,10 +9,16 @@ Authors
 --------
 DABEST is written in Python by `Joses W. Ho <https://twitter.com/jacuzzijo>`_, with design and input from `Adam Claridge-Chang <https://twitter.com/adamcchang>`_ and other `lab members <https://www.claridgechang.net/people.html>`__.
 
+Additional features in v2023.02.14 were added by `Yixuan Li <https://github.com/LI-Yixuan>`_, `Zinan Lu <https://github.com/Jacobluke->`_ and `Rou Zhang <https://github.com/ZHANGROU-99>`_.
+
 To find out more about the authors’ research, please visit the `Claridge-Chang lab webpage <http://www.claridgechang.net/>`_.
 
 Contributors
 ------------
+
+- Statistics supervision by Hyungwon Choi
+
+- Alpha testers from the Claridge-Chang lab: `Sangyu Xu <https://github.com/sangyu>`_, `Xianyuan Zhang <https://github.com/XYZfar>`_, `Farhan Mohammad <https://github.com/farhan8igib>`_, Jurga Mituzaitė, Stanislav Ott, Tayfun Tumkaya, Jonathan Anns, Nicole Lee and Yishan Mai.
 
 - DizietAsahi (`DizietAsahi <https://github.com/DizietAsahi>`_) with `PR #86 <https://github.com/ACCLAB/DABEST-python/pull/86>`_:  Fix bugs in slopegraph and reference line keyword parsing.
 
@@ -23,6 +29,7 @@ Contributors
 - Matthew Edwards (`@mje-nz <https://github.com/mje-nz>`_) with `PR #71 <https://github.com/ACCLAB/DABEST-python/pull/30>`_: Specify dependencies correctly in ``setup.py``. 
 
 - Adam Nekimken (`@anekimken <https://github.com/anekimken>`_) with `PR #73 <https://github.com/ACCLAB/DABEST-python/pull/73>`_: Implement inset axes so estimation plots can be plotted on a pre-determined :py:mod:`matplotlib` :py:class:`Axes` object.
+
 
 
 Typography

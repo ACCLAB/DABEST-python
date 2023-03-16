@@ -4,15 +4,14 @@
 Tutorial: Repeated Measures
 ===========================
 
-DABEST version 2023.02.14 expands the repertoire of plots for experiments with repeated-measures designs. DABEST now allows the visualization of paired experiments with one control and multiple test 
-groups, as well as repeated measurements of the same group. This is an improved version of paired data plotting in previous versions, which only supported computations involving one test group and one control group.
+DABEST version 2023.02.14 expands the repertoire of plots for experiments with repeated-measures designs. DABEST now allows for the calculation and plotting of effect sizes for:
 
-The repeated-measures function supports the calculation of effect sizes for
-paired data, either based on sequential comparisons (group i vs group i + 1) 
-or baseline comparisons (control vs group i). To use these features, 
-you can simply declare the argument ``paired = "sequential"`` or ``paired = "baseline"`` 
-correspondingly while running ``dabest.load()``. As in the previous version, you must also pass a column in the dataset that indicates the identity of each observation, using the 
-``id_col`` keyword. 
+- Comparing each group to a shared control (control vs. group i; ``baseline``)
+- Comparing each measurement to the one directly preceding it (group i vs group i+1; ``sequential``) 
+
+This is an improved version of paired data plotting in previous versions, which only supported computations involving one test group and one control group.
+
+To use these features, you can simply declare the argument ``paired = "sequential"`` or ``paired = "baseline"`` correspondingly while running ``dabest.load()``. As in the previous version, you must also pass a column in the dataset that indicates the identity of each observation, using the ``id_col`` keyword. 
 
 **(Please note that** ``paired = True`` **and** ``paired = False`` **are no longer valid in v2023.02.14)**
 
@@ -253,9 +252,9 @@ Both Gardner-Altman and Cumming plots support this.
 
 .. image:: _images/tutorial_33_0.png
 
-You can also create repeated-measures plots with multiple test groups.In
+You can also create repeated-measures plots with multiple test groups. In
 this case, declaring ``paired`` to be ``sequential`` or ``baseline`` will
-generate different results.
+generate the same slopegraph, reflecting the repeated-measures experimental design, but different contrast plots, to show the ``sequential`` or ``baseline`` comparison:
 
 .. code-block:: python3
   :linenos:
@@ -362,8 +361,7 @@ generate different results.
 
 .. image:: _images/tutorial_104_0.png
 
-Same as that for unpaired data, DABEST empowers you to perform complex 
-visualizations and statistics for paired data as well.
+As with unpaired data, DABEST empowers you to perform complex visualizations and statistics for paired data as well.
 
 .. code-block:: python3
   :linenos:
