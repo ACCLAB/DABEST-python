@@ -46,7 +46,12 @@ def load(data, idx=None, x=None, y=None, paired=None, id_col=None,
         bootstrap resampling, ensuring that the confidence intervals
         reported are replicable.
     proportional : boolean, default False. 
-        TO INCLUDE MORE DESCRIPTION ABOUT DATA FORMAT
+        An indicator of whether the data is binary or not. When set to True, it
+        specifies that the data consists of binary data, where the values are
+        limited to 0 and 1. The code is not suitable for analyzing proportion
+        data that contains non-numeric values, such as strings like ‘yes’ and ‘no’.
+        When False or not provided, the algorithm assumes that
+        the data is continuous and uses a non-proportional representation.
     delta2 : boolean, default False
         Indicator of delta-delta experiment
     experiment : String, default None

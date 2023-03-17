@@ -297,7 +297,7 @@ This will plot the bootstrap effect sizes below the raw data.
 
 .. image:: _images/prop_3.png
 
-You can also modify the width of bars as you expect by setting ``bar_width`` in the ``plot()`` method. The color of error bar can be modified by setting 'err_color'.
+You can also modify the width of bars as you expect by setting ``bar_width`` in the ``plot()`` method. 
 
 .. code-block:: python3
   :linenos:
@@ -306,6 +306,38 @@ You can also modify the width of bars as you expect by setting ``bar_width`` in 
     two_groups_unpaired.mean_diff.plot(bar_width=0.3);
 
 .. image:: _images/prop_4.png
+
+
+The ``bar_desat`` is used to control the amount of desaturation applied to the bar colors. A value of 0.0 means full desaturation (i.e., grayscale), 
+while a value of 1.0 means no desaturation (i.e., full color saturation). Default is 0.8.
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_unpaired.mean_diff.plot(bar_desat=1.0);
+
+.. image:: _images/prop_5.png
+
+``bar_label`` and ``contrast_label`` can be used to set labels for the y-axis of the bar plot and the contrast plot.
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_unpaired.mean_diff.plot(bar_label="success",contrast_label="difference");
+
+.. image:: _images/prop_6.png
+
+The color of error bar can be modified by setting 'err_color'.
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_unpaired.mean_diff.plot(err_color="purple");
+
+.. image:: _images/prop_7.png
 
 Producing Paired Proportion Plots
 ---------------------------------
