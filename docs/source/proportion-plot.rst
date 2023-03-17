@@ -319,10 +319,10 @@ the ``is_paired`` parameter is set to either ``baseline`` or  ``sequential`` whe
   :linenos:
 
 
-    two_groups_baseline = dabest.load(df, idx=("Control 1", "Test 1"), 
-                                  proportional=True, paired="baseline", id_col="ID")
-    
-    two_groups_baseline.mean_diff.plot();
+  two_groups_baseline = dabest.load(df, idx=("Control 1", "Test 1"), 
+                                proportional=True, paired="baseline", id_col="ID")
+  
+  two_groups_baseline.mean_diff.plot();
 
 .. image:: _images/sankey_1.png
 
@@ -332,7 +332,7 @@ The paired proportional plot also supports the ``float_contrast`` parameter, whi
   :linenos:
 
 
-    two_groups_baseline.mean_diff.plot(float_contrast=False);
+  two_groups_baseline.mean_diff.plot(float_contrast=False);
 
 
 
@@ -368,6 +368,12 @@ Repeated measures is also supported in paired proportional plot, by changing the
   multi_group_sequential.mean_diff.plot();
 
 .. image:: _images/sankey_4.png
+
+From the above two images, we can see that the on both the observed value plot and delta plot, the pairs compared are different in terms of the paired settings.
+
+If you want to specify the order of the groups, you can use the ``idx`` parameter in the ``.load()`` method.
+
+For all the groups to be compared together, you can put all the groups in the ``idx`` parameter in the ``.load()`` method without subbrackets.
 
 .. code-block:: python3
   :linenos:
