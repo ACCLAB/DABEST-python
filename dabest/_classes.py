@@ -857,23 +857,31 @@ class Dabest(object):
 
 class DeltaDelta(object):
     """
-    A class to compute and store the delta-delta statistics. In a 2-by-2 arrangement where two independent variables, A and B, each have two categorical values, two primary deltas are first calculated with one independent variable and a delta-delta effect size is calculated as a difference between the two primary deltas.
+    A class to compute and store the delta-delta statistics for experiments with a 2-by-2 arrangement where two independent variables, A and B, each have two categorical values, 1 and 2. The data is divided into two pairs of two groups, and a primary delta is first calculated as the mean difference between each of the pairs:
 
     .. math::
 
-        \\hat{\\theta}_{B1} = \\overline{X}_{A2, B1} - \\overline{X}_{A1, B1}
+       \\Delta_{1} = \\overline{X}_{A_{2}, B_{1}} - \\overline{X}_{A_{1}, B_{1}}
 
-        \\hat{\\theta}_{B2} = \\overline{X}_{A2, B2} - \\overline{X}_{A1, B2}
+        \\Delta_{2} = \\overline{X}_{A_{2}, B_{2}} - \\overline{X}_{A_{1}, B_{2}}
     
+    where :math:`\overline{X}_{A_{i}, B_{j}}` is the mean of the sample with A = i and B = j, :math:`\\Delta` is the mean difference between two samples. 
+
+    A delta-delta value is then calculated as the mean difference between the two primary deltas:
+
     .. math::
 
-        \\hat{\\theta}_{\\theta} = \\hat{\\theta}_{B2} - \\hat{\\theta}_{B1}
+        \\Delta_{\\Delta} = \\Delta_{B_{2}} - \\Delta_{B_{1}}
     
     and:
 
+    and the standard deviation of the delta-delta value is calculated from a pooled variance of the 4 samples:
+
     .. math::
 
-        s_{\\theta} = \\frac{(n_{A2, B1}-1)s_{A2, B1}^2+(n_{A1, B1}-1)s_{A1, B1}^2+(n_{A2, B2}-1)s_{A2, B2}^2+(n_{A1, B2}-1)s_{A1, B2}^2}{(n_{A2, B1} - 1) + (n_{A1, B1} - 1) + (n_{A2, B2} - 1) + (n_{A1, B2} - 1)}
+        s_{\\Delta_{\\Delta}} = \\sqrt{\\frac{(n_{A_{2}, B_{1}}-1)s_{A_{2}, B_{1}}^2+(n_{A_{1}, B_{1}}-1)s_{A_{1}, B_{1}}^2+(n_{A_{2}, B_{2}}-1)s_{A_{2}, B_{2}}^2+(n_{A_{1}, B_{2}}-1)s_{A_{1}, B_{2}}^2}{(n_{A_{2}, B_{1}} - 1) + (n_{A_{1}, B_{1}} - 1) + (n_{A_{2}, B_{2}} - 1) + (n_{A_{1}, B_{2}} - 1)}}
+
+    where :math:`s` is the standard deviation and :math:`n` is the sample size.
 
     Example
     -------
@@ -887,16 +895,16 @@ class DeltaDelta(object):
     >>> y = norm.rvs(loc=3, scale=0.4, size=N*4)
     >>> y[N:2*N] = y[N:2*N]+1
     >>> y[2*N:3*N] = y[2*N:3*N]-0.5
-    >>> # Add drug column
+    >>> # Add a `Treatment` column
     >>> t1 = np.repeat('Placebo', N*2).tolist()
     >>> t2 = np.repeat('Drug', N*2).tolist()
     >>> treatment = t1 + t2 
-    >>> # Add a `rep` column as the first variable for the 2 replicates of experiments done
+    >>> # Add a `Rep` column as the first variable for the 2 replicates of experiments done
     >>> rep = []
     >>> for i in range(N*2):
     >>>     rep.append('Rep1')
     >>>     rep.append('Rep2')
-    >>> # Add a `genotype` column as the second variable
+    >>> # Add a `Genotype` column as the second variable
     >>> wt = np.repeat('W', N).tolist()
     >>> mt = np.repeat('M', N).tolist()
     >>> wt2 = np.repeat('W', N).tolist()
@@ -909,10 +917,12 @@ class DeltaDelta(object):
     >>> df_delta2 = pd.DataFrame({'ID'        : id_col,
     >>>                   'Rep'      : rep,
     >>>                    'Genotype'  : genotype, 
-    >>>                    'Drug': treatment,
+    >>>                    'Treatment': treatment,
     >>>                    'Y'         : y
     >>>                 })
-
+    >>> unpaired_delta2 = dabest.load(data = df_delta2, x = ["Genotype", "Genotype"], y = "Y", delta2 = True, experiment = "Treatment")
+    >>> unpaired_delta2.mean_diff.plot()
+ 
 
 
 

@@ -35,7 +35,7 @@ Effectively, we have 4 groups of subjects for comparison.
       <thead>
         <tr style="text-align: right;">
           <th></th>
-          <th>Wildtype</th>
+          <th>Wild type</th>
           <th>Mutant</th>
         </tr>
       </thead>
@@ -60,7 +60,7 @@ Effectively, we have 4 groups of subjects for comparison.
     </div>
 
 
-There are 2 ``Treatment`` conditions, ``Placebo`` (control group) and ``Drug`` (test group). There are 2 ``Genotype`` s: ``W`` (wildtype population) and ``M`` (mutant population). In addition, each experiment was done twice (``Rep1`` and ``Rep2``). We shall do a few analyses to visualise these differences in a simulated dataset. 
+There are 2 ``Treatment`` conditions, ``Placebo`` (control group) and ``Drug`` (test group). There are 2 ``Genotype``\s: ``W`` (wild type population) and ``M`` (mutant population). In addition, each experiment was done twice (``Rep1`` and ``Rep2``). We shall do a few analyses to visualise these differences in a simulated dataset. 
 
 Simulate a dataset
 ------------------
@@ -83,18 +83,18 @@ Simulate a dataset
     y[N:2*N] = y[N:2*N]+1
     y[2*N:3*N] = y[2*N:3*N]-0.5
 
-    # Add drug column
+    # Add a `Treatment` column
     t1 = np.repeat('Placebo', N*2).tolist()
     t2 = np.repeat('Drug', N*2).tolist()
     treatment = t1 + t2 
 
-    # Add a `rep` column as the first variable for the 2 replicates of experiments done
+    # Add a `Rep` column as the first variable for the 2 replicates of experiments done
     rep = []
     for i in range(N*2):
         rep.append('Rep1')
         rep.append('Rep2')
 
-    # Add a `genotype` column as the second variable
+    # Add a `Genotype` column as the second variable
     wt = np.repeat('W', N).tolist()
     mt = np.repeat('M', N).tolist()
     wt2 = np.repeat('W', N).tolist()
@@ -112,7 +112,7 @@ Simulate a dataset
     df_delta2 = pd.DataFrame({'ID'        : id_col,
                       'Rep'      : rep,
                        'Genotype'  : genotype, 
-                       'Drug': treatment,
+                       'Treatment': treatment,
                        'Y'         : y
                     })
 
@@ -206,8 +206,7 @@ for slopegraphs. We use the ``experiment`` input to specify grouping of the data
 .. code-block:: python3
   :linenos:
 
-    unpaired_delta2 = dabest.load(data = df_delta2, x = ["Genotype", "Genotype"], y = "Y", delta2 = True, 
-                experiment = "Drug")
+    unpaired_delta2 = dabest.load(data = df_delta2, x = ["Genotype", "Genotype"], y = "Y", delta2 = True, experiment = "Treatment")
 
 The above function creates the following object: 
     
@@ -279,26 +278,31 @@ administered, the mutant phenotype is around 1.23 [95%CI 0.948, 1.52]. This diff
 and ``Drug`` group are plotted at the right bottom with a separate y-axis from other bootstrap plots. 
 This effect size, at about -0.903 [95%CI -1.26, -0.535], is the net effect size of the drug treatment. That is to say that treatment with drug A reduced disease phenotype by 0.903.
 
+Mean difference between mutants and wild types given the placebo treatment is:
+
 .. math::
 
-    \hat{\theta}_{P} = \overline{X}_{P, M} - \overline{X}_{P, W}
+    \Delta_{1} = \overline{X}_{P, M} - \overline{X}_{P, W}
 
-    \hat{\theta}_{D} = \overline{X}_{D, M} - \overline{X}_{D, W}
+Mean difference between mutants and wild types given the drug treatment is:
+
+.. math::
+
+    \Delta_{2} = \overline{X}_{D, M} - \overline{X}_{D, W}
+
+The net effect of the drug on mutants is:
     
 .. math::
 
 
-    \hat{\theta}_{\theta} = \hat{\theta}_{D} - \hat{\theta}_{P}
+    \Delta_{\Delta} = \Delta_{2} - \Delta_{1}
     
-and:
 
-.. math::
-
-    s_{\theta} = \frac{(n_{P, M}-1)s_{P, M}^2+(n_{P, W}-1)s_{P, W}^2+(n_{D, M}-1)s_{D, M}^2+(n_{D, M}-1)s_{D, M}^2}{(n_{P, M} - 1) + (n_{P, W} - 1) + (n_{D, M} - 1) + (n_{D, M} - 1)}
+where :math:`\overline{X}` is the sample mean, :math:`\Delta` is the mean difference.
 
 
-
-where :math:`\overline{X}` is the sample mean, :math:`\hat{\theta}` is the mean difference, :math:`s` is the variance and :math:`n` is the sample size.
+Specifying Grouping for Comparisons
+-----------------------------------
 
 
 In the example above, we used the convention of "test - control' but you can manipulate the orders of experiment groups as well as the horizontal axis variable by setting ``experiment_label`` and ``x1_level``.
@@ -334,28 +338,29 @@ We produce the following plot:
 
 .. image:: _images/tutorial_108_0.png
 
-We see that the drug had a non-specific effect of -0.321 [95%CI -0.498, -0.131] on wildtype subjects even when they were not sick, and it had a bigger effect of -1.22 [95%CI -1.52, -0.906] in mutant subjects. In this visualisation, we can see the delta-delta value of -0.903 [95%CI -1.21, -0.587] as the net effect of the drug accounting for non-specific actions in healthy individuals. 
+We see that the drug had a non-specific effect of -0.321 [95%CI -0.498, -0.131] on wild type subjects even when they were not sick, and it had a bigger effect of -1.22 [95%CI -1.52, -0.906] in mutant subjects. In this visualisation, we can see the delta-delta value of -0.903 [95%CI -1.21, -0.587] as the net effect of the drug accounting for non-specific actions in healthy individuals. 
+
+
+Mean difference between drug and placebo treatments in wild type subjects is:
 
 .. math::
 
-    \hat{\theta}_{W} = \overline{X}_{D, W} - \overline{X}_{P, W}
+    \Delta_{1} = \overline{X}_{D, W} - \overline{X}_{P, W}
 
-    \hat{\theta}_{W} = \overline{X}_{D, M} - \overline{X}_{P, M}
+Mean difference between drug and placebo treatments in mutant subjects is:
 
 .. math::
 
-    \hat{\theta}_{\theta} = \hat{\theta}_{M} - \hat{\theta}_{W}
+    \Delta_{2} = \overline{X}_{D, M} - \overline{X}_{P, M}
+
+
+The net effect of the drug on mutants is:
+
+.. math::
+
+    \Delta_{\Delta} = \Delta_{2} - \Delta_{1}
     
-and:
-
-.. math::
-
-    s_{\theta} = \frac{(n_{D, W}-1)s_{D, W}^2+(n_{P, W}-1)s_{P, W}^2+(n_{D, M}-1)s_{D, M}^2+(n_{P, M}-1)s_{P, M}^2}{(n_{D, W} - 1) + (n_{P, W} - 1) + (n_{D, M} - 1) + (n_{P, M} - 1)}
-
-
-
-where :math:`\overline{X}` is the sample mean, :math:`\hat{\theta}` is the mean difference, :math:`s` is the variance and :math:`n` is the sample size.
-
+where :math:`\overline{X}` is the sample mean, :math:`\Delta` is the mean difference.
 
 
 Connection to ANOVA
