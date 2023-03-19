@@ -411,7 +411,7 @@ Repeated measures is also supported in paired proportional plot, by changing the
 
 .. image:: _images/sankey_4.png
 
-From the above two images, we can see that the on both the observed value plot and delta plot, the pairs compared are different in terms of the paired settings.
+From the above two images, we can see that the on both the observed value plot and delta plot, the pairs compared are different in terms of the paired settings. And for detailed information about repeated measures, please refer to :doc:`repeatedmeasures` .
 
 If you want to specify the order of the groups, you can use the ``idx`` parameter in the ``.load()`` method.
 
