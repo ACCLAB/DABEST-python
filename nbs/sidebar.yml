@@ -8,7 +8,7 @@ website:
           - API\bootstrap.ipynb
           - API\class.ipynb
           - API\confint_1group.ipynb
-          - API\confint_diff.ipynb
+          - API\confint_2group_diff.ipynb
           - API\effsize.ipynb
           - API\load.ipynb
           - API\misc_tools.ipynb
