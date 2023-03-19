@@ -9,8 +9,8 @@ As of v2023.02.14, DABEST can be used to produce Cohen's *h* and the correspondi
 where the values are limited to 0 (failure) and 1 (success). This means that the code is not suitable for 
 analyzing proportion data that contains non-numeric values, such as strings like 'yes' and 'no'.
 
-Create dataset for demo
------------------------
+Load libraries
+--------------
 
 .. code-block:: python3
   :linenos:
@@ -18,31 +18,45 @@ Create dataset for demo
 
     import numpy as np
     import pandas as pd
+    import dabest
+
+    print("We're using DABEST v{}".format(dabest.__version__))
+
+
+.. parsed-literal::
+
+    We're using DABEST v2023.02.14
+
+Create dataset for demo
+-----------------------
+
+.. code-block:: python3
+  :linenos:
 
     np.random.seed(9999) # Fix the seed so the results are replicable.
     Ns = 40 # The number of samples taken from each population
 
     # Create samples
     n = 1
-    c1 = np.random.binomial(n, 0.2, size=N)
-    c2 = np.random.binomial(n, 0.2, size=N)
-    c3 = np.random.binomial(n, 0.8, size=N)
+    c1 = np.random.binomial(n, 0.2, size=Ns)
+    c2 = np.random.binomial(n, 0.2, size=Ns)
+    c3 = np.random.binomial(n, 0.8, size=Ns)
 
-    t1 = np.random.binomial(n, 0.5, size=N)
-    t2 = np.random.binomial(n, 0.2, size=N)
-    t3 = np.random.binomial(n, 0.3, size=N)
-    t4 = np.random.binomial(n, 0.4, size=N)
-    t5 = np.random.binomial(n, 0.5, size=N)
-    t6 = np.random.binomial(n, 0.6, size=N)
+    t1 = np.random.binomial(n, 0.5, size=Ns)
+    t2 = np.random.binomial(n, 0.2, size=Ns)
+    t3 = np.random.binomial(n, 0.3, size=Ns)
+    t4 = np.random.binomial(n, 0.4, size=Ns)
+    t5 = np.random.binomial(n, 0.5, size=Ns)
+    t6 = np.random.binomial(n, 0.6, size=Ns)
 
 
     # Add a `gender` column for coloring the data.
-    females = np.repeat('Female', N / 2).tolist()
-    males = np.repeat('Male', N / 2).tolist()
+    females = np.repeat('Female', Ns / 2).tolist()
+    males = np.repeat('Male', Ns / 2).tolist()
     gender = females + males
 
     # Add an `id` column for paired data plotting.
-    id_col = pd.Series(range(1, N + 1))
+    id_col = pd.Series(range(1, Ns + 1))
 
     # Combine samples and gender into a DataFrame.
     df = pd.DataFrame({'Control 1': c1, 'Test 1': t1,
