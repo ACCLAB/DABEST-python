@@ -880,6 +880,7 @@ class DeltaDelta(object):
        \\Delta_{1} = \\overline{X}_{A_{2}, B_{1}} - \\overline{X}_{A_{1}, B_{1}}
 
        \\Delta_{2} = \\overline{X}_{A_{2}, B_{2}} - \\overline{X}_{A_{1}, B_{2}}
+
     
     where :math:`\overline{X}_{A_{i}, B_{j}}` is the mean of the sample with A = i and B = j, :math:`\\Delta` is the mean difference between two samples. 
 
