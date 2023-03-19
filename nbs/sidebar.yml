@@ -1,7 +1,9 @@
 website:
   sidebar:
     contents:
-      - getting_started.ipynb
+      - 01-getting-started.ipynb
+      - 02-robust-beautiful.ipynb
+      - 03-bootstraps.ipynb
       - section: API
         contents:
           - API\index.qmd
@@ -17,8 +19,9 @@ website:
       - section: tutorials
         contents:
           - tutorials\index.qmd
-          - tutorials\basics.ipynb
-          - tutorials\deltadelta.ipynb
-          - tutorials\mini_meta_delta.ipynb
-          - tutorials\proportion_plot.ipynb
-          - tutorials\repeated_measures.ipynb
+          - tutorials\01-basics.ipynb
+          - tutorials\02-repeated_measures.ipynb
+          - tutorials\03-proportion_plot.ipynb
+          - tutorials\04-mini_meta_delta.ipynb
+          - tutorials\05-deltadelta.ipynb
+          - tutorials\06-plotaesthetics.ipynb
