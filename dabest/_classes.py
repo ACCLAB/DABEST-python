@@ -4,9 +4,6 @@
 __all__ = ['Dabest', 'DeltaDelta', 'MiniMetaDelta', 'TwoGroupsEffectSize', 'EffectSizeDataFrame', 'PermutationTest']
 
 # %% ../nbs/API/class.ipynb 4
-__version__ = "2023.02.14"
-
-# %% ../nbs/API/class.ipynb 5
 class Dabest(object):
 
     """
