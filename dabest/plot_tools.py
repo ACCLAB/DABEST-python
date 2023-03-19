@@ -298,7 +298,11 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
         if 'center', the diagram will be centered on each xtick, 
         if 'edge', the diagram will be aligned with the left edge of each xtick
     '''
-
+    import numpy as np
+    import pandas as pd
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    
     # Initiating values
     if ax is None:
         ax = plt.gca()
