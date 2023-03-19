@@ -9,8 +9,9 @@ class Dabest(object):
     Class for estimation statistics and plots.
     """
 
-    def __init__(self, data, idx, x, y, paired, id_col, ci, resamples,
-                random_seed):
+    def __init__(self, data, idx, x, y, paired, id_col, ci, 
+                resamples, random_seed, proportional, delta2, 
+                experiment, experiment_label, x1_level, mini_meta):
 
         """
         Parses and stores pandas DataFrames in preparation for estimation
@@ -23,18 +24,143 @@ class Dabest(object):
         import pandas as pd
         import seaborn as sns
 
-        self.__ci          = ci
-        self.__data        = data
-        self.__idx         = idx
-        self.__id_col      = id_col
-        self.__is_paired   = paired
-        self.__resamples   = resamples
-        self.__random_seed = random_seed
+        self.__delta2       = delta2
+        self.__experiment   = experiment
+        self.__ci           = ci
+        self.__data         = data
+        self.__id_col       = id_col
+        self.__is_paired    = paired
+        self.__resamples    = resamples
+        self.__random_seed  = random_seed
+        self.__proportional = proportional
+        self.__mini_meta    = mini_meta 
 
         # Make a copy of the data, so we don't make alterations to it.
         data_in = data.copy()
         # data_in.reset_index(inplace=True)
         # data_in_index_name = data_in.index.name
+
+
+        # Check if it is a valid mini_meta case
+        if mini_meta is True:
+
+            # Only mini_meta calculation but not proportional and delta-delta function
+            if proportional is True:
+                err0 = '`proportional` and `mini_meta` cannot be True at the same time.'
+                raise ValueError(err0)
+            elif delta2 is True:
+                err0 = '`delta` and `mini_meta` cannot be True at the same time.'
+                raise ValueError(err0)
+            
+            # Check if the columns stated are valid
+            if all([isinstance(i, str) for i in idx]):
+                if len(pd.unique([t for t in idx]).tolist())!=2:
+                    err0 = '`mini_meta` is True, but `idx` ({})'.format(idx) 
+                    err1 = 'does not contain exactly 2 columns.'
+                    raise ValueError(err0 + err1)
+            elif all([isinstance(i, (tuple, list)) for i in idx]):
+                all_idx_lengths = [len(t) for t in idx]
+                if (np.array(all_idx_lengths) != 2).any():
+                    err1 = "`mini_meta` is True, but some idx "
+                    err2 = "in {} does not consist only of two groups.".format(idx)
+                    raise ValueError(err1 + err2)
+            
+
+
+        # Check if this is a 2x2 ANOVA case and x & y are valid columns
+        # Create experiment_label and x1_level
+        if delta2 is True:
+            if proportional is True:
+                err0 = '`proportional` and `delta` cannot be True at the same time.'
+                raise ValueError(err0)
+            # idx should not be specified
+            if idx:
+                err0 = '`idx` should not be specified when `delta2` is True.'.format(len(x))
+                raise ValueError(err0)
+
+            # Check if x is valid
+            if len(x) != 2:
+                err0 = '`delta2` is True but the number of variables indicated by `x` is {}.'.format(len(x))
+                raise ValueError(err0)
+            else:
+                for i in x:
+                    if i not in data_in.columns:
+                        err = '{0} is not a column in `data`. Please check.'.format(i)
+                        raise IndexError(err)
+
+            # Check if y is valid
+            if not y:
+                err0 = '`delta2` is True but `y` is not indicated.'
+                raise ValueError(err0)
+            elif y not in data_in.columns:
+                err = '{0} is not a column in `data`. Please check.'.format(y)
+                raise IndexError(err)
+
+            # Check if experiment is valid
+            if experiment not in data_in.columns:
+                err = '{0} is not a column in `data`. Please check.'.format(experiment)
+                raise IndexError(err)
+
+            # Check if experiment_label is valid and create experiment when needed
+            if experiment_label:
+                if len(experiment_label) != 2:
+                    err0 = '`experiment_label` does not have a length of 2.'
+                    raise ValueError(err0)
+                else: 
+                    for i in experiment_label:
+                        if i not in data_in[experiment].unique():
+                            err = '{0} is not an element in the column `{1}` of `data`. Please check.'.format(i, experiment)
+                            raise IndexError(err)
+            else:
+                experiment_label = data_in[experiment].unique()
+
+            # Check if x1_level is valid
+            if x1_level:
+                if len(x1_level) != 2:
+                    err0 = '`x1_level` does not have a length of 2.'
+                    raise ValueError(err0)
+                else: 
+                    for i in x1_level:
+                        if i not in data_in[x[0]].unique():
+                            err = '{0} is not an element in the column `{1}` of `data`. Please check.'.format(i, experiment)
+                            raise IndexError(err)
+
+            else:
+                x1_level = data_in[x[0]].unique()    
+        self.__experiment_label = experiment_label
+        self.__x1_level         = x1_level
+
+
+        # Check if idx is specified
+        if delta2 is False and not idx:
+            err = '`idx` is not a column in `data`. Please check.'
+            raise IndexError(err)
+
+
+        # create new x & idx and record the second variable if this is a valid 2x2 ANOVA case
+        if delta2 is True:
+            # add a new column which is a combination of experiment and the first variable
+            new_col_name = experiment+x[0]
+            while new_col_name in data_in.columns:
+                new_col_name += "_"
+            data_in[new_col_name] = data_in[x[0]].astype(str) + " " + data_in[experiment].astype(str)
+
+            #create idx and record the first and second x variable            
+            idx = []
+            for i in list(map(lambda x: str(x), experiment_label)):
+                temp = []
+                for j in list(map(lambda x: str(x), x1_level)):
+                    temp.append(j + " " + i)
+                idx.append(temp)
+                     
+            self.__idx = idx
+            self.__x1  = x[0]
+            self.__x2  = x[1]
+            x = new_col_name
+        else:
+            self.__idx = idx
+            self.__x1  = None
+            self.__x2  = None
 
 
 
@@ -62,18 +188,24 @@ class Dabest(object):
                 raise ValueError(err0 + err1 + err2)
 
         else: # mix of string and tuple?
-            err = 'There seems to be a problem with the idx you'
+            err = 'There seems to be a problem with the idx you '\
             'entered--{}.'.format(idx)
             raise ValueError(err)
 
         # Having parsed the idx, check if it is a kosher paired plot,
         # if so stated.
-        if paired is True:
-            all_idx_lengths = [len(t) for t in self.__idx]
-            if (np.array(all_idx_lengths) != 2).any():
-                err1 = "`is_paired` is True, but some idx "
-                err2 = "in {} does not consist only of two groups.".format(idx)
-                raise ValueError(err1 + err2)
+        #if paired is True:
+        #    all_idx_lengths = [len(t) for t in self.__idx]
+        #    if (np.array(all_idx_lengths) != 2).any():
+        #        err1 = "`is_paired` is True, but some idx "
+        #        err2 = "in {} does not consist only of two groups.".format(idx)
+        #        raise ValueError(err1 + err2)
+
+        # Check if there is a typo on paired
+        if paired is not None:
+            if paired not in ("baseline", "sequential"):
+                err = '{} assigned for `paired` is not valid.'.format(paired)
+                raise ValueError(err)
 
 
         # Determine the type of data: wide or long.
@@ -173,9 +305,18 @@ class Dabest(object):
 
 
         # Sanity check that all idxs are paired, if so desired.
-        if paired is True:
+        #if paired is True:
+        #    if id_col is None:
+        #        err = "`id_col` must be specified if `is_paired` is set to True."
+        #        raise IndexError(err)
+        #    elif id_col not in plot_data.columns:
+        #        err = "{} is not a column in `data`. ".format(id_col)
+        #        raise IndexError(err)
+
+        # Check if `id_col` is valid
+        if paired:
             if id_col is None:
-                err = "`id_col` must be specified if `is_paired` is set to True."
+                err = "`id_col` must be specified if `paired` is assigned with a not NoneType value."
                 raise IndexError(err)
             elif id_col not in plot_data.columns:
                 err = "{} is not a column in `data`. ".format(id_col)
@@ -183,7 +324,13 @@ class Dabest(object):
 
         EffectSizeDataFrame_kwargs = dict(ci=ci, is_paired=paired,
                                            random_seed=random_seed,
-                                           resamples=resamples)
+                                           resamples=resamples,
+                                           proportional=proportional, 
+                                           delta2=delta2, 
+                                           experiment_label=self.__experiment_label,
+                                           x1_level=self.__x1_level,
+                                           x2=self.__x2,
+                                           mini_meta = mini_meta)
 
         self.__mean_diff    = EffectSizeDataFrame(self, "mean_diff",
                                                 **EffectSizeDataFrame_kwargs)
@@ -194,10 +341,13 @@ class Dabest(object):
         self.__cohens_d     = EffectSizeDataFrame(self, "cohens_d",
                                                 **EffectSizeDataFrame_kwargs)
 
+        self.__cohens_h     = EffectSizeDataFrame(self, "cohens_h",
+                                                **EffectSizeDataFrame_kwargs)                                       
+
         self.__hedges_g     = EffectSizeDataFrame(self, "hedges_g",
                                                 **EffectSizeDataFrame_kwargs)
 
-        if paired is False:
+        if not paired:
             self.__cliffs_delta = EffectSizeDataFrame(self, "cliffs_delta",
                                                     **EffectSizeDataFrame_kwargs)
         else:
@@ -211,14 +361,28 @@ class Dabest(object):
 
         from .misc_tools import print_greeting
 
-        if self.__is_paired:
-            es = "Paired e"
-        else:
-            es = "E"
+        # Removed due to the deprecation of is_paired
+        #if self.__is_paired:
+        #    es = "Paired e"
+        #else:
+        #    es = "E"
 
         greeting_header = print_greeting()
 
-        s1 = "{}ffect size(s) ".format(es)
+        RM_STATUS = {'baseline'  : 'for repeated measures against baseline \n', 
+                     'sequential': 'for the sequential design of repeated-measures experiment \n',
+                     'None'      : ''
+                    }
+
+        PAIRED_STATUS = {'baseline'   : 'Paired e', 
+                         'sequential' : 'Paired e',
+                         'None'       : 'E'
+        }
+
+        first_line = {"rm_status"    : RM_STATUS[str(self.__is_paired)],
+                      "paired_status": PAIRED_STATUS[str(self.__is_paired)]}
+
+        s1 = "{paired_status}ffect size(s) {rm_status}".format(**first_line)
         s2 = "with {}% confidence intervals will be computed for:".format(self.__ci)
         desc_line = s1 + s2
 
@@ -226,11 +390,23 @@ class Dabest(object):
 
         comparisons = []
 
-        for j, current_tuple in enumerate(self.__idx):
-            control_name = current_tuple[0]
+        if self.__is_paired == 'sequential':
+            for j, current_tuple in enumerate(self.__idx):
+                for ix, test_name in enumerate(current_tuple[1:]):
+                    control_name = current_tuple[ix]
+                    comparisons.append("{} minus {}".format(test_name, control_name))
+        else:
+            for j, current_tuple in enumerate(self.__idx):
+                control_name = current_tuple[0]
 
-            for ix, test_name in enumerate(current_tuple[1:]):
-                comparisons.append("{} minus {}".format(test_name, control_name))
+                for ix, test_name in enumerate(current_tuple[1:]):
+                    comparisons.append("{} minus {}".format(test_name, control_name))
+
+        if self.__delta2 is True:
+            comparisons.append("{} minus {} (only for mean difference)".format(self.__experiment_label[1], self.__experiment_label[0]))
+        
+        if self.__mini_meta is True:
+            comparisons.append("weighted delta (only for mean difference)")
 
         for j, g in enumerate(comparisons):
             out.append("{}. {}".format(j+1, g))
@@ -275,6 +451,7 @@ class Dabest(object):
             \\text{Mean difference} = \\overline{x}_{Test} - \\overline{x}_{Control}
             
         where :math:`\\overline{x}` is the mean for the group :math:`x`.
+
         """
         return self.__mean_diff
         
@@ -283,7 +460,8 @@ class Dabest(object):
     def median_diff(self):
         """
         Returns an :py:class:`EffectSizeDataFrame` for the median difference, its confidence interval, and relevant statistics, for all comparisons  as indicated via the `idx` and `paired` argument in `dabest.load()`.
-        
+
+
         Example
         -------
         >>> from scipy.stats import norm
@@ -295,16 +473,33 @@ class Dabest(object):
                                     "test": test})
         >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
         >>> my_dabest_object.median_diff
-        
+
+
         Notes
         -----
-        This is simply the median of the control group subtracted from
-        the median of the test group.
+        This is the median difference between the control group and the test group.
         
+        If the comparison(s) are unpaired, median_diff is computed with the following equation:
+
         .. math::
             \\text{Median difference} = \\widetilde{x}_{Test} - \\widetilde{x}_{Control}
             
         where :math:`\\widetilde{x}` is the median for the group :math:`x`.
+
+        If the comparison(s) are paired, median_diff is computed with the following equation:
+
+        .. math::
+            \\text{Median difference} = \\widetilde{x}_{Test - Control}
+            
+
+        Things to note
+        --------------
+        Using median difference as the statistic in bootstrapping may result in a biased estimate and cause problems with BCa confidence intervals. Consider using mean difference instead. 
+
+        When plotting, consider using percentile confidence intervals instead of BCa confidence intervals by specifying `ci_type = 'percentile'` in .plot(). 
+
+        For detailed information, please refer to `Issue 129 <https://github.com/ACCLAB/DABEST-python/issues/129>`_. 
+
         """
         return self.__median_diff
         
@@ -331,6 +526,9 @@ class Dabest(object):
         Cohen's `d` is simply the mean of the control group subtracted from
         the mean of the test group.
         
+        If `paired` is None, then the comparison(s) are unpaired; 
+        otherwise the comparison(s) are paired.
+
         If the comparison(s) are unpaired, Cohen's `d` is computed with the following equation:
         
         .. math::
@@ -363,10 +561,51 @@ class Dabest(object):
             https://en.wikipedia.org/wiki/Effect_size#Cohen's_d
             https://en.wikipedia.org/wiki/Bessel%27s_correction
             https://en.wikipedia.org/wiki/Standard_deviation#Corrected_sample_standard_deviation
+
         """
         return self.__cohens_d
     
     
+    @property
+    def cohens_h(self):
+        """
+        Returns an :py:class:`EffectSizeDataFrame` for the standardized mean difference Cohen's `h`, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `directional` argument in `dabest.load()`.
+
+        Example
+        -------
+        >>> from scipy.stats import randint
+        >>> import pandas as pd
+        >>> import dabest
+        >>> control = randint.rvs(0, 2, size=30, random_state=12345)
+        >>> test    = randint.rvs(0, 2, size=30, random_state=12345)
+        >>> my_df   = pd.DataFrame({"control": control,
+                                    "test": test})
+        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test")
+        >>> my_dabest_object.cohens_h
+
+        Notes
+        -----
+        Cohen's *h* uses the information of proportion in the control and test groups to calculate the distance between two proportions.
+        It can be used to describe the difference between two proportions as "small", "medium", or "large".
+        It can be used to determine if the difference between two proportions is "meaningful".
+
+        A directional Cohen's *h* is computed with the following equation:
+
+        .. math::
+            h = 2 * \\arcsin{\\sqrt{proportion_{Test}}} - 2 * \\arcsin{\\sqrt{proportion_{Control}}}
+
+        For a non-directional Cohen's *h*, the equation is:
+
+        .. math::
+            h = |2 * \\arcsin{\\sqrt{proportion_{Test}}} - 2 * \\arcsin{\\sqrt{proportion_{Control}}}|
+        
+        References:
+            https://en.wikipedia.org/wiki/Cohen%27s_h
+
+        """
+        return self.__cohens_h
+
+
     @property  
     def hedges_g(self):
         """
@@ -405,6 +644,7 @@ class Dabest(object):
         References:
             https://en.wikipedia.org/wiki/Effect_size#Hedges'_g
             https://journals.sagepub.com/doi/10.3102/10769986006002107
+
         """
         return self.__hedges_g
         
@@ -444,17 +684,20 @@ class Dabest(object):
         References:
             https://en.wikipedia.org/wiki/Effect_size#Effect_size_for_ordinal_data
             https://psycnet.apa.org/record/1994-08169-001
+
         """
         return self.__cliffs_delta
-
 
 
     @property
     def data(self):
         """
         Returns the pandas DataFrame that was passed to `dabest.load()`.
+        When `delta2` is True, a new column is added to support the 
+        function. The name of this new column is indicated by `x`.
         """
         return self.__data
+
 
     @property
     def idx(self):
@@ -462,13 +705,69 @@ class Dabest(object):
         Returns the order of categories that was passed to `dabest.load()`.
         """
         return self.__idx
+    
+
+    @property
+    def x1(self):
+        """
+        Returns the first variable declared in x when it is a delta-delta
+        case; returns None otherwise.
+        """
+        return self.__x1
+
+
+    @property
+    def x1_level(self):
+        """
+        Returns the levels of first variable declared in x when it is a 
+        delta-delta case; returns None otherwise.
+        """
+        return self.__x1_level
+
+
+    @property
+    def x2(self):
+        """
+        Returns the second variable declared in x when it is a delta-delta
+        case; returns None otherwise.
+        """
+        return self.__x2
+
+
+    @property
+    def experiment(self):
+        """
+        Returns the column name of experiment labels that was passed to 
+        `dabest.load()` when it is a delta-delta case; returns None otherwise.
+        """
+        return self.__experiment
+    
+
+    @property
+    def experiment_label(self):
+        """
+        Returns the experiment labels in order that was passed to `dabest.load()`
+        when it is a delta-delta case; returns None otherwise.
+        """
+        return self.__experiment_label
+
+
+    @property
+    def delta2(self):
+        """
+        Returns the boolean parameter indicating if this is a delta-delta 
+        situation.
+        """
+        return self.__delta2
+
 
     @property
     def is_paired(self):
         """
-        Returns True if the dataset was declared as paired to `dabest.load()`.
+        Returns the type of repeated-measures experiment.
         """
         return self.__is_paired
+
 
     @property
     def id_col(self):
@@ -477,6 +776,7 @@ class Dabest(object):
         """
         return self.__id_col
 
+
     @property
     def ci(self):
         """
@@ -484,12 +784,14 @@ class Dabest(object):
         """
         return self.__ci
 
+
     @property
     def resamples(self):
         """
         The number of resamples used to generate the bootstrap.
         """
         return self.__resamples
+
 
     @property
     def random_seed(self):
@@ -504,8 +806,12 @@ class Dabest(object):
     def x(self):
         """
         Returns the x column that was passed to `dabest.load()`, if any.
+        When `delta2` is True, `x` returns the name of the new column created 
+        for the delta-delta situation. To retrieve the 2 variables passed into 
+        `x` when `delta2` is True, please call `x1` and `x2` instead.
         """
         return self.__x
+
 
     @property
     def y(self):
@@ -514,12 +820,14 @@ class Dabest(object):
         """
         return self.__y
 
+
     @property
     def _xvar(self):
         """
         Returns the xvar in dabest.plot_data.
         """
         return self.__xvar
+
 
     @property
     def _yvar(self):
@@ -528,12 +836,30 @@ class Dabest(object):
         """
         return self.__yvar
 
+
     @property
     def _plot_data(self):
         """
         Returns the pandas DataFrame used to produce the estimation stats/plots.
         """
         return self.__plot_data
+
+    
+    @property
+    def proportional(self):
+        """
+        Returns the proportional parameter class.
+        """
+        return self.__proportional
+
+    
+    @property
+    def mini_meta(self):
+        """
+        Returns the mini_meta boolean parameter.
+        """
+        return self.__mini_meta
+
 
     @property
     def _all_plot_groups(self):
@@ -542,6 +868,928 @@ class Dabest(object):
         """
         return self.__all_plot_groups
 
+
+
+
+class DeltaDelta(object):
+    """
+    A class to compute and store the delta-delta statistics for experiments with a 2-by-2 arrangement where two independent variables, A and B, each have two categorical values, 1 and 2. The data is divided into two pairs of two groups, and a primary delta is first calculated as the mean difference between each of the pairs:
+
+    .. math::
+
+       \\Delta_{1} = \\overline{X}_{A_{2}, B_{1}} - \\overline{X}_{A_{1}, B_{1}}
+
+       \\Delta_{2} = \\overline{X}_{A_{2}, B_{2}} - \\overline{X}_{A_{1}, B_{2}}
+
+    
+    where :math:`\overline{X}_{A_{i}, B_{j}}` is the mean of the sample with A = i and B = j, :math:`\\Delta` is the mean difference between two samples. 
+
+    A delta-delta value is then calculated as the mean difference between the two primary deltas:
+
+    .. math::
+
+        \\Delta_{\\Delta} = \\Delta_{2} - \\Delta_{1}
+    
+    and:
+
+    and the standard deviation of the delta-delta value is calculated from a pooled variance of the 4 samples:
+
+    .. math::
+
+        s_{\\Delta_{\\Delta}} = \\sqrt{\\frac{(n_{A_{2}, B_{1}}-1)s_{A_{2}, B_{1}}^2+(n_{A_{1}, B_{1}}-1)s_{A_{1}, B_{1}}^2+(n_{A_{2}, B_{2}}-1)s_{A_{2}, B_{2}}^2+(n_{A_{1}, B_{2}}-1)s_{A_{1}, B_{2}}^2}{(n_{A_{2}, B_{1}} - 1) + (n_{A_{1}, B_{1}} - 1) + (n_{A_{2}, B_{2}} - 1) + (n_{A_{1}, B_{2}} - 1)}}
+
+    where :math:`s` is the standard deviation and :math:`n` is the sample size.
+
+    Example
+    -------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import dabest
+    >>> from scipy.stats import norm # Used in generation of populations.
+    >>> np.random.seed(9999) # Fix the seed so the results are replicable.
+    >>> from scipy.stats import norm # Used in generation of populations.
+    >>> N = 20
+    >>> # Create samples
+    >>> y = norm.rvs(loc=3, scale=0.4, size=N*4)
+    >>> y[N:2*N] = y[N:2*N]+1
+    >>> y[2*N:3*N] = y[2*N:3*N]-0.5
+    >>> # Add a `Treatment` column
+    >>> t1 = np.repeat('Placebo', N*2).tolist()
+    >>> t2 = np.repeat('Drug', N*2).tolist()
+    >>> treatment = t1 + t2 
+    >>> # Add a `Rep` column as the first variable for the 2 replicates of experiments done
+    >>> rep = []
+    >>> for i in range(N*2):
+    >>>     rep.append('Rep1')
+    >>>     rep.append('Rep2')
+    >>> # Add a `Genotype` column as the second variable
+    >>> wt = np.repeat('W', N).tolist()
+    >>> mt = np.repeat('M', N).tolist()
+    >>> wt2 = np.repeat('W', N).tolist()
+    >>> mt2 = np.repeat('M', N).tolist()
+    >>> genotype = wt + mt + wt2 + mt2
+    >>> # Add an `id` column for paired data plotting.
+    >>> id = list(range(0, N*2))
+    >>> id_col = id + id 
+    >>> # Combine all columns into a DataFrame.
+    >>> df_delta2 = pd.DataFrame({'ID'        : id_col,
+    >>>                   'Rep'      : rep,
+    >>>                    'Genotype'  : genotype, 
+    >>>                    'Treatment': treatment,
+    >>>                    'Y'         : y
+    >>>                 })
+    >>> unpaired_delta2 = dabest.load(data = df_delta2, x = ["Genotype", "Genotype"], y = "Y", delta2 = True, experiment = "Treatment")
+    >>> unpaired_delta2.mean_diff.plot()
+ 
+
+
+
+    """
+
+    def __init__(self, effectsizedataframe, permutation_count,
+                ci=95):
+
+        import numpy as np
+        from numpy import sort as npsort
+        from numpy import sqrt, isinf, isnan
+        from ._stats_tools import effsize as es
+        from ._stats_tools import confint_1group as ci1g
+        from ._stats_tools import confint_2group_diff as ci2g
+
+        from string import Template
+        import warnings
+        
+        self.__effsizedf         = effectsizedataframe.results
+        self.__dabest_obj        = effectsizedataframe.dabest_obj
+        self.__ci                = ci
+        self.__resamples         = effectsizedataframe.resamples
+        self.__alpha             = ci2g._compute_alpha_from_ci(ci)
+        self.__permutation_count = permutation_count
+        self.__bootstraps        = np.array(self.__effsizedf["bootstraps"])
+        self.__control           = self.__dabest_obj.experiment_label[0]
+        self.__test              = self.__dabest_obj.experiment_label[1]
+
+
+        # Compute the bootstrap delta-delta and the true dela-delta based on 
+        # the raw data 
+        self.__bootstraps_delta_delta = self.__bootstraps[1] - self.__bootstraps[0]
+
+        self.__difference = self.__effsizedf["difference"][1] - self.__effsizedf["difference"][0]
+
+
+
+        sorted_delta_delta = npsort(self.__bootstraps_delta_delta)
+
+        self.__bias_correction = ci2g.compute_meandiff_bias_correction(
+                                    self.__bootstraps_delta_delta, self.__difference)
+        
+        self.__jackknives = np.array(ci1g.compute_1group_jackknife(
+                                                self.__bootstraps_delta_delta, 
+                                                np.mean))
+
+        self.__acceleration_value = ci2g._calc_accel(self.__jackknives)
+
+        # Compute BCa intervals.
+        bca_idx_low, bca_idx_high = ci2g.compute_interval_limits(
+            self.__bias_correction, self.__acceleration_value,
+            self.__resamples, ci)
+        
+        self.__bca_interval_idx = (bca_idx_low, bca_idx_high)
+
+        if ~isnan(bca_idx_low) and ~isnan(bca_idx_high):
+            self.__bca_low  = sorted_delta_delta[bca_idx_low]
+            self.__bca_high = sorted_delta_delta[bca_idx_high]
+
+            err1 = "The $lim_type limit of the interval"
+            err2 = "was in the $loc 10 values."
+            err3 = "The result should be considered unstable."
+            err_temp = Template(" ".join([err1, err2, err3]))
+
+            if bca_idx_low <= 10:
+                warnings.warn(err_temp.substitute(lim_type="lower",
+                                                  loc="bottom"),
+                              stacklevel=1)
+
+            if bca_idx_high >= self.__resamples-9:
+                warnings.warn(err_temp.substitute(lim_type="upper",
+                                                  loc="top"),
+                                                  stacklevel=1)
+
+        else:
+            err1 = "The $lim_type limit of the BCa interval cannot be computed."
+            err2 = "It is set to the effect size itself."
+            err3 = "All bootstrap values were likely all the same."
+            err_temp = Template(" ".join([err1, err2, err3]))
+
+            if isnan(bca_idx_low):
+                self.__bca_low  = self.__difference
+                warnings.warn(err_temp.substitute(lim_type="lower"),
+                              stacklevel=0)
+
+            if isnan(bca_idx_high):
+                self.__bca_high  = self.__difference
+                warnings.warn(err_temp.substitute(lim_type="upper"),
+                              stacklevel=0)
+
+        # Compute percentile intervals.
+        pct_idx_low  = int((self.__alpha/2)     * self.__resamples)
+        pct_idx_high = int((1-(self.__alpha/2)) * self.__resamples)
+
+        self.__pct_interval_idx = (pct_idx_low, pct_idx_high)
+        self.__pct_low          = sorted_delta_delta[pct_idx_low]
+        self.__pct_high         = sorted_delta_delta[pct_idx_high]
+        
+    
+
+    def __permutation_test(self):
+        """
+        Perform a permutation test and obtain the permutation p-value
+        based on the permutation data.
+        """
+        import numpy as np
+        self.__permutations     = np.array(self.__effsizedf["permutations"])
+
+        THRESHOLD = np.abs(self.__difference)
+
+        self.__permutations_delta_delta = np.array(self.__permutations[1]-self.__permutations[0])
+
+        count = sum(np.abs(self.__permutations_delta_delta)>THRESHOLD)
+        self.__pvalue_permutation = count/self.__permutation_count
+
+
+
+    def __repr__(self, header=True, sigfig=3):
+        from .__init__ import __version__
+        import datetime as dt
+        import numpy as np
+
+        from .misc_tools import print_greeting
+
+        first_line = {"control"      : self.__control,
+                      "test"         : self.__test}
+        
+        out1 = "The delta-delta between {control} and {test} ".format(**first_line)
+        
+        base_string_fmt = "{:." + str(sigfig) + "}"
+        if "." in str(self.__ci):
+            ci_width = base_string_fmt.format(self.__ci)
+        else:
+            ci_width = str(self.__ci)
+        
+        ci_out = {"es"       : base_string_fmt.format(self.__difference),
+                  "ci"       : ci_width,
+                  "bca_low"  : base_string_fmt.format(self.__bca_low),
+                  "bca_high" : base_string_fmt.format(self.__bca_high)}
+        
+        out2 = "is {es} [{ci}%CI {bca_low}, {bca_high}].".format(**ci_out)
+        out = out1 + out2
+
+        if header is True:
+            out = print_greeting() + "\n" + "\n" + out
+
+
+        pval_rounded = base_string_fmt.format(self.pvalue_permutation)
+
+        
+        p1 = "The p-value of the two-sided permutation t-test is {}, ".format(pval_rounded)
+        p2 = "calculated for legacy purposes only. "
+        pvalue = p1 + p2
+
+
+        bs1 = "{} bootstrap samples were taken; ".format(self.__resamples)
+        bs2 = "the confidence interval is bias-corrected and accelerated."
+        bs = bs1 + bs2
+
+        pval_def1 = "Any p-value reported is the probability of observing the " + \
+                    "effect size (or greater),\nassuming the null hypothesis of " + \
+                    "zero difference is true."
+        pval_def2 = "\nFor each p-value, 5000 reshuffles of the " + \
+                    "control and test labels were performed."
+        pval_def = pval_def1 + pval_def2
+
+
+        return "{}\n{}\n\n{}\n{}".format(out, pvalue, bs, pval_def)
+
+
+    def to_dict(self):
+        """
+        Returns the attributes of the `DeltaDelta` object as a
+        dictionary.
+        """
+        # Only get public (user-facing) attributes.
+        attrs = [a for a in dir(self)
+                 if not a.startswith(("_", "to_dict"))]
+        out = {}
+        for a in attrs:
+            out[a] = getattr(self, a)
+        return out
+
+
+    @property
+    def ci(self):
+        """
+        Returns the width of the confidence interval, in percent.
+        """
+        return self.__ci
+
+
+    @property
+    def alpha(self):
+        """
+        Returns the significance level of the statistical test as a float
+        between 0 and 1.
+        """
+        return self.__alpha
+
+
+    @property
+    def bias_correction(self):
+        return self.__bias_correction
+
+
+    @property
+    def bootstraps(self):
+        '''
+        Return the bootstrapped deltas from all the experiment groups.
+        '''
+        return self.__bootstraps
+
+
+    @property
+    def jackknives(self):
+        return self.__jackknives
+
+
+    @property
+    def acceleration_value(self):
+        return self.__acceleration_value
+
+
+    @property
+    def bca_low(self):
+        """
+        The bias-corrected and accelerated confidence interval lower limit.
+        """
+        return self.__bca_low
+
+
+    @property
+    def bca_high(self):
+        """
+        The bias-corrected and accelerated confidence interval upper limit.
+        """
+        return self.__bca_high
+
+
+    @property
+    def bca_interval_idx(self):
+        return self.__bca_interval_idx
+
+
+    @property
+    def control(self):
+        '''
+        Return the name of the control experiment group.
+        '''
+        return self.__control
+
+
+    @property
+    def test(self):
+        '''
+        Return the name of the test experiment group.
+        '''
+        return self.__test
+
+
+    @property
+    def bootstraps_delta_delta(self):
+        '''
+        Return the delta-delta values calculated from the bootstrapped 
+        deltas.
+        '''
+        return self.__bootstraps_delta_delta
+
+
+    @property
+    def difference(self):
+        '''
+        Return the delta-delta value calculated based on the raw data.
+        '''
+        return self.__difference
+
+
+    @property
+    def pct_interval_idx (self):
+        return self.__pct_interval_idx 
+
+
+    @property
+    def pct_low(self):
+        """
+        The percentile confidence interval lower limit.
+        """
+        return self.__pct_low
+
+
+    @property
+    def pct_high(self):
+        """
+        The percentile confidence interval lower limit.
+        """
+        return self.__pct_high
+
+
+    @property
+    def pvalue_permutation(self):
+        try:
+            return self.__pvalue_permutation
+        except AttributeError:
+            self.__permutation_test()
+            return self.__pvalue_permutation
+    
+
+    @property
+    def permutation_count(self):
+        """
+        The number of permuations taken.
+        """
+        return self.__permutation_count
+
+    
+    @property
+    def permutations(self):
+        '''
+        Return the mean differences of permutations obtained during
+        the permutation test for each experiment group.
+        '''
+        try:
+            return self.__permutations
+        except AttributeError:
+            self.__permutation_test()
+            return self.__permutations
+
+    
+    @property
+    def permutations_delta_delta(self):
+        '''
+        Return the delta-delta values of permutations obtained 
+        during the permutation test.
+        '''
+        try:
+            return self.__permutations_delta_delta
+        except AttributeError:
+            self.__permutation_test()
+            return self.__permutations_delta_delta
+
+
+
+
+
+class MiniMetaDelta(object):
+    """
+    A class to compute and store the weighted delta.
+    A weighted delta is calculated if the argument ``mini_meta=True`` is passed during ``dabest.load()``.
+
+    The weighted delta is calcuated as follows:
+
+    .. math::
+	\\theta_{\\text{weighted}} = \\frac{\\Sigma\\hat{\\theta_{i}}w_{i}}{{\\Sigma}w_{i}}
+    
+    where:
+
+    .. math::
+	\\hat{\\theta_{i}} = \\text{Mean difference for replicate }i
+
+    .. math::
+	w_{i} = \\text{Weight for replicate }i = \\frac{1}{s_{i}^2} 
+
+    .. math::
+	s_{i}^2 = \\text{Pooled variance for replicate }i = \\frac{(n_{test}-1)s_{test}^2+(n_{control}-1)s_{control}^2}{n_{test}+n_{control}-2}
+
+    .. math::
+	n = \\text{sample size and }s^2 = \\text{variance for control/test.}
+
+
+    Example
+    -------
+    >>> from scipy.stats import norm
+    >>> import pandas as pd
+    >>> import dabest
+    >>> Ns = 20
+    >>> c1 = norm.rvs(loc=3, scale=0.4, size=Ns)
+    >>> c2 = norm.rvs(loc=3.5, scale=0.75, size=Ns)
+    >>> c3 = norm.rvs(loc=3.25, scale=0.4, size=Ns)
+    >>> t1 = norm.rvs(loc=3.5, scale=0.5, size=Ns)
+    >>> t2 = norm.rvs(loc=2.5, scale=0.6, size=Ns)
+    >>> t3 = norm.rvs(loc=3, scale=0.75, size=Ns)
+    >>> my_df   = pd.DataFrame({'Control 1' : c1,     'Test 1' : t1,
+                       'Control 2' : c2,     'Test 2' : t2,
+                       'Control 3' : c3,     'Test 3' : t3})
+    >>> my_dabest_object = dabest.load(my_df, idx=(("Control 1", "Test 1"), ("Control 2", "Test 2"), ("Control 3", "Test 3")), mini_meta=True)
+    >>> my_dabest_object.mean_diff.mini_meta_delta
+
+    Notes
+    -----
+    As of version 2023.02.14, weighted delta can only be calculated for mean difference, and not for standardized measures such as Cohen's *d*.
+
+    Details about the calculated weighted delta are accessed as attributes of the ``mini_meta_delta`` class. See the :doc:`minimetadelta` for details on usage.
+
+    Refer to Chapter 10 of the Cochrane handbook for further information on meta-analysis: https://training.cochrane.org/handbook/current/chapter-10
+		
+    """
+
+    def __init__(self, effectsizedataframe, permutation_count,
+                ci=95):
+
+        import numpy as np
+        from numpy import sort as npsort
+        from numpy import sqrt, isinf, isnan
+        from ._stats_tools import effsize as es
+        from ._stats_tools import confint_1group as ci1g
+        from ._stats_tools import confint_2group_diff as ci2g
+
+        from string import Template
+        import warnings
+        
+        self.__effsizedf         = effectsizedataframe.results
+        self.__dabest_obj        = effectsizedataframe.dabest_obj
+        self.__ci                = ci
+        self.__resamples         = effectsizedataframe.resamples
+        self.__alpha             = ci2g._compute_alpha_from_ci(ci)
+        self.__permutation_count = permutation_count
+        self.__bootstraps        = np.array(self.__effsizedf["bootstraps"])
+        self.__control           = np.array(self.__effsizedf["control"])
+        self.__test              = np.array(self.__effsizedf["test"])
+        self.__control_N         = np.array(self.__effsizedf["control_N"])
+        self.__test_N            = np.array(self.__effsizedf["test_N"])
+
+
+        idx  = self.__dabest_obj.idx
+        dat  = self.__dabest_obj._plot_data
+        xvar = self.__dabest_obj._xvar
+        yvar = self.__dabest_obj._yvar
+
+        # compute the variances of each control group and each test group
+        control_var=[]
+        test_var=[]
+        for j, current_tuple in enumerate(idx):
+            cname = current_tuple[0]
+            control = dat[dat[xvar] == cname][yvar].copy()
+            control_var.append(np.var(control, ddof=1))
+
+            tname = current_tuple[1]
+            test = dat[dat[xvar] == tname][yvar].copy()
+            test_var.append(np.var(test, ddof=1))
+        self.__control_var = np.array(control_var)
+        self.__test_var    = np.array(test_var)
+
+        # Compute pooled group variances for each pair of experiment groups
+        # based on the raw data
+        self.__group_var   = ci2g.calculate_group_var(self.__control_var, 
+                                                 self.__control_N,
+                                                 self.__test_var, 
+                                                 self.__test_N)
+
+        # Compute the weighted average mean differences of the bootstrap data
+        # using the pooled group variances of the raw data as the inverse of 
+        # weights
+        self.__bootstraps_weighted_delta = ci2g.calculate_weighted_delta(
+                                                          self.__group_var, 
+                                                          self.__bootstraps, 
+                                                          self.__resamples)
+
+        # Compute the weighted average mean difference based on the raw data
+        self.__difference = es.weighted_delta(self.__effsizedf["difference"],
+                                                   self.__group_var)
+
+        sorted_weighted_deltas = npsort(self.__bootstraps_weighted_delta)
+
+
+        self.__bias_correction = ci2g.compute_meandiff_bias_correction(
+                                    self.__bootstraps_weighted_delta, self.__difference)
+        
+        self.__jackknives = np.array(ci1g.compute_1group_jackknife(
+                                                self.__bootstraps_weighted_delta, 
+                                                np.mean))
+
+        self.__acceleration_value = ci2g._calc_accel(self.__jackknives)
+
+        # Compute BCa intervals.
+        bca_idx_low, bca_idx_high = ci2g.compute_interval_limits(
+            self.__bias_correction, self.__acceleration_value,
+            self.__resamples, ci)
+        
+        self.__bca_interval_idx = (bca_idx_low, bca_idx_high)
+
+        if ~isnan(bca_idx_low) and ~isnan(bca_idx_high):
+            self.__bca_low  = sorted_weighted_deltas[bca_idx_low]
+            self.__bca_high = sorted_weighted_deltas[bca_idx_high]
+
+            err1 = "The $lim_type limit of the interval"
+            err2 = "was in the $loc 10 values."
+            err3 = "The result should be considered unstable."
+            err_temp = Template(" ".join([err1, err2, err3]))
+
+            if bca_idx_low <= 10:
+                warnings.warn(err_temp.substitute(lim_type="lower",
+                                                  loc="bottom"),
+                              stacklevel=1)
+
+            if bca_idx_high >= self.__resamples-9:
+                warnings.warn(err_temp.substitute(lim_type="upper",
+                                                  loc="top"),
+                              stacklevel=1)
+
+        else:
+            err1 = "The $lim_type limit of the BCa interval cannot be computed."
+            err2 = "It is set to the effect size itself."
+            err3 = "All bootstrap values were likely all the same."
+            err_temp = Template(" ".join([err1, err2, err3]))
+
+            if isnan(bca_idx_low):
+                self.__bca_low  = self.__difference
+                warnings.warn(err_temp.substitute(lim_type="lower"),
+                              stacklevel=0)
+
+            if isnan(bca_idx_high):
+                self.__bca_high  = self.__difference
+                warnings.warn(err_temp.substitute(lim_type="upper"),
+                              stacklevel=0)
+
+        # Compute percentile intervals.
+        pct_idx_low  = int((self.__alpha/2)     * self.__resamples)
+        pct_idx_high = int((1-(self.__alpha/2)) * self.__resamples)
+
+        self.__pct_interval_idx = (pct_idx_low, pct_idx_high)
+        self.__pct_low          = sorted_weighted_deltas[pct_idx_low]
+        self.__pct_high         = sorted_weighted_deltas[pct_idx_high]
+        
+    
+
+    def __permutation_test(self):
+        """
+        Perform a permutation test and obtain the permutation p-value
+        based on the permutation data.
+        """
+        import numpy as np
+        self.__permutations     = np.array(self.__effsizedf["permutations"])
+        self.__permutations_var = np.array(self.__effsizedf["permutations_var"])
+
+        THRESHOLD = np.abs(self.__difference)
+
+        all_num = []
+        all_denom = []
+
+        groups = len(self.__permutations)
+        for i in range(0, len(self.__permutations[0])):
+            weight = [1/self.__permutations_var[j][i] for j in range(0, groups)]
+            all_num.append(np.sum([weight[j]*self.__permutations[j][i] for j in range(0, groups)]))
+            all_denom.append(np.sum(weight))
+        
+        output=[]
+        for i in range(0, len(all_num)):
+            output.append(all_num[i]/all_denom[i])
+        
+        self.__permutations_weighted_delta = np.array(output)
+
+        count = sum(np.abs(self.__permutations_weighted_delta)>THRESHOLD)
+        self.__pvalue_permutation = count/self.__permutation_count
+
+
+
+    def __repr__(self, header=True, sigfig=3):
+        from .__init__ import __version__
+        import datetime as dt
+        import numpy as np
+
+        from .misc_tools import print_greeting
+        
+        is_paired = self.__dabest_obj.is_paired
+
+        PAIRED_STATUS = {'baseline'   : 'paired', 
+                         'sequential' : 'paired',
+                         'None'       : 'unpaired'
+        }
+
+        first_line = {"paired_status": PAIRED_STATUS[str(is_paired)]}
+        
+
+        out1 = "The weighted-average {paired_status} mean differences ".format(**first_line)
+        
+        base_string_fmt = "{:." + str(sigfig) + "}"
+        if "." in str(self.__ci):
+            ci_width = base_string_fmt.format(self.__ci)
+        else:
+            ci_width = str(self.__ci)
+        
+        ci_out = {"es"       : base_string_fmt.format(self.__difference),
+                  "ci"       : ci_width,
+                  "bca_low"  : base_string_fmt.format(self.__bca_low),
+                  "bca_high" : base_string_fmt.format(self.__bca_high)}
+        
+        out2 = "is {es} [{ci}%CI {bca_low}, {bca_high}].".format(**ci_out)
+        out = out1 + out2
+
+        if header is True:
+            out = print_greeting() + "\n" + "\n" + out
+
+
+        pval_rounded = base_string_fmt.format(self.pvalue_permutation)
+
+        
+        p1 = "The p-value of the two-sided permutation t-test is {}, ".format(pval_rounded)
+        p2 = "calculated for legacy purposes only. "
+        pvalue = p1 + p2
+
+
+        bs1 = "{} bootstrap samples were taken; ".format(self.__resamples)
+        bs2 = "the confidence interval is bias-corrected and accelerated."
+        bs = bs1 + bs2
+
+        pval_def1 = "Any p-value reported is the probability of observing the" + \
+                    "effect size (or greater),\nassuming the null hypothesis of" + \
+                    "zero difference is true."
+        pval_def2 = "\nFor each p-value, 5000 reshuffles of the " + \
+                    "control and test labels were performed."
+        pval_def = pval_def1 + pval_def2
+
+
+        return "{}\n{}\n\n{}\n{}".format(out, pvalue, bs, pval_def)
+
+
+    def to_dict(self):
+        """
+        Returns all attributes of the `dabest.MiniMetaDelta` object as a
+        dictionary.
+        """
+        # Only get public (user-facing) attributes.
+        attrs = [a for a in dir(self)
+                 if not a.startswith(("_", "to_dict"))]
+        out = {}
+        for a in attrs:
+            out[a] = getattr(self, a)
+        return out
+
+
+    @property
+    def ci(self):
+        """
+        Returns the width of the confidence interval, in percent.
+        """
+        return self.__ci
+
+
+    @property
+    def alpha(self):
+        """
+        Returns the significance level of the statistical test as a float
+        between 0 and 1.
+        """
+        return self.__alpha
+
+
+    @property
+    def bias_correction(self):
+        return self.__bias_correction
+
+
+    @property
+    def bootstraps(self):
+        '''
+        Return the bootstrapped differences from all the experiment groups.
+        '''
+        return self.__bootstraps
+
+
+    @property
+    def jackknives(self):
+        return self.__jackknives
+
+
+    @property
+    def acceleration_value(self):
+        return self.__acceleration_value
+
+
+    @property
+    def bca_low(self):
+        """
+        The bias-corrected and accelerated confidence interval lower limit.
+        """
+        return self.__bca_low
+
+
+    @property
+    def bca_high(self):
+        """
+        The bias-corrected and accelerated confidence interval upper limit.
+        """
+        return self.__bca_high
+
+
+    @property
+    def bca_interval_idx(self):
+        return self.__bca_interval_idx
+
+
+    @property
+    def control(self):
+        '''
+        Return the names of the control groups from all the experiment 
+        groups in order.
+        '''
+        return self.__control
+
+
+    @property
+    def test(self):
+        '''
+        Return the names of the test groups from all the experiment 
+        groups in order.
+        '''
+        return self.__test
+    
+    @property
+    def control_N(self):
+        '''
+        Return the sizes of the control groups from all the experiment 
+        groups in order.
+        '''
+        return self.__control_N
+
+
+    @property
+    def test_N(self):
+        '''
+        Return the sizes of the test groups from all the experiment 
+        groups in order.
+        '''
+        return self.__test_N
+
+
+    @property
+    def control_var(self):
+        '''
+        Return the estimated population variances of the control groups 
+        from all the experiment groups in order. Here the population 
+        variance is estimated from the sample variance. 
+        '''
+        return self.__control_var
+
+
+    @property
+    def test_var(self):
+        '''
+        Return the estimated population variances of the control groups 
+        from all the experiment groups in order. Here the population 
+        variance is estimated from the sample variance. 
+        '''
+        return self.__test_var
+
+    
+    @property
+    def group_var(self):
+        '''
+        Return the pooled group variances of all the experiment groups 
+        in order. 
+        '''
+        return self.__group_var
+
+
+    @property
+    def bootstraps_weighted_delta(self):
+        '''
+        Return the weighted-average mean differences calculated from the bootstrapped 
+        deltas and weights across the experiment groups, where the weights are 
+        the inverse of the pooled group variances.
+        '''
+        return self.__bootstraps_weighted_delta
+
+
+    @property
+    def difference(self):
+        '''
+        Return the weighted-average delta calculated from the raw data.
+        '''
+        return self.__difference
+
+
+    @property
+    def pct_interval_idx (self):
+        return self.__pct_interval_idx 
+
+
+    @property
+    def pct_low(self):
+        """
+        The percentile confidence interval lower limit.
+        """
+        return self.__pct_low
+
+
+    @property
+    def pct_high(self):
+        """
+        The percentile confidence interval lower limit.
+        """
+        return self.__pct_high
+
+
+    @property
+    def pvalue_permutation(self):
+        try:
+            return self.__pvalue_permutation
+        except AttributeError:
+            self.__permutation_test()
+            return self.__pvalue_permutation
+    
+
+    @property
+    def permutation_count(self):
+        """
+        The number of permuations taken.
+        """
+        return self.__permutation_count
+
+    
+    @property
+    def permutations(self):
+        '''
+        Return the mean differences of permutations obtained during
+        the permutation test for each experiment group.
+        '''
+        try:
+            return self.__permutations
+        except AttributeError:
+            self.__permutation_test()
+            return self.__permutations
+
+
+    @property
+    def permutations_var(self):
+        '''
+        Return the pooled group variances of permutations obtained during
+        the permutation test for each experiment group.
+        '''
+        try:
+            return self.__permutations_var
+        except AttributeError:
+            self.__permutation_test()
+            return self.__permutations_var
+
+    
+    @property
+    def permutations_weighted_delta(self):
+        '''
+        Return the weighted-average deltas of permutations obtained 
+        during the permutation test.
+        '''
+        try:
+            return self.__permutations_weighted_delta
+        except AttributeError:
+            self.__permutation_test()
+            return self.__permutations_weighted_delta
 
 
 
@@ -555,7 +1803,8 @@ class TwoGroupsEffectSize(object):
     """
 
     def __init__(self, control, test, effect_size,
-                 is_paired=False, ci=95,
+                 proportional=False,
+                 is_paired=None, ci=95,
                  resamples=5000, 
                  permutation_count=5000, 
                  random_seed=12345):
@@ -571,7 +1820,7 @@ class TwoGroupsEffectSize(object):
         effect_size : string.
             Any one of the following are accepted inputs:
             'mean_diff', 'median_diff', 'cohens_d', 'hedges_g', or 'cliffs_delta'
-        is_paired : boolean, default False
+        is_paired : string, default None
         resamples : int, default 5000
             The number of bootstrap resamples to be taken for the calculation
             of the confidence interval limits.
@@ -586,7 +1835,6 @@ class TwoGroupsEffectSize(object):
             bootstrap resampling. This ensures that the confidence intervals
             reported are replicable.
 
-
         Returns
         -------
         A :py:class:`TwoGroupEffectSize` object.
@@ -597,8 +1845,8 @@ class TwoGroupsEffectSize(object):
         effect_size : string
             The type of effect size reported.
         
-        is_paired : boolean
-            Whether or not the difference is paired (ie. repeated measures).
+        is_paired : string
+            The type of repeated-measures experiment.
             
         ci : float
             Returns the width of the confidence interval, in percent.
@@ -610,7 +1858,7 @@ class TwoGroupsEffectSize(object):
         resamples : int
             The number of resamples performed during the bootstrap procedure.
 
-        bootstraps : nmupy ndarray
+        bootstraps : numpy ndarray
             The generated bootstraps of the effect size.
             
         random_seed : int
@@ -629,31 +1877,41 @@ class TwoGroupsEffectSize(object):
         Examples
         --------
         >>> import numpy as np
-        >>> import scipy as sp
+        >>> from scipy.stats import norm
         >>> import dabest
         >>> np.random.seed(12345)
-        >>> control = sp.stats.norm.rvs(loc=0, size=30)
-        >>> test = sp.stats.norm.rvs(loc=0.5, size=30)
+        >>> control = norm.rvs(loc=0, size=30)
+        >>> test = norm.rvs(loc=0.5, size=30)
         >>> effsize = dabest.TwoGroupsEffectSize(control, test, "mean_diff")
         >>> effsize
-        The unpaired mean difference is -0.253 [95%CI -0.782, 0.241]
-        5000 bootstrap samples. The confidence interval is bias-corrected
-        and accelerated.
+        The unpaired mean difference is -0.253 [95%CI -0.78, 0.25].
+        The p-value of the two-sided permutation t-test is 0.348, calculated 
+        for legacy purposes only. 
+
+        5000 bootstrap samples were taken; the confidence interval is 
+        bias-corrected and accelerated. The p-value(s) reported are the 
+        likelihood(s) of observing the effect size(s), if the null hypothesis 
+        of zero difference is true. For each p-value, 5000 reshuffles of the 
+        control and test labels were performed.
         >>> effsize.to_dict() 
         {'alpha': 0.05,
          'bca_high': 0.24951887238295106,
          'bca_interval_idx': (125, 4875),
          'bca_low': -0.7801782111071534,
-         'bootstraps': array([-1.25579022, -1.20979484, -1.17604415, ...,  0.57700183,
-                 0.5902485 ,  0.61043212]),
+         'bootstraps': array([-0.3649424 , -0.45018155, -0.56034412, ..., -0.49805581,
+                              -0.25334475, -0.55206229]),
          'ci': 95,
          'difference': -0.25315417702752846,
          'effect_size': 'mean difference',
-         'is_paired': False,
+         'is_paired': None,
          'pct_high': 0.24951887238295106,
          'pct_interval_idx': (125, 4875),
          'pct_low': -0.7801782111071534,
          'permutation_count': 5000,
+         'permutations': array([ 0.17221029,  0.03112419, -0.13911387, ..., -0.38007941,
+                                 0.30261507, -0.09073054]),
+         'permutations_var': array([0.07201642, 0.07251104, 0.07219407, ..., 0.07003705, 0.07094885,
+                                 0.07238581]),
          'pvalue_brunner_munzel': nan,
          'pvalue_kruskal': nan,
          'pvalue_mann_whitney': 0.5201446121616038,
@@ -681,6 +1939,7 @@ class TwoGroupsEffectSize(object):
         import scipy.stats as spstats
 
         # import statsmodels.stats.power as power
+        import statsmodels
 
         from string import Template
         import warnings
@@ -692,6 +1951,7 @@ class TwoGroupsEffectSize(object):
         self.__EFFECT_SIZE_DICT =  {"mean_diff" : "mean difference",
                                     "median_diff" : "median difference",
                                     "cohens_d" : "Cohen's d",
+                                    "cohens_h" : "Cohen's h",
                                     "hedges_g" : "Hedges' g",
                                     "cliffs_delta" : "Cliff's delta"}
 
@@ -702,8 +1962,16 @@ class TwoGroupsEffectSize(object):
             err2 = "is not one of {}".format(kosher_es)
             raise ValueError(" ".join([err1, err2]))
 
-        if effect_size == "cliffs_delta" and is_paired is True:
-            err1 = "`paired` is True; therefore Cliff's delta is not defined."
+        if effect_size == "cliffs_delta" and is_paired:
+            err1 = "`paired` is not None; therefore Cliff's delta is not defined."
+            raise ValueError(err1)
+
+        if proportional==True and effect_size not in ['mean_diff','cohens_h']:
+            err1 = "`proportional` is True; therefore effect size other than mean_diff and cohens_h is not defined."
+            raise ValueError(err1)
+
+        if proportional==True and (np.isin(control, [0, 1]).all() == False or np.isin(test, [0, 1]).all() == False):
+            err1 = "`proportional` is True; Only accept binary data consisting of 0 and 1."
             raise ValueError(err1)
 
         # Convert to numpy arrays for speed.
@@ -723,10 +1991,9 @@ class TwoGroupsEffectSize(object):
         self.__ci                = ci
         self.__alpha             = ci2g._compute_alpha_from_ci(ci)
 
-
         self.__difference = es.two_group_difference(
                                 control, test, is_paired, effect_size)
-
+        
         self.__jackknives = ci2g.compute_meandiff_jackknife(
                                 control, test, is_paired, effect_size)
 
@@ -735,8 +2002,9 @@ class TwoGroupsEffectSize(object):
         bootstraps = ci2g.compute_bootstrapped_diff(
                             control, test, is_paired, effect_size,
                             resamples, random_seed)
-        self.__bootstraps = npsort(bootstraps)
+        self.__bootstraps = bootstraps
         
+        sorted_bootstraps = npsort(self.__bootstraps)
         # Added in v0.2.6.
         # Raises a UserWarning if there are any infiinities in the bootstraps.
         num_infinities = len(self.__bootstraps[isinf(self.__bootstraps)])
@@ -762,8 +2030,8 @@ class TwoGroupsEffectSize(object):
         self.__bca_interval_idx = (bca_idx_low, bca_idx_high)
 
         if ~isnan(bca_idx_low) and ~isnan(bca_idx_high):
-            self.__bca_low  = self.__bootstraps[bca_idx_low]
-            self.__bca_high = self.__bootstraps[bca_idx_high]
+            self.__bca_low  = sorted_bootstraps[bca_idx_low]
+            self.__bca_high = sorted_bootstraps[bca_idx_high]
 
             err1 = "The $lim_type limit of the interval"
             err2 = "was in the $loc 10 values."
@@ -801,8 +2069,8 @@ class TwoGroupsEffectSize(object):
         pct_idx_high = int((1-(self.__alpha/2)) * resamples)
 
         self.__pct_interval_idx = (pct_idx_low, pct_idx_high)
-        self.__pct_low  = self.__bootstraps[pct_idx_low]
-        self.__pct_high = self.__bootstraps[pct_idx_high]
+        self.__pct_low  = sorted_bootstraps[pct_idx_low]
+        self.__pct_high = sorted_bootstraps[pct_idx_high]
 
         # Perform statistical tests.
                 
@@ -811,7 +2079,7 @@ class TwoGroupsEffectSize(object):
                                                         is_paired,
                                                         permutation_count)
         
-        if is_paired is True:
+        if is_paired and proportional is False:
             # Wilcoxon, a non-parametric version of the paired T-test.
             wilcoxon = spstats.wilcoxon(control, test)
             self.__pvalue_wilcoxon = wilcoxon.pvalue
@@ -830,11 +2098,26 @@ class TwoGroupsEffectSize(object):
                 self.__pvalue_paired_students_t = paired_t.pvalue
                 self.__statistic_paired_students_t = paired_t.statistic
 
-                standardized_es = es.cohens_d(control, test, is_paired=True)
+                standardized_es = es.cohens_d(control, test, is_paired)
                 # self.__power = power.tt_solve_power(standardized_es,
                 #                                     len(control),
                 #                                     alpha=self.__alpha)
 
+        elif is_paired and proportional is True:
+            # for binary paired data, use McNemar's test
+            # References:
+            # https://en.wikipedia.org/wiki/McNemar%27s_test
+            from statsmodels.stats.contingency_tables import mcnemar
+            import pandas as pd
+            df_temp = pd.DataFrame({'control': control, 'test': test})
+            x1 = len(df_temp[(df_temp['control'] == 0)&(df_temp['test'] == 0)])
+            x2 = len(df_temp[(df_temp['control'] == 0)&(df_temp['test'] == 1)])
+            x3 = len(df_temp[(df_temp['control'] == 1)&(df_temp['test'] == 0)])
+            x4 = len(df_temp[(df_temp['control'] == 1)&(df_temp['test'] == 1)])
+            table =  [[x1,x2],[x3,x4]]
+            _mcnemar = mcnemar(table, exact=True, correction=True)
+            self.__pvalue_mcnemar = _mcnemar.pvalue
+            self.__statistic_mcnemar = _mcnemar.statistic
 
         elif effect_size == "cliffs_delta":
             # Let's go with Brunner-Munzel!
@@ -897,8 +2180,14 @@ class TwoGroupsEffectSize(object):
 #             self.__statistic_lqrt_unequal_var = lqrt_unequal_var_result.statistic
                     
 
-            standardized_es = es.cohens_d(control, test, is_paired=False)
+            standardized_es = es.cohens_d(control, test, is_paired = None)
             
+            # The Cohen's h calculation is for binary categorical data
+            try:
+                self.__proportional_difference = es.cohens_h(control, test)
+            except ValueError:
+                # Occur only when the data consists not only 0's and 1's.
+                pass
             # self.__power = power.tt_ind_solve_power(standardized_es,
             #                                         len(control),
             #                                         alpha=self.__alpha,
@@ -924,12 +2213,22 @@ class TwoGroupsEffectSize(object):
         #                      "Brunner-Munzel" :  "pvalue_brunner_munzel",
         #                      "Wilcoxon"       :  "pvalue_wilcoxon"}
         
-        PAIRED_STATUS = {True: 'paired', False: 'unpaired'}
+        RM_STATUS = {'baseline'  : 'for repeated measures against baseline \n', 
+                     'sequential': 'for the sequential design of repeated-measures experiment \n',
+                     'None'      : ''
+                    }
+
+        PAIRED_STATUS = {'baseline'   : 'paired', 
+                         'sequential' : 'paired',
+                         'None'       : 'unpaired'
+        }
+
+        first_line = {"rm_status"    : RM_STATUS[str(self.__is_paired)],
+                      "es"           : self.__EFFECT_SIZE_DICT[self.__effect_size],
+                      "paired_status": PAIRED_STATUS[str(self.__is_paired)]}
         
-        first_line = {"is_paired": PAIRED_STATUS[self.__is_paired],
-                      "es"       : self.__EFFECT_SIZE_DICT[self.__effect_size]}
-        
-        out1 = "The {is_paired} {es} ".format(**first_line)
+
+        out1 = "The {paired_status} {es} {rm_status}".format(**first_line)
         
         base_string_fmt = "{:." + str(sigfig) + "}"
         if "." in str(self.__ci):
@@ -966,14 +2265,17 @@ class TwoGroupsEffectSize(object):
         #                                                         pval_rounded)
         
         
-        pvalue = "The p-value of the two-sided permutation t-test is {}. ".format(pval_rounded)
+        p1 = "The p-value of the two-sided permutation t-test is {}, ".format(pval_rounded)
+        p2 = "calculated for legacy purposes only. "
+        pvalue = p1 + p2
                                                                 
         bs1 = "{} bootstrap samples were taken; ".format(self.__resamples)
         bs2 = "the confidence interval is bias-corrected and accelerated."
         bs = bs1 + bs2
 
-        pval_def1 = "The p-value(s) reported are the likelihood(s) of observing the " + \
-                  "effect size(s),\nif the null hypothesis of zero difference is true."
+        pval_def1 = "Any p-value reported is the probability of observing the" + \
+                    "effect size (or greater),\nassuming the null hypothesis of" + \
+                    "zero difference is true."
         pval_def2 = "\nFor each p-value, 5000 reshuffles of the " + \
                     "control and test labels were performed."
         pval_def = pval_def1 + pval_def2
@@ -1001,8 +2303,6 @@ class TwoGroupsEffectSize(object):
         for a in attrs:
             out[a] = getattr(self, a)
         return out
-
-
 
 
     @property
@@ -1132,6 +2432,22 @@ class TwoGroupsEffectSize(object):
         except AttributeError:
             return npnan
 
+    @property
+    def pvalue_mcnemar(self):
+        from numpy import nan as npnan
+        try:
+            return self.__pvalue_mcnemar
+        except AttributeError:
+            return npnan
+
+    @property
+    def statistic_mcnemar(self):
+        from numpy import nan as npnan
+        try:
+            return self.__statistic_mcnemar
+        except AttributeError:
+            return npnan
+
 
 
     @property
@@ -1233,7 +2549,29 @@ class TwoGroupsEffectSize(object):
     # 
     @property
     def permutation_count(self):
+        """
+        The number of permuations taken.
+        """
         return self.__PermutationTest_result.permutation_count
+
+    
+    @property
+    def permutations(self):
+        return self.__PermutationTest_result.permutations
+
+    
+    @property
+    def permutations_var(self):
+        return self.__PermutationTest_result.permutations_var
+
+
+    @property
+    def proportional_difference(self):
+        from numpy import nan as npnan
+        try:
+            return self.__proportional_difference
+        except AttributeError:
+            return npnan
 
 
 
@@ -1304,19 +2642,20 @@ class TwoGroupsEffectSize(object):
     #     except AttributeError:
     #         return npnan
 
-
-
-
-
+        
+        
 class EffectSizeDataFrame(object):
     """A class that generates and stores the results of bootstrapped effect
     sizes for several comparisons."""
 
     def __init__(self, dabest, effect_size,
-                 is_paired, ci=95,
+                 is_paired, ci=95, proportional=False,
                  resamples=5000, 
                  permutation_count=5000,
-                 random_seed=12345):
+                 random_seed=12345, 
+                 x1_level=None, x2=None, 
+                 delta2=False, experiment_label=None,
+                 mini_meta=False):
         """
         Parses the data from a Dabest object, enabling plotting and printing
         capability for the effect size of interest.
@@ -1329,6 +2668,12 @@ class EffectSizeDataFrame(object):
         self.__resamples         = resamples
         self.__permutation_count = permutation_count
         self.__random_seed       = random_seed
+        self.__proportional      = proportional
+        self.__x1_level          = x1_level
+        self.__experiment_label  = experiment_label 
+        self.__x2                = x2
+        self.__delta2            = delta2 
+        self.__mini_meta         = mini_meta
 
 
     def __pre_calc(self):
@@ -1344,32 +2689,40 @@ class EffectSizeDataFrame(object):
         reprs = []
 
         for j, current_tuple in enumerate(idx):
-
-            cname = current_tuple[0]
-            control = dat[dat[xvar] == cname][yvar].copy()
+            if self.__is_paired!="sequential":
+                cname = current_tuple[0]
+                control = dat[dat[xvar] == cname][yvar].copy()
 
             for ix, tname in enumerate(current_tuple[1:]):
+                if self.__is_paired == "sequential":
+                    cname = current_tuple[ix]
+                    control = dat[dat[xvar] == cname][yvar].copy()
                 test = dat[dat[xvar] == tname][yvar].copy()
 
                 result = TwoGroupsEffectSize(control, test,
                                              self.__effect_size,
+                                             self.__proportional,
                                              self.__is_paired,
                                              self.__ci,
                                              self.__resamples,
                                              self.__permutation_count,
                                              self.__random_seed)
                 r_dict = result.to_dict()
-
                 r_dict["control"]   = cname
                 r_dict["test"]      = tname
                 r_dict["control_N"] = int(len(control))
                 r_dict["test_N"]    = int(len(test))
-                
                 out.append(r_dict)
-
                 if j == len(idx)-1 and ix == len(current_tuple)-2:
-                    resamp_count = True
-                    def_pval     = True
+                    if self.__delta2 and self.__effect_size == "mean_diff":
+                        resamp_count = False
+                        def_pval     = False
+                    elif self.__mini_meta and self.__effect_size == "mean_diff":
+                        resamp_count = False
+                        def_pval     = False
+                    else:
+                        resamp_count = True
+                        def_pval     = True
                 else:
                     resamp_count = False
                     def_pval     = False
@@ -1382,12 +2735,6 @@ class EffectSizeDataFrame(object):
 
                 reprs.append(text_repr)
 
-        varname = get_varname(self.__dabest_obj)
-        lastline = "To get the results of all valid statistical tests, " +\
-        "use `{}.{}.statistical_tests`".format(varname, self.__effect_size)
-        reprs.append(lastline)
-
-        reprs.insert(0, print_greeting())
 
         self.__for_print = "\n\n".join(reprs)
 
@@ -1402,7 +2749,7 @@ class EffectSizeDataFrame(object):
                             
                             'bootstraps', 'resamples', 'random_seed',
                             
-                            'pvalue_permutation', 'permutation_count',
+                            'permutations', 'pvalue_permutation', 'permutation_count', 'permutations_var',
                             
                             'pvalue_welch',
                             'statistic_welch',
@@ -1419,17 +2766,54 @@ class EffectSizeDataFrame(object):
                             'pvalue_wilcoxon',
                             'statistic_wilcoxon',
 
+                            'pvalue_mcnemar',
+                            'statistic_mcnemar',
+
                             'pvalue_paired_students_t',
                             'statistic_paired_students_t',
 
                             'pvalue_kruskal',
                             'statistic_kruskal',
+                            'proportional_difference'
                            ]
-
         self.__results   = out_.reindex(columns=columns_in_order)
         self.__results.dropna(axis="columns", how="all", inplace=True)
         
+        # Add the is_paired column back when is_paired is None
+        if self.is_paired is None:
+            self.__results.insert(5, 'is_paired', self.__results.apply(lambda _: None, axis=1))
+        
+        # Create and compute the delta-delta statistics
+        if self.__delta2 is True and self.__effect_size == "mean_diff":
+            self.__delta_delta = DeltaDelta(self,
+                                            self.__permutation_count,
+                                            self.__ci)
+            reprs.append(self.__delta_delta.__repr__(header=False))
+        elif self.__delta2 is True and self.__effect_size != "mean_diff":
+            self.__delta_delta = "Delta-delta is not supported for {}.".format(self.__effect_size)
+        else:
+            self.__delta_delta = "`delta2` is False; delta-delta is therefore not calculated."
 
+        # Create and compute the weighted average statistics
+        if self.__mini_meta is True and self.__effect_size == "mean_diff":
+            self.__mini_meta_delta = MiniMetaDelta(self,
+                                                     self.__permutation_count,
+                                                     self.__ci)
+            reprs.append(self.__mini_meta_delta.__repr__(header=False))
+        elif self.__mini_meta is True and self.__effect_size != "mean_diff":
+            self.__mini_meta_delta = "Weighted delta is not supported for {}.".format(self.__effect_size)
+        else:
+            self.__mini_meta_delta = "`mini_meta` is False; weighted delta is therefore not calculated."
+        
+        
+        varname = get_varname(self.__dabest_obj)
+        lastline = "To get the results of all valid statistical tests, " +\
+        "use `{}.{}.statistical_tests`".format(varname, self.__effect_size)
+        reprs.append(lastline)
+
+        reprs.insert(0, print_greeting())
+
+        self.__for_print = "\n\n".join(reprs)
 
 
     def __repr__(self):
@@ -1450,18 +2834,23 @@ class EffectSizeDataFrame(object):
         dat  = db_obj._plot_data
         xvar = db_obj._xvar
         yvar = db_obj._yvar
+        delta2 = self.__delta2
         
 
         out = []
 
         for j, current_tuple in enumerate(db_obj.idx):
-            cname = current_tuple[0]
-            control = dat[dat[xvar] == cname][yvar].copy()
+            if self.__is_paired != "sequential":
+                cname = current_tuple[0]
+                control = dat[dat[xvar] == cname][yvar].copy()
 
             for ix, tname in enumerate(current_tuple[1:]):
+                if self.__is_paired == "sequential":
+                    cname = current_tuple[ix]
+                    control = dat[dat[xvar] == cname][yvar].copy()
                 test = dat[dat[xvar] == tname][yvar].copy()
                 
-                if self.__is_paired is True:                    
+                if self.__is_paired:                    
                     # Refactored here in v0.3.0 for performance issues.
                     lqrt_result = lqrt.lqrtest_rel(control, test, 
                                             random_state=rnd_seed)
@@ -1492,8 +2881,7 @@ class EffectSizeDataFrame(object):
                                 "statistic_lqrt_equal_var"   : lqrt_equal_var_result.statistic,
                                 "pvalue_lqrt_unequal_var"    : lqrt_unequal_var_result.pvalue,
                                 "statistic_lqrt_unequal_var" : lqrt_unequal_var_result.statistic,
-                                })
-                                
+                                })                     
         self.__lqrt_results = pd.DataFrame(out)
 
 
@@ -1501,14 +2889,22 @@ class EffectSizeDataFrame(object):
 
             raw_marker_size=6, es_marker_size=9,
 
-            swarm_label=None, contrast_label=None,
-            swarm_ylim=None, contrast_ylim=None,
+            swarm_label=None, barchart_label=None, contrast_label=None, delta2_label=None,
+            swarm_ylim=None, barchart_ylim=None, contrast_ylim=None, delta2_ylim=None,
 
             custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
             halfviolin_alpha=0.8, 
 
+            face_color = None,
+            #bar plot
+            bar_label=None, bar_desat=0.5, bar_width = 0.5,bar_ylim = None,
+            # error bar of proportion plot
+            ci=None, ci_type='bca', err_color=None,
+
             float_contrast=True,
             show_pairs=True,
+            show_delta2=True,
+            show_mini_meta=True,
             group_summaries=None,
             group_summaries_offset=0.1,
 
@@ -1517,11 +2913,14 @@ class EffectSizeDataFrame(object):
             ax=None,
 
             swarmplot_kwargs=None,
+            barplot_kwargs=None,
             violinplot_kwargs=None,
             slopegraph_kwargs=None,
+            sankey_kwargs=None,
             reflines_kwargs=None,
             group_summary_kwargs=None,
             legend_kwargs=None):
+
         """
         Creates an estimation plot for the effect size of interest.
         
@@ -1536,16 +2935,24 @@ class EffectSizeDataFrame(object):
         es_marker_size : float, default 9
             The size (in points) of the effect size points on the difference
             axes.
-        swarm_label, contrast_label : strings, default None
+        swarm_label, contrast_label, delta2_label : strings, default None
             Set labels for the y-axis of the swarmplot and the contrast plot,
             respectively. If `swarm_label` is not specified, it defaults to
             "value", unless a column name was passed to `y`. If
             `contrast_label` is not specified, it defaults to the effect size
-            being plotted.
-        swarm_ylim, contrast_ylim : tuples, default None
-            The desired y-limits of the raw data (swarmplot) axes and the
-            difference axes respectively, as a tuple. These will be autoscaled
-            to sensible values if they are not specified.
+            being plotted. If `delta2_label` is not specifed, it defaults to 
+            "delta - delta"
+        swarm_ylim, contrast_ylim, delta2_ylim : tuples, default None
+            The desired y-limits of the raw data (swarmplot) axes, the
+            difference axes and the delta-delta axes respectively, as a tuple. 
+            These will be autoscaled to sensible values if they are not 
+            specified. The delta2 axes and contrast axes should have the same 
+            limits for y. When `show_delta2` is True, if both of the `contrast_ylim`
+            and `delta2_ylim` are not None, then they must be specified with the 
+            same values; when `show_delta2` is True and only one of them is specified,
+            then the other will automatically be assigned with the same value.
+            Specifying `delta2_ylim` does not have any effect when `show_delta2` is
+            False. 
         custom_palette : dict, list, or matplotlib color palette, default None
             This keyword accepts a dictionary with {'group':'color'} pairings,
             a list of RGB colors, or a specified matplotlib palette. This
@@ -1576,6 +2983,9 @@ class EffectSizeDataFrame(object):
             If the data is paired, whether or not to show the raw data as a
             swarmplot, or as slopegraph, with a line joining each pair of
             observations.
+        show_delta2, show_mini_meta : boolean, default True
+            If delta-delta or mini-meta delta is calculated, whether or not to 
+            show the delta-delta plot or mini-meta plot.
         group_summaries : ['mean_sd', 'median_quartiles', 'None'], default None.
             Plots the summary statistics for each group. If 'mean_sd', then
             the mean and standard deviation of each group is plotted as a
@@ -1607,6 +3017,12 @@ class EffectSizeDataFrame(object):
             accepted by matplotlib `plot()` function here, as a dict.
             If None, the following keywords are
             passed to plot() : {'linewidth':1, 'alpha':0.5}.
+        sankey_kwargs: dict, default None
+            Whis will change the appearance of the sankey diagram used to depict
+            paired proportional data when `show_pairs=True` and `proportional=True`. 
+            Pass any keyword arguments accepted by plot_tools.sankeydiag() function
+            here, as a dict. If None, the following keywords are passed to sankey diagram:
+            {"width": 0.5, "align": "center", "alpha": 0.4, "bar_width": 0.1, "rightColor": False}
         reflines_kwargs : dict, default None
             This will change the appearance of the zero reference lines. Pass
             any keyword arguments accepted by the matplotlib Axes `hlines`
@@ -1655,23 +3071,37 @@ class EffectSizeDataFrame(object):
         Create a paired Gardner-Altman plot.
 
         >>> my_data_paired = dabest.load(df, idx=("Control 1", "Test 1"),
-        ...                              paired=True)
+        ...                id_col = "ID", paired='baseline')
         >>> fig4 = my_data_paired.mean_diff.plot()
 
         Create a multi-group Cumming plot.
 
-        >>> my_multi_groups = dabest.load(df, idx=(("Control 1", "Test 1"),
-        ...                                        ("Control 2", "Test 2"))
-        ...                               )
+        >>> my_multi_groups = dabest.load(df, id_col = "ID", 
+        ...                             idx=(("Control 1", "Test 1"),
+        ...                                 ("Control 2", "Test 2")))
         >>> fig5 = my_multi_groups.mean_diff.plot()
 
         Create a shared control Cumming plot.
 
-        >>> my_shared_control = dabest.load(df, idx=("Control 1", "Test 1",
-        ...                                          "Test 2", "Test 3")
-        ...                                 )
+        >>> my_shared_control = dabest.load(df, id_col = "ID",
+        ...                                 idx=("Control 1", "Test 1",
+        ...                                          "Test 2", "Test 3"))
         >>> fig6 = my_shared_control.mean_diff.plot()
         
+        Create a repeated meausures (against baseline) Slopeplot.
+
+        >>> my_rm_baseline = dabest.load(df, id_col = "ID", paired = "baseline",
+        ...                                 idx=("Control 1", "Test 1",
+        ...                                          "Test 2", "Test 3"))
+        >>> fig7 = my_rm_baseline.mean_diff.plot()
+
+        Create a repeated meausures (sequential) Slopeplot.
+
+        >>> my_rm_sequential = dabest.load(df, id_col = "ID", paired = "sequential",
+        ...                                 idx=("Control 1", "Test 1",
+        ...                                          "Test 2", "Test 3"))
+        >>> fig8 = my_rm_sequential.mean_diff.plot()
+
         Creating estimation plots in individual panels of a figure.
         
         >>> f, axx = plt.subplots(nrows=2, ncols=2, figsize=(15, 15))
@@ -1687,6 +3117,12 @@ class EffectSizeDataFrame(object):
         if hasattr(self, "results") is False:
             self.__pre_calc()
 
+        if self.__delta2:
+            color_col = self.__x2
+
+        # if self.__proportional:
+        #     raw_marker_size = 0.01
+            
         all_kwargs = locals()
         del all_kwargs["self"]
 
@@ -1694,6 +3130,14 @@ class EffectSizeDataFrame(object):
 
         return out
 
+
+    @property
+    def proportional(self):
+        """
+        Returns the proportional parameter
+        class.
+        """
+        return self.__proportional
 
     @property
     def results(self):
@@ -1755,6 +3199,26 @@ class EffectSizeDataFrame(object):
         return self.__ci
 
     @property
+    def x1_level(self):
+        return self.__x1_level
+
+
+    @property
+    def x2(self):
+        return self.__x2
+
+
+    @property
+    def experiment_label(self):
+        return self.__experiment_label
+    
+
+    @property
+    def delta2(self):
+        return self.__delta2
+    
+
+    @property
     def resamples(self):
         """
         The number of resamples (with replacement) during bootstrap resampling."
@@ -1780,7 +3244,14 @@ class EffectSizeDataFrame(object):
         class.
         """
         return self.__dabest_obj
-        
+
+    @property
+    def proportional(self):
+        """
+        Returns the proportional parameter
+        class.
+        """
+        return self.__proportional
         
     @property
     def lqrt(self):
@@ -1795,6 +3266,40 @@ class EffectSizeDataFrame(object):
             self.__calc_lqrt()
             return self.__lqrt_results
         
+    
+    @property
+    def mini_meta(self):
+        """
+        Returns the mini_meta boolean parameter.
+        """
+        return self.__mini_meta
+
+    
+    @property
+    def mini_meta_delta(self):
+        """
+        Returns the mini_meta results.
+        """
+        try:
+            return self.__mini_meta_delta
+        except AttributeError:
+            self.__pre_calc()
+            return self.__mini_meta_delta
+
+    
+    @property
+    def delta_delta(self):
+        """
+        Returns the mini_meta results.
+        """
+        try:
+            return self.__delta_delta
+        except AttributeError:
+            self.__pre_calc()
+            return self.__delta_delta
+
+
+
         
         
         
@@ -1810,7 +3315,7 @@ class PermutationTest:
     effect_size : string.
         Any one of the following are accepted inputs:
         'mean_diff', 'median_diff', 'cohens_d', 'hedges_g', or 'cliffs_delta'
-    is_paired : boolean, default False
+    is_paired : string, default None
     permutation_count : int, default 10000
         The number of permutations (reshuffles) to perform.
     random_seed : int, default 12345
@@ -1854,7 +3359,7 @@ class PermutationTest:
     >>> test = norm.rvs(loc=0.5, size=30, random_state=12345)
     >>> perm_test = dabest.PermutationTest(control, test, 
     ...                                    effect_size="mean_diff", 
-    ...                                    is_paired=False)
+    ...                                    paired=None)
     >>> perm_test
     5000 permutations were taken. The pvalue is 0.0758.
     """
@@ -1868,6 +3373,7 @@ class PermutationTest:
         import numpy as np
         from numpy.random import PCG64, RandomState
         from ._stats_tools.effsize import two_group_difference
+        from ._stats_tools.confint_2group_diff import calculate_group_var
 
         self.__permutation_count = permutation_count
 
@@ -1892,6 +3398,7 @@ class PermutationTest:
         THRESHOLD = np.abs(two_group_difference(control, test, 
                                                 is_paired, effect_size))
         self.__permutations = []
+        self.__permutations_var = []
 
         for i in range(int(permutation_count)):
             
@@ -1918,10 +3425,18 @@ class PermutationTest:
             es = two_group_difference(control_sample, test_sample, 
                                     False, effect_size)
             
+            var = calculate_group_var(np.var(control_sample, ddof=1), 
+                                      CONTROL_LEN, 
+                                      np.var(test_sample, ddof=1), 
+                                      len(test_sample))
             self.__permutations.append(es)
+            self.__permutations_var.append(var)
 
             if np.abs(es) > THRESHOLD:
                 EXTREME_COUNT += 1.
+
+        self.__permutations = np.array(self.__permutations)
+        self.__permutations_var = np.array(self.__permutations_var)
 
         self.pvalue = EXTREME_COUNT / permutation_count
 
@@ -1945,3 +3460,11 @@ class PermutationTest:
         The effect sizes of all the permutations in a list.
         """
         return self.__permutations
+
+    
+    @property
+    def permutations_var(self):
+        """
+        The experiment group variance of all the permutations in a list.
+        """
+        return self.__permutations_var

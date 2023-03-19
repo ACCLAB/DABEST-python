@@ -33,6 +33,18 @@ paired_wellbeing = pd.DataFrame(paired_wb)
 
 
 
+# Data for testing Cohen's calculation.
+# Only work with binary data.
+# See Venables, W. N. and Ripley, B. D. (2002) Modern Applied Statistics with S. Fourth edition. Springer.
+# Make two groups of `smoke` by choosing `low` as a standard, and the data is trimed from the back.
+sk = {  "low":  [0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 
+                 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0],
+        "high": [1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 
+                 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1]}
+smoke = pd.DataFrame(sk)
+
+
+
 # Data from Hogarty and Kromrey (1999)
 # Kromrey, Jeffrey D., and Kristine Y. Hogarty. 1998.
 # “Analysis Options for Testing Group Differences on Ordered Categorical
@@ -55,7 +67,10 @@ b_scores = [1, 3, 4, 7, 8]
 
 # kwargs for Dabest class init.
 dabest_default_kwargs = dict(x=None, y=None, ci=95, 
-                            resamples=5000, random_seed=12345)
+                            resamples=5000, random_seed=12345,
+                            proportional=False, delta2=False, experiment=None, 
+                            experiment_label=None, x1_level=None, mini_meta=False
+                            )
 
 
 
@@ -79,7 +94,7 @@ def test_mean_diff_paired():
     from numpy import mean as npmean
     mean_diff = effsize.func_difference(paired_wellbeing.pre,
                                         paired_wellbeing.post,
-                                        npmean, is_paired=True)
+                                        npmean, is_paired="baseline")
     assert mean_diff == pytest.approx(4.10)
 
 
@@ -88,7 +103,7 @@ def test_median_diff_paired():
     from numpy import median as npmedian
     median_diff = effsize.func_difference(paired_wellbeing.pre,
                                           paired_wellbeing.post,
-                                          npmedian, is_paired=True)
+                                          npmedian, is_paired="baseline")
     assert median_diff == pytest.approx(4.5)
 
 
@@ -112,7 +127,7 @@ def test_hedges_g_unpaired():
 def test_cohens_d_paired():
     import numpy as np
     cohens_d = effsize.cohens_d(paired_wellbeing.pre, paired_wellbeing.post,
-                                is_paired=True)
+                                is_paired="baseline")
     assert np.round(cohens_d, 2) == pytest.approx(0.34)
 
 
@@ -120,8 +135,14 @@ def test_cohens_d_paired():
 def test_hedges_g_paired():
     import numpy as np
     hedges_g = effsize.hedges_g(paired_wellbeing.pre, paired_wellbeing.post,
-                                is_paired=True)
+                                is_paired="baseline")
     assert np.round(hedges_g, 2) == pytest.approx(0.33)
+    
+
+
+def test_cohens_h():
+    cohens_h = effsize.cohens_h(smoke.low, smoke.high)
+    assert np.round(cohens_h, 2) == pytest.approx(0.17)
 
 
 
@@ -155,7 +176,7 @@ def test_paired_stats():
     before = paired_wellbeing.pre
     after = paired_wellbeing.post
     
-    paired_es = TwoGroupsEffectSize(before, after, "mean_diff", is_paired=True)
+    paired_es = TwoGroupsEffectSize(before, after, "mean_diff", is_paired="baseline")
     
     p1 = sp.stats.ttest_rel(before, after, nan_policy='omit').pvalue
     assert paired_es.pvalue_paired_students_t == pytest.approx(p1)
@@ -197,14 +218,14 @@ def test_paired_permutation_test():
     perm_test = PermutationTest(paired_wellbeing.pre, 
                                 paired_wellbeing.post, 
                                 effect_size="mean_diff", 
-                                is_paired=True)
+                                is_paired="baseline")
     assert perm_test.pvalue == pytest.approx(0.0124)
     
     
     
 def test_lqrt_unpaired():
     unpaired_dabest = Dabest(wellbeing, idx=("control", "expt"), 
-                             paired=False, id_col=None, 
+                             paired=None, id_col=None,
                              **dabest_default_kwargs)
     lqrt_result = unpaired_dabest.mean_diff.lqrt
                    
@@ -223,7 +244,7 @@ def test_lqrt_unpaired():
     
 def test_lqrt_paired():
     paired_dabest = Dabest(paired_wellbeing, idx=("pre", "post"),
-                           paired=True, id_col="ID",
+                           paired="baseline", id_col="ID",
                            **dabest_default_kwargs)
     lqrt_result = paired_dabest.mean_diff.lqrt
                              

@@ -1,8 +1,8 @@
 .. _Tutorial:
 
-========
-Tutorial
-========
+================
+Tutorial: Basics
+================
 
 
 Load Libraries
@@ -21,7 +21,7 @@ Load Libraries
 
 .. parsed-literal::
 
-    We're using DABEST v0.3.1
+    We're using DABEST v2023.02.14
 
 
 Create dataset for demo
@@ -226,11 +226,11 @@ the comparisons that can be computed.
 
 .. parsed-literal::
 
-    DABEST v0.3.1
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:12:44 2020.
+    DABEST v2023.02.14
+    ==================
+                
+    Good evening!
+    The current time is Sun Aug 29 18:00:54 2021.
 
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -242,44 +242,8 @@ the comparisons that can be computed.
 Changing statistical parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If the dataset contains paired data (ie. repeated observations), specify
-this with the ``paired`` keyword. You must also pass a column in the
-dataset that indicates the identity of each observation, using the
-``id_col`` keyword.
-
-.. code-block:: python3
-  :linenos:
-
-
-    two_groups_paired = dabest.load(df, idx=("Control 1", "Test 1"),
-                                  paired=True, id_col="ID")
-
-.. code-block:: python3
-  :linenos:
-
-
-    two_groups_paired
-
-
-
-
-.. parsed-literal::
-
-    DABEST v0.3.1
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:12:44 2020.
-
-    Paired effect size(s) with 95% confidence intervals will be computed for:
-    1. Test 1 minus Control 1
-
-    5000 resamples will be used to generate the effect size bootstraps.
-
-
-
-You can also change the width of the confidence interval that will be
-produced.
+You can change the width of the confidence interval that will be
+produced by manipulating the ``ci`` argument.
 
 .. code-block:: python3
   :linenos:
@@ -298,8 +262,8 @@ produced.
 
 .. parsed-literal::
 
-    DABEST v0.3.1
-    =============
+    DABEST v2023.02.14
+    ==================
 
     Good afternoon!
     The current time is Mon Oct 19 17:12:44 2020.
@@ -334,18 +298,18 @@ Each of these are attributes of the ``Dabest`` object.
 
 .. parsed-literal::
 
-    DABEST v0.3.1
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:12:44 2020.
+    DABEST v2023.02.14
+    ==================
+                
+    Good evening!
+    The current time is Sun Aug 29 18:10:44 2021.
 
     The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.221, 0.768].
-    The p-value of the two-sided permutation t-test is 0.001.
+    The p-value of the two-sided permutation t-test is 0.001, calculated for legacy purposes only. 
 
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
-    The p-value(s) reported are the likelihood(s) of observing the effect size(s),
-    if the null hypothesis of zero difference is true.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
     For each p-value, 5000 reshuffles of the control and test labels were performed.
 
     To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
@@ -407,11 +371,13 @@ For unpaired comparisons, the p-values and test statistics of `Welch's t test <h
           <th>pct_low</th>
           <th>pct_high</th>
           <th>pct_interval_idx</th>
-          <th>pvalue_permutation</th>
-          <th>permutation_count</th>
           <th>bootstraps</th>
           <th>resamples</th>
           <th>random_seed</th>
+          <th>permutations</th>
+          <th>pvalue_permutation</th>
+          <th>permutation_count</th>
+          <th>permutations_var</th>
           <th>pvalue_welch</th>
           <th>statistic_welch</th>
           <th>pvalue_students_t</th>
@@ -428,7 +394,7 @@ For unpaired comparisons, the p-values and test statistics of `Welch's t test <h
           <td>20</td>
           <td>20</td>
           <td>mean difference</td>
-          <td>False</td>
+          <td>None</td>
           <td>0.48029</td>
           <td>95</td>
           <td>0.220869</td>
@@ -437,11 +403,13 @@ For unpaired comparisons, the p-values and test statistics of `Welch's t test <h
           <td>0.215697</td>
           <td>0.761716</td>
           <td>(125, 4875)</td>
-          <td>0.001</td>
-          <td>5000</td>
-          <td>[-0.157303571150468, -0.025932185794146356, 0....</td>
+          <td>[0.6686169333655454, 0.4382051534234943, 0.665...</td>
           <td>5000</td>
           <td>12345</td>
+          <td>[-0.17259843762502491, 0.03802293852634886, -0...</td>
+          <td>0.001</td>
+          <td>5000</td>
+          <td>[0.026356588154404337, 0.027102495439046997, 0...</td>
           <td>0.002094</td>
           <td>-3.308806</td>
           <td>0.002057</td>
@@ -511,7 +479,7 @@ For unpaired comparisons, the p-values and test statistics of `Welch's t test <h
           <td>20</td>
           <td>20</td>
           <td>mean difference</td>
-          <td>False</td>
+          <td>None</td>
           <td>0.48029</td>
           <td>95</td>
           <td>0.220869</td>
@@ -543,18 +511,18 @@ Let’s compute the Hedges’ *g* for our comparison.
 
 .. parsed-literal::
 
-    DABEST v0.3.0
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:12:46 2020.
+    DABEST v2023.02.14
+    ==================
+                
+    Good evening!
+    The current time is Sun Aug 29 18:12:17 2021.
 
     The unpaired Hedges' g between Control 1 and Test 1 is 1.03 [95%CI 0.349, 1.62].
-    The p-value of the two-sided permutation t-test is 0.001.
+    The p-value of the two-sided permutation t-test is 0.001, calculated for legacy purposes only. 
 
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
-    The p-value(s) reported are the likelihood(s) of observing the effect size(s),
-    if the null hypothesis of zero difference is true.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
     For each p-value, 5000 reshuffles of the control and test labels were performed.
 
     To get the results of all valid statistical tests, use `.hedges_g.statistical_tests`
@@ -604,11 +572,13 @@ Let’s compute the Hedges’ *g* for our comparison.
           <th>pct_low</th>
           <th>pct_high</th>
           <th>pct_interval_idx</th>
-          <th>pvalue_permutation</th>
-          <th>permutation_count</th>
           <th>bootstraps</th>
           <th>resamples</th>
           <th>random_seed</th>
+          <th>permutations</th>
+          <th>pvalue_permutation</th>
+          <th>permutation_count</th>
+          <th>permutations_var</th>
           <th>pvalue_welch</th>
           <th>statistic_welch</th>
           <th>pvalue_students_t</th>
@@ -625,7 +595,7 @@ Let’s compute the Hedges’ *g* for our comparison.
           <td>20</td>
           <td>20</td>
           <td>Hedges' g</td>
-          <td>False</td>
+          <td>None</td>
           <td>1.025525</td>
           <td>95</td>
           <td>0.349394</td>
@@ -634,11 +604,13 @@ Let’s compute the Hedges’ *g* for our comparison.
           <td>0.472844</td>
           <td>1.74166</td>
           <td>(125, 4875)</td>
-          <td>0.001</td>
-          <td>5000</td>
-          <td>[-0.3617512915188043, -0.06120428036887727, 0....</td>
+          <td>[1.1337301267831184, 0.8311210968422604, 1.539...</td>
           <td>5000</td>
           <td>12345</td>
+          <td>[-0.3295089865590538, 0.07158401210924781, -0....</td>
+          <td>0.001</td>
+          <td>5000</td>
+          <td>[0.026356588154404337, 0.027102495439046997, 0... </td>
           <td>0.002094</td>
           <td>-3.308806</td>
           <td>0.002057</td>
@@ -702,33 +674,6 @@ Tufte’s dictum to maximise the data-ink ratio.
 .. image:: _images/tutorial_30_0.png
 
 
-For paired data, we use
-`slopegraphs <https://www.edwardtufte.com/bboard/q-and-a-fetch-msg?msg_id=0003nk>`__
-(another innovation from Edward Tufte) to connect paired observations.
-Both Gardner-Altman and Cumming plots support this.
-
-.. code-block:: python3
-  :linenos:
-
-
-    two_groups_paired.mean_diff.plot();
-
-
-
-.. image:: _images/tutorial_32_0.png
-
-
-.. code-block:: python3
-  :linenos:
-
-
-    two_groups_paired.mean_diff.plot(float_contrast=False);
-
-
-
-.. image:: _images/tutorial_33_0.png
-
-
 The ``dabest`` package also implements a range of estimation plot
 designs aimed at depicting common experimental designs.
 
@@ -753,25 +698,6 @@ meta-analyses to aggregate and compare data from different experiments.
 
 
 .. image:: _images/tutorial_35_0.png
-
-
-The multi-two-group design also accomodates paired comparisons.
-
-.. code-block:: python3
-  :linenos:
-
-
-    multi_2group_paired = dabest.load(df, idx=(("Control 1", "Test 1"),
-                                               ("Control 2", "Test 2")
-                                              ),
-                                      paired=True, id_col="ID"
-                                     )
-
-    multi_2group_paired.mean_diff.plot();
-
-
-
-.. image:: _images/tutorial_37_0.png
 
 
 The **shared control plot** displays another common experimental
@@ -801,11 +727,11 @@ to ``idx`` has more than two data columns.
 
 .. parsed-literal::
 
-    DABEST v0.3.0
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:12:54 2020.
+    DABEST v2023.02.14
+    ==================
+                
+    Good evening!
+    The current time is Tue Aug 31 23:39:22 2021.
 
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -830,33 +756,33 @@ to ``idx`` has more than two data columns.
 
 .. parsed-literal::
 
-    DABEST v0.3.0
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:12:58 2020.
+    DABEST v2023.02.14
+    ==================
+                
+    Good evening!
+    The current time is Tue Aug 31 23:42:39 2021.
 
     The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.221, 0.768].
-    The p-value of the two-sided permutation t-test is 0.001.
+    The p-value of the two-sided permutation t-test is 0.001, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 1 and Test 2 is -0.542 [95%CI -0.914, -0.211].
-    The p-value of the two-sided permutation t-test is 0.0042.
+    The p-value of the two-sided permutation t-test is 0.0042, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 1 and Test 3 is 0.174 [95%CI -0.295, 0.628].
-    The p-value of the two-sided permutation t-test is 0.479.
+    The p-value of the two-sided permutation t-test is 0.479, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 1 and Test 4 is 0.79 [95%CI 0.306, 1.31].
-    The p-value of the two-sided permutation t-test is 0.0042.
+    The p-value of the two-sided permutation t-test is 0.0042, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 1 and Test 5 is 0.265 [95%CI 0.0137, 0.497].
-    The p-value of the two-sided permutation t-test is 0.0404.
+    The p-value of the two-sided permutation t-test is 0.0404, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 1 and Test 6 is 0.288 [95%CI -0.00441, 0.515].
-    The p-value of the two-sided permutation t-test is 0.0324.
+    The p-value of the two-sided permutation t-test is 0.0324, calculated for legacy purposes only. 
 
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
-    The p-value(s) reported are the likelihood(s) of observing the effect size(s),
-    if the null hypothesis of zero difference is true.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
     For each p-value, 5000 reshuffles of the control and test labels were performed.
 
     To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
@@ -898,11 +824,11 @@ complex visualizations and statistics.
 
 .. parsed-literal::
 
-    DABEST v0.3.0
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:12:58 2020.
+    DABEST v2023.02.14
+    ==================
+                
+    Good evening!
+    The current time is Tue Aug 31 23:47:40 2021.
 
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -927,33 +853,33 @@ complex visualizations and statistics.
 
 .. parsed-literal::
 
-    DABEST v0.3.0
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:13:02 2020.
+    DABEST v2023.02.14
+    ==================
+                
+    Good evening!
+    The current time is Tue Aug 31 23:48:17 2021.
 
     The unpaired mean difference between Control 1 and Test 1 is 0.48 [95%CI 0.221, 0.768].
-    The p-value of the two-sided permutation t-test is 0.001.
+    The p-value of the two-sided permutation t-test is 0.001, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 2 and Test 2 is -1.38 [95%CI -1.93, -0.895].
-    The p-value of the two-sided permutation t-test is 0.0.
+    The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 2 and Test 3 is -0.666 [95%CI -1.3, -0.103].
-    The p-value of the two-sided permutation t-test is 0.0352.
+    The p-value of the two-sided permutation t-test is 0.0352, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 3 and Test 4 is 0.362 [95%CI -0.114, 0.887].
-    The p-value of the two-sided permutation t-test is 0.161.
+    The p-value of the two-sided permutation t-test is 0.161, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 3 and Test 5 is -0.164 [95%CI -0.404, 0.0742].
-    The p-value of the two-sided permutation t-test is 0.208.
+    The p-value of the two-sided permutation t-test is 0.208, calculated for legacy purposes only. 
 
     The unpaired mean difference between Control 3 and Test 6 is -0.14 [95%CI -0.398, 0.102].
-    The p-value of the two-sided permutation t-test is 0.282.
+    The p-value of the two-sided permutation t-test is 0.282, calculated for legacy purposes only. 
 
     5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
-    The p-value(s) reported are the likelihood(s) of observing the effect size(s),
-    if the null hypothesis of zero difference is true.
+    Any p-value reported is the probability of observing theeffect size (or greater),
+    assuming the null hypothesis ofzero difference is true.
     For each p-value, 5000 reshuffles of the control and test labels were performed.
 
     To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
@@ -1091,11 +1017,11 @@ When your data is in this format, you will need to specify the ``x`` and
 
 .. parsed-literal::
 
-    DABEST v0.3.0
-    =============
-
-    Good afternoon!
-    The current time is Mon Oct 19 17:13:03 2020.
+    DABEST v2023.02.14
+    ==================
+                
+    Good evening!
+    The current time is Tue Aug 31 23:51:12 2021.
 
     Effect size(s) with 95% confidence intervals will be computed for:
     1. Test 1 minus Control 1
@@ -1113,294 +1039,3 @@ When your data is in this format, you will need to specify the ``x`` and
 
 
 .. image:: _images/tutorial_52_0.png
-
-
-Controlling plot aesthetics
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Changing the y-axes labels.
-
-.. code-block:: python3
-  :linenos:
-
-
-    two_groups_unpaired.mean_diff.plot(swarm_label="This is my\nrawdata",
-                                       contrast_label="The bootstrap\ndistribtions!");
-
-
-
-.. image:: _images/tutorial_55_0.png
-
-
-Color the rawdata according to another column in the dataframe.
-
-.. code-block:: python3
-  :linenos:
-
-
-    multi_2group.mean_diff.plot(color_col="Gender");
-
-
-
-.. image:: _images/tutorial_57_0.png
-
-
-.. code-block:: python3
-  :linenos:
-
-
-    two_groups_paired.mean_diff.plot(color_col="Gender");
-
-
-
-.. image:: _images/tutorial_58_0.png
-
-
-Changing the palette used with ``custom_palette``. Any valid matplotlib
-or seaborn color palette is accepted.
-
-.. code-block:: python3
-  :linenos:
-
-
-    multi_2group.mean_diff.plot(color_col="Gender", custom_palette="Dark2");
-
-
-
-.. image:: _images/tutorial_60_0.png
-
-
-.. code-block:: python3
-  :linenos:
-
-
-    multi_2group.mean_diff.plot(custom_palette="Paired");
-
-
-
-.. image:: _images/tutorial_61_0.png
-
-
-You can also create your own color palette. Create a dictionary where
-the keys are group names, and the values are valid matplotlib colors.
-
-You can specify matplotlib colors in a `variety of
-ways <https://matplotlib.org/users/colors.html>`__. Here, I demonstrate
-using named colors, hex strings (commonly used on the web), and RGB
-tuples.
-
-.. code-block:: python3
-  :linenos:
-
-
-    my_color_palette = {"Control 1" : "blue",
-                        "Test 1"    : "purple",
-                        "Control 2" : "#cb4b16",     # This is a hex string.
-                        "Test 2"    : (0., 0.7, 0.2) # This is a RGB tuple.
-                       }
-
-    multi_2group.mean_diff.plot(custom_palette=my_color_palette);
-
-
-
-.. image:: _images/tutorial_63_0.png
-
-
-By default, ``dabest.plot()`` will
-`desaturate <https://en.wikipedia.org/wiki/Colorfulness#Saturation>`__
-the color of the dots in the swarmplot by 50%. This draws attention to
-the effect size bootstrap curves.
-
-You can alter the default values with the ``swarm_desat`` and
-``halfviolin_desat`` keywords.
-
-.. code-block:: python3
-  :linenos:
-
-
-    multi_2group.mean_diff.plot(custom_palette=my_color_palette,
-                                swarm_desat=0.75,
-                                halfviolin_desat=0.25);
-
-
-
-.. image:: _images/tutorial_65_0.png
-
-
-You can also change the sizes of the dots used in the rawdata swarmplot,
-and those used to indicate the effect sizes.
-
-.. code-block:: python3
-  :linenos:
-
-
-    multi_2group.mean_diff.plot(raw_marker_size=3,
-                                es_marker_size=12);
-
-
-
-.. image:: _images/tutorial_67_0.png
-
-
-Changing the y-limits for the rawdata axes, and for the contrast axes.
-
-.. code-block:: python3
-  :linenos:
-
-
-    multi_2group.mean_diff.plot(swarm_ylim=(0, 5),
-                                contrast_ylim=(-2, 2));
-
-
-
-.. image:: _images/tutorial_69_0.png
-
-
-If your effect size is qualitatively inverted (ie. a smaller value is a
-better outcome), you can simply invert the tuple passed to
-``contrast_ylim``.
-
-.. code-block:: python3
-  :linenos:
-
-
-    multi_2group.mean_diff.plot(contrast_ylim=(2, -2),
-                                contrast_label="More negative is better!");
-
-
-
-.. image:: _images/tutorial_71_0.png
-
-
-You can add minor ticks and also change the tick frequency by accessing
-the axes directly.
-
-Each estimation plot produced by ``dabest`` has 2 axes. The first one
-contains the rawdata swarmplot; the second one contains the bootstrap
-effect size differences.
-
-.. code-block:: python3
-  :linenos:
-
-
-    import matplotlib.ticker as Ticker
-
-    f = two_groups_unpaired.mean_diff.plot()
-
-    rawswarm_axes = f.axes[0]
-    contrast_axes = f.axes[1]
-
-    rawswarm_axes.yaxis.set_major_locator(Ticker.MultipleLocator(1))
-    rawswarm_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(0.5))
-
-    contrast_axes.yaxis.set_major_locator(Ticker.MultipleLocator(0.5))
-    contrast_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(0.25))
-
-
-
-.. image:: _images/tutorial_73_0.png
-
-
-.. code-block:: python3
-  :linenos:
-
-
-    f = multi_2group.mean_diff.plot(swarm_ylim=(0,6),
-                                   contrast_ylim=(-3, 1))
-
-    rawswarm_axes = f.axes[0]
-    contrast_axes = f.axes[1]
-
-    rawswarm_axes.yaxis.set_major_locator(Ticker.MultipleLocator(2))
-    rawswarm_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(1))
-
-    contrast_axes.yaxis.set_major_locator(Ticker.MultipleLocator(0.5))
-    contrast_axes.yaxis.set_minor_locator(Ticker.MultipleLocator(0.25))
-
-
-
-.. image:: _images/tutorial_74_0.png
-
-
-.. _inset plot:
-
-Creating estimation plots in existing axes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-*Implemented in v0.2.6 by Adam Nekimken*.
-
-``dabest.plot`` has an ``ax`` keyword that accepts any Matplotlib
-``Axes``. The entire estimation plot will be created in the specified
-``Axes``.
-
-.. code-block:: python3
-  :linenos:
-
-
-    from matplotlib import pyplot as plt
-    f, axx = plt.subplots(nrows=2, ncols=2,
-                          figsize=(15, 15),
-                          gridspec_kw={'wspace': 0.25} # ensure proper width-wise spacing.
-                         )
-
-    two_groups_unpaired.mean_diff.plot(ax=axx.flat[0]);
-
-    two_groups_paired.mean_diff.plot(ax=axx.flat[1]);
-
-    multi_2group.mean_diff.plot(ax=axx.flat[2]);
-
-    multi_2group_paired.mean_diff.plot(ax=axx.flat[3]);
-
-
-
-.. image:: _images/tutorial_76_0.png
-
-
-In this case, to access the individual rawdata axes, use
-``name_of_axes`` to manipulate the rawdata swarmplot axes, and
-``name_of_axes.contrast_axes`` to gain access to the effect size axes.
-
-.. code-block:: python3
-  :linenos:
-
-
-    topleft_axes = axx.flat[0]
-    topleft_axes.set_ylabel("New y-axis label for rawdata")
-    topleft_axes.contrast_axes.set_ylabel("New y-axis label for effect size")
-
-    f
-
-
-
-
-.. image:: _images/tutorial_78_0.png
-
-
-
-Applying style sheets
-~~~~~~~~~~~~~~~~~~~~~
-
-*Implemented in v0.2.0*.
-
-``dabest`` can apply `matplotlib style
-sheets <https://matplotlib.org/tutorials/introductory/customizing.html>`__
-to estimation plots. You can refer to this
-`gallery <https://matplotlib.org/3.0.3/gallery/style_sheets/style_sheets_reference.html>`__
-of style sheets for reference.
-
-.. code-block:: python3
-  :linenos:
-
-
-    import matplotlib.pyplot as plt
-    plt.style.use("dark_background")
-
-.. code-block:: python3
-  :linenos:
-
-
-    multi_2group.mean_diff.plot();
-
-
-
-.. image:: _images/tutorial_81_0.png

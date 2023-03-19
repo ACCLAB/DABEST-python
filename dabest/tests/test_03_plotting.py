@@ -25,7 +25,7 @@ df = create_demo_dataset()
 two_groups_unpaired = load(df, idx=("Control 1", "Test 1"))
 
 two_groups_paired   = load(df, idx=("Control 1", "Test 1"),
-                           paired=True, id_col="ID")
+                           paired="baseline", id_col="ID")
 
 multi_2group = load(df, idx=(("Control 1", "Test 1",),
                              ("Control 2", "Test 2"))
@@ -34,7 +34,7 @@ multi_2group = load(df, idx=(("Control 1", "Test 1",),
 multi_2group_paired = load(df,
                             idx=(("Control 1", "Test 1"),
                                  ("Control 2", "Test 2")),
-                            paired=True, id_col="ID")
+                            paired="baseline", id_col="ID")
 
 shared_control = load(df, idx=("Control 1", "Test 1",
                                 "Test 2", "Test 3",
@@ -45,6 +45,18 @@ multi_groups = load(df, idx=(("Control 1", "Test 1",),
                              ("Control 2", "Test 2","Test 3"),
                              ("Control 3", "Test 4","Test 5", "Test 6")
                              )
+                    )
+
+multi_groups_baseline = load(df, idx=(("Control 1", "Test 1",),
+                             ("Control 2", "Test 2","Test 3"),
+                             ("Control 3", "Test 4","Test 5", "Test 6")
+                             ), paired="baseline", id_col="ID"
+                    )
+
+multi_groups_sequential = load(df, idx=(("Control 1", "Test 1",),
+                             ("Control 2", "Test 2","Test 3"),
+                             ("Control 3", "Test 4","Test 5", "Test 6")
+                             ), paired="sequential", id_col="ID"
                     )
 
 
@@ -137,7 +149,7 @@ def test_11_inset_plots():
     iris_dabest3 = load(data=iris_melt[iris_melt.species=="setosa"],
                         x="metric", y="value",
                         idx=("sepal_length", "sepal_width"),
-                        paired=True, id_col="index")
+                        paired="baseline", id_col="index")
 
 
 
@@ -340,7 +352,7 @@ def test_28_unpaired_cumming_reflines_kwargs():
 
 
 @pytest.mark.mpl_image_compare(tolerance=10)
-def test_28_paired_cumming_slopegraph_reflines_kwargs():
+def test_29_paired_cumming_slopegraph_reflines_kwargs():
 
     return two_groups_paired.mean_diff.plot(float_contrast=False,
                                  color_col="Gender",
@@ -349,6 +361,14 @@ def test_28_paired_cumming_slopegraph_reflines_kwargs():
                                                       linewidth=2),
                                  contrast_ylim=(-1, 1)
                                  );
+
+@pytest.mark.mpl_image_compare(tolerance=10)
+def test_30_sequential_cumming_slopegraph():
+    return multi_groups_sequential.mean_diff.plot();
+
+@pytest.mark.mpl_image_compare(tolerance=10)
+def test_31_baseline_cumming_slopegraph():
+    return multi_groups_baseline.mean_diff.plot();
 
 
 @pytest.mark.mpl_image_compare(tolerance=10)

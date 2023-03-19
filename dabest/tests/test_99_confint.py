@@ -24,7 +24,7 @@ def test_paired_mean_diff_ci():
 
 
     ex_bp = load(data=exercise_bp, idx=("before", "after"), 
-                 paired=True, id_col="subject_id")
+                 paired="baseline", id_col="subject_id")
     paired_mean_diff = ex_bp.mean_diff.results
     
     assert pytest.approx(3.875) == paired_mean_diff.bca_low[0]
