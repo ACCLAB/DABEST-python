@@ -4,9 +4,6 @@
 __all__ = ['load']
 
 # %% ../nbs/API/load.ipynb 4
-__version__ = "0.3.1"
-
-# %% ../nbs/API/load.ipynb 5
 def load(data, idx=None, x=None, y=None, paired=None, id_col=None,
         ci=95, resamples=5000, random_seed=12345, proportional=False, 
         delta2 = False, experiment = None, experiment_label = None,
@@ -49,7 +46,12 @@ def load(data, idx=None, x=None, y=None, paired=None, id_col=None,
         bootstrap resampling, ensuring that the confidence intervals
         reported are replicable.
     proportional : boolean, default False. 
-        TO INCLUDE MORE DESCRIPTION ABOUT DATA FORMAT
+        An indicator of whether the data is binary or not. When set to True, it
+        specifies that the data consists of binary data, where the values are
+        limited to 0 and 1. The code is not suitable for analyzing proportion
+        data that contains non-numeric values, such as strings like 'yes' and 'no'.
+        When False or not provided, the algorithm assumes that
+        the data is continuous and uses a non-proportional representation.
     delta2 : boolean, default False
         Indicator of delta-delta experiment
     experiment : String, default None
@@ -89,14 +91,17 @@ def load(data, idx=None, x=None, y=None, paired=None, id_col=None,
     Load the data.
 
     >>> my_data = dabest.load(df, idx=("Control 1", "Test 1"))
-    
+
     For proportion plot.
+
     >>> np.random.seed(88888)
     >>> N = 10
     >>> c1 = np.random.binomial(1, 0.2, size=N)
     >>> t1 = np.random.binomial(1, 0.5, size=N)
     >>> df = pd.DataFrame({'Control 1' : c1, 'Test 1': t1})
     >>> my_data = dabest.load(df, idx=("Control 1", "Test 1"),proportional=True)
+
+
 
     '''
     from ._classes import Dabest
