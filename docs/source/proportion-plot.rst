@@ -233,8 +233,6 @@ Each of these are attributes of the ``Dabest`` object.
 
     To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
 
-    To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
-
 Let’s compute the Cohen's h for our comparison.
 
 .. code-block:: python3
@@ -256,8 +254,6 @@ Let’s compute the Cohen's h for our comparison.
     Any p-value reported is the probability of observing theeffect size (or greater),
     assuming the null hypothesis ofzero difference is true.
     For each p-value, 5000 reshuffles of the control and test labels were performed.
-
-    To get the results of all valid statistical tests, use `.cohens_h.statistical_tests`
 
     To get the results of all valid statistical tests, use `.cohens_h.statistical_tests`
 
