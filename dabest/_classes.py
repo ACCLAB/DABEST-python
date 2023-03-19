@@ -888,7 +888,7 @@ class DeltaDelta(object):
 
     .. math::
 
-        \\Delta_{\\Delta} = \\Delta_{B_{2}} - \\Delta_{B_{1}}
+        \\Delta_{\\Delta} = \\Delta_{2} - \\Delta_{1}
     
     and:
 
