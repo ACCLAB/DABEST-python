@@ -43,11 +43,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     import pandas as pd
     import warnings
     warnings.filterwarnings('ignore', 'This figure includes Axes that are not compatible with tight_layout')
-    
+
     from .misc_tools import merge_two_dicts
-    from .plot_tools import halfviolin, get_swarm_spans, gapped_lines,proportion_error_bar, sankeydiag
+    from .plot_tools import halfviolin, get_swarm_spans, error_bar, sankeydiag
     from .effsize import _compute_standardizers, _compute_hedges_correction_factor
-    
+
     import logging
     # Have to disable logging of warning when get_legend_handles_labels()
     # tries to get from slopegraph.
@@ -129,9 +129,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                          plot_kwargs["barplot_kwargs"])
 
     # Sankey Diagram kwargs
-    default_sankey_kwargs = {"width": 0.5, "align": "center",
+    default_sankey_kwargs = {"width": 0.4, "align": "center",
                             "alpha": 0.4, "rightColor": False,
-                            "bar_width":0.1}
+                            "bar_width":0.2}
     if plot_kwargs["sankey_kwargs"] is None:
         sankey_kwargs = default_sankey_kwargs
     else:
@@ -367,7 +367,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         contrast_axes = axx[1]
     rawdata_axes.set_frame_on(False)
     contrast_axes.set_frame_on(False)
-    # fig.set_tight_layout(False)
 
     redraw_axes_kwargs = {'colors'     : ytick_color,
                           'facecolors' : ytick_color,
@@ -385,26 +384,18 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         one_sankey = False # Flag to indicate if only one sankey is plotted.
 
     if show_pairs is True:
+        # Determine temp_idx based on is_paired and proportional conditions
         if is_paired == "baseline":
-            temp_idx = []
-            for i in idx:
-                control = i[0]
-                temp_idx.extend(((control, test) for test in i[1:]))
-            temp_idx = tuple(temp_idx)
-
-            temp_all_plot_groups = []
-            for i in temp_idx:
-                temp_all_plot_groups.extend(list(i))
+            idx_pairs = [(control, test) for i in idx for control, test in zip([i[0]] * (len(i) - 1), i[1:])]
+            temp_idx = idx if not proportional else idx_pairs
         else:
-            temp_idx = []
-            for i in idx:
-                for j in range(len(i)-1):
-                    control = i[j]
-                    test = i[j+1]
-                    temp_idx.append((control, test))
-            temp_all_plot_groups = []
-            for i in temp_idx:
-                temp_all_plot_groups.extend(list(i))
+            idx_pairs = [(control, test) for i in idx for control, test in zip(i[:-1], i[1:])]
+            temp_idx = idx if not proportional else idx_pairs
+
+        # Determine temp_all_plot_groups based on proportional condition
+        plot_groups = [item for i in temp_idx for item in i]
+        temp_all_plot_groups = all_plot_groups if not proportional else plot_groups
+        
         if proportional==False:
         # Plot the raw data as a slopegraph.
         # Pivot the long (melted) data.
@@ -447,9 +438,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             # Set the tick labels, because the slopegraph plotting doesn't.
             rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
             rawdata_axes.set_xticklabels(temp_all_plot_groups)
+            
         else:
             # Plot the raw data as a set of Sankey Diagrams aligned like barplot.
-
             group_summaries = plot_kwargs["group_summaries"]
             if group_summaries is None:
                 group_summaries = "mean_sd"
@@ -532,12 +523,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             if len(line_colors) != len(all_plot_groups):
                 line_colors = ytick_color
 
-            gapped_lines(plot_data, x=xvar, y=yvar,
+            error_bar(plot_data, x=xvar, y=yvar,
                          # Hardcoded offset...
                          offset=xspans + np.array(plot_kwargs["group_summaries_offset"]),
                          line_color=line_colors,
                          gap_width_percent=1.5,
                          type=group_summaries, ax=rawdata_axes,
+                         method="gapped_lines",
                          **group_summary_kwargs)
 
         if group_summaries is not None and proportional == True:
@@ -545,12 +537,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             err_color = plot_kwargs["err_color"]
             if err_color == None:
                 err_color = "black"
-            proportion_error_bar(plot_data, x=xvar, y=yvar,
-                         offset=0,
-                         line_color=err_color,
-                         gap_width_percent=1.5,
-                         type=group_summaries, ax=rawdata_axes,
-                         **group_summary_kwargs)
+            error_bar(plot_data, x=xvar, y=yvar,
+                     offset=0,
+                     line_color=err_color,
+                     gap_width_percent=1.5,
+                     type=group_summaries, ax=rawdata_axes,
+                     method="proportional_error_bar",
+                     **group_summary_kwargs)
 
     # Add the counts to the rawdata axes xticks.
     counts = plot_data.groupby(xvar).count()[yvar]
@@ -590,9 +583,14 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             ticks_to_start_sankey.pop()
             ticks_to_start_sankey.insert(0, 0)
         else:
-            ticks_to_skip = np.arange(0, len(temp_all_plot_groups), 2).tolist()
-            ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist()
-            ticks_to_skip_contrast = np.cumsum([(len(t)-1)*2 for t in idx])[:-1].tolist()
+            # ticks_to_skip = np.arange(0, len(temp_all_plot_groups), 2).tolist()
+            # ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist()
+            ticks_to_skip = np.cumsum([len(t) for t in idx])[:-1].tolist()
+            ticks_to_skip.insert(0, 0)
+            # Then obtain the ticks where we have to plot the effect sizes.
+            ticks_to_plot = [t for t in range(0, len(all_plot_groups))
+                        if t not in ticks_to_skip]
+            ticks_to_skip_contrast = np.cumsum([(len(t)) for t in idx])[:-1].tolist()
             ticks_to_skip_contrast.insert(0, 0)
     else:
         if proportional == True and one_sankey == False:
@@ -976,7 +974,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 ax.set_ylim(ylim)
                 del redraw_axes_kwargs['y']
             
-            temp_length = [(len(i)-1)*2-1 for i in idx]
+            if proportional == False:
+                temp_length = [(len(i)-1) for i in idx]
+            else:
+                temp_length = [(len(i)-1)*2-1 for i in idx]
             if proportional == True and one_sankey == False:
                 rightend_ticks_contrast = np.array([len(i)-2 for i in idx]) + np.array(ticks_to_start_sankey)
             else:   

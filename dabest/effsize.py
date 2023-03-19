@@ -4,7 +4,7 @@
 __all__ = ['two_group_difference', 'func_difference', 'cohens_d', 'cohens_h', 'hedges_g', 'cliffs_delta', 'weighted_delta']
 
 # %% ../nbs/API/effsize.ipynb 4
-def two_group_difference(control, test, is_paired=False,
+def two_group_difference(control, test, is_paired=None,
                         effect_size="mean_diff"):
     """
     Computes the following metrics for control and test:
@@ -68,12 +68,12 @@ def two_group_difference(control, test, is_paired=False,
         return func_difference(control, test, np.mean, is_paired)
 
     elif effect_size == "median_diff":
-        mes1 = "Using median as the statistic in bootstrapping may \
-                result in a biased estimate and cause problems with \
-                BCa confidence intervals. Consider using a different statistic, such as the mean.\n"
-        mes2 = "When plotting, please consider using percetile confidence intervals\
-                by specifying `ci_type='percentile'`. For detailed information, \
-                refer to https://github.com/ACCLAB/DABEST-python/issues/129"
+        mes1 = "Using median as the statistic in bootstrapping may " + \
+                "result in a biased estimate and cause problems with " + \
+                "BCa confidence intervals. Consider using a different statistic, such as the mean.\n"
+        mes2 = "When plotting, please consider using percetile confidence intervals " + \
+                "by specifying `ci_type='percentile'`. For detailed information, " + \
+                "refer to https://github.com/ACCLAB/DABEST-python/issues/129 \n"
         warnings.warn(message=mes1+mes2, category=UserWarning)
         return func_difference(control, test, np.median, is_paired)
 
@@ -166,7 +166,6 @@ def cohens_d(control, test, is_paired=None):
         d: float.
             If is_paired is None, this is equivalent to:
             (numpy.mean(test) - numpy.mean(control))  / pooled StDev
-
             If is_paired is not None, returns
             (numpy.mean(test) - numpy.mean(control))  / average StDev
 
