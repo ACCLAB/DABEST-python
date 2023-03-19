@@ -265,8 +265,6 @@ By calling the ``mean_diff`` attribute, you can view the mean differences for ea
 	The unpaired mean difference between Control 3 and Test 3 is -0.255 [95%CI -0.717, 0.196].
 	The p-value of the two-sided permutation t-test is 0.293, calculated for legacy purposes only. 
 
-	To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
-
 	The weighted-average unpaired mean differences is -0.0104 [95%CI -0.222, 0.215].
 	The p-value of the two-sided permutation t-test is 0.937, calculated for legacy purposes only. 
 

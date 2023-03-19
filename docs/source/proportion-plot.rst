@@ -9,8 +9,8 @@ As of v2023.02.14, DABEST can be used to produce Cohen's *h* and the correspondi
 where the values are limited to 0 (failure) and 1 (success). This means that the code is not suitable for 
 analyzing proportion data that contains non-numeric values, such as strings like 'yes' and 'no'.
 
-Create dataset for demo
------------------------
+Load libraries
+--------------
 
 .. code-block:: python3
   :linenos:
@@ -18,31 +18,45 @@ Create dataset for demo
 
     import numpy as np
     import pandas as pd
+    import dabest
+
+    print("We're using DABEST v{}".format(dabest.__version__))
+
+
+.. parsed-literal::
+
+    We're using DABEST v2023.02.14
+
+Create dataset for demo
+-----------------------
+
+.. code-block:: python3
+  :linenos:
 
     np.random.seed(9999) # Fix the seed so the results are replicable.
     Ns = 40 # The number of samples taken from each population
 
     # Create samples
     n = 1
-    c1 = np.random.binomial(n, 0.2, size=N)
-    c2 = np.random.binomial(n, 0.2, size=N)
-    c3 = np.random.binomial(n, 0.8, size=N)
+    c1 = np.random.binomial(n, 0.2, size=Ns)
+    c2 = np.random.binomial(n, 0.2, size=Ns)
+    c3 = np.random.binomial(n, 0.8, size=Ns)
 
-    t1 = np.random.binomial(n, 0.5, size=N)
-    t2 = np.random.binomial(n, 0.2, size=N)
-    t3 = np.random.binomial(n, 0.3, size=N)
-    t4 = np.random.binomial(n, 0.4, size=N)
-    t5 = np.random.binomial(n, 0.5, size=N)
-    t6 = np.random.binomial(n, 0.6, size=N)
+    t1 = np.random.binomial(n, 0.5, size=Ns)
+    t2 = np.random.binomial(n, 0.2, size=Ns)
+    t3 = np.random.binomial(n, 0.3, size=Ns)
+    t4 = np.random.binomial(n, 0.4, size=Ns)
+    t5 = np.random.binomial(n, 0.5, size=Ns)
+    t6 = np.random.binomial(n, 0.6, size=Ns)
 
 
     # Add a `gender` column for coloring the data.
-    females = np.repeat('Female', N / 2).tolist()
-    males = np.repeat('Male', N / 2).tolist()
+    females = np.repeat('Female', Ns / 2).tolist()
+    males = np.repeat('Male', Ns / 2).tolist()
     gender = females + males
 
     # Add an `id` column for paired data plotting.
-    id_col = pd.Series(range(1, N + 1))
+    id_col = pd.Series(range(1, Ns + 1))
 
     # Combine samples and gender into a DataFrame.
     df = pd.DataFrame({'Control 1': c1, 'Test 1': t1,
@@ -219,8 +233,6 @@ Each of these are attributes of the ``Dabest`` object.
 
     To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
 
-    To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`
-
 Let’s compute the Cohen's h for our comparison.
 
 .. code-block:: python3
@@ -242,8 +254,6 @@ Let’s compute the Cohen's h for our comparison.
     Any p-value reported is the probability of observing theeffect size (or greater),
     assuming the null hypothesis ofzero difference is true.
     For each p-value, 5000 reshuffles of the control and test labels were performed.
-
-    To get the results of all valid statistical tests, use `.cohens_h.statistical_tests`
 
     To get the results of all valid statistical tests, use `.cohens_h.statistical_tests`
 
@@ -297,7 +307,7 @@ This will plot the bootstrap effect sizes below the raw data.
 
 .. image:: _images/prop_3.png
 
-You can also modify the width of bars as you expect by setting ``bar_width`` in the ``plot()`` method. The color of error bar can be modified by setting 'err_color'.
+You can also modify the width of bars as you expect by setting ``bar_width`` in the ``plot()`` method. 
 
 .. code-block:: python3
   :linenos:
@@ -306,6 +316,38 @@ You can also modify the width of bars as you expect by setting ``bar_width`` in 
     two_groups_unpaired.mean_diff.plot(bar_width=0.3);
 
 .. image:: _images/prop_4.png
+
+
+The ``bar_desat`` is used to control the amount of desaturation applied to the bar colors. A value of 0.0 means full desaturation (i.e., grayscale), 
+while a value of 1.0 means no desaturation (i.e., full color saturation). Default is 0.8.
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_unpaired.mean_diff.plot(bar_desat=1.0);
+
+.. image:: _images/prop_5.png
+
+``bar_label`` and ``contrast_label`` can be used to set labels for the y-axis of the bar plot and the contrast plot.
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_unpaired.mean_diff.plot(bar_label="success",contrast_label="difference");
+
+.. image:: _images/prop_6.png
+
+The color of error bar can be modified by setting 'err_color'.
+
+.. code-block:: python3
+  :linenos:
+
+
+    two_groups_unpaired.mean_diff.plot(err_color="purple");
+
+.. image:: _images/prop_7.png
 
 Producing Paired Proportion Plots
 ---------------------------------
@@ -319,10 +361,10 @@ the ``is_paired`` parameter is set to either ``baseline`` or  ``sequential`` whe
   :linenos:
 
 
-    two_groups_baseline = dabest.load(df, idx=("Control 1", "Test 1"), 
-                                  proportional=True, paired="baseline", id_col="ID")
-    
-    two_groups_baseline.mean_diff.plot();
+  two_groups_baseline = dabest.load(df, idx=("Control 1", "Test 1"), 
+                                proportional=True, paired="baseline", id_col="ID")
+  
+  two_groups_baseline.mean_diff.plot();
 
 .. image:: _images/sankey_1.png
 
@@ -332,7 +374,7 @@ The paired proportional plot also supports the ``float_contrast`` parameter, whi
   :linenos:
 
 
-    two_groups_baseline.mean_diff.plot(float_contrast=False);
+  two_groups_baseline.mean_diff.plot(float_contrast=False);
 
 
 
@@ -368,6 +410,12 @@ Repeated measures is also supported in paired proportional plot, by changing the
   multi_group_sequential.mean_diff.plot();
 
 .. image:: _images/sankey_4.png
+
+From the above two images, we can see that the on both the observed value plot and delta plot, the pairs compared are different in terms of the paired settings. And for detailed information about repeated measures, please refer to :doc:`repeatedmeasures` .
+
+If you want to specify the order of the groups, you can use the ``idx`` parameter in the ``.load()`` method.
+
+For all the groups to be compared together, you can put all the groups in the ``idx`` parameter in the ``.load()`` method without subbrackets.
 
 .. code-block:: python3
   :linenos:

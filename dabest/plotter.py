@@ -45,7 +45,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     warnings.filterwarnings('ignore', 'This figure includes Axes that are not compatible with tight_layout')
 
     from .misc_tools import merge_two_dicts
-    from .plot_tools import halfviolin, get_swarm_spans, gapped_lines, proportion_error_bar, sankeydiag
+    from .plot_tools import halfviolin, get_swarm_spans, error_bar, sankeydiag
     from ._stats_tools.effsize import _compute_standardizers, _compute_hedges_correction_factor
 
     import logging
@@ -384,34 +384,18 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         one_sankey = False # Flag to indicate if only one sankey is plotted.
 
     if show_pairs is True:
+        # Determine temp_idx based on is_paired and proportional conditions
         if is_paired == "baseline":
-            if proportional == False:
-                temp_idx = idx
-                temp_all_plot_groups = all_plot_groups
-            else:   
-                temp_idx = []
-                for i in idx:
-                    control = i[0]
-                    temp_idx.extend(((control, test) for test in i[1:]))
-                temp_idx = tuple(temp_idx)
-
-                temp_all_plot_groups = []
-                for i in temp_idx:
-                    temp_all_plot_groups.extend(list(i))
+            idx_pairs = [(control, test) for i in idx for control, test in zip([i[0]] * (len(i) - 1), i[1:])]
+            temp_idx = idx if not proportional else idx_pairs
         else:
-            if proportional == False:
-                temp_idx = idx
-                temp_all_plot_groups = all_plot_groups
-            else:
-                temp_idx = []
-                for i in idx:
-                    for j in range(len(i)-1):
-                        control = i[j]
-                        test = i[j+1]
-                        temp_idx.append((control, test))
-                temp_all_plot_groups = []
-                for i in temp_idx:
-                    temp_all_plot_groups.extend(list(i))
+            idx_pairs = [(control, test) for i in idx for control, test in zip(i[:-1], i[1:])]
+            temp_idx = idx if not proportional else idx_pairs
+
+        # Determine temp_all_plot_groups based on proportional condition
+        plot_groups = [item for i in temp_idx for item in i]
+        temp_all_plot_groups = all_plot_groups if not proportional else plot_groups
+        
         if proportional==False:
         # Plot the raw data as a slopegraph.
         # Pivot the long (melted) data.
@@ -539,12 +523,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             if len(line_colors) != len(all_plot_groups):
                 line_colors = ytick_color
 
-            gapped_lines(plot_data, x=xvar, y=yvar,
+            error_bar(plot_data, x=xvar, y=yvar,
                          # Hardcoded offset...
                          offset=xspans + np.array(plot_kwargs["group_summaries_offset"]),
                          line_color=line_colors,
                          gap_width_percent=1.5,
                          type=group_summaries, ax=rawdata_axes,
+                         method="gapped_lines",
                          **group_summary_kwargs)
 
         if group_summaries is not None and proportional == True:
@@ -552,12 +537,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             err_color = plot_kwargs["err_color"]
             if err_color == None:
                 err_color = "black"
-            proportion_error_bar(plot_data, x=xvar, y=yvar,
-                         offset=0,
-                         line_color=err_color,
-                         gap_width_percent=1.5,
-                         type=group_summaries, ax=rawdata_axes,
-                         **group_summary_kwargs)
+            error_bar(plot_data, x=xvar, y=yvar,
+                     offset=0,
+                     line_color=err_color,
+                     gap_width_percent=1.5,
+                     type=group_summaries, ax=rawdata_axes,
+                     method="proportional_error_bar",
+                     **group_summary_kwargs)
 
     # Add the counts to the rawdata axes xticks.
     counts = plot_data.groupby(xvar).count()[yvar]

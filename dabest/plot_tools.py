@@ -6,8 +6,12 @@
 
 
 from .misc_tools import merge_two_dicts
-
-
+import pandas as pd
+from collections import defaultdict
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import itertools
 
 def halfviolin(v, half='right', fill_color='k', alpha=1,
                 line_color='k', line_width=0):
@@ -70,15 +74,15 @@ def get_swarm_spans(coll):
 
 
 
-def gapped_lines(data, x, y, type='mean_sd', offset=0.2, ax=None,
-                line_color="black", gap_width_percent=1,
-                **kwargs):
+def error_bar(data, x, y, type='mean_sd', offset=0.2, ax=None,
+              line_color="black", gap_width_percent=1, pos=[0, 1],
+              method='gapped_lines', **kwargs):
     '''
-    Convenience function to plot the standard devations as vertical
-    errorbars. The mean is a gap defined by negative space.
+    Function to plot the standard deviations as vertical errorbars.
+    The mean is a gap defined by negative space.
 
-    This style is inspired by Edward Tufte's redesign of the boxplot.
-    See The Visual Display of Quantitative Information (1983), pp.128-130.
+    This function combines the functionality of gapped_lines(),
+    proportional_error_bar(), and sankey_error_bar().
 
     Keywords
     --------
@@ -101,7 +105,7 @@ def gapped_lines(data, x, y, type='mean_sd', offset=0.2, ax=None,
     line_color: string (matplotlib color, default "black") or iterable of
         matplotlib colors.
 
-        The color of the vertical line indicating the stadard deviations.
+        The color of the vertical line indicating the standard deviations.
 
     gap_width_percent: float, default 5
         The width of the gap in the line (indicating the central measure),
@@ -111,6 +115,13 @@ def gapped_lines(data, x, y, type='mean_sd', offset=0.2, ax=None,
         If a matplotlib Axes object is specified, the gapped lines will be
         plotted in order on this axes. If None, the current axes (plt.gca())
         is used.
+
+    pos: list, default [0, 1]
+        The positions of the error bars for the sankey_error_bar method.
+
+    method: string, default 'gapped_lines'
+        The method to use for drawing the error bars. Options are:
+        'gapped_lines', 'proportional_error_bar', and 'sankey_error_bar'.
 
     kwargs: dict, default None
         Dictionary with kwargs passed to matplotlib.lines.Line2D
@@ -122,166 +133,8 @@ def gapped_lines(data, x, y, type='mean_sd', offset=0.2, ax=None,
 
     if gap_width_percent < 0 or gap_width_percent > 100:
         raise ValueError("`gap_width_percent` must be between 0 and 100.")
-
-    if ax is None:
-        ax = plt.gca()
-    ax_ylims = ax.get_ylim()
-    ax_yspan = np.abs(ax_ylims[1] - ax_ylims[0])
-    gap_width = ax_yspan * gap_width_percent/100
-
-    keys = kwargs.keys()
-    if 'clip_on' not in keys:
-        kwargs['clip_on'] = False
-
-    if 'zorder' not in keys:
-        kwargs['zorder'] = 5
-
-    if 'lw' not in keys:
-        kwargs['lw'] = 2.
-
-    # # Grab the order in which the groups appear.
-    # group_order = pd.unique(data[x])
-    
-    # Grab the order in which the groups appear,
-    # depending on whether the x-column is categorical.
-    if isinstance(data[x].dtype, pd.CategoricalDtype):
-        group_order = pd.unique(data[x]).categories
-    else:
-        group_order = pd.unique(data[x])
-
-    means    = data.groupby(x)[y].mean().reindex(index=group_order)
-    sd       = data.groupby(x)[y].std().reindex(index=group_order)
-    lower_sd = means - sd
-    upper_sd = means + sd
-
-
-    if (lower_sd < ax_ylims[0]).any() or (upper_sd > ax_ylims[1]).any():
-        kwargs['clip_on'] = True
-
-    medians   = data.groupby(x)[y].median().reindex(index=group_order)
-    quantiles = data.groupby(x)[y].quantile([0.25, 0.75])\
-                                  .unstack()\
-                                  .reindex(index=group_order)
-    lower_quartiles = quantiles[0.25]
-    upper_quartiles = quantiles[0.75]
-
-
-    if type == 'mean_sd':
-        central_measures = means
-        lows = lower_sd
-        highs = upper_sd
-    elif type == 'median_quartiles':
-        central_measures = medians
-        lows = lower_quartiles
-        highs = upper_quartiles
-
-
-    n_groups = len(central_measures)
-
-    if isinstance(line_color, str):
-        custom_palette = np.repeat(line_color, n_groups)
-    else:
-        if len(line_color) != n_groups:
-            err1 = "{} groups are being plotted, but ".format(n_groups)
-            err2 = "{} colors(s) were supplied in `line_color`.".format(len(line_color))
-            raise ValueError(err1 + err2)
-        custom_palette = line_color
-
-    try:
-        len_offset = len(offset)
-    except TypeError:
-        offset = np.repeat(offset, n_groups)
-        len_offset = len(offset)
-
-    if len_offset != n_groups:
-        err1 = "{} groups are being plotted, but ".format(n_groups)
-        err2 = "{} offset(s) were supplied in `offset`.".format(len_offset)
-        raise ValueError(err1 + err2)
-
-    kwargs['zorder'] = kwargs['zorder']
-
-    for xpos, central_measure in enumerate(central_measures):
-        # add lower vertical span line.
-
-        kwargs['color'] = custom_palette[xpos]
-
-        _xpos = xpos + offset[xpos]
-        # add lower vertical span line.
-        low = lows[xpos]
-        low_to_mean = mlines.Line2D([_xpos, _xpos],
-                                    [low, central_measure-gap_width],
-                                      **kwargs)
-        ax.add_line(low_to_mean)
-
-        # add upper vertical span line.
-        high = highs[xpos]
-        mean_to_high = mlines.Line2D([_xpos, _xpos],
-                                     [central_measure+gap_width, high],
-                                      **kwargs)
-        ax.add_line(mean_to_high)
-
-        # # add horzontal central measure line.
-        # kwargs['zorder'] = 6
-        # kwargs['color'] = gap_color
-        # kwargs['lw'] = kwargs['lw'] * 1.5
-        # line_xpos = xpos + offset[xpos]
-        # mean_line = mlines.Line2D([line_xpos-0.015, line_xpos+0.015],
-        #                           [central_measure, central_measure], **kwargs)
-        # ax.add_line(mean_line)
-
-
-def proportion_error_bar(data, x, y, type='mean_sd', offset=0.2, ax=None,
-                 line_color="black", gap_width_percent=1,
-                 **kwargs):
-    '''
-    Function to plot the standard devations for proportions as vertical
-    errorbars. The mean is a gap defined by negative space.
-
-    This style is inspired by Edward Tufte's redesign of the boxplot.
-    See The Visual Display of Quantitative Information (1983), pp.128-130.
-
-    Keywords
-    --------
-    data: pandas DataFrame.
-        This DataFrame should be in 'long' format.
-
-    x, y: string.
-        x and y columns to be plotted.
-
-    type: ['mean_sd', 'median_quartiles'], default 'mean_sd'
-        Plots the summary statistics for each group. If 'mean_sd', then the
-        mean and standard deviation of each group is plotted as a gapped line.
-        If 'median_quantiles', then the median and 25th and 75th percentiles of
-        each group is plotted instead.
-
-    offset: float (default 0.3) or iterable.
-        Give a single float (that will be used as the x-offset of all
-        gapped lines), or an iterable containing the list of x-offsets.
-
-    line_color: string (matplotlib color, default "black") or iterable of
-        matplotlib colors.
-
-        The color of the vertical line indicating the stadard deviations.
-
-    gap_width_percent: float, default 5
-        The width of the gap in the line (indicating the central measure),
-        expressed as a percentage of the y-span of the axes.
-
-    ax: matplotlib Axes object, default None
-        If a matplotlib Axes object is specified, the gapped lines will be
-        plotted in order on this axes. If None, the current axes (plt.gca())
-        is used.
-
-    kwargs: dict, default None
-        Dictionary with kwargs passed to matplotlib.lines.Line2D
-    '''
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    import matplotlib.lines as mlines
-
-    if gap_width_percent < 0 or gap_width_percent > 100:
-        raise ValueError("`gap_width_percent` must be between 0 and 100.")
+    if method not in ['gapped_lines', 'proportional_error_bar', 'sankey_error_bar']:
+        raise ValueError("Invalid `method`. Must be one of 'gapped_lines', 'proportional_error_bar', or 'sankey_error_bar'.")
 
     if ax is None:
         ax = plt.gca()
@@ -299,20 +152,19 @@ def proportion_error_bar(data, x, y, type='mean_sd', offset=0.2, ax=None,
     if 'lw' not in keys:
         kwargs['lw'] = 2.
 
-    # # Grab the order in which the groups appear.
-    # group_order = pd.unique(data[x])
-
-    # Grab the order in which the groups appear,
-    # depending on whether the x-column is categorical.
     if isinstance(data[x].dtype, pd.CategoricalDtype):
         group_order = pd.unique(data[x]).categories
     else:
         group_order = pd.unique(data[x])
 
     means = data.groupby(x)[y].mean().reindex(index=group_order)
-    g = lambda x: np.sqrt((np.sum(x) * (len(x) - np.sum(x))) / (len(x) * len(x) * len(x)))
-    sd = data.groupby(x)[y].apply(g)
-    # sd = data.groupby(x)[y].std().reindex(index=group_order)
+
+    if method in ['proportional_error_bar', 'sankey_error_bar']:
+        g = lambda x: np.sqrt((np.sum(x) * (len(x) - np.sum(x))) / (len(x) * len(x) * len(x)))
+        sd = data.groupby(x)[y].apply(g)
+    else:
+        sd = data.groupby(x)[y].std().reindex(index=group_order)
+
     lower_sd = means - sd
     upper_sd = means + sd
 
@@ -360,201 +212,24 @@ def proportion_error_bar(data, x, y, type='mean_sd', offset=0.2, ax=None,
     kwargs['zorder'] = kwargs['zorder']
 
     for xpos, central_measure in enumerate(central_measures):
-        # add lower vertical span line.
-
         kwargs['color'] = custom_palette[xpos]
 
-        _xpos = xpos + offset[xpos]
-        # add lower vertical span line.
+        if method == 'sankey_error_bar':
+            _xpos = pos[xpos] + offset[xpos]
+        else:
+            _xpos = xpos + offset[xpos]
+
         low = lows[xpos]
         low_to_mean = mlines.Line2D([_xpos, _xpos],
                                     [low, central_measure - gap_width],
                                     **kwargs)
         ax.add_line(low_to_mean)
 
-        # add upper vertical span line.
         high = highs[xpos]
         mean_to_high = mlines.Line2D([_xpos, _xpos],
                                      [central_measure + gap_width, high],
                                      **kwargs)
         ax.add_line(mean_to_high)
-
-        # # add horzontal central measure line.
-        # kwargs['zorder'] = 6
-        # kwargs['color'] = gap_color
-        # kwargs['lw'] = kwargs['lw'] * 1.5
-        # line_xpos = xpos + offset[xpos]
-        # mean_line = mlines.Line2D([line_xpos-0.015, line_xpos+0.015],
-        #                           [central_measure, central_measure], **kwargs)
-        # ax.add_line(mean_line)
-
-def sankey_error_bar(data, x, y, type='mean_sd', offset=0.2, ax=None,
-                 line_color="black", gap_width_percent=1, pos=[0,1], 
-                 **kwargs):
-    '''
-    Function to plot the standard devations for proportions as vertical
-    errorbars. The mean is a gap defined by negative space.
-
-    This is a specific design with the addition of parameter `xpos`
-    for Sankey as each Sankey bar requires two errorbars, one for 
-    the left and one for the right. 
-
-    This style is inspired by Edward Tufte's redesign of the boxplot.
-    See The Visual Display of Quantitative Information (1983), pp.128-130.
-
-    Keywords
-    --------
-    data: pandas DataFrame.
-        This DataFrame should be in 'long' format.
-
-    x, y: string.
-        x and y columns to be plotted.
-
-    type: ['mean_sd', 'median_quartiles'], default 'mean_sd'
-        Plots the summary statistics for each group. If 'mean_sd', then the
-        mean and standard deviation of each group is plotted as a gapped line.
-        If 'median_quantiles', then the median and 25th and 75th percentiles of
-        each group is plotted instead.
-
-    offset: float (default 0.3) or iterable.
-        Give a single float (that will be used as the x-offset of all
-        gapped lines), or an iterable containing the list of x-offsets.
-
-    line_color: string (matplotlib color, default "black") or iterable of
-        matplotlib colors.
-
-        The color of the vertical line indicating the stadard deviations.
-
-    gap_width_percent: float, default 5
-        The width of the gap in the line (indicating the central measure),
-        expressed as a percentage of the y-span of the axes.
-
-    ax: matplotlib Axes object, default None
-        If a matplotlib Axes object is specified, the gapped lines will be
-        plotted in order on this axes. If None, the current axes (plt.gca())
-        is used.
-
-    xpos: float, default 0
-        The x-position of the gapped lines. This is useful if you want to
-        plot multiple gapped lines on the same axes, but with different
-        x-positions.
-
-    kwargs: dict, default None
-        Dictionary with kwargs passed to matplotlib.lines.Line2D
-    '''
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    import matplotlib.lines as mlines
-
-    if gap_width_percent < 0 or gap_width_percent > 100:
-        raise ValueError("`gap_width_percent` must be between 0 and 100.")
-
-    if ax is None:
-        ax = plt.gca()
-    ax_ylims = ax.get_ylim()
-    ax_yspan = np.abs(ax_ylims[1] - ax_ylims[0])
-    gap_width = ax_yspan * gap_width_percent / 100
-
-    keys = kwargs.keys()
-    if 'clip_on' not in keys:
-        kwargs['clip_on'] = False
-
-    if 'zorder' not in keys:
-        kwargs['zorder'] = 5
-
-    if 'lw' not in keys:
-        kwargs['lw'] = 2.
-
-    # # Grab the order in which the groups appear.
-    # group_order = pd.unique(data[x])
-
-    # Grab the order in which the groups appear,
-    # depending on whether the x-column is categorical.
-    if isinstance(data[x].dtype, pd.CategoricalDtype):
-        group_order = pd.unique(data[x]).categories
-    else:
-        group_order = pd.unique(data[x])
-
-    means = data.groupby(x)[y].mean().reindex(index=group_order)
-    g = lambda x: np.sqrt((np.sum(x) * (len(x) - np.sum(x))) / (len(x) * len(x) * len(x)))
-    sd = data.groupby(x)[y].apply(g)
-    # sd = data.groupby(x)[y].std().reindex(index=group_order)
-    lower_sd = means - sd
-    upper_sd = means + sd
-
-    if (lower_sd < ax_ylims[0]).any() or (upper_sd > ax_ylims[1]).any():
-        kwargs['clip_on'] = True
-
-    medians = data.groupby(x)[y].median().reindex(index=group_order)
-    quantiles = data.groupby(x)[y].quantile([0.25, 0.75]) \
-        .unstack() \
-        .reindex(index=group_order)
-    lower_quartiles = quantiles[0.25]
-    upper_quartiles = quantiles[0.75]
-
-    if type == 'mean_sd':
-        central_measures = means
-        lows = lower_sd
-        highs = upper_sd
-    elif type == 'median_quartiles':
-        central_measures = medians
-        lows = lower_quartiles
-        highs = upper_quartiles
-
-    n_groups = len(central_measures)
-
-    if isinstance(line_color, str):
-        custom_palette = np.repeat(line_color, n_groups)
-    else:
-        if len(line_color) != n_groups:
-            err1 = "{} groups are being plotted, but ".format(n_groups)
-            err2 = "{} colors(s) were supplied in `line_color`.".format(len(line_color))
-            raise ValueError(err1 + err2)
-        custom_palette = line_color
-
-    try:
-        len_offset = len(offset)
-    except TypeError:
-        offset = np.repeat(offset, n_groups)
-        len_offset = len(offset)
-
-    if len_offset != n_groups:
-        err1 = "{} groups are being plotted, but ".format(n_groups)
-        err2 = "{} offset(s) were supplied in `offset`.".format(len_offset)
-        raise ValueError(err1 + err2)
-
-    kwargs['zorder'] = kwargs['zorder']
-
-    for xpos, central_measure in enumerate(central_measures):
-        # add lower vertical span line.
-
-        kwargs['color'] = custom_palette[xpos]
-
-        _xpos = pos[xpos] + offset[xpos]
-        # add lower vertical span line.
-        low = lows[xpos]
-        low_to_mean = mlines.Line2D([_xpos, _xpos],
-                                    [low, central_measure - gap_width],
-                                    **kwargs)
-        ax.add_line(low_to_mean)
-
-        # add upper vertical span line.
-        high = highs[xpos]
-        mean_to_high = mlines.Line2D([_xpos, _xpos],
-                                     [central_measure + gap_width, high],
-                                     **kwargs)
-        ax.add_line(mean_to_high)
-
-        # # add horzontal central measure line.
-        # kwargs['zorder'] = 6
-        # kwargs['color'] = gap_color
-        # kwargs['lw'] = kwargs['lw'] * 1.5
-        # line_xpos = xpos + offset[xpos]
-        # mean_line = mlines.Line2D([line_xpos-0.015, line_xpos+0.015],
-        #                           [central_measure, central_measure], **kwargs)
-        # ax.add_line(mean_line)
-
 
 def check_data_matches_labels(labels, data, side):
     '''
@@ -568,12 +243,11 @@ def check_data_matches_labels(labels, data, side):
     data: Pandas Series of input data
     side: string, 'left' or 'right' on the sankey diagram
     '''
-    import pandas as pd
     if len(labels > 0):
         if isinstance(data, list):
             data = set(data)
         if isinstance(data, pd.Series):
-            data = set(data.unique().tolist())
+            data = set(data.unique())
         if isinstance(labels, list):
             labels = set(labels)
         if labels != data:
@@ -583,6 +257,17 @@ def check_data_matches_labels(labels, data, side):
             if len(data) < 20:
                 msg += "Data: " + ",".join(data)
             raise Exception('{0} labels and data do not match.{1}'.format(side, msg))
+        
+def normalize_dict(nested_dict, target):
+    val = {}
+    for key in nested_dict.keys():
+        val[key] = np.sum([nested_dict[sub_key][key] for sub_key in nested_dict.keys()])
+    
+    for key, value in nested_dict.items():
+        if isinstance(value, dict):
+            for subkey in value.keys():
+                value[subkey] = value[subkey] * target[subkey]['right']/val[subkey]
+    return nested_dict
 
 def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None, 
             colorDict=None, leftLabels=None, rightLabels=None, ax=None, 
@@ -621,14 +306,6 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
         if 'center', the diagram will be centered on each xtick, 
         if 'edge', the diagram will be aligned with the left edge of each xtick
     '''
-    
-    from collections import defaultdict
-
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-    import numpy as np
-    import pandas as pd
-
 
     # Initiating values
     if ax is None:
@@ -650,13 +327,13 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
 
     # Create Dataframe
     if isinstance(left, pd.Series):
-        left = left.reset_index(drop=True)
+        left.reset_index(drop=True, inplace=True)
     if isinstance(right, pd.Series):
-        right = right.reset_index(drop=True)
+        right.reset_index(drop=True, inplace=True)
     dataFrame = pd.DataFrame({'left': left, 'right': right, 'leftWeight': leftWeight,
                               'rightWeight': rightWeight}, index=range(len(left)))
     
-    if len(dataFrame[(dataFrame.left.isnull()) | (dataFrame.right.isnull())]):
+    if dataFrame[['left', 'right']].isnull().any(axis=None):
         raise Exception('Sankey graph does not support null values.')
 
     # Identify all labels that appear 'left' or 'right'
@@ -765,16 +442,6 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
     
     # ns_r should be using a different way of normalization to fit the right side
     # It is normalized using the value with the same key in each sub-dictionary
-    def normalize_dict(nested_dict, target):
-        val = {}
-        for key in nested_dict.keys():
-            val[key] = np.sum([nested_dict[sub_key][key] for sub_key in nested_dict.keys()])
-        
-        for key, value in nested_dict.items():
-            if isinstance(value, dict):
-                for subkey in value.keys():
-                    value[subkey] = value[subkey] * target[subkey]['right']/val[subkey]
-        return nested_dict
 
     ns_r_norm = normalize_dict(ns_r, rightWidths_norm)
 
@@ -797,34 +464,35 @@ def single_sankey(left, right, xpos=0, leftWeight=None, rightWeight=None,
         )
 
     # Plot error bars
-    sankey_error_bar(concatenated_df, x='groups', y='values', ax=ax, offset=0, gap_width_percent=2,
-                     pos=[(leftpos + (-(bar_width) * xMax) + leftpos)/2, (xMax + leftpos + leftpos + ((1 + bar_width) * xMax))/2],)
+    error_bar(concatenated_df, x='groups', y='values', ax=ax, offset=0, gap_width_percent=2,
+              method="sankey_error_bar",
+              pos=[(leftpos + (-(bar_width) * xMax) + leftpos)/2, \
+                   (xMax + leftpos + leftpos + ((1 + bar_width) * xMax))/2])
     
     # Plot strips
-    for leftLabel in leftLabels:
-        for rightLabel in rightLabels:
-            labelColor = leftLabel
-            if rightColor:
-                labelColor = rightLabel
-            if len(dataFrame[(dataFrame.left == leftLabel) & (dataFrame.right == rightLabel)]) > 0:
-                # Create array of y values for each strip, half at left value,
-                # half at right, convolve
-                ys_d = np.array(50 * [leftWidths_norm[leftLabel]['bottom']] + \
-                    50 * [rightWidths_norm[rightLabel]['bottom']])
-                ys_d = np.convolve(ys_d, 0.05 * np.ones(20), mode='valid')
-                ys_d = np.convolve(ys_d, 0.05 * np.ones(20), mode='valid')
-                ys_u = np.array(50 * [leftWidths_norm[leftLabel]['bottom'] + ns_l_norm[leftLabel][rightLabel]] + \
-                    50 * [rightWidths_norm[rightLabel]['bottom'] + ns_r_norm[leftLabel][rightLabel]])
-                ys_u = np.convolve(ys_u, 0.05 * np.ones(20), mode='valid')
-                ys_u = np.convolve(ys_u, 0.05 * np.ones(20), mode='valid')
+    for leftLabel, rightLabel in itertools.product(leftLabels, rightLabels):
+        labelColor = leftLabel
+        if rightColor:
+            labelColor = rightLabel
+        if len(dataFrame[(dataFrame.left == leftLabel) & (dataFrame.right == rightLabel)]) > 0:
+            # Create array of y values for each strip, half at left value,
+            # half at right, convolve
+            ys_d = np.array(50 * [leftWidths_norm[leftLabel]['bottom']] + \
+                50 * [rightWidths_norm[rightLabel]['bottom']])
+            ys_d = np.convolve(ys_d, 0.05 * np.ones(20), mode='valid')
+            ys_d = np.convolve(ys_d, 0.05 * np.ones(20), mode='valid')
+            ys_u = np.array(50 * [leftWidths_norm[leftLabel]['bottom'] + ns_l_norm[leftLabel][rightLabel]] + \
+                50 * [rightWidths_norm[rightLabel]['bottom'] + ns_r_norm[leftLabel][rightLabel]])
+            ys_u = np.convolve(ys_u, 0.05 * np.ones(20), mode='valid')
+            ys_u = np.convolve(ys_u, 0.05 * np.ones(20), mode='valid')
 
-                # Update bottom edges at each label so next strip starts at the right place
-                leftWidths_norm[leftLabel]['bottom'] += ns_l_norm[leftLabel][rightLabel]
-                rightWidths_norm[rightLabel]['bottom'] += ns_r_norm[leftLabel][rightLabel]
-                ax.fill_between(
-                    np.linspace(leftpos, leftpos + xMax, len(ys_d)), ys_d, ys_u, alpha=alpha,
-                    color=colorDict[labelColor], edgecolor='none'
-                )
+            # Update bottom edges at each label so next strip starts at the right place
+            leftWidths_norm[leftLabel]['bottom'] += ns_l_norm[leftLabel][rightLabel]
+            rightWidths_norm[rightLabel]['bottom'] += ns_r_norm[leftLabel][rightLabel]
+            ax.fill_between(
+                np.linspace(leftpos, leftpos + xMax, len(ys_d)), ys_d, ys_u, alpha=alpha,
+                color=colorDict[labelColor], edgecolor='none'
+            )
                 
 def sankeydiag(data, xvar, yvar, left_idx, right_idx, 
                 leftLabels=None, rightLabels=None,  
@@ -897,9 +565,10 @@ def sankeydiag(data, xvar, yvar, left_idx, right_idx,
     allLabels = pd.Series(np.sort(data[yvar].unique())[::-1]).unique()
         
     # Check if all the elements in left_idx and right_idx are in xvar column
-    if not all(elem in data[xvar].unique() for elem in left_idx):
+    unique_xvar = data[xvar].unique()
+    if not all(elem in unique_xvar for elem in left_idx):
         raise ValueError(f"{left_idx} not found in {xvar} column")
-    if not all(elem in data[xvar].unique() for elem in right_idx):
+    if not all(elem in unique_xvar for elem in right_idx):
         raise ValueError(f"{right_idx} not found in {xvar} column")
 
     xpos = 0

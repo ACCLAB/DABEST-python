@@ -451,6 +451,7 @@ class Dabest(object):
             \\text{Mean difference} = \\overline{x}_{Test} - \\overline{x}_{Control}
             
         where :math:`\\overline{x}` is the mean for the group :math:`x`.
+
         """
         return self.__mean_diff
         
@@ -459,7 +460,8 @@ class Dabest(object):
     def median_diff(self):
         """
         Returns an :py:class:`EffectSizeDataFrame` for the median difference, its confidence interval, and relevant statistics, for all comparisons  as indicated via the `idx` and `paired` argument in `dabest.load()`.
-        
+
+
         Example
         -------
         >>> from scipy.stats import norm
@@ -471,7 +473,8 @@ class Dabest(object):
                                     "test": test})
         >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
         >>> my_dabest_object.median_diff
-        
+
+
         Notes
         -----
         This is the median difference between the control group and the test group.
@@ -487,6 +490,15 @@ class Dabest(object):
 
         .. math::
             \\text{Median difference} = \\widetilde{x}_{Test - Control}
+            
+
+        Things to note
+        --------------
+        Using median difference as the statistic in bootstrapping may result in a biased estimate and cause problems with BCa confidence intervals. Consider using mean difference instead. 
+
+        When plotting, consider using percentile confidence intervals instead of BCa confidence intervals by specifying `ci_type = 'percentile'` in .plot(). 
+
+        For detailed information, please refer to `Issue 129 <https://github.com/ACCLAB/DABEST-python/issues/129>`_. 
 
         """
         return self.__median_diff
@@ -549,6 +561,7 @@ class Dabest(object):
             https://en.wikipedia.org/wiki/Effect_size#Cohen's_d
             https://en.wikipedia.org/wiki/Bessel%27s_correction
             https://en.wikipedia.org/wiki/Standard_deviation#Corrected_sample_standard_deviation
+
         """
         return self.__cohens_d
     
@@ -588,6 +601,7 @@ class Dabest(object):
         
         References:
             https://en.wikipedia.org/wiki/Cohen%27s_h
+
         """
         return self.__cohens_h
 
@@ -630,6 +644,7 @@ class Dabest(object):
         References:
             https://en.wikipedia.org/wiki/Effect_size#Hedges'_g
             https://journals.sagepub.com/doi/10.3102/10769986006002107
+
         """
         return self.__hedges_g
         
@@ -669,6 +684,7 @@ class Dabest(object):
         References:
             https://en.wikipedia.org/wiki/Effect_size#Effect_size_for_ordinal_data
             https://psycnet.apa.org/record/1994-08169-001
+
         """
         return self.__cliffs_delta
 
@@ -863,7 +879,8 @@ class DeltaDelta(object):
 
        \\Delta_{1} = \\overline{X}_{A_{2}, B_{1}} - \\overline{X}_{A_{1}, B_{1}}
 
-        \\Delta_{2} = \\overline{X}_{A_{2}, B_{2}} - \\overline{X}_{A_{1}, B_{2}}
+       \\Delta_{2} = \\overline{X}_{A_{2}, B_{2}} - \\overline{X}_{A_{1}, B_{2}}
+
     
     where :math:`\overline{X}_{A_{i}, B_{j}}` is the mean of the sample with A = i and B = j, :math:`\\Delta` is the mean difference between two samples. 
 
@@ -871,7 +888,7 @@ class DeltaDelta(object):
 
     .. math::
 
-        \\Delta_{\\Delta} = \\Delta_{B_{2}} - \\Delta_{B_{1}}
+        \\Delta_{\\Delta} = \\Delta_{2} - \\Delta_{1}
     
     and:
 
@@ -887,6 +904,7 @@ class DeltaDelta(object):
     -------
     >>> import numpy as np
     >>> import pandas as pd
+    >>> import dabest
     >>> from scipy.stats import norm # Used in generation of populations.
     >>> np.random.seed(9999) # Fix the seed so the results are replicable.
     >>> from scipy.stats import norm # Used in generation of populations.
@@ -1298,17 +1316,17 @@ class MiniMetaDelta(object):
     >>> from scipy.stats import norm
     >>> import pandas as pd
     >>> import dabest
+    >>> Ns = 20
     >>> c1 = norm.rvs(loc=3, scale=0.4, size=Ns)
     >>> c2 = norm.rvs(loc=3.5, scale=0.75, size=Ns)
     >>> c3 = norm.rvs(loc=3.25, scale=0.4, size=Ns)
-
     >>> t1 = norm.rvs(loc=3.5, scale=0.5, size=Ns)
     >>> t2 = norm.rvs(loc=2.5, scale=0.6, size=Ns)
     >>> t3 = norm.rvs(loc=3, scale=0.75, size=Ns)
     >>> my_df   = pd.DataFrame({'Control 1' : c1,     'Test 1' : t1,
                        'Control 2' : c2,     'Test 2' : t2,
                        'Control 3' : c3,     'Test 3' : t3})
-    >>> my_dabest_object = dabest.load(df, idx=(("Control 1", "Test 1"), ("Control 2", "Test 2"), ("Control 3", "Test 3")), mini_meta=True)
+    >>> my_dabest_object = dabest.load(my_df, idx=(("Control 1", "Test 1"), ("Control 2", "Test 2"), ("Control 3", "Test 3")), mini_meta=True)
     >>> my_dabest_object.mean_diff.mini_meta_delta
 
     Notes
@@ -2717,12 +2735,6 @@ class EffectSizeDataFrame(object):
 
                 reprs.append(text_repr)
 
-        varname = get_varname(self.__dabest_obj)
-        lastline = "To get the results of all valid statistical tests, " +\
-        "use `{}.{}.statistical_tests`".format(varname, self.__effect_size)
-        reprs.append(lastline)
-
-        reprs.insert(0, print_greeting())
 
         self.__for_print = "\n\n".join(reprs)
 

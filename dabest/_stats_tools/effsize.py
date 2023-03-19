@@ -78,12 +78,12 @@ def two_group_difference(control, test, is_paired=None,
         return func_difference(control, test, np.mean, is_paired)
 
     elif effect_size == "median_diff":
-        mes1 = "Using median as the statistic in bootstrapping may \
-                result in a biased estimate and cause problems with \
-                BCa confidence intervals. Consider using a different statistic, such as the mean.\n"
-        mes2 = "When plotting, please consider using percetile confidence intervals\
-                by specifying `ci_type='percentile'`. For detailed information, \
-                refer to https://github.com/ACCLAB/DABEST-python/issues/129"
+        mes1 = "Using median as the statistic in bootstrapping may " + \
+                "result in a biased estimate and cause problems with " + \
+                "BCa confidence intervals. Consider using a different statistic, such as the mean.\n"
+        mes2 = "When plotting, please consider using percetile confidence intervals " + \
+                "by specifying `ci_type='percentile'`. For detailed information, " + \
+                "refer to https://github.com/ACCLAB/DABEST-python/issues/129 \n"
         warnings.warn(message=mes1+mes2, category=UserWarning)
         return func_difference(control, test, np.median, is_paired)
 

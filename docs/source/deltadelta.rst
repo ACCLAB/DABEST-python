@@ -62,8 +62,8 @@ Effectively, we have 4 groups of subjects for comparison.
 
 There are 2 ``Treatment`` conditions, ``Placebo`` (control group) and ``Drug`` (test group). There are 2 ``Genotype``\s: ``W`` (wild type population) and ``M`` (mutant population). In addition, each experiment was done twice (``Rep1`` and ``Rep2``). We shall do a few analyses to visualise these differences in a simulated dataset. 
 
-Simulate a dataset
-------------------
+Load Libraries
+--------------
 
 .. code-block:: python3
   :linenos:
@@ -71,6 +71,22 @@ Simulate a dataset
 
     import numpy as np
     import pandas as pd
+    import dabest
+
+    print("We're using DABEST v{}".format(dabest.__version__))
+
+
+.. parsed-literal::
+
+    We're using DABEST v2023.02.14
+
+
+Simulate a dataset
+------------------
+
+.. code-block:: python3
+  :linenos:
+
     from scipy.stats import norm # Used in generation of populations.
 
     np.random.seed(seed) # Fix the seed so the results are replicable.
