@@ -8,17 +8,17 @@
 
 ## Upcoming Version Update
 
-On 20 March 2023, we will be officially releasing **DABEST v2023.02.14 for Python**. This new version will provide the following new features:
+On 20 March 2023, we will be officially releasing **DABEST v2023.02.14 for Python**. This version provides exciting new features:
 
-1. **Repeated measures.** Augments the prior function for plotting (independent) multiple test groups versus a shared control; it can now do the same for repeated-measures experimental designs. Thus, together, these two methods can be used to replace both flavors of the 1-way ANOVA with an estimation analysis.
+1. **Repeated measures.** Augments the prior function for plotting (independent) multiple test groups versus a shared control; it can now do the same for repeated-measures experimental design. Together, these two methods can be used to replace both flavors of the 1-way ANOVA with an estimation analysis.
 
-2. **Proportional data.** Generates proportional bar plots, proportional differences, and calculates Cohen's h. Also enables plotting Sankey diagrams for paired binary data. This is the estimation equivalent to a bar chart with Fischer's exact test.
+2. **Proportional data.** Generates proportional bar plots, proportional differences, and calculates Cohen's h. Also enables plotting Sankey diagrams for paired binary data. This is the estimation graphic equivalent to a bar chart with Fisher's exact test.
 
-3. **The ∆∆ plot.** Calculates the delta-delta (∆∆) for 2 × 2 experimental designs and plots the four groups with their relevant effect sizes. This design can be used as a replacement for the 2 × 2 ANOVA.
+3. **The ∆∆ plot.** Calculates the delta-delta (∆∆) for 2 × 2 experimental design and plots the four groups with their relevant effect sizes. This design can be used as a replacement for the 2 × 2 ANOVA.
 
-4. **Mini-meta.** Calculates and plots a weighted delta (∆) for meta-analysis of experimental replicates. Useful for summarizing data from multiple replicated experiments, for example by different scientists in the same lab, or the same scientist at different times. When the observed values are known (and share a common metric), this makes meta-analysis available as a routinely accessible tool.
+4. **Mini-meta.** Calculates and plots a weighted delta (∆) for meta-analysis of experimental replicates. Useful for summarizing data from multiple replicated experiments, for example by different scientists in the same lab or the same scientist at different times. When the observed values are known (and share a common metric), this function makes such meta-analysis convenient.
 
-Prior to the official update, users keen to try these features now are invited to download the v0.4dev branch. After 20 March 2023, the new version will be the one we recommend for all users.
+Prior to the official update, users interested in these features are invited to download the v0.4dev branch. After 20 March 2023, the new version in the main branch will be the one we recommend for all users.
 
 
 ## Contents
