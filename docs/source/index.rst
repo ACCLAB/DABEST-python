@@ -13,10 +13,10 @@ Update
 
 Briefly, this release introduces several new functions:
 
-  - Additional plotting functions for repeated measures experimental designs
-  - Calculating of Cohen's *h* and proportional plots for binary data
-  - Calculating and plotting delta-deltas for 2x2 experimental designs
-  - Calculating and plotting of weighted deltas for mini-meta-analysis of experimental replicates
+  - Additional plotting functions for repeated measures experimental designs (:doc:`repeatedmeasures`)
+  - Calculating of Cohen's *h* and proportional plots for binary data (:doc:`proportion-plot`)
+  - Calculating and plotting delta-deltas for 2x2 experimental designs (:doc:`deltadelta`)
+  - Calculating and plotting of weighted deltas for mini-meta-analysis of experimental replicates (:doc:`minimetadelta`)
 
 Refer to :doc:`release-notes` for full details.
 
