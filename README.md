@@ -12,7 +12,7 @@ On 20 March 2023, we will be officially releasing **DABEST v2023.02.14 for Pytho
 
 1. **Repeated measures.** Augments the prior function for plotting (independent) multiple test groups versus a shared control; it can now do the same for repeated-measures experimental design. Together, these two methods can be used to replace both flavors of the 1-way ANOVA with an estimation analysis.
 
-2. **Proportional data.** Generates proportional bar plots, proportional differences, and calculates Cohen's h. Also enables plotting Sankey diagrams for paired binary data. This is the estimation graphic equivalent to a bar chart with Fischer's exact test.
+2. **Proportional data.** Generates proportional bar plots, proportional differences, and calculates Cohen's h. Also enables plotting Sankey diagrams for paired binary data. This is the estimation graphic equivalent to a bar chart with Fisher's exact test.
 
 3. **The ∆∆ plot.** Calculates the delta-delta (∆∆) for 2 × 2 experimental design and plots the four groups with their relevant effect sizes. This design can be used as a replacement for the 2 × 2 ANOVA.
 
