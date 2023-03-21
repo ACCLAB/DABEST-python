@@ -16,4 +16,5 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
           pip install pytest-mpl
+          pip install scipy pandas
           pytest tests/
