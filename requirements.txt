@@ -3,3 +3,5 @@ seaborn
 scipy
 numpy
 matplotlib
+statsmodels
+lqrt
