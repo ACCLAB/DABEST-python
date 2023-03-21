@@ -7,12 +7,6 @@ mpl.use('Agg')
 import matplotlib.ticker as Ticker
 import matplotlib.pyplot as plt
 
-import os
-import sys
-cur_dir = os.getcwd()
-pkg_rootdir = os.path.dirname(cur_dir)
-if pkg_rootdir not in sys.path:
-    sys.path.append(pkg_rootdir)
 from dabest._api import load
 
 def create_demo_prop_dataset(seed=9999, N=40):
