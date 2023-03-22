@@ -14,7 +14,5 @@ jobs:
       - name: Run pytest
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest
-          pip install pytest-mpl
+          pip install .[dev]
           pytest tests/
