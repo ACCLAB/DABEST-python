@@ -50,7 +50,7 @@ b(f"""# <span style='color:#009AF1'>Data Analysis using</span><br>Bootstrap\-Cou
 
 ### Analyze your data with effect sizes and beautiful estimation plots.
 
-{btn('Get started', '/getting_started.ipynb')}
+{btn('Get started', '/01-getting-started.ipynb')}
 
 {img('showpiece.png', style={"margin-top": "20px", "margin-bottom": "20px"}, link=True)}""", "content-block")
 

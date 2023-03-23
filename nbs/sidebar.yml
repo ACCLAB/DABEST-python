@@ -16,6 +16,14 @@ website:
           - API\misc_tools.ipynb
           - API\plot_tools.ipynb
           - API\plotter.ipynb
+      - section: tests
+        contents:
+          - tests\test_01_effsizes_pvals.ipynb
+          - tests\test_02_edge_cases.ipynb
+          - tests\test_04_repeated_measures_effsizes_pvals.ipynb
+          - tests\test_06_delta-delta_effsize_pvals.ipynb
+          - tests\test_08_mini_meta_pvals.ipynb
+          - tests\test_99_confint.ipynb
       - section: tutorials
         contents:
           - tutorials\index.qmd
