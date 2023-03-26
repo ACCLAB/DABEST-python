@@ -18,8 +18,6 @@ website:
       - auto: "/*.ipynb"
       - section: Tutorials
         contents: tutorials/*
-      - section: Tests
-        contents: tests/*
       - section: API
         contents: API/*
   navbar:
@@ -31,6 +29,8 @@ website:
         href: 01-getting_started.ipynb
       - text: "Tutorial"
         href: tutorials/index.qmd
+      - text: "Blog"
+        href: blog/index.qmd
       - text: "Help"
         menu:
           - text: "Report an Issue"
