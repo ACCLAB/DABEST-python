@@ -7,9 +7,12 @@ __all__ = ['EffectSizeDataFramePlotter']
 def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     """
     Custom function that creates an estimation plot from an EffectSizeDataFrame.
-    Keywords
-    --------
+    
+    Parameters
+    ----------
+    
     EffectSizeDataFrame: A `dabest` EffectSizeDataFrame object.
+    
     **plot_kwargs:
         color_col=None
         raw_marker_size=6, es_marker_size=9,

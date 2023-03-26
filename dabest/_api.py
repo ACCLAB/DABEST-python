@@ -71,38 +71,6 @@ def load(data, idx=None, x=None, y=None, paired=None, id_col=None,
     Returns
     -------
     A `Dabest` object.
-
-    Example
-    --------
-    Load libraries.
-
-    >>> import numpy as np
-    >>> import pandas as pd
-    >>> import dabest
-
-    Create dummy data for demonstration.
-
-    >>> np.random.seed(88888)
-    >>> N = 10
-    >>> c1 = sp.stats.norm.rvs(loc=100, scale=5, size=N)
-    >>> t1 = sp.stats.norm.rvs(loc=115, scale=5, size=N)
-    >>> df = pd.DataFrame({'Control 1' : c1, 'Test 1': t1})
-
-    Load the data.
-
-    >>> my_data = dabest.load(df, idx=("Control 1", "Test 1"))
-
-    For proportion plot.
-
-    >>> np.random.seed(88888)
-    >>> N = 10
-    >>> c1 = np.random.binomial(1, 0.2, size=N)
-    >>> t1 = np.random.binomial(1, 0.5, size=N)
-    >>> df = pd.DataFrame({'Control 1' : c1, 'Test 1': t1})
-    >>> my_data = dabest.load(df, idx=("Control 1", "Test 1"),proportional=True)
-
-
-
     '''
     from ._classes import Dabest
 

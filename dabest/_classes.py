@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['Dabest', 'DeltaDelta', 'MiniMetaDelta', 'TwoGroupsEffectSize', 'EffectSizeDataFrame', 'PermutationTest']
 
-# %% ../nbs/API/class.ipynb 4
+# %% ../nbs/API/class.ipynb 5
 class Dabest(object):
 
     """
@@ -430,28 +430,6 @@ class Dabest(object):
     def mean_diff(self):
         """
         Returns an :py:class:`EffectSizeDataFrame` for the mean difference, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
-        
-        Example
-        -------
-        >>> from scipy.stats import norm
-        >>> import pandas as pd
-        >>> import dabest
-        >>> control = norm.rvs(loc=0, size=30, random_state=12345)
-        >>> test    = norm.rvs(loc=0.5, size=30, random_state=12345)
-        >>> my_df   = pd.DataFrame({"control": control,
-                                    "test": test})
-        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
-        >>> my_dabest_object.mean_diff
-        
-        Notes
-        -----
-        This is simply the mean of the control group subtracted from
-        the mean of the test group.
-        
-        .. math::
-            \\text{Mean difference} = \\overline{x}_{Test} - \\overline{x}_{Control}
-            
-        where :math:`\\overline{x}` is the mean for the group :math:`x`.
 
         """
         return self.__mean_diff
@@ -463,44 +441,6 @@ class Dabest(object):
         Returns an :py:class:`EffectSizeDataFrame` for the median difference, its confidence interval, and relevant statistics, for all comparisons  as indicated via the `idx` and `paired` argument in `dabest.load()`.
 
 
-        Example
-        -------
-        >>> from scipy.stats import norm
-        >>> import pandas as pd
-        >>> import dabest
-        >>> control = norm.rvs(loc=0, size=30, random_state=12345)
-        >>> test    = norm.rvs(loc=0.5, size=30, random_state=12345)
-        >>> my_df   = pd.DataFrame({"control": control,
-                                    "test": test})
-        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
-        >>> my_dabest_object.median_diff
-
-
-        Notes
-        -----
-        This is the median difference between the control group and the test group.
-        
-        If the comparison(s) are unpaired, median_diff is computed with the following equation:
-
-        .. math::
-            \\text{Median difference} = \\widetilde{x}_{Test} - \\widetilde{x}_{Control}
-            
-        where :math:`\\widetilde{x}` is the median for the group :math:`x`.
-
-        If the comparison(s) are paired, median_diff is computed with the following equation:
-
-        .. math::
-            \\text{Median difference} = \\widetilde{x}_{Test - Control}
-            
-
-        Things to note
-        --------------
-        Using median difference as the statistic in bootstrapping may result in a biased estimate and cause problems with BCa confidence intervals. Consider using mean difference instead. 
-
-        When plotting, consider using percentile confidence intervals instead of BCa confidence intervals by specifying `ci_type = 'percentile'` in .plot(). 
-
-        For detailed information, please refer to `Issue 129 <https://github.com/ACCLAB/DABEST-python/issues/129>`_. 
-
         """
         return self.__median_diff
         
@@ -510,59 +450,6 @@ class Dabest(object):
         """
         Returns an :py:class:`EffectSizeDataFrame` for the standardized mean difference Cohen's `d`, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
         
-        Example
-        -------
-        >>> from scipy.stats import norm
-        >>> import pandas as pd
-        >>> import dabest
-        >>> control = norm.rvs(loc=0, size=30, random_state=12345)
-        >>> test    = norm.rvs(loc=0.5, size=30, random_state=12345)
-        >>> my_df   = pd.DataFrame({"control": control,
-                                    "test": test})
-        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
-        >>> my_dabest_object.cohens_d
-        
-        Notes
-        -----
-        Cohen's `d` is simply the mean of the control group subtracted from
-        the mean of the test group.
-        
-        If `paired` is None, then the comparison(s) are unpaired; 
-        otherwise the comparison(s) are paired.
-
-        If the comparison(s) are unpaired, Cohen's `d` is computed with the following equation:
-        
-        .. math::
-            
-            d = \\frac{\\overline{x}_{Test} - \\overline{x}_{Control}} {\\text{pooled standard deviation}}
-                
-        
-        For paired comparisons, Cohen's d is given by
-        
-        .. math::
-            d = \\frac{\\overline{x}_{Test} - \\overline{x}_{Control}} {\\text{average standard deviation}}
-            
-        where :math:`\\overline{x}` is the mean of the respective group of observations, :math:`{Var}_{x}` denotes the variance of that group,
-        
-        .. math::
-        
-            \\text{pooled standard deviation} = \\sqrt{ \\frac{(n_{control} - 1) * {Var}_{control} + (n_{test} - 1) * {Var}_{test} } {n_{control} + n_{test} - 2} }
-        
-        and
-        
-        .. math::
-        
-            \\text{average standard deviation} = \\sqrt{ \\frac{{Var}_{control} + {Var}_{test}} {2}}
-            
-        The sample variance (and standard deviation) uses N-1 degrees of freedoms.
-        This is an application of `Bessel's correction <https://en.wikipedia.org/wiki/Bessel%27s_correction>`_, and yields the unbiased
-        sample variance.
-        
-        References:
-            https://en.wikipedia.org/wiki/Effect_size#Cohen's_d
-            https://en.wikipedia.org/wiki/Bessel%27s_correction
-            https://en.wikipedia.org/wiki/Standard_deviation#Corrected_sample_standard_deviation
-
         """
         return self.__cohens_d
     
@@ -572,36 +459,6 @@ class Dabest(object):
         """
         Returns an :py:class:`EffectSizeDataFrame` for the standardized mean difference Cohen's `h`, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `directional` argument in `dabest.load()`.
 
-        Example
-        -------
-        >>> from scipy.stats import randint
-        >>> import pandas as pd
-        >>> import dabest
-        >>> control = randint.rvs(0, 2, size=30, random_state=12345)
-        >>> test    = randint.rvs(0, 2, size=30, random_state=12345)
-        >>> my_df   = pd.DataFrame({"control": control,
-                                    "test": test})
-        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test")
-        >>> my_dabest_object.cohens_h
-
-        Notes
-        -----
-        Cohen's *h* uses the information of proportion in the control and test groups to calculate the distance between two proportions.
-        It can be used to describe the difference between two proportions as "small", "medium", or "large".
-        It can be used to determine if the difference between two proportions is "meaningful".
-
-        A directional Cohen's *h* is computed with the following equation:
-
-        .. math::
-            h = 2 * \\arcsin{\\sqrt{proportion_{Test}}} - 2 * \\arcsin{\\sqrt{proportion_{Control}}}
-
-        For a non-directional Cohen's *h*, the equation is:
-
-        .. math::
-            h = |2 * \\arcsin{\\sqrt{proportion_{Test}}} - 2 * \\arcsin{\\sqrt{proportion_{Control}}}|
-        
-        References:
-            https://en.wikipedia.org/wiki/Cohen%27s_h
 
         """
         return self.__cohens_h
@@ -612,39 +469,6 @@ class Dabest(object):
         """
         Returns an :py:class:`EffectSizeDataFrame` for the standardized mean difference Hedges' `g`, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
         
-        
-        Example
-        -------
-        >>> from scipy.stats import norm
-        >>> import pandas as pd
-        >>> import dabest
-        >>> control = norm.rvs(loc=0, size=30, random_state=12345)
-        >>> test    = norm.rvs(loc=0.5, size=30, random_state=12345)
-        >>> my_df   = pd.DataFrame({"control": control,
-                                    "test": test})
-        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
-        >>> my_dabest_object.hedges_g
-        
-        Notes
-        -----
-        
-        Hedges' `g` is :py:attr:`cohens_d` corrected for bias via multiplication with the following correction factor:
-        
-        .. math::
-            \\frac{ \\Gamma( \\frac{a} {2} )} {\\sqrt{ \\frac{a} {2} } \\times \\Gamma( \\frac{a - 1} {2} )}
-            
-        where
-        
-        .. math::
-            a = {n}_{control} + {n}_{test} - 2
-            
-        and :math:`\\Gamma(x)` is the `Gamma function <https://en.wikipedia.org/wiki/Gamma_function>`_.
-            
-        
-        
-        References:
-            https://en.wikipedia.org/wiki/Effect_size#Hedges'_g
-            https://journals.sagepub.com/doi/10.3102/10769986006002107
 
         """
         return self.__hedges_g
@@ -654,37 +478,6 @@ class Dabest(object):
     def cliffs_delta(self):
         """
         Returns an :py:class:`EffectSizeDataFrame` for Cliff's delta, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
-        
-        
-        Example
-        -------
-        >>> from scipy.stats import norm
-        >>> import pandas as pd
-        >>> import dabest
-        >>> control = norm.rvs(loc=0, size=30, random_state=12345)
-        >>> test    = norm.rvs(loc=0.5, size=30, random_state=12345)
-        >>> my_df   = pd.DataFrame({"control": control,
-                                    "test": test})
-        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
-        >>> my_dabest_object.cliffs_delta
-        
-        
-        Notes
-        -----
-        
-        Cliff's delta is a measure of ordinal dominance, ie. how often the values from the test sample are larger than values from the control sample.
-        
-        .. math::
-            \\text{Cliff's delta} = \\frac{\\#({x}_{test} > {x}_{control}) - \\#({x}_{test} < {x}_{control})} {{n}_{Test} \\times {n}_{Control}}
-            
-            
-        where :math:`\\#` denotes the number of times a value from the test sample exceeds (or is lesser than) values in the control sample. 
-         
-        Cliff's delta ranges from -1 to 1; it can also be thought of as a measure of the degree of overlap between the two samples. An attractive aspect of this effect size is that it does not make an assumptions about the underlying distributions that the samples were drawn from. 
-        
-        References:
-            https://en.wikipedia.org/wiki/Effect_size#Effect_size_for_ordinal_data
-            https://psycnet.apa.org/record/1994-08169-001
 
         """
         return self.__cliffs_delta
@@ -869,81 +662,10 @@ class Dabest(object):
         """
         return self.__all_plot_groups
 
-
-
-
+# %% ../nbs/API/class.ipynb 27
 class DeltaDelta(object):
     """
     A class to compute and store the delta-delta statistics for experiments with a 2-by-2 arrangement where two independent variables, A and B, each have two categorical values, 1 and 2. The data is divided into two pairs of two groups, and a primary delta is first calculated as the mean difference between each of the pairs:
-
-    .. math::
-
-       \\Delta_{1} = \\overline{X}_{A_{2}, B_{1}} - \\overline{X}_{A_{1}, B_{1}}
-
-       \\Delta_{2} = \\overline{X}_{A_{2}, B_{2}} - \\overline{X}_{A_{1}, B_{2}}
-
-    
-    where :math:`\overline{X}_{A_{i}, B_{j}}` is the mean of the sample with A = i and B = j, :math:`\\Delta` is the mean difference between two samples. 
-
-    A delta-delta value is then calculated as the mean difference between the two primary deltas:
-
-    .. math::
-
-        \\Delta_{\\Delta} = \\Delta_{2} - \\Delta_{1}
-    
-    and:
-
-    and the standard deviation of the delta-delta value is calculated from a pooled variance of the 4 samples:
-
-    .. math::
-
-        s_{\\Delta_{\\Delta}} = \\sqrt{\\frac{(n_{A_{2}, B_{1}}-1)s_{A_{2}, B_{1}}^2+(n_{A_{1}, B_{1}}-1)s_{A_{1}, B_{1}}^2+(n_{A_{2}, B_{2}}-1)s_{A_{2}, B_{2}}^2+(n_{A_{1}, B_{2}}-1)s_{A_{1}, B_{2}}^2}{(n_{A_{2}, B_{1}} - 1) + (n_{A_{1}, B_{1}} - 1) + (n_{A_{2}, B_{2}} - 1) + (n_{A_{1}, B_{2}} - 1)}}
-
-    where :math:`s` is the standard deviation and :math:`n` is the sample size.
-
-    Example
-    -------
-    >>> import numpy as np
-    >>> import pandas as pd
-    >>> import dabest
-    >>> from scipy.stats import norm # Used in generation of populations.
-    >>> np.random.seed(9999) # Fix the seed so the results are replicable.
-    >>> from scipy.stats import norm # Used in generation of populations.
-    >>> N = 20
-    >>> # Create samples
-    >>> y = norm.rvs(loc=3, scale=0.4, size=N*4)
-    >>> y[N:2*N] = y[N:2*N]+1
-    >>> y[2*N:3*N] = y[2*N:3*N]-0.5
-    >>> # Add a `Treatment` column
-    >>> t1 = np.repeat('Placebo', N*2).tolist()
-    >>> t2 = np.repeat('Drug', N*2).tolist()
-    >>> treatment = t1 + t2 
-    >>> # Add a `Rep` column as the first variable for the 2 replicates of experiments done
-    >>> rep = []
-    >>> for i in range(N*2):
-    >>>     rep.append('Rep1')
-    >>>     rep.append('Rep2')
-    >>> # Add a `Genotype` column as the second variable
-    >>> wt = np.repeat('W', N).tolist()
-    >>> mt = np.repeat('M', N).tolist()
-    >>> wt2 = np.repeat('W', N).tolist()
-    >>> mt2 = np.repeat('M', N).tolist()
-    >>> genotype = wt + mt + wt2 + mt2
-    >>> # Add an `id` column for paired data plotting.
-    >>> id = list(range(0, N*2))
-    >>> id_col = id + id 
-    >>> # Combine all columns into a DataFrame.
-    >>> df_delta2 = pd.DataFrame({'ID'        : id_col,
-    >>>                   'Rep'      : rep,
-    >>>                    'Genotype'  : genotype, 
-    >>>                    'Treatment': treatment,
-    >>>                    'Y'         : y
-    >>>                 })
-    >>> unpaired_delta2 = dabest.load(data = df_delta2, x = ["Genotype", "Genotype"], y = "Y", delta2 = True, experiment = "Treatment")
-    >>> unpaired_delta2.mean_diff.plot()
- 
-
-
 
     """
 
@@ -1286,59 +1008,11 @@ class DeltaDelta(object):
 
 
 
-
-
+# %% ../nbs/API/class.ipynb 32
 class MiniMetaDelta(object):
     """
     A class to compute and store the weighted delta.
     A weighted delta is calculated if the argument ``mini_meta=True`` is passed during ``dabest.load()``.
-
-    The weighted delta is calcuated as follows:
-
-    .. math::
-	\\theta_{\\text{weighted}} = \\frac{\\Sigma\\hat{\\theta_{i}}w_{i}}{{\\Sigma}w_{i}}
-    
-    where:
-
-    .. math::
-	\\hat{\\theta_{i}} = \\text{Mean difference for replicate }i
-
-    .. math::
-	w_{i} = \\text{Weight for replicate }i = \\frac{1}{s_{i}^2} 
-
-    .. math::
-	s_{i}^2 = \\text{Pooled variance for replicate }i = \\frac{(n_{test}-1)s_{test}^2+(n_{control}-1)s_{control}^2}{n_{test}+n_{control}-2}
-
-    .. math::
-	n = \\text{sample size and }s^2 = \\text{variance for control/test.}
-
-
-    Example
-    -------
-    >>> from scipy.stats import norm
-    >>> import pandas as pd
-    >>> import dabest
-    >>> Ns = 20
-    >>> c1 = norm.rvs(loc=3, scale=0.4, size=Ns)
-    >>> c2 = norm.rvs(loc=3.5, scale=0.75, size=Ns)
-    >>> c3 = norm.rvs(loc=3.25, scale=0.4, size=Ns)
-    >>> t1 = norm.rvs(loc=3.5, scale=0.5, size=Ns)
-    >>> t2 = norm.rvs(loc=2.5, scale=0.6, size=Ns)
-    >>> t3 = norm.rvs(loc=3, scale=0.75, size=Ns)
-    >>> my_df   = pd.DataFrame({'Control 1' : c1,     'Test 1' : t1,
-                       'Control 2' : c2,     'Test 2' : t2,
-                       'Control 3' : c3,     'Test 3' : t3})
-    >>> my_dabest_object = dabest.load(my_df, idx=(("Control 1", "Test 1"), ("Control 2", "Test 2"), ("Control 3", "Test 3")), mini_meta=True)
-    >>> my_dabest_object.mean_diff.mini_meta_delta
-
-    Notes
-    -----
-    As of version 2023.02.14, weighted delta can only be calculated for mean difference, and not for standardized measures such as Cohen's *d*.
-
-    Details about the calculated weighted delta are accessed as attributes of the ``mini_meta_delta`` class. See the :doc:`minimetadelta` for details on usage.
-
-    Refer to Chapter 10 of the Cochrane handbook for further information on meta-analysis: https://training.cochrane.org/handbook/current/chapter-10
-		
     """
 
     def __init__(self, effectsizedataframe, permutation_count,
@@ -1796,8 +1470,7 @@ class MiniMetaDelta(object):
 
 
 
-
-
+# %% ../nbs/API/class.ipynb 38
 class TwoGroupsEffectSize(object):
 
     """
@@ -1877,61 +1550,7 @@ class TwoGroupsEffectSize(object):
             respectively.
             
             
-        Examples
-        --------
-        >>> import numpy as np
-        >>> from scipy.stats import norm
-        >>> import dabest
-        >>> np.random.seed(12345)
-        >>> control = norm.rvs(loc=0, size=30)
-        >>> test = norm.rvs(loc=0.5, size=30)
-        >>> effsize = dabest.TwoGroupsEffectSize(control, test, "mean_diff")
-        >>> effsize
-        The unpaired mean difference is -0.253 [95%CI -0.78, 0.25].
-        The p-value of the two-sided permutation t-test is 0.348, calculated 
-        for legacy purposes only. 
-
-        5000 bootstrap samples were taken; the confidence interval is 
-        bias-corrected and accelerated. The p-value(s) reported are the 
-        likelihood(s) of observing the effect size(s), if the null hypothesis 
-        of zero difference is true. For each p-value, 5000 reshuffles of the 
-        control and test labels were performed.
-        >>> effsize.to_dict() 
-        {'alpha': 0.05,
-         'bca_high': 0.24951887238295106,
-         'bca_interval_idx': (125, 4875),
-         'bca_low': -0.7801782111071534,
-         'bootstraps': array([-0.3649424 , -0.45018155, -0.56034412, ..., -0.49805581,
-                              -0.25334475, -0.55206229]),
-         'ci': 95,
-         'difference': -0.25315417702752846,
-         'effect_size': 'mean difference',
-         'is_paired': None,
-         'pct_high': 0.24951887238295106,
-         'pct_interval_idx': (125, 4875),
-         'pct_low': -0.7801782111071534,
-         'permutation_count': 5000,
-         'permutations': array([ 0.17221029,  0.03112419, -0.13911387, ..., -0.38007941,
-                                 0.30261507, -0.09073054]),
-         'permutations_var': array([0.07201642, 0.07251104, 0.07219407, ..., 0.07003705, 0.07094885,
-                                 0.07238581]),
-         'pvalue_brunner_munzel': nan,
-         'pvalue_kruskal': nan,
-         'pvalue_mann_whitney': 0.5201446121616038,
-         'pvalue_paired_students_t': nan,
-         'pvalue_permutation': 0.3484,
-         'pvalue_students_t': 0.34743913903372836,
-         'pvalue_welch': 0.3474493875548965,
-         'pvalue_wilcoxon': nan,
-         'random_seed': 12345,
-         'resamples': 5000,
-         'statistic_brunner_munzel': nan,
-         'statistic_kruskal': nan,
-         'statistic_mann_whitney': 494.0,
-         'statistic_paired_students_t': nan,
-         'statistic_students_t': 0.9472545159069105,
-         'statistic_welch': 0.9472545159069105,
-         'statistic_wilcoxon': nan}
+        
         """
         
         import numpy as np
@@ -2646,8 +2265,9 @@ class TwoGroupsEffectSize(object):
     #     except AttributeError:
     #         return npnan
 
-        
-        
+  
+
+# %% ../nbs/API/class.ipynb 43
 class EffectSizeDataFrame(object):
     """A class that generates and stores the results of bootstrapped effect
     sizes for several comparisons."""
@@ -3057,62 +2677,6 @@ class EffectSizeDataFrame(object):
         See the last example below.
         
 
-        Examples
-        --------
-        Create a Gardner-Altman estimation plot for the mean difference.
-
-        >>> my_data = dabest.load(df, idx=("Control 1", "Test 1"))
-        >>> fig1 = my_data.mean_diff.plot()
-
-        Create a Gardner-Altman plot for the Hedges' g effect size.
-
-        >>> fig2 = my_data.hedges_g.plot()
-
-        Create a Cumming estimation plot for the mean difference.
-
-        >>> fig3 = my_data.mean_diff.plot(float_contrast=True)
-
-        Create a paired Gardner-Altman plot.
-
-        >>> my_data_paired = dabest.load(df, idx=("Control 1", "Test 1"),
-        ...                id_col = "ID", paired='baseline')
-        >>> fig4 = my_data_paired.mean_diff.plot()
-
-        Create a multi-group Cumming plot.
-
-        >>> my_multi_groups = dabest.load(df, id_col = "ID", 
-        ...                             idx=(("Control 1", "Test 1"),
-        ...                                 ("Control 2", "Test 2")))
-        >>> fig5 = my_multi_groups.mean_diff.plot()
-
-        Create a shared control Cumming plot.
-
-        >>> my_shared_control = dabest.load(df, id_col = "ID",
-        ...                                 idx=("Control 1", "Test 1",
-        ...                                          "Test 2", "Test 3"))
-        >>> fig6 = my_shared_control.mean_diff.plot()
-        
-        Create a repeated meausures (against baseline) Slopeplot.
-
-        >>> my_rm_baseline = dabest.load(df, id_col = "ID", paired = "baseline",
-        ...                                 idx=("Control 1", "Test 1",
-        ...                                          "Test 2", "Test 3"))
-        >>> fig7 = my_rm_baseline.mean_diff.plot()
-
-        Create a repeated meausures (sequential) Slopeplot.
-
-        >>> my_rm_sequential = dabest.load(df, id_col = "ID", paired = "sequential",
-        ...                                 idx=("Control 1", "Test 1",
-        ...                                          "Test 2", "Test 3"))
-        >>> fig8 = my_rm_sequential.mean_diff.plot()
-
-        Creating estimation plots in individual panels of a figure.
-        
-        >>> f, axx = plt.subplots(nrows=2, ncols=2, figsize=(15, 15))
-        >>> my_data.mean_diff.plot(ax=axx.flat[0])
-        >>> my_data_paired.mean_diff.plot(ax=axx.flat[1])
-        >>> my_shared_control.mean_diff.plot(ax=axx.flat[2])
-        >>> my_shared_control.mean_diff.plot(ax=axx.flat[3], float_contrast=False)
 
         """
 
@@ -3304,9 +2868,7 @@ class EffectSizeDataFrame(object):
 
 
 
-        
-        
-        
+# %% ../nbs/API/class.ipynb 53
 class PermutationTest:
     """
     A class to compute and report permutation tests.
@@ -3337,35 +2899,8 @@ class PermutationTest:
     
     effect_size : string
         The type of effect size reported.
-        
-        
-    Notes
-    -----
-    The basic concept of permutation tests is the same as that behind bootstrapping.
-    In an "exact" permutation test, all possible resuffles of the control and test 
-    labels are performed, and the proportion of effect sizes that equal or exceed 
-    the observed effect size is computed. This is the probability, under the null 
-    hypothesis of zero difference between test and control groups, of observing the
-    effect size: the p-value of the Student's t-test.
-    
-    Exact permutation tests are impractical: computing the effect sizes for all reshuffles quickly exceeds trivial computational loads. A control group and a test group both with 10 observations each would have a total of  :math:`20!` or :math:`2.43 \\times {10}^{18}` reshuffles.
-    Therefore, in practice, "approximate" permutation tests are performed, where a sufficient number of reshuffles are performed (5,000 or 10,000), from which the p-value is computed.
-    
-    More information can be found `here <https://en.wikipedia.org/wiki/Resampling_(statistics)#Permutation_tests>`_.
     
     
-    Example
-    -------
-    >>> import numpy as np
-    >>> from scipy.stats import norm
-    >>> import dabest
-    >>> control = norm.rvs(loc=0, size=30, random_state=12345)
-    >>> test = norm.rvs(loc=0.5, size=30, random_state=12345)
-    >>> perm_test = dabest.PermutationTest(control, test, 
-    ...                                    effect_size="mean_diff", 
-    ...                                    paired=None)
-    >>> perm_test
-    5000 permutations were taken. The pvalue is 0.0758.
     """
     
     def __init__(self, control, test, 
