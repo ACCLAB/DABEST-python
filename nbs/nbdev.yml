@@ -4,6 +4,6 @@ project:
 website:
   title: "dabest"
   site-url: "https://ZHANGROU-99.github.io/DABEST-python"
-  description: "Data Analysis with Bootstrapped ESTimation"
+  description: "Data Analysis and Visualization using Bootstrap-Coupled Estimation."
   repo-branch: master
   repo-url: "https://github.com/ZHANGROU-99/DABEST-python"
