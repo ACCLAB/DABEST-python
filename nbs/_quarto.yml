@@ -6,15 +6,41 @@ format:
     theme: cosmo
     css: styles.css
     toc: true
+    toc-depth: 4
 
 website:
   twitter-card: true
   open-graph: true
   repo-actions: [issue]
+  sidebar:
+    style: floating
+    contents:
+      - auto: "/*.ipynb"
+      - section: Tutorials
+        contents: tutorials/*
+      - section: Tests
+        contents: tests/*
+      - section: API
+        contents: API/*
   navbar:
     background: primary
     search: true
-  sidebar:
-    style: floating
+    collapse-below: lg
+    left:
+      - text: "Get Started"
+        href: 01-getting_started.ipynb
+      - text: "Tutorial"
+        href: tutorials/index.qmd
+      - text: "Help"
+        menu:
+          - text: "Report an Issue"
+            icon: bug
+            href: https://github.com/ACCLAB/DABEST-python/issues
+    right:
+      - icon: github
+        href: "https://github.com/ACCLAB/DABEST-python"
+      - icon: twitter
+        href: https://twitter.com/EstimationStats
+        aria-label: ACCLAB Twitter
 
 metadata-files: [nbdev.yml, sidebar.yml]

@@ -50,7 +50,7 @@ b(f"""# <span style='color:#009AF1'>Data Analysis using</span><br>Bootstrap\-Cou
 
 ### Analyze your data with effect sizes and beautiful estimation plots.
 
-{btn('Get started', '/01-getting-started.ipynb')}
+{btn('Get started', '/01-getting_started.ipynb')}
 
 {img('showpiece.png', style={"margin-top": "20px", "margin-bottom": "20px"}, link=True)}""", "content-block")
 
@@ -62,7 +62,7 @@ d(feature_h+feature_d, "content-block")
 
 b(f"""## Get started in seconds
 
-{btn('Install dabest', '/getting_started.ipynb')}""", 'content-block', style={"margin-top": "40px"})
+{btn('Install dabest', '/01-getting_started.ipynb')}""", 'content-block', style={"margin-top": "40px"})
 
 
 
