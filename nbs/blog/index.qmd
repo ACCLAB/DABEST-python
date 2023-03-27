@@ -1,5 +1,5 @@
 ---
-title: dabest Blog
+title: DABEST Blog
 subtitle: News, tips, and commentary about all things dabest
 listing:
   sort: "date desc"
