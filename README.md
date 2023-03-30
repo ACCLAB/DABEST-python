@@ -11,11 +11,11 @@ Python 3.6 and 3.7.
 In addition, the following packages are also required (listed with their
 minimal versions):
 
-- [numpy 1.19](https://www.numpy.org)
-- [scipy 1.5](https://www.scipy.org)
-- [matplotlib 3.3](https://www.matplotlib.org)
-- [pandas 1.1](https://pandas.pydata.org)
-- [seaborn 0.11](https://seaborn.pydata.org)
+- [numpy 1.22.3](https://www.numpy.org)
+- [scipy 1.9.3](https://www.scipy.org)
+- [matplotlib 3.5.1](https://www.matplotlib.org)
+- [pandas 1.5.0](https://pandas.pydata.org)
+- [seaborn 0.11.2](https://seaborn.pydata.org)
 - [lqrt 0.3](https://github.com/alyakin314/lqrt)
 
 To obtain these package dependencies easily, it is highly recommended to

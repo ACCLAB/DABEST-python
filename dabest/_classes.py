@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['Dabest', 'DeltaDelta', 'MiniMetaDelta', 'TwoGroupsEffectSize', 'EffectSizeDataFrame', 'PermutationTest']
 
-# %% ../nbs/API/class.ipynb 5
+# %% ../nbs/API/class.ipynb 4
 class Dabest(object):
 
     """
@@ -662,7 +662,7 @@ class Dabest(object):
         """
         return self.__all_plot_groups
 
-# %% ../nbs/API/class.ipynb 27
+# %% ../nbs/API/class.ipynb 24
 class DeltaDelta(object):
     """
     A class to compute and store the delta-delta statistics for experiments with a 2-by-2 arrangement where two independent variables, A and B, each have two categorical values, 1 and 2. The data is divided into two pairs of two groups, and a primary delta is first calculated as the mean difference between each of the pairs:
@@ -1008,7 +1008,7 @@ class DeltaDelta(object):
 
 
 
-# %% ../nbs/API/class.ipynb 32
+# %% ../nbs/API/class.ipynb 28
 class MiniMetaDelta(object):
     """
     A class to compute and store the weighted delta.
@@ -1470,23 +1470,14 @@ class MiniMetaDelta(object):
 
 
 
-# %% ../nbs/API/class.ipynb 38
+# %% ../nbs/API/class.ipynb 33
 class TwoGroupsEffectSize(object):
 
     """
     A class to compute and store the results of bootstrapped
     mean differences between two groups.
-    """
-
-    def __init__(self, control, test, effect_size,
-                 proportional=False,
-                 is_paired=None, ci=95,
-                 resamples=5000, 
-                 permutation_count=5000, 
-                 random_seed=12345):
-
-        """
-        Compute the effect size between two groups.
+    
+    Compute the effect size between two groups.
 
         Parameters
         ----------
@@ -1548,10 +1539,15 @@ class TwoGroupsEffectSize(object):
         pct_low, pct_high : float
             The percentile confidence interval lower limit and upper limits, 
             respectively.
-            
-            
-        
-        """
+    """
+
+    def __init__(self, control, test, effect_size,
+                 proportional=False,
+                 is_paired=None, ci=95,
+                 resamples=5000, 
+                 permutation_count=5000, 
+                 random_seed=12345):
+
         
         import numpy as np
         from numpy import array, isnan, isinf
@@ -1565,8 +1561,7 @@ class TwoGroupsEffectSize(object):
 
         from string import Template
         import warnings
-
-
+        
         from . import effsize as es
         from . import confint_2group_diff as ci2g
 
@@ -1709,12 +1704,6 @@ class TwoGroupsEffectSize(object):
             self.__statistic_wilcoxon = wilcoxon.statistic
             
             
-            # Introduced in v0.2.8, removed in v0.3.0 for performance issues.
-#             lqrt_result = lqrt.lqrtest_rel(control, test, 
-#                                     random_state=random_seed)
-#             self.__pvalue_paired_lqrt = lqrt_result.pvalue
-#             self.__statistic_paired_lqrt = lqrt_result.statistic
-
             if effect_size != "median_diff":
                 # Paired Student's t-test.
                 paired_t = spstats.ttest_rel(control, test, nan_policy='omit')
@@ -1786,21 +1775,6 @@ class TwoGroupsEffectSize(object):
                 # in terms of rank (eg. all zeros.)
                 pass
             
-            # Introduced in v0.2.8, removed in v0.3.0 for performance issues.
-#             # Likelihood Q-Ratio test:
-#             lqrt_equal_var_result = lqrt.lqrtest_ind(control, test, 
-#                                         random_state=random_seed,
-#                                         equal_var=True)
-                            
-#             self.__pvalue_lqrt_equal_var = lqrt_equal_var_result.pvalue
-#             self.__statistic_lqrt_equal_var = lqrt_equal_var_result.statistic
-            
-#             lqrt_unequal_var_result = lqrt.lqrtest_ind(control, test, 
-#                                         random_state=random_seed,
-#                                         equal_var=False)
-                                        
-#             self.__pvalue_lqrt_unequal_var = lqrt_unequal_var_result.pvalue
-#             self.__statistic_lqrt_unequal_var = lqrt_unequal_var_result.statistic
                     
 
             standardized_es = es.cohens_d(control, test, is_paired = None)
@@ -2197,77 +2171,7 @@ class TwoGroupsEffectSize(object):
             return npnan
 
 
-
-    # Introduced in v0.2.8, removed in v0.3.0 for performance issues.
-#     @property
-#     def pvalue_lqrt_paired(self):
-#         from numpy import nan as npnan
-#         try:
-#             return self.__pvalue_paired_lqrt
-#         except AttributeError:
-#             return npnan
-
-
-
-#     @property
-#     def statistic_lqrt_paired(self):
-#         from numpy import nan as npnan
-#         try:
-#             return self.__statistic_paired_lqrt
-#         except AttributeError:
-#             return npnan
-            
-    
-#     @property
-#     def pvalue_lqrt_unpaired_equal_variance(self):
-#         from numpy import nan as npnan
-#         try:
-#             return self.__pvalue_lqrt_equal_var
-#         except AttributeError:
-#             return npnan
-
-
-
-#     @property
-#     def statistic_lqrt_unpaired_equal_variance(self):
-#         from numpy import nan as npnan
-#         try:
-#             return self.__statistic_lqrt_equal_var
-#         except AttributeError:
-#             return npnan
-            
-            
-#     @property
-#     def pvalue_lqrt_unpaired_unequal_variance(self):
-#         from numpy import nan as npnan
-#         try:
-#             return self.__pvalue_lqrt_unequal_var
-#         except AttributeError:
-#             return npnan
-
-
-
-#     @property
-#     def statistic_lqrt_unpaired_unequal_variance(self):
-#         from numpy import nan as npnan
-#         try:
-#             return self.__statistic_lqrt_unequal_var
-#         except AttributeError:
-#             return npnan
-    
-    
-    
-    # @property
-    # def power(self):
-    #     from numpy import nan as npnan
-    #     try:
-    #         return self.__power
-    #     except AttributeError:
-    #         return npnan
-
-  
-
-# %% ../nbs/API/class.ipynb 43
+# %% ../nbs/API/class.ipynb 37
 class EffectSizeDataFrame(object):
     """A class that generates and stores the results of bootstrapped effect
     sizes for several comparisons."""
@@ -2868,7 +2772,7 @@ class EffectSizeDataFrame(object):
 
 
 
-# %% ../nbs/API/class.ipynb 53
+# %% ../nbs/API/class.ipynb 46
 class PermutationTest:
     """
     A class to compute and report permutation tests.
