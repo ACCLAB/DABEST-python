@@ -361,7 +361,7 @@ def _compute_standardizers(control, test):
     # else:
     return pooled, average # indent if you implement above code chunk.
 
-# %% ../nbs/API/effsize.ipynb 13
+# %% ../nbs/API/effsize.ipynb 12
 def _compute_hedges_correction_factor(n1, 
                                       n2
                                      )->float:
@@ -398,7 +398,7 @@ def _compute_hedges_correction_factor(n1,
 
     return out
 
-# %% ../nbs/API/effsize.ipynb 15
+# %% ../nbs/API/effsize.ipynb 13
 def weighted_delta(difference, group_var):
     '''
     Compute the weighted deltas where the weight is the inverse of the
