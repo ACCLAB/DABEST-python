@@ -5,6 +5,9 @@ __all__ = ['Dabest', 'DeltaDelta', 'MiniMetaDelta', 'TwoGroupsEffectSize', 'Effe
 
 # %% ../nbs/API/class.ipynb 4
 import numpy as np
+from scipy.stats import norm
+import pandas as pd
+from scipy.stats import randint
 
 # %% ../nbs/API/class.ipynb 5
 class Dabest(object):
@@ -665,7 +668,7 @@ class Dabest(object):
         """
         return self.__all_plot_groups
 
-# %% ../nbs/API/class.ipynb 25
+# %% ../nbs/API/class.ipynb 24
 class DeltaDelta(object):
     """
     A class to compute and store the delta-delta statistics for experiments with a 2-by-2 arrangement where two independent variables, A and B, each have two categorical values, 1 and 2. The data is divided into two pairs of two groups, and a primary delta is first calculated as the mean difference between each of the pairs:
@@ -1024,7 +1027,7 @@ class DeltaDelta(object):
 
 
 
-# %% ../nbs/API/class.ipynb 29
+# %% ../nbs/API/class.ipynb 28
 class MiniMetaDelta(object):
     """
     A class to compute and store the weighted delta.
@@ -1487,7 +1490,7 @@ class MiniMetaDelta(object):
 
 
 
-# %% ../nbs/API/class.ipynb 34
+# %% ../nbs/API/class.ipynb 33
 class TwoGroupsEffectSize(object):
 
     """
@@ -2174,7 +2177,7 @@ class TwoGroupsEffectSize(object):
             return npnan
 
 
-# %% ../nbs/API/class.ipynb 38
+# %% ../nbs/API/class.ipynb 37
 class EffectSizeDataFrame(object):
     """A class that generates and stores the results of bootstrapped effect
     sizes for several comparisons."""
@@ -2775,7 +2778,7 @@ class EffectSizeDataFrame(object):
 
 
 
-# %% ../nbs/API/class.ipynb 56
+# %% ../nbs/API/class.ipynb 55
 class PermutationTest:
     """
     A class to compute and report permutation tests.
