@@ -75,7 +75,7 @@ An estimation plot has two key features.
     interval** on a **separate but aligned axes**.
 
 ![The five kinds of estimation
-plots](images/showpiece.png "The five kinds of estimation plots.")
+plots](showpiece.png "The five kinds of estimation plots.")
 
 DABEST powers [estimationstats.com](https://www.estimationstats.com/),
 allowing everyone access to high-quality estimation plots.
@@ -127,7 +127,7 @@ iris_dabest.mean_diff.plot();
 ```
 
 ![A Cumming estimation plot of petal width from the iris
-dataset](images/iris.png)
+dataset](iris.png)
 
 Please refer to the official
 [tutorial](https://acclab.github.io/DABEST-python-docs/tutorial.html)
