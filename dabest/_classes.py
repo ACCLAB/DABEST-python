@@ -2817,7 +2817,7 @@ class PermutationTest:
     
         import numpy as np
         from numpy.random import PCG64, RandomState
-        from ._stats_tools import effsize as es
+        from ._stats_tools.effsize import two_group_difference
         from ._stats_tools.confint_2group_diff import calculate_group_var
         
 
