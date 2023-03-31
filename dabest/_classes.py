@@ -691,9 +691,9 @@ class DeltaDelta(object):
         import numpy as np
         from numpy import sort as npsort
         from numpy import sqrt, isinf, isnan
-        from . import effsize as es
-        from . import confint_1group as ci1g
-        from . import confint_2group_diff as ci2g
+        from ._stats_tools import effsize as es
+        from ._stats_tools import confint_1group as ci1g
+        from ._stats_tools import confint_2group_diff as ci2g
 
 
         from string import Template
@@ -1038,9 +1038,9 @@ class MiniMetaDelta(object):
         import numpy as np
         from numpy import sort as npsort
         from numpy import sqrt, isinf, isnan
-        from . import effsize as es
-        from . import confint_1group as ci1g
-        from . import confint_2group_diff as ci2g
+        from ._stats_tools import effsize as es
+        from ._stats_tools import confint_1group as ci1g
+        from ._stats_tools import confint_2group_diff as ci2g
 
 
         from string import Template
@@ -1565,8 +1565,8 @@ class TwoGroupsEffectSize(object):
         from string import Template
         import warnings
         
-        from . import effsize as es
-        from . import confint_2group_diff as ci2g
+        from ._stats_tools import effsize as es
+        from ._stats_tools import confint_2group_diff as ci2g
 
 
         self.__EFFECT_SIZE_DICT =  {"mean_diff" : "mean difference",

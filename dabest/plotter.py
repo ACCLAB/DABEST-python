@@ -48,7 +48,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     from .misc_tools import merge_two_dicts
     from .plot_tools import halfviolin, get_swarm_spans, error_bar, sankeydiag
-    from .effsize import _compute_standardizers, _compute_hedges_correction_factor
+    from ._stats_tools.effsize import _compute_standardizers, _compute_hedges_correction_factor
 
     import logging
     # Have to disable logging of warning when get_legend_handles_labels()
