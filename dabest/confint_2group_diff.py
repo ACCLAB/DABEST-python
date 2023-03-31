@@ -6,6 +6,9 @@ __all__ = ['create_jackknife_indexes', 'create_repeated_indexes', 'compute_meand
            'calculate_weighted_delta']
 
 # %% ../nbs/API/confint_2group_diff.ipynb 4
+import numpy as np
+
+# %% ../nbs/API/confint_2group_diff.ipynb 5
 def create_jackknife_indexes(data):
     """
     Given an array-like, creates a jackknife bootstrap.
@@ -103,31 +106,6 @@ def _calc_accel(jack_dist):
         return numer / denom
 
 
-
-# def compute_bootstrapped_diff(x0, x1, is_paired, effect_size,
-#                                 resamples=5000, random_seed=12345):
-#     """Bootstraps the effect_size for 2 groups."""
-#     from . import effsize as __es
-#     import numpy as np
-# 
-#     np.random.seed(random_seed)
-# 
-#     out = np.repeat(np.nan, resamples)
-#     x0_len = len(x0)
-#     x1_len = len(x1)
-# 
-#     for i in range(int(resamples)):
-#         x0_boot = np.random.choice(x0, x0_len, replace=True)
-#         x1_boot = np.random.choice(x1, x1_len, replace=True)
-#         out[i] = __es.two_group_difference(x0_boot, x1_boot,
-#                                           is_paired, effect_size)
-# 
-#     # reset seed
-#     np.random.seed()
-# 
-#     return out
-
-
 def compute_bootstrapped_diff(x0, x1, is_paired, effect_size,
                               resamples=5000, random_seed=12345):
     """Bootstraps the effect_size for 2 groups."""
@@ -180,20 +158,12 @@ def compute_bootstrapped_diff(x0, x1, is_paired, effect_size,
 
 
 
-def compute_meandiff_bias_correction(bootstraps, effsize):
+def compute_meandiff_bias_correction(bootstraps, #An numerical iterable, comprising bootstrap resamples of the effect size.
+                                     effsize # The effect size for the original sample.
+                                    ): #The bias correction value for the given bootstraps and effect size.
     """
     Computes the bias correction required for the BCa method
     of confidence interval construction.
-
-    Keywords
-    --------
-    bootstraps: array-like
-        An numerical iterable, comprising bootstrap resamples
-        of the effect size.
-
-    effsize: numeric
-        The effect size for the original sample.
-
 
     Returns
     -------

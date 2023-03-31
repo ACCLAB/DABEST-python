@@ -4,6 +4,9 @@
 __all__ = ['Dabest', 'DeltaDelta', 'MiniMetaDelta', 'TwoGroupsEffectSize', 'EffectSizeDataFrame', 'PermutationTest']
 
 # %% ../nbs/API/class.ipynb 4
+import numpy as np
+
+# %% ../nbs/API/class.ipynb 5
 class Dabest(object):
 
     """
@@ -662,13 +665,26 @@ class Dabest(object):
         """
         return self.__all_plot_groups
 
-# %% ../nbs/API/class.ipynb 24
+# %% ../nbs/API/class.ipynb 25
 class DeltaDelta(object):
     """
     A class to compute and store the delta-delta statistics for experiments with a 2-by-2 arrangement where two independent variables, A and B, each have two categorical values, 1 and 2. The data is divided into two pairs of two groups, and a primary delta is first calculated as the mean difference between each of the pairs:
 
-    """
 
+    $$\Delta_{1} = \overline{X}_{A_{2}, B_{1}} - \overline{X}_{A_{1}, B_{1}}$$
+
+    $$\Delta_{2} = \overline{X}_{A_{2}, B_{2}} - \overline{X}_{A_{1}, B_{2}}$$
+
+
+    where $\overline{X}_{A_{i}, B_{j}}$ is the mean of the sample with A = i and B = j, $\Delta$ is the mean difference between two samples. 
+
+    A delta-delta value is then calculated as the mean difference between the two primary deltas:
+
+
+    $$\Delta_{\Delta} = \Delta_{2} - \Delta_{1}$$
+
+    """
+    
     def __init__(self, effectsizedataframe, permutation_count,
                 ci=95):
 
@@ -1008,11 +1024,12 @@ class DeltaDelta(object):
 
 
 
-# %% ../nbs/API/class.ipynb 28
+# %% ../nbs/API/class.ipynb 29
 class MiniMetaDelta(object):
     """
     A class to compute and store the weighted delta.
     A weighted delta is calculated if the argument ``mini_meta=True`` is passed during ``dabest.load()``.
+    
     """
 
     def __init__(self, effectsizedataframe, permutation_count,
@@ -1470,7 +1487,7 @@ class MiniMetaDelta(object):
 
 
 
-# %% ../nbs/API/class.ipynb 33
+# %% ../nbs/API/class.ipynb 34
 class TwoGroupsEffectSize(object):
 
     """
@@ -1504,41 +1521,27 @@ class TwoGroupsEffectSize(object):
 
         Returns
         -------
-        A :py:class:`TwoGroupEffectSize` object.
-        
-        difference : float
-            The effect size of the difference between the control and the test.
-        
-        effect_size : string
-            The type of effect size reported.
-        
-        is_paired : string
-            The type of repeated-measures experiment.
-            
-        ci : float
-            Returns the width of the confidence interval, in percent.
-            
-        alpha : float
-            Returns the significance level of the statistical test as a float
-            between 0 and 1.
-            
-        resamples : int
-            The number of resamples performed during the bootstrap procedure.
-
-        bootstraps : numpy ndarray
-            The generated bootstraps of the effect size.
-            
-        random_seed : int
-            The number used to initialise the numpy random seed generator, ie.
-            `seed_value` from `numpy.random.seed(seed_value)` is returned.
-            
-        bca_low, bca_high : float
-            The bias-corrected and accelerated confidence interval lower limit
-            and upper limits, respectively.
-            
-        pct_low, pct_high : float
-            The percentile confidence interval lower limit and upper limits, 
-            respectively.
+        A :py:class:`TwoGroupEffectSize` object:
+            `difference` : float
+                The effect size of the difference between the control and the test.
+            `effect_size` : string
+                The type of effect size reported.
+            `is_paired` : string
+                The type of repeated-measures experiment.
+            `ci` : float
+                Returns the width of the confidence interval, in percent.
+            `alpha` : float
+                Returns the significance level of the statistical test as a float between 0 and 1.
+            `resamples` : int
+                The number of resamples performed during the bootstrap procedure.
+            `bootstraps` : numpy ndarray
+                The generated bootstraps of the effect size.
+            `random_seed` : int
+                The number used to initialise the numpy random seed generator, ie.`seed_value` from `numpy.random.seed(seed_value)` is returned.
+            `bca_low, bca_high` : float
+                The bias-corrected and accelerated confidence interval lower limit and upper limits, respectively.
+            `pct_low, pct_high` : float
+                The percentile confidence interval lower limit and upper limits, respectively.
     """
 
     def __init__(self, control, test, effect_size,
@@ -2171,7 +2174,7 @@ class TwoGroupsEffectSize(object):
             return npnan
 
 
-# %% ../nbs/API/class.ipynb 37
+# %% ../nbs/API/class.ipynb 38
 class EffectSizeDataFrame(object):
     """A class that generates and stores the results of bootstrapped effect
     sizes for several comparisons."""
@@ -2772,7 +2775,7 @@ class EffectSizeDataFrame(object):
 
 
 
-# %% ../nbs/API/class.ipynb 46
+# %% ../nbs/API/class.ipynb 56
 class PermutationTest:
     """
     A class to compute and report permutation tests.
@@ -2792,25 +2795,24 @@ class PermutationTest:
         `random_seed` is used to seed the random number generator during
         bootstrap resampling. This ensures that the generated permutations
         are replicable.
-
-
+        
     Returns
     -------
-    A :py:class:`PermutationTest` object.
-    
-    difference : float
-        The effect size of the difference between the control and the test.
-    
-    effect_size : string
-        The type of effect size reported.
+    A :py:class:`PermutationTest` object:
+        `difference`:float
+            The effect size of the difference between the control and the test.
+        `effect_size`:string
+            The type of effect size reported.
     
     
     """
     
-    def __init__(self, control, test, 
-                 effect_size, is_paired,
-                 permutation_count=5000, 
-                 random_seed=12345,
+    def __init__(self, control:np.array,
+                 test:np.array, # These should be numerical iterables.
+                 effect_size:str, # Any one of the following are accepted inputs: 'mean_diff', 'median_diff', 'cohens_d', 'hedges_g', or 'cliffs_delta'
+                 is_paired:str=None,
+                 permutation_count:int=5000, # The number of permutations (reshuffles) to perform.
+                 random_seed:int=12345,#`random_seed` is used to seed the random number generator during bootstrap resampling. This ensures that the generated permutations are replicable.
                  **kwargs):
     
         import numpy as np

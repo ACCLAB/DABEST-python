@@ -4,19 +4,16 @@
 __all__ = ['merge_two_dicts', 'unpack_and_add', 'print_greeting', 'get_varname']
 
 # %% ../nbs/API/misc_tools.ipynb 4
-def merge_two_dicts(x, y):
+def merge_two_dicts(x:dict,
+                    y:dict
+                   )->dict:#A dictionary containing a union of all keys in both original dicts.
     """
     Given two dicts, merge them into a new dict as a shallow copy.
     Any overlapping keys in `y` will override the values in `x`.
 
-    Taken from https://stackoverflow.com/questions/38987/
-    how-to-merge-two-python-dictionaries-in-a-single-expression
+    Taken from [here](https://stackoverflow.com/questions/38987/
+    how-to-merge-two-python-dictionaries-in-a-single-expression)
 
-    Parameters:
-        x, y: dicts
-
-    Returns:
-        A dictionary containing a union of all keys in both original dicts.
     """
     z = x.copy()
     z.update(y)

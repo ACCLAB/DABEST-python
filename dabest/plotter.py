@@ -10,10 +10,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     
     Parameters
     ----------
-    
-    EffectSizeDataFrame: A `dabest` EffectSizeDataFrame object.
-    
-    **plot_kwargs:
+    EffectSizeDataFrame
+        A `dabest` EffectSizeDataFrame object.
+    plot_kwargs
         color_col=None
         raw_marker_size=6, es_marker_size=9,
         swarm_label=None, contrast_label=None, delta2_label=None,
