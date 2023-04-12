@@ -438,29 +438,7 @@ class Dabest(object):
     @property
     def mean_diff(self):
         """
-        Returns an :py:class:`EffectSizeDataFrame` for the mean difference, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
-        
-        Example
-        -------
-        >>> from scipy.stats import norm
-        >>> import pandas as pd
-        >>> import dabest
-        >>> control = norm.rvs(loc=0, size=30, random_state=12345)
-        >>> test    = norm.rvs(loc=0.5, size=30, random_state=12345)
-        >>> my_df   = pd.DataFrame({"control": control,
-                                    "test": test})
-        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
-        >>> my_dabest_object.mean_diff
-        
-        Notes
-        -----
-        This is simply the mean of the control group subtracted from
-        the mean of the test group.
-        
-        .. math::
-            \\text{Mean difference} = \\overline{x}_{Test} - \\overline{x}_{Control}
-            
-        where :math:`\\overline{x}` is the mean for the group :math:`x`.
+        Returns an :py:class:`EffectSizeDataFrame` for the mean difference, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`
 
         """
         return self.__mean_diff
@@ -471,45 +449,6 @@ class Dabest(object):
         """
         Returns an :py:class:`EffectSizeDataFrame` for the median difference, its confidence interval, and relevant statistics, for all comparisons  as indicated via the `idx` and `paired` argument in `dabest.load()`.
 
-
-        Example
-        -------
-        >>> from scipy.stats import norm
-        >>> import pandas as pd
-        >>> import dabest
-        >>> control = norm.rvs(loc=0, size=30, random_state=12345)
-        >>> test    = norm.rvs(loc=0.5, size=30, random_state=12345)
-        >>> my_df   = pd.DataFrame({"control": control,
-                                    "test": test})
-        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
-        >>> my_dabest_object.median_diff
-
-
-        Notes
-        -----
-        This is the median difference between the control group and the test group.
-        
-        If the comparison(s) are unpaired, median_diff is computed with the following equation:
-
-        .. math::
-            \\text{Median difference} = \\widetilde{x}_{Test} - \\widetilde{x}_{Control}
-            
-        where :math:`\\widetilde{x}` is the median for the group :math:`x`.
-
-        If the comparison(s) are paired, median_diff is computed with the following equation:
-
-        .. math::
-            \\text{Median difference} = \\widetilde{x}_{Test - Control}
-            
-
-        Things to note
-        --------------
-        Using median difference as the statistic in bootstrapping may result in a biased estimate and cause problems with BCa confidence intervals. Consider using mean difference instead. 
-
-        When plotting, consider using percentile confidence intervals instead of BCa confidence intervals by specifying `ci_type = 'percentile'` in .plot(). 
-
-        For detailed information, please refer to `Issue 129 <https://github.com/ACCLAB/DABEST-python/issues/129>`_. 
-
         """
         return self.__median_diff
         
@@ -518,59 +457,6 @@ class Dabest(object):
     def cohens_d(self):
         """
         Returns an :py:class:`EffectSizeDataFrame` for the standardized mean difference Cohen's `d`, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
-        
-        Example
-        -------
-        >>> from scipy.stats import norm
-        >>> import pandas as pd
-        >>> import dabest
-        >>> control = norm.rvs(loc=0, size=30, random_state=12345)
-        >>> test    = norm.rvs(loc=0.5, size=30, random_state=12345)
-        >>> my_df   = pd.DataFrame({"control": control,
-                                    "test": test})
-        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
-        >>> my_dabest_object.cohens_d
-        
-        Notes
-        -----
-        Cohen's `d` is simply the mean of the control group subtracted from
-        the mean of the test group.
-        
-        If `paired` is None, then the comparison(s) are unpaired; 
-        otherwise the comparison(s) are paired.
-
-        If the comparison(s) are unpaired, Cohen's `d` is computed with the following equation:
-        
-        .. math::
-            
-            d = \\frac{\\overline{x}_{Test} - \\overline{x}_{Control}} {\\text{pooled standard deviation}}
-                
-        
-        For paired comparisons, Cohen's d is given by
-        
-        .. math::
-            d = \\frac{\\overline{x}_{Test} - \\overline{x}_{Control}} {\\text{average standard deviation}}
-            
-        where :math:`\\overline{x}` is the mean of the respective group of observations, :math:`{Var}_{x}` denotes the variance of that group,
-        
-        .. math::
-        
-            \\text{pooled standard deviation} = \\sqrt{ \\frac{(n_{control} - 1) * {Var}_{control} + (n_{test} - 1) * {Var}_{test} } {n_{control} + n_{test} - 2} }
-        
-        and
-        
-        .. math::
-        
-            \\text{average standard deviation} = \\sqrt{ \\frac{{Var}_{control} + {Var}_{test}} {2}}
-            
-        The sample variance (and standard deviation) uses N-1 degrees of freedoms.
-        This is an application of `Bessel's correction <https://en.wikipedia.org/wiki/Bessel%27s_correction>`_, and yields the unbiased
-        sample variance.
-        
-        References:
-            https://en.wikipedia.org/wiki/Effect_size#Cohen's_d
-            https://en.wikipedia.org/wiki/Bessel%27s_correction
-            https://en.wikipedia.org/wiki/Standard_deviation#Corrected_sample_standard_deviation
 
         """
         return self.__cohens_d
@@ -581,37 +467,6 @@ class Dabest(object):
         """
         Returns an :py:class:`EffectSizeDataFrame` for the standardized mean difference Cohen's `h`, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `directional` argument in `dabest.load()`.
 
-        Example
-        -------
-        >>> from scipy.stats import randint
-        >>> import pandas as pd
-        >>> import dabest
-        >>> control = randint.rvs(0, 2, size=30, random_state=12345)
-        >>> test    = randint.rvs(0, 2, size=30, random_state=12345)
-        >>> my_df   = pd.DataFrame({"control": control,
-                                    "test": test})
-        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test")
-        >>> my_dabest_object.cohens_h
-
-        Notes
-        -----
-        Cohen's *h* uses the information of proportion in the control and test groups to calculate the distance between two proportions.
-        It can be used to describe the difference between two proportions as "small", "medium", or "large".
-        It can be used to determine if the difference between two proportions is "meaningful".
-
-        A directional Cohen's *h* is computed with the following equation:
-
-        .. math::
-            h = 2 * \\arcsin{\\sqrt{proportion_{Test}}} - 2 * \\arcsin{\\sqrt{proportion_{Control}}}
-
-        For a non-directional Cohen's *h*, the equation is:
-
-        .. math::
-            h = |2 * \\arcsin{\\sqrt{proportion_{Test}}} - 2 * \\arcsin{\\sqrt{proportion_{Control}}}|
-        
-        References:
-            https://en.wikipedia.org/wiki/Cohen%27s_h
-
         """
         return self.__cohens_h
 
@@ -620,40 +475,6 @@ class Dabest(object):
     def hedges_g(self):
         """
         Returns an :py:class:`EffectSizeDataFrame` for the standardized mean difference Hedges' `g`, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
-        
-        
-        Example
-        -------
-        >>> from scipy.stats import norm
-        >>> import pandas as pd
-        >>> import dabest
-        >>> control = norm.rvs(loc=0, size=30, random_state=12345)
-        >>> test    = norm.rvs(loc=0.5, size=30, random_state=12345)
-        >>> my_df   = pd.DataFrame({"control": control,
-                                    "test": test})
-        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
-        >>> my_dabest_object.hedges_g
-        
-        Notes
-        -----
-        
-        Hedges' `g` is :py:attr:`cohens_d` corrected for bias via multiplication with the following correction factor:
-        
-        .. math::
-            \\frac{ \\Gamma( \\frac{a} {2} )} {\\sqrt{ \\frac{a} {2} } \\times \\Gamma( \\frac{a - 1} {2} )}
-            
-        where
-        
-        .. math::
-            a = {n}_{control} + {n}_{test} - 2
-            
-        and :math:`\\Gamma(x)` is the `Gamma function <https://en.wikipedia.org/wiki/Gamma_function>`_.
-            
-        
-        
-        References:
-            https://en.wikipedia.org/wiki/Effect_size#Hedges'_g
-            https://journals.sagepub.com/doi/10.3102/10769986006002107
 
         """
         return self.__hedges_g
@@ -663,37 +484,6 @@ class Dabest(object):
     def cliffs_delta(self):
         """
         Returns an :py:class:`EffectSizeDataFrame` for Cliff's delta, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
-        
-        
-        Example
-        -------
-        >>> from scipy.stats import norm
-        >>> import pandas as pd
-        >>> import dabest
-        >>> control = norm.rvs(loc=0, size=30, random_state=12345)
-        >>> test    = norm.rvs(loc=0.5, size=30, random_state=12345)
-        >>> my_df   = pd.DataFrame({"control": control,
-                                    "test": test})
-        >>> my_dabest_object = dabest.load(my_df, idx=("control", "test"))
-        >>> my_dabest_object.cliffs_delta
-        
-        
-        Notes
-        -----
-        
-        Cliff's delta is a measure of ordinal dominance, ie. how often the values from the test sample are larger than values from the control sample.
-        
-        .. math::
-            \\text{Cliff's delta} = \\frac{\\#({x}_{test} > {x}_{control}) - \\#({x}_{test} < {x}_{control})} {{n}_{Test} \\times {n}_{Control}}
-            
-            
-        where :math:`\\#` denotes the number of times a value from the test sample exceeds (or is lesser than) values in the control sample. 
-         
-        Cliff's delta ranges from -1 to 1; it can also be thought of as a measure of the degree of overlap between the two samples. An attractive aspect of this effect size is that it does not make an assumptions about the underlying distributions that the samples were drawn from. 
-        
-        References:
-            https://en.wikipedia.org/wiki/Effect_size#Effect_size_for_ordinal_data
-            https://psycnet.apa.org/record/1994-08169-001
 
         """
         return self.__cliffs_delta
