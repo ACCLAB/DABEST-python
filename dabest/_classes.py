@@ -127,18 +127,21 @@ class Dabest(object):
 
             else:
                 x1_level = data_in[x[0]].unique()    
+        elif experiment is not None:
+            experiment_label = data_in[experiment].unique()
+            x1_level = data_in[x[0]].unique() 
         self.__experiment_label = experiment_label
         self.__x1_level         = x1_level
 
 
-        # Check if idx is specified
-        if delta2 is False and not idx:
-            err = '`idx` is not a column in `data`. Please check.'
-            raise IndexError(err)
+        # # Check if idx is specified
+        # if delta2 is False and not idx:
+        #     err = '`idx` is not a column in `data`. Please check.'
+        #     raise IndexError(err)
 
 
         # create new x & idx and record the second variable if this is a valid 2x2 ANOVA case
-        if delta2 is True:
+        if idx is None and x is not None and y is not None:
             # add a new column which is a combination of experiment and the first variable
             new_col_name = experiment+x[0]
             while new_col_name in data_in.columns:
@@ -165,7 +168,7 @@ class Dabest(object):
 
 
         # Determine the kind of estimation plot we need to produce.
-        if all([isinstance(i, str) for i in idx]):
+        if all([isinstance(i, (str, int, float)) for i in idx]):
             # flatten out idx.
             all_plot_groups = pd.unique([t for t in idx]).tolist()
             if len(idx) > len(all_plot_groups):
