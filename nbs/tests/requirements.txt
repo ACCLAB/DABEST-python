@@ -9,3 +9,5 @@ scipy==1.10.1
 seaborn==0.12.2
 setuptools==65.5.1
 statsmodels==0.13.5
+pytest-mpl
+anyio
