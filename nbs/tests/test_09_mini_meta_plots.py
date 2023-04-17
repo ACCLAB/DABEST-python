@@ -55,9 +55,8 @@ def create_demo_dataset(seed=9999, N=20):
 df = create_demo_dataset()
 
 
-unpaired = load(df, 
-                       idx=(("Control 1", "Test 1"), ("Control 2", "Test 2"), ("Control 3", "Test 3")),
-                       mini_meta=True)
+unpaired = load(df, idx=(("Control 1", "Test 1"), ("Control 2", "Test 2"), ("Control 3", "Test 3")),
+                    mini_meta=True)
 
 
 baseline = load(df, id_col = "ID",
