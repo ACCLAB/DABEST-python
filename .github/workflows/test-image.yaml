@@ -13,5 +13,6 @@ jobs:
           cache-dependency-path: settings.ini
       - name: Run pytest
         run: |
+          pip install -e'.[dev]!
           pip install -r nbs/tests/requirements.txt
           pytest nbs/tests/
