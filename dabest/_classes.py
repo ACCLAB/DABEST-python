@@ -134,18 +134,21 @@ class Dabest(object):
 
             else:
                 x1_level = data_in[x[0]].unique()    
+        elif experiment is not None:
+            experiment_label = data_in[experiment].unique()
+            x1_level = data_in[x[0]].unique() 
         self.__experiment_label = experiment_label
         self.__x1_level         = x1_level
 
 
-        # Check if idx is specified
-        if delta2 is False and not idx:
-            err = '`idx` is not a column in `data`. Please check.'
-            raise IndexError(err)
+        # # Check if idx is specified
+        # if delta2 is False and not idx:
+        #     err = '`idx` is not a column in `data`. Please check.'
+        #     raise IndexError(err)
 
 
         # create new x & idx and record the second variable if this is a valid 2x2 ANOVA case
-        if delta2 is True:
+        if idx is None and x is not None and y is not None:
             # add a new column which is a combination of experiment and the first variable
             new_col_name = experiment+x[0]
             while new_col_name in data_in.columns:
@@ -445,8 +448,7 @@ class Dabest(object):
     def median_diff(self):
         """
         Returns an :py:class:`EffectSizeDataFrame` for the median difference, its confidence interval, and relevant statistics, for all comparisons  as indicated via the `idx` and `paired` argument in `dabest.load()`.
-
-
+  
         """
         return self.__median_diff
         
@@ -455,7 +457,7 @@ class Dabest(object):
     def cohens_d(self):
         """
         Returns an :py:class:`EffectSizeDataFrame` for the standardized mean difference Cohen's `d`, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
-        
+
         """
         return self.__cohens_d
     
@@ -465,7 +467,6 @@ class Dabest(object):
         """
         Returns an :py:class:`EffectSizeDataFrame` for the standardized mean difference Cohen's `h`, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `directional` argument in `dabest.load()`.
 
-
         """
         return self.__cohens_h
 
@@ -474,7 +475,6 @@ class Dabest(object):
     def hedges_g(self):
         """
         Returns an :py:class:`EffectSizeDataFrame` for the standardized mean difference Hedges' `g`, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
-        
 
         """
         return self.__hedges_g

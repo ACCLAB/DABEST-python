@@ -4,8 +4,8 @@
 from __future__ import annotations
 
 # %% auto 0
-__all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'single_sankey',
-           'sankeydiag']
+__all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'width_determine',
+           'single_sankey', 'sankeydiag']
 
 # %% ../nbs/API/plot_tools.ipynb 4
 import pandas as pd
@@ -39,6 +39,28 @@ def halfviolin(v, half='right', fill_color='k', alpha=1,
         b.set_alpha(alpha)
         b.set_edgecolor(line_color)
         b.set_linewidth(line_width)
+
+
+
+# def align_yaxis(ax1, v1, ax2, v2):
+#     """adjust ax2 ylimit so that v2 in ax2 is aligned to v1 in ax1"""
+#     # Taken from
+#     # http://stackoverflow.com/questions/7630778/
+#     # matplotlib-align-origin-of-right-axis-with-specific-left-axis-value
+#     _, y1 = ax1.transData.transform((0, v1))
+#     _, y2 = ax2.transData.transform((0, v2))
+#     inv = ax2.transData.inverted()
+#     _, dy = inv.transform((0, 0)) - inv.transform((0, y1-y2))
+#     miny, maxy = ax2.get_ylim()
+#     ax2.set_ylim(miny+dy, maxy+dy)
+#
+#
+#
+# def rotate_ticks(axes, angle=45, alignment='right'):
+#     for tick in axes.get_xticklabels():
+#         tick.set_rotation(angle)
+#         tick.set_horizontalalignment(alignment)
+
 
 
 def get_swarm_spans(coll):
@@ -80,7 +102,8 @@ def error_bar(data:pd.DataFrame, # This DataFrame should be in 'long' format.
     if gap_width_percent < 0 or gap_width_percent > 100:
         raise ValueError("`gap_width_percent` must be between 0 and 100.")
     if method not in ['gapped_lines', 'proportional_error_bar', 'sankey_error_bar']:
-        raise ValueError("Invalid `method`. Must be one of 'gapped_lines', 'proportional_error_bar', or 'sankey_error_bar'.")
+        raise ValueError("Invalid `method`. Must be one of 'gapped_lines', \
+                         'proportional_error_bar', or 'sankey_error_bar'.")
 
     if ax is None:
         ax = plt.gca()
@@ -166,16 +189,28 @@ def error_bar(data:pd.DataFrame, # This DataFrame should be in 'long' format.
             _xpos = xpos + offset[xpos]
 
         low = lows[xpos]
-        low_to_mean = mlines.Line2D([_xpos, _xpos],
-                                    [low, central_measure - gap_width],
-                                    **kwargs)
-        ax.add_line(low_to_mean)
-
         high = highs[xpos]
-        mean_to_high = mlines.Line2D([_xpos, _xpos],
-                                     [central_measure + gap_width, high],
-                                     **kwargs)
-        ax.add_line(mean_to_high)
+        if low == high == central_measure:
+            low_to_mean = mlines.Line2D([_xpos, _xpos],
+                                        [low, central_measure],
+                                        **kwargs)
+            ax.add_line(low_to_mean)
+            
+            mean_to_high = mlines.Line2D([_xpos, _xpos],
+                                        [central_measure, high],
+                                        **kwargs)
+            ax.add_line(mean_to_high)
+        else:
+            low_to_mean = mlines.Line2D([_xpos, _xpos],
+                                        [low, central_measure - gap_width],
+                                        **kwargs)
+            ax.add_line(low_to_mean)
+            
+            mean_to_high = mlines.Line2D([_xpos, _xpos],
+                                        [central_measure + gap_width, high],
+                                        **kwargs)
+            ax.add_line(mean_to_high)
+            
 
 def check_data_matches_labels(labels,#list of input labels 
                               data, #Pandas Series of input data
@@ -186,7 +221,7 @@ def check_data_matches_labels(labels,#list of input labels
     And enforce labels and data to be lists.
     Raises an exception if the labels and data do not match.
     '''
-    if len(labels > 0):
+    if len(labels) > 0:
         if isinstance(data, list):
             data = set(data)
         if isinstance(data, pd.Series):
@@ -199,18 +234,53 @@ def check_data_matches_labels(labels,#list of input labels
                 msg = "Labels: " + ",".join(labels) + "\n"
             if len(data) < 20:
                 msg += "Data: " + ",".join(data)
-            raise Exception('{0} labels and data do not match.{1}'.format(side, msg))
+            raise Exception(f"{side} labels and data do not match.{msg}")
+
         
 def normalize_dict(nested_dict, target):
     val = {}
     for key in nested_dict.keys():
-        val[key] = np.sum([nested_dict[sub_key][key] for sub_key in nested_dict.keys()])
+        val[key] = np.sum([nested_dict[sub_key][key] for sub_key in nested_dict.keys() if key in nested_dict[sub_key]])
     
     for key, value in nested_dict.items():
         if isinstance(value, dict):
             for subkey in value.keys():
-                value[subkey] = value[subkey] * target[subkey]['right']/val[subkey]
+                # value[subkey] = target[subkey]['right']
+                if subkey in val.keys():
+                    if val[subkey] != 0:
+                        # Address the problem when one of the label have zero value
+                        value[subkey] = value[subkey] * target[subkey]['right']/val[subkey]
+                    else:
+                        value[subkey] = 0
+                else:
+                    value[subkey] = target[subkey]['right']
     return nested_dict
+
+
+def width_determine(labels, data, pos='left'):
+    widths_norm = defaultdict()
+    for i, label in enumerate(labels):
+        myD = {}
+        myD[pos] = data[data[pos] == label][pos + "Weight"].sum()
+        if len(labels) != 1:
+            if i == 0:
+                myD['bottom'] = 0
+                myD[pos] -= 0.01
+                myD['top'] = myD[pos]
+            elif i == len(labels) - 1:
+                myD[pos] -= 0.01
+                myD['bottom'] = 1 - myD[pos]
+                myD['top'] = 1
+            else:
+                myD[pos] -= 0.02
+                myD['bottom'] = widths_norm[labels[i - 1]]['top'] + 0.02
+                myD['top'] = myD['bottom'] + myD[pos]
+                topEdge = myD['top']
+        else:
+            myD['bottom'] = 0
+            myD['top'] = 1
+        widths_norm[label] = myD
+    return widths_norm
 
 def single_sankey(left:np.array,# data on the left of the diagram
                   right:np.array, # data on the right of the diagram, len(left) == len(right)
@@ -221,9 +291,14 @@ def single_sankey(left:np.array,# data on the left of the diagram
                   leftLabels:list=None, #labels for the left side of the diagram. The diagram will be sorted by these labels.
                   rightLabels:list=None, #labels for the right side of the diagram. The diagram will be sorted by these labels.
                   ax=None, #matplotlib axes to be drawn on
+                  flow:bool=True, #if True, draw the sankey in a flow, else draw 1 vs 1 Sankey diagram for each group comparison
+                  sankey:bool=True, #if True, draw the sankey diagram, else draw barplot
                   width=0.5, 
                   alpha=0.65, 
                   bar_width=0.2, 
+                  error_bar_on:bool=True, #if True, draw error bar for each group comparison
+                  strip_on:bool=True, #if True, draw strip for each group comparison
+                  one_sankey:bool=False, #if True, only draw one sankey diagram
                   rightColor:bool=False, #if True, each strip of the diagram will be colored according to the corresponding left labels
                   align:bool='center'# if 'center', the diagram will be centered on each xtick,  if 'edge', the diagram will be aligned with the left edge of each xtick
                  ):
@@ -251,7 +326,7 @@ def single_sankey(left:np.array,# data on the left of the diagram
     if len(leftWeight) == 0:
         leftWeight = np.ones(len(left))
     if len(rightWeight) == 0:
-        rightWeight = leftWeight
+        rightWeight = np.ones(len(right))
 
     # Create Dataframe
     if isinstance(left, pd.Series):
@@ -319,14 +394,25 @@ def single_sankey(left:np.array,# data on the left of the diagram
     for i, leftLabel in enumerate(leftLabels):
         myD = {}
         myD['left'] = (dataFrame[dataFrame.left == leftLabel].leftWeight.sum()/ \
-            dataFrame.leftWeight.sum())*(1-(len(leftLabels)-1)*0.02)
-        if i == 0:
-            myD['bottom'] = 0
-            myD['top'] = myD['left']
+            dataFrame.leftWeight.sum())
+        if len(leftLabels) != 1:
+            if i == 0:
+                myD['bottom'] = 0
+                myD['left'] -= 0.01
+                myD['top'] = myD['left']
+            elif i == len(leftLabels) - 1:
+                myD['left'] -= 0.01
+                myD['bottom'] = 1 - myD['left']
+                myD['top'] = 1
+            else:
+                myD['left'] -= 0.02
+                myD['bottom'] = leftWidths_norm[leftLabels[i - 1]]['top'] + 0.02
+                myD['top'] = myD['bottom'] + myD['left']
+                topEdge = myD['top']
         else:
-            myD['bottom'] = leftWidths_norm[leftLabels[i - 1]]['top'] + 0.02
-            myD['top'] = myD['bottom'] + myD['left']
-            topEdge = myD['top']
+            myD['bottom'] = 0
+            myD['top'] = 1
+            myD['left'] = 1
         leftWidths_norm[leftLabel] = myD
 
     # Determine positions of right label patches and total widths
@@ -334,19 +420,55 @@ def single_sankey(left:np.array,# data on the left of the diagram
     for i, rightLabel in enumerate(rightLabels):
         myD = {}
         myD['right'] = (dataFrame[dataFrame.right == rightLabel].rightWeight.sum()/ \
-            dataFrame.rightWeight.sum())*(1-(len(leftLabels)-1)*0.02)
-        if i == 0:
-            myD['bottom'] = 0
-            myD['top'] = myD['right']
+            dataFrame.rightWeight.sum())
+        if len(rightLabels) != 1:
+            if i == 0:
+                myD['bottom'] = 0
+                myD['right'] -= 0.01
+                myD['top'] = myD['right']
+            elif i == len(rightLabels) - 1:
+                myD['right'] -= 0.01
+                myD['bottom'] = 1 - myD['right']
+                myD['top'] = 1
+            else:
+                myD['right'] -= 0.02
+                myD['bottom'] = rightWidths_norm[rightLabels[i - 1]]['top'] + 0.02
+                myD['top'] = myD['bottom'] + myD['right']
+                topEdge = myD['top']
         else:
-            myD['bottom'] = rightWidths_norm[rightLabels[i - 1]]['top'] + 0.02
-            myD['top'] = myD['bottom'] + myD['right']
-            topEdge = myD['top']
+            myD['bottom'] = 0
+            myD['top'] = 1
+            myD['right'] = 1
         rightWidths_norm[rightLabel] = myD    
 
     # Total width of the graph
     xMax = width
 
+    # Plot vertical bars for each label
+    for leftLabel in leftLabels:
+        ax.fill_between(
+            [leftpos + (-(bar_width) * xMax * 0.5), leftpos + (bar_width * xMax * 0.5)],
+            2 * [leftWidths_norm[leftLabel]["bottom"]],
+            2 * [leftWidths_norm[leftLabel]["top"]],
+            color=colorDict[leftLabel],
+            alpha=0.99,
+        )
+    if (flow == False and sankey == True) or one_sankey:
+        for rightLabel in rightLabels:
+            ax.fill_between(
+                [xMax + leftpos + (-bar_width * xMax * 0.5), leftpos + xMax + (bar_width * xMax * 0.5)], 
+                2 * [rightWidths_norm[rightLabel]["bottom"]],
+                2 * [rightWidths_norm[rightLabel]["top"]],
+                color=colorDict[rightLabel],
+                alpha=0.99
+            )
+
+    # Plot error bars
+    if error_bar_on and strip_on:
+        error_bar(concatenated_df, x='groups', y='values', ax=ax, offset=0, gap_width_percent=2,
+                method="sankey_error_bar",
+                pos=[leftpos, leftpos + xMax])
+        
     # Determine widths of individual strips, all widths are normalized to 1
     ns_l = defaultdict()
     ns_r = defaultdict()
@@ -370,57 +492,35 @@ def single_sankey(left:np.array,# data on the left of the diagram
     
     # ns_r should be using a different way of normalization to fit the right side
     # It is normalized using the value with the same key in each sub-dictionary
-
     ns_r_norm = normalize_dict(ns_r, rightWidths_norm)
-
-    # Plot vertical bars for each label
-    for leftLabel in leftLabels:
-        ax.fill_between(
-            [leftpos + (-(bar_width) * xMax), leftpos],
-            2 * [leftWidths_norm[leftLabel]["bottom"]],
-            2 * [leftWidths_norm[leftLabel]["bottom"] + leftWidths_norm[leftLabel]["left"]],
-            color=colorDict[leftLabel],
-            alpha=0.99,
-        )
-    for rightLabel in rightLabels:
-        ax.fill_between(
-            [xMax + leftpos, leftpos + ((1 + bar_width) * xMax)], 
-            2 * [rightWidths_norm[rightLabel]['bottom']],
-            2 * [rightWidths_norm[rightLabel]['bottom'] + rightWidths_norm[rightLabel]['right']],
-            color=colorDict[rightLabel],
-            alpha=0.99
-        )
-
-    # Plot error bars
-    error_bar(concatenated_df, x='groups', y='values', ax=ax, offset=0, gap_width_percent=2,
-              method="sankey_error_bar",
-              pos=[(leftpos + (-(bar_width) * xMax) + leftpos)/2, \
-                   (xMax + leftpos + leftpos + ((1 + bar_width) * xMax))/2])
     
     # Plot strips
-    for leftLabel, rightLabel in itertools.product(leftLabels, rightLabels):
-        labelColor = leftLabel
-        if rightColor:
-            labelColor = rightLabel
-        if len(dataFrame[(dataFrame.left == leftLabel) & (dataFrame.right == rightLabel)]) > 0:
-            # Create array of y values for each strip, half at left value,
-            # half at right, convolve
-            ys_d = np.array(50 * [leftWidths_norm[leftLabel]['bottom']] + \
-                50 * [rightWidths_norm[rightLabel]['bottom']])
-            ys_d = np.convolve(ys_d, 0.05 * np.ones(20), mode='valid')
-            ys_d = np.convolve(ys_d, 0.05 * np.ones(20), mode='valid')
-            ys_u = np.array(50 * [leftWidths_norm[leftLabel]['bottom'] + ns_l_norm[leftLabel][rightLabel]] + \
-                50 * [rightWidths_norm[rightLabel]['bottom'] + ns_r_norm[leftLabel][rightLabel]])
-            ys_u = np.convolve(ys_u, 0.05 * np.ones(20), mode='valid')
-            ys_u = np.convolve(ys_u, 0.05 * np.ones(20), mode='valid')
+    if sankey == True and strip_on == True:
+        for leftLabel, rightLabel in itertools.product(leftLabels, rightLabels):
+            labelColor = leftLabel
+            if rightColor:
+                labelColor = rightLabel
+            if len(dataFrame[(dataFrame.left == leftLabel) & (dataFrame.right == rightLabel)]) > 0:
+                # Create array of y values for each strip, half at left value,
+                # half at right, convolve
+                ys_d = np.array(50 * [leftWidths_norm[leftLabel]['bottom']] + \
+                    50 * [rightWidths_norm[rightLabel]['bottom']])
+                ys_d = np.convolve(ys_d, 0.05 * np.ones(20), mode='valid')
+                ys_d = np.convolve(ys_d, 0.05 * np.ones(20), mode='valid')
+                ys_u = np.array(50 * [leftWidths_norm[leftLabel]['bottom'] + ns_l_norm[leftLabel][rightLabel]] + \
+                    50 * [rightWidths_norm[rightLabel]['bottom'] + ns_r_norm[leftLabel][rightLabel]])
+                ys_u = np.convolve(ys_u, 0.05 * np.ones(20), mode='valid')
+                ys_u = np.convolve(ys_u, 0.05 * np.ones(20), mode='valid')
 
-            # Update bottom edges at each label so next strip starts at the right place
-            leftWidths_norm[leftLabel]['bottom'] += ns_l_norm[leftLabel][rightLabel]
-            rightWidths_norm[rightLabel]['bottom'] += ns_r_norm[leftLabel][rightLabel]
-            ax.fill_between(
-                np.linspace(leftpos, leftpos + xMax, len(ys_d)), ys_d, ys_u, alpha=alpha,
-                color=colorDict[labelColor], edgecolor='none'
-            )
+                # Update bottom edges at each label so next strip starts at the right place
+                leftWidths_norm[leftLabel]['bottom'] += ns_l_norm[leftLabel][rightLabel]
+                rightWidths_norm[rightLabel]['bottom'] += ns_r_norm[leftLabel][rightLabel]
+                ax.fill_between(
+                    np.linspace(leftpos + (bar_width * xMax * 0.5), \
+                                leftpos + xMax - (bar_width * xMax * 0.5), len(ys_d)), \
+                    ys_d, ys_u, alpha=alpha,
+                    color=colorDict[labelColor], edgecolor='none'
+                )
                 
 def sankeydiag(data:pd.DataFrame,
                xvar:str, # x column to be plotted.
@@ -431,6 +531,8 @@ def sankeydiag(data:pd.DataFrame,
                rightLabels:list=None,  #labels for the right side of the diagram. The diagram will be sorted by these labels.
                palette:str|dict=None, 
                ax=None, #matplotlib axes to be drawn on
+               flow:bool=True, #if True, draw the sankey in a flow, else draw 1 vs 1 Sankey diagram for each group comparison
+               sankey:bool=True, #if True, draw the sankey diagram, else draw barplot
                one_sankey:bool=False,# determined by the driver function on plotter.py, if True, draw the sankey diagram across the whole raw data axes
                width:float=0.4, # the width of each sankey diagram
                rightColor:bool=False,#if True, each strip of the diagram will be colored according to the corresponding left labels
@@ -464,6 +566,12 @@ def sankeydiag(data:pd.DataFrame,
     
     if "bar_width" in kwargs:
         bar_width = kwargs["bar_width"]
+    
+    if "sankey" in kwargs:
+        sankey = kwargs["sankey"]
+    
+    if "flow" in kwargs:
+        flow = kwargs["flow"]
 
     if ax is None:
         ax = plt.gca()
@@ -503,25 +611,39 @@ def sankeydiag(data:pd.DataFrame,
     else:
         plot_palette = None
 
-    for left, right in zip(broadcasted_left, right_idx):
+    # Create a strip_on list to determine whether to draw the strip during repeated measures
+    strip_on = [int(right not in broadcasted_left[:i]) for i, right in enumerate(right_idx)]
+
+    draw_idx = list(zip(broadcasted_left, right_idx))
+    for i, (left, right) in enumerate(draw_idx):
         if one_sankey == False:
+            if flow == True:
+                width = 1
+                align = 'edge'
+                sankey = False if i == len(draw_idx)-1 else sankey # Remove last strip in flow
+            error_bar_on = False if i == len(draw_idx)-1 and flow else True # Remove last error_bar in flow
+            bar_width = 0.4 if sankey == False and flow == False else bar_width
             single_sankey(data[data[xvar]==left][yvar], data[data[xvar]==right][yvar], 
                             xpos=xpos, ax=ax, colorDict=plot_palette, width=width, 
-                            leftLabels=leftLabels, rightLabels=rightLabels, 
-                            rightColor=rightColor, bar_width=bar_width,
-                            align=align, alpha=alpha)
+                            leftLabels=leftLabels, rightLabels=rightLabels, strip_on=strip_on[i],
+                            rightColor=rightColor, bar_width=bar_width, sankey=sankey,
+                            error_bar_on=error_bar_on, flow=flow, align=align, alpha=alpha)
             xpos += 1
         else:
-            xpos = 0 + bar_width/2
-            width = 1 - bar_width
+            xpos = 0
+            width = 1
+            if sankey == False:
+                bar_width = 0.5
             single_sankey(data[data[xvar]==left][yvar], data[data[xvar]==right][yvar], 
                             xpos=xpos, ax=ax, colorDict=plot_palette, width=width, 
                             leftLabels=leftLabels, rightLabels=rightLabels, 
-                            rightColor=rightColor, bar_width=bar_width,
-                            align='edge', alpha=alpha)
+                            rightColor=rightColor, bar_width=bar_width, sankey=sankey, 
+                            one_sankey=one_sankey, flow=False, align='edge', alpha=alpha)
 
-    if one_sankey == False:
-        sankey_ticks = [f"{left}\n v.s.\n{right}" for left, right in zip(broadcasted_left, right_idx)]
+# Now only draw vs xticks for two-column sankey diagram
+    if one_sankey == False or (sankey and not flow): 
+        sankey_ticks = [f"{left}" for left in broadcasted_left] if flow \
+        else [f"{left}\n v.s.\n{right}" for left, right in zip(broadcasted_left, right_idx)]
         ax.get_xaxis().set_ticks(np.arange(len(right_idx)))
         ax.get_xaxis().set_ticklabels(sankey_ticks)
     else:

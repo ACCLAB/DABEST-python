@@ -70,6 +70,7 @@ d = { 'settings': { 'branch': 'master',
                                    'dabest.plot_tools.halfviolin': ('API/plot_tools.html#halfviolin', 'dabest/plot_tools.py'),
                                    'dabest.plot_tools.normalize_dict': ('API/plot_tools.html#normalize_dict', 'dabest/plot_tools.py'),
                                    'dabest.plot_tools.sankeydiag': ('API/plot_tools.html#sankeydiag', 'dabest/plot_tools.py'),
-                                   'dabest.plot_tools.single_sankey': ('API/plot_tools.html#single_sankey', 'dabest/plot_tools.py')},
+                                   'dabest.plot_tools.single_sankey': ('API/plot_tools.html#single_sankey', 'dabest/plot_tools.py'),
+                                   'dabest.plot_tools.width_determine': ('API/plot_tools.html#width_determine', 'dabest/plot_tools.py')},
             'dabest.plotter': { 'dabest.plotter.EffectSizeDataFramePlotter': ( 'API/plotter.html#effectsizedataframeplotter',
                                                                                'dabest/plotter.py')}}}

@@ -7,7 +7,8 @@ __all__ = ['EffectSizeDataFramePlotter']
 def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     """
     Custom function that creates an estimation plot from an EffectSizeDataFrame.
-    
+    Keywords
+    --------
     Parameters
     ----------
     EffectSizeDataFrame
@@ -132,6 +133,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Sankey Diagram kwargs
     default_sankey_kwargs = {"width": 0.4, "align": "center",
+                             "sankey":True, "flow":True,
                             "alpha": 0.4, "rightColor": False,
                             "bar_width":0.2}
     if plot_kwargs["sankey_kwargs"] is None:
@@ -139,7 +141,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         sankey_kwargs = merge_two_dicts(default_sankey_kwargs,
                                         plot_kwargs["sankey_kwargs"])
-                
+    # We also need to extract the `sankey` and `flow` from the kwargs for plotter.py
+    # to use for varying different kinds of paired proportional plots
+    # We also don't want to pop the parameter from the kwargs
+    sankey = sankey_kwargs['sankey']
+    flow = sankey_kwargs['flow']
 
     # Violinplot kwargs.
     default_violinplot_kwargs = {'widths':0.5, 'vert':True,
@@ -381,9 +387,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if swarm_ylim is not None:
         rawdata_axes.set_ylim(swarm_ylim)
 
-    one_sankey = None
-    if is_paired is not None:
-        one_sankey = False # Flag to indicate if only one sankey is plotted.
+    one_sankey = False if is_paired is not None else False # Flag to indicate if only one sankey is plotted.
+    two_col_sankey = True if proportional == True and one_sankey == False and sankey == True and flow == False else False
 
     if show_pairs is True:
         # Determine temp_idx based on is_paired and proportional conditions
@@ -453,15 +458,21 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             if show_pairs is True:
                 sankey_control_group = []
                 sankey_test_group = []
-                for i in temp_idx:
+                # Design for Sankey Flow Diagram
+                sankey_idx = [(control, test) for i in idx for control, test in zip(i[:], (i[1:]+(i[0],)))]\
+                    if flow is True else temp_idx
+                for i in sankey_idx:
                     sankey_control_group.append(i[0])
                     sankey_test_group.append(i[1])                   
 
             if len(temp_all_plot_groups) == 2:
-                one_sankey = True   
-            
+                one_sankey = True  
+                sankey_control_group.pop(); sankey_test_group.pop() # Remove the last element from two lists
+
+            # two_col_sankey = True if proportional == True and one_sankey == False and sankey == True and flow == False else False
+
             # Replace the paired proportional plot with sankey diagram
-            sankey = sankeydiag(plot_data, xvar=xvar, yvar=yvar, 
+            sankeyplot = sankeydiag(plot_data, xvar=xvar, yvar=yvar, 
                             left_idx=sankey_control_group, 
                             right_idx=sankey_test_group,
                             palette=plot_palette_sankey,
@@ -578,12 +589,12 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     # Plot effect sizes and bootstraps.
     # Take note of where the `control` groups are.
     if is_paired == "baseline" and show_pairs == True:
-        if proportional == True and one_sankey == False:
+        if two_col_sankey:
             ticks_to_skip = []
             ticks_to_plot = np.arange(0, len(temp_all_plot_groups)/2).tolist()
-            ticks_to_start_sankey = np.cumsum([len(i)-1 for i in idx]).tolist()
-            ticks_to_start_sankey.pop()
-            ticks_to_start_sankey.insert(0, 0)
+            ticks_to_start_twocol_sankey = np.cumsum([len(i)-1 for i in idx]).tolist()
+            ticks_to_start_twocol_sankey.pop()
+            ticks_to_start_twocol_sankey.insert(0, 0)
         else:
             # ticks_to_skip = np.arange(0, len(temp_all_plot_groups), 2).tolist()
             # ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist()
@@ -595,15 +606,15 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             ticks_to_skip_contrast = np.cumsum([(len(t)) for t in idx])[:-1].tolist()
             ticks_to_skip_contrast.insert(0, 0)
     else:
-        if proportional == True and one_sankey == False:
+        if two_col_sankey:
             ticks_to_skip = [len(sankey_control_group)]
             # Then obtain the ticks where we have to plot the effect sizes.
             ticks_to_plot = [t for t in range(0, len(temp_idx))
                         if t not in ticks_to_skip]
             ticks_to_skip = []
-            ticks_to_start_sankey = np.cumsum([len(i)-1 for i in idx]).tolist()
-            ticks_to_start_sankey.pop()
-            ticks_to_start_sankey.insert(0, 0)
+            ticks_to_start_twocol_sankey = np.cumsum([len(i)-1 for i in idx]).tolist()
+            ticks_to_start_twocol_sankey.pop()
+            ticks_to_start_twocol_sankey.insert(0, 0)
         else:
             ticks_to_skip = np.cumsum([len(t) for t in idx])[:-1].tolist()
             ticks_to_skip.insert(0, 0)
@@ -952,8 +963,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_axes.axhline(y=0, **reflines_kwargs)
 
         if is_paired == "baseline" and show_pairs == True:
-            if proportional == True and one_sankey == False:
-                rightend_ticks_raw = np.array([len(i)-2 for i in idx]) + np.array(ticks_to_start_sankey)
+            if two_col_sankey:
+                rightend_ticks_raw = np.array([len(i)-2 for i in idx]) + np.array(ticks_to_start_twocol_sankey)
+            elif proportional and is_paired is not None:
+                rightend_ticks_raw = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
             else:    
                 rightend_ticks_raw = np.array([len(i)-1 for i in temp_idx]) + np.array(ticks_to_skip)
             for ax in [rawdata_axes]:
@@ -963,8 +976,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 xlim = ax.get_xlim()
                 redraw_axes_kwargs['y'] = ylim[0]
         
-                if proportional == True and one_sankey == False:
-                    for k, start_tick in enumerate(ticks_to_start_sankey):
+                if two_col_sankey:
+                    for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
                         end_tick = rightend_ticks_raw[k]
                         ax.hlines(xmin=start_tick, xmax=end_tick,
                               **redraw_axes_kwargs)
@@ -980,8 +993,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 temp_length = [(len(i)-1) for i in idx]
             else:
                 temp_length = [(len(i)-1)*2-1 for i in idx]
-            if proportional == True and one_sankey == False:
-                rightend_ticks_contrast = np.array([len(i)-2 for i in idx]) + np.array(ticks_to_start_sankey)
+            if two_col_sankey:
+                rightend_ticks_contrast = np.array([len(i)-2 for i in idx]) + np.array(ticks_to_start_twocol_sankey)
+            elif proportional and is_paired is not None:
+                rightend_ticks_contrast = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
             else:   
                 rightend_ticks_contrast = np.array(temp_length) + np.array(ticks_to_skip_contrast)
             for ax in [contrast_axes]:
@@ -991,8 +1006,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 xlim = ax.get_xlim()
                 redraw_axes_kwargs['y'] = ylim[0]
         
-                if proportional == True and one_sankey == False:
-                    for k, start_tick in enumerate(ticks_to_start_sankey):
+                if two_col_sankey:
+                    for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
                         end_tick = rightend_ticks_contrast[k]
                         ax.hlines(xmin=start_tick, xmax=end_tick,
                                 **redraw_axes_kwargs)
@@ -1006,8 +1021,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 del redraw_axes_kwargs['y']
         else:
             # Compute the end of each x-axes line.
-            if proportional == True and one_sankey == False:
-                rightend_ticks = np.array([len(i)-2 for i in idx]) + np.array(ticks_to_start_sankey)
+            if two_col_sankey:
+                rightend_ticks = np.array([len(i)-2 for i in idx]) + np.array(ticks_to_start_twocol_sankey)
             else:
                 rightend_ticks = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
         
@@ -1018,8 +1033,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 xlim = ax.get_xlim()
                 redraw_axes_kwargs['y'] = ylim[0]
             
-                if proportional == True and one_sankey == False:
-                    for k, start_tick in enumerate(ticks_to_start_sankey):
+                if two_col_sankey:
+                    for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
                         end_tick = rightend_ticks[k]
                         ax.hlines(xmin=start_tick, xmax=end_tick,
                                 **redraw_axes_kwargs)
