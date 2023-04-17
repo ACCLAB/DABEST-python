@@ -14,5 +14,4 @@ jobs:
       - name: Run pytest
         run: |
           pip install -r nbs/tests/requirements.txt
-          pip install -e .[dev]
           pytest nbs
