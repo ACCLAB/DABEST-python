@@ -257,3 +257,24 @@ def compute_interval_limits(bias, acceleration, n_boots, ci=95):
         low = int(norm.cdf(low) * n_boots)
         high = int(norm.cdf(high) * n_boots)
         return low, high
+
+
+def calculate_group_var(control_var, control_N,test_var, test_N):
+    '''
+    Compute the pooled group difference.
+    '''
+    return control_var/control_N + test_var/test_N
+
+
+def calculate_weighted_delta(group_var, differences, resamples):
+    '''
+    Compute the weighted deltas where the weight is the inverse of the
+    pooled group difference.
+    '''
+    import numpy as np
+
+    weight = 1/group_var
+    denom = np.sum(weight)
+    num = np.sum(weight[i] * differences[i] for i in range(0, len(weight)))
+
+    return num/denom

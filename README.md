@@ -1,10 +1,27 @@
 # DABEST-Python
-[![Travis CI build status](https://travis-ci.org/ACCLAB/DABEST-python.svg?branch=master)](https://travis-ci.org/ACCLAB/DABEST-python)
+<!-- [![Travis CI build status](https://travis-ci.org/ACCLAB/DABEST-python.svg?branch=master)](https://travis-ci.org/ACCLAB/DABEST-python) -->
 [![minimal Python version](https://img.shields.io/badge/Python%3E%3D-3.6-6666ff.svg)](https://www.anaconda.com/distribution/)
-[![PyPI version](https://badge.fury.io/py/dabest.svg)](https://badge.fury.io/py/dabest)
+[![PyPI version](https://badge.fury.io/py/dabest.svg?kill_cache=1)](https://badge.fury.io/py/dabest)
 [![Downloads](https://pepy.tech/badge/dabest/month)](https://pepy.tech/project/dabest/month)
 [![Free-to-view citation](https://zenodo.org/badge/DOI/10.1038/s41592-019-0470-3.svg)](https://rdcu.be/bHhJ4)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause--Clear-orange.svg)](https://spdx.org/licenses/BSD-3-Clause-Clear.html)
+
+## Version Update
+
+**DABEST v2023.02.14** for Python is now released!
+ 
+This new version provides the following new features:
+
+1. [**Repeated measures.**](https://acclab.github.io/DABEST-python-docs/repeatedmeasures.html) Augments the prior function for plotting (independent) multiple test groups versus a shared control; it can now do the same for repeated-measures experimental design. Together, these two methods can be used to replace both flavors of the 1-way ANOVA with an estimation analysis.
+
+2. [**Proportional data.**](https://acclab.github.io/DABEST-python-docs/proportion-plot.html) Generates proportional bar plots, proportional differences, and calculates Cohen's h. Also enables plotting Sankey diagrams for paired binary data. This is the estimation graphic equivalent to a bar chart with Fisher's exact test.
+
+3. [**The ∆∆ plot.**](https://acclab.github.io/DABEST-python-docs/deltadelta.html) Calculates the delta-delta (∆∆) for 2 × 2 experimental design and plots the four groups with their relevant effect sizes. This design can be used as a replacement for the 2 × 2 ANOVA.
+
+4. [**Mini-meta.**](https://acclab.github.io/DABEST-python-docs/minimetadelta.html) Calculates and plots a weighted delta (∆) for meta-analysis of experimental replicates. Useful for summarizing data from multiple replicated experiments, for example by different scientists in the same lab or the same scientist at different times. When the observed values are known (and share a common metric), this function makes such meta-analysis convenient.
+
+We recommend all users update to the new version. Please see the [updated documentation](https://acclab.github.io/DABEST-python-docs/) for more details and relevant tutorials. 
+
 
 ## Contents
 <!-- TOC depthFrom:1 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
@@ -32,7 +49,7 @@ An estimation plot has two key features.
 
 2. It presents the effect size as a **bootstrap 95% confidence interval** on a **separate but aligned axes**.
 
-![The five kinds of estimation plots](docs/source/_images/showpiece.png?raw=true "The five kinds of estimation plots.")
+![The five kinds of estimation plots](docs/source/_images/showpiece.png "The five kinds of estimation plots.")
 
 DABEST powers [estimationstats.com](https://www.estimationstats.com/), allowing everyone access to high-quality estimation plots.
 
@@ -78,7 +95,7 @@ iris_dabest = dabest.load(data=iris, x="species", y="petal_width",
 # Produce a Cumming estimation plot.
 iris_dabest.mean_diff.plot();
 ```
-![A Cumming estimation plot of petal width from the iris dataset](https://github.com/ACCLAB/DABEST-python/blob/master/iris.png)
+![A Cumming estimation plot of petal width from the iris dataset](iris.png)
 
 Please refer to the official [tutorial](https://acclab.github.io/DABEST-python-docs/tutorial.html) for more useful code snippets.
 
@@ -108,11 +125,11 @@ We also have a [Code of Conduct](https://github.com/ACCLAB/DABEST-python/blob/ma
 ### A wish list for new features
 Currently, DABEST offers functions to handle data traditionally analyzed with Student’s paired and unpaired t-tests. It also offers plots for multiplexed versions of these, and the estimation counterpart to a 1-way analysis of variance (ANOVA), the shared-control design. While these five functions execute a large fraction of common biomedical data analyses, there remain three others: 2-way data, time-series group data, and proportional data. We aim to add these new functions to both the R and Python libraries.
 
-● In many experiments, four groups are investigate to isolate an interaction, for example: a genotype × drug effect. Here, wild-type and mutant animals are each subjected to drug or sham treatments; the data are traditionally analysed with a 2×2 ANOVA. We have received requests by email, Twitter, and GitHub to implement an estimation counterpart to the 2-way ANOVA. To do this, we will implement ∆∆ plots, in which the difference of means (∆) of two groups is subtracted from a second two-group ∆. 
+● In many experiments, four groups are investigate to isolate an interaction, for example: a genotype × drug effect. Here, wild-type and mutant animals are each subjected to drug or sham treatments; the data are traditionally analysed with a 2×2 ANOVA. We have received requests by email, Twitter, and GitHub to implement an estimation counterpart to the 2-way ANOVA. To do this, we will implement ∆∆ plots, in which the difference of means (∆) of two groups is subtracted from a second two-group ∆. **Implemented in v2023.02.14.**
 
-● Currently, DABEST can analyse multiple paired data in a single plot, and multiple groups with a common, shared control. However, a common design in biomedical science is to follow the same group of subjects over multiple, successive time points. An estimation plot for this would combine elements of the two other designs, and could be used in place of a repeated-measures ANOVA. 
+● Currently, DABEST can analyse multiple paired data in a single plot, and multiple groups with a common, shared control. However, a common design in biomedical science is to follow the same group of subjects over multiple, successive time points. An estimation plot for this would combine elements of the two other designs, and could be used in place of a repeated-measures ANOVA. **Implemented in v2023.02.14**
 
-● We have observed that proportional data are often analyzed in neuroscience and other areas of biomedical research. However, compared to other data types, the charts are frequently impoverished: often, they omit error bars, sample sizes, and even P values—let alone effect sizes. We would like DABEST to feature proportion charts, with error bars and a curve for the distribution of the proportional differences.
+● We have observed that proportional data are often analyzed in neuroscience and other areas of biomedical research. However, compared to other data types, the charts are frequently impoverished: often, they omit error bars, sample sizes, and even P values—let alone effect sizes. We would like DABEST to feature proportion charts, with error bars and a curve for the distribution of the proportional differences. **Implemented in v2023.02.14**
 
 We encourage contributions for the above features. 
 

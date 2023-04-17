@@ -4,6 +4,27 @@
 Release Notes
 =============
 
+v2023.02.14
+-----------
+
+This release introduces several new functions:
+
+- **Repeated measures**: Augments the prior function for plotting (independent) multiple test groups versus a shared control (``"baseline"``); it can now do the same for repeated-measures experimental designs (``"sequential"``). Thus, together, these two methods can be used to replace both flavors of the 1-way ANOVA with an estimation analysis. 
+    - **Deprecation notice:** The ``paired`` argument for ``dabest.load()`` is no longer boolean, and now only accepts ``"baseline"`` or ``"sequential"`` as a string.
+- **Proportional data**: Generates proportional bar plots, proportional differences, and calculates Cohen's *h*. Also enables plotting Sankey diagrams for paired binary data. This is the estimation equivalent to a bar chart with Fischer's exact test. 
+- **The ∆∆ plot**: Calculates the delta-delta (∆∆) for 2 × 2 experimental designs and plots the four groups with their relevant effect sizes. This design can be used as a replacement for the 2 × 2 ANOVA. 
+- **Mini-meta**: Calculates and plots a weighted delta (∆) for meta-analysis of experimental replicates. Useful for summarizing data from multiple replicated experiments, for example by different scientists in the same lab, or the same scientist at different times. When the observed values are known (and share a common metric), this makes meta-analysis available as a routinely accessible tool. 
+
+Please read the updated tutorials if you wish to use the above functions: 
+
+:doc:`repeatedmeasures`
+
+:doc:`proportion-plot`
+
+:doc:`deltadelta`
+
+:doc:`minimetadelta`
+
 v0.3.1
 ------
 
@@ -51,7 +72,7 @@ v0.2.6
 ------
 
 Feature additions:
-  - It is now possible to specify a pre-determined :py:mod:`matplotlib` :py:class:`Axes` to create the estimation plot in. See :ref:`inset plot` in the :doc:`tutorial` (`Pull request #73 <https://github.com/ACCLAB/DABEST-python/pull/73>`_; thanks to Adam Nekimken (`@anekimken <https://github.com/anekimken>`_).
+  - It is now possible to specify a pre-determined :py:mod:`matplotlib` :py:class:`Axes` to create the estimation plot in. See :ref:`inset plot` in the :doc:`plotaesthetics` (`Pull request #73 <https://github.com/ACCLAB/DABEST-python/pull/73>`_; thanks to Adam Nekimken (`@anekimken <https://github.com/anekimken>`_).
   -
 
 

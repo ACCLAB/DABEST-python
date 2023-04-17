@@ -7,13 +7,14 @@ A range of functions to compute various effect sizes.
 
     two_group_difference
     cohens_d
+    cohens_h
     hedges_g
     cliffs_delta
     func_difference
 """
 
 
-def two_group_difference(control, test, is_paired=False,
+def two_group_difference(control, test, is_paired=None,
                         effect_size="mean_diff"):
     """
     Computes the following metrics for control and test:
@@ -23,6 +24,7 @@ def two_group_difference(control, test, is_paired=False,
             * Hedges' g
         - Median difference
         - Cliff's Delta
+        - Cohen's h (distance between two proportions)
 
     See the Wikipedia entry here: https://bit.ly/2LzWokf
 
@@ -31,8 +33,8 @@ def two_group_difference(control, test, is_paired=False,
     control, test: list, tuple, or ndarray.
         Accepts lists, tuples, or numpy ndarrays of numeric types.
 
-    is_paired: boolean, default False.
-        If True, returns the paired Cohen's d.
+    is_paired: string, default None.
+        If not None, returns the paired Cohen's d.
 
     effect_size: string, default "mean_diff"
         Any one of the following effect sizes:
@@ -70,22 +72,33 @@ def two_group_difference(control, test, is_paired=False,
         float: The desired effect size.
     """
     import numpy as np
+    import warnings
 
     if effect_size == "mean_diff":
         return func_difference(control, test, np.mean, is_paired)
 
     elif effect_size == "median_diff":
+        mes1 = "Using median as the statistic in bootstrapping may " + \
+                "result in a biased estimate and cause problems with " + \
+                "BCa confidence intervals. Consider using a different statistic, such as the mean.\n"
+        mes2 = "When plotting, please consider using percetile confidence intervals " + \
+                "by specifying `ci_type='percentile'`. For detailed information, " + \
+                "refer to https://github.com/ACCLAB/DABEST-python/issues/129 \n"
+        warnings.warn(message=mes1+mes2, category=UserWarning)
         return func_difference(control, test, np.median, is_paired)
 
     elif effect_size == "cohens_d":
         return cohens_d(control, test, is_paired)
 
+    elif effect_size == "cohens_h":
+        return cohens_h(control, test)
+
     elif effect_size == "hedges_g":
         return hedges_g(control, test, is_paired)
 
     elif effect_size == "cliffs_delta":
-        if is_paired is True:
-            err1 = "`is_paired` is True; therefore Cliff's delta is not defined."
+        if is_paired:
+            err1 = "`is_paired` is not None; therefore Cliff's delta is not defined."
             raise ValueError(err1)
         else:
             return cliffs_delta(control, test)
@@ -103,9 +116,9 @@ def func_difference(control, test, func, is_paired):
 
         func: summary function to apply.
 
-        is_paired: boolean.
-            If True, computes func(test - control).
-            If False, computes func(test) - func(control).
+        is_paired: string.
+            If not None, computes func(test - control).
+            If None, computes func(test) - func(control).
 
     Returns:
     --------
@@ -146,7 +159,7 @@ def func_difference(control, test, func, is_paired):
 
 
 
-def cohens_d(control, test, is_paired=False):
+def cohens_d(control, test, is_paired=None):
     """
     Computes Cohen's d for test v.s. control.
     See https://en.wikipedia.org/wiki/Effect_size#Cohen's_d
@@ -155,16 +168,15 @@ def cohens_d(control, test, is_paired=False):
     --------
     control, test: List, tuple, or array.
 
-    is_paired: boolean, default False
-        If True, the paired Cohen's d is returned.
+    is_paired: string, default None
+        If not None, the paired Cohen's d is returned.
 
     Returns
     -------
         d: float.
-            If is_paired is False, this is equivalent to:
+            If is_paired is None, this is equivalent to:
             (numpy.mean(test) - numpy.mean(control))  / pooled StDev
-
-            If is_paired is True, returns
+            If is_paired is not None, returns
             (numpy.mean(test) - numpy.mean(control))  / average StDev
 
             The pooled standard deviation is equal to:
@@ -227,7 +239,57 @@ def cohens_d(control, test, is_paired=False):
 
 
 
-def hedges_g(control, test, is_paired=False):
+def cohens_h(control, test):
+    '''
+    Computes Cohen's h for test v.s. control.
+    See https://en.wikipedia.org/wiki/Cohen%27s_h for reference.
+
+    Keywords
+    --------
+    control, test: List, tuple, or array.
+
+    Returns
+    -------
+        h: float.
+
+    Notes
+    -----
+        Assuming the input data type is binary, i.e. a series of 0s and 1s,
+        and a dict for mapping the 0s and 1s to the actual labels, e.g.
+        {1: "Smoker", 
+        0: "Non-smoker"}
+    '''
+
+    import numpy as np
+    np.seterr(divide='ignore', invalid='ignore')
+    import pandas as pd
+
+    # Check whether dataframe contains only 0s and 1s.
+    if np.isin(control, [0, 1]).all() == False or np.isin(test, [0, 1]).all() == False:
+        raise ValueError("Input data must be binary.")
+
+    # Convert to numpy arrays for speed.
+    # NaNs are automatically dropped.
+    # Aligned with cohens_d calculation.
+    if control.__class__ != np.ndarray:
+        control = np.array(control)
+    if test.__class__ != np.ndarray:
+        test = np.array(test)
+    control = control[~np.isnan(control)]
+    test = test[~np.isnan(test)]
+
+    prop_control = sum(control)/len(control)
+    prop_test = sum(test)/len(test)
+
+    # Arcsine transformation
+    phi_control = 2 * np.arcsin(np.sqrt(prop_control))
+    phi_test = 2 * np.arcsin(np.sqrt(prop_test))
+
+    return phi_test - phi_control
+
+    
+
+def hedges_g(control, test, is_paired=None):
     """
     Computes Hedges' g for  for test v.s. control.
     It first computes Cohen's d, then calulates a correction factor based on
@@ -386,3 +448,14 @@ def _compute_hedges_correction_factor(n1, n2):
         out = numer / denom
 
     return out
+
+
+def weighted_delta(difference, group_var):
+    '''
+    Compute the weighted deltas where the weight is the inverse of the
+    pooled group difference.
+    '''
+    import numpy as np
+
+    weight = np.true_divide(1, group_var)
+    return np.sum(difference*weight)/np.sum(weight)
