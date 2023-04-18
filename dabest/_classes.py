@@ -302,7 +302,7 @@ class Dabest(object):
                                                           ordered=True, 
                                                           inplace=True)
         else:
-            plot_data.loc[:, self.__xvar] = pd.Categorical(plot_data[self.__xvar],
+            plot_data[self.__xvar] = pd.Categorical(plot_data[self.__xvar],
                                                categories=all_plot_groups,
                                                ordered=True)
         
