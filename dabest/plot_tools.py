@@ -81,7 +81,8 @@ def error_bar(data:pd.DataFrame, # This DataFrame should be in 'long' format.
               type:str='mean_sd', # Choose from ['mean_sd', 'median_quartiles']. Plots the summary statistics for each group. If 'mean_sd', then the mean and standard deviation of each group is plotted as a gapped line. If 'median_quantiles', then the median and 25th and 75th percentiles of each group is plotted instead.
               offset:float=0.2, #Give a single float (that will be used as the x-offset of all gapped lines), or an iterable containing the list of x-offsets.
               ax=None, #If a matplotlib Axes object is specified, the gapped lines will be plotted in order on this axes. If None, the current axes (plt.gca()) is used.
-              line_color="black", gap_width_percent=1, 
+              line_color="black", # The color of the gapped lines.
+              gap_width_percent=1, # The width of the gap in the gapped lines, as a percentage of the y-axis span.
               pos:list=[0, 1],#The positions of the error bars for the sankey_error_bar method.
               method:str='gapped_lines', #The method to use for drawing the error bars. Options are: 'gapped_lines', 'proportional_error_bar', and 'sankey_error_bar'.
               **kwargs:dict
