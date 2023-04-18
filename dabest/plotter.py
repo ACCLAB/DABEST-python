@@ -157,7 +157,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                             plot_kwargs["violinplot_kwargs"])
 
     # slopegraph kwargs.
-    default_slopegraph_kwargs = {'lw':1, 'alpha':0.5}
+    default_slopegraph_kwargs = {'linewidth':1, 'alpha':0.5}
     if plot_kwargs["slopegraph_kwargs"] is None:
         slopegraph_kwargs = default_slopegraph_kwargs
     else:
