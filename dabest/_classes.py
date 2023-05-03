@@ -175,7 +175,7 @@ class Dabest(object):
 
 
         # Determine the kind of estimation plot we need to produce.
-        if all([isinstance(i, str) for i in idx]):
+        if all([isinstance(i, (str, int, float)) for i in idx]):
             # flatten out idx.
             all_plot_groups = pd.unique([t for t in idx]).tolist()
             if len(idx) > len(all_plot_groups):

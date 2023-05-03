@@ -402,35 +402,24 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         # Plot the raw data as a slopegraph.
         # Pivot the long (melted) data.
             if color_col is None:
-                pivot_values = yvar
+                pivot_values = [yvar]
             else:
                 pivot_values = [yvar, color_col]
             pivoted_plot_data = pd.pivot(data=plot_data, index=dabest_obj.id_col,
                                          columns=xvar, values=pivot_values)
             x_start = 0
             for ii, current_tuple in enumerate(temp_idx):
-                if len(temp_idx) > 1:
-                    # Select only the data for the current tuple.
-                    if color_col is None:
-                        current_pair = pivoted_plot_data.reindex(columns=current_tuple)
-                    else:
-                        current_pair = pivoted_plot_data[yvar].reindex(columns=current_tuple)
-                else:
-                    if color_col is None:
-                        current_pair = pivoted_plot_data
-                    else:
-                        current_pair = pivoted_plot_data[yvar]
+                current_pair = pivoted_plot_data.loc[:, pd.MultiIndex.from_product([pivot_values, current_tuple])].dropna()
                 grp_count = len(current_tuple)
                 # Iterate through the data for the current tuple.
                 for ID, observation in current_pair.iterrows():
                     x_points = [t for t in range(x_start, x_start + grp_count)]
-                    y_points = observation.tolist()
+                    y_points = observation[yvar].tolist()
 
                     if color_col is None:
                         slopegraph_kwargs['color'] = ytick_color
                     else:
-                        color_key = pivoted_plot_data[color_col,
-                                                      current_tuple[0]].loc[ID]
+                        color_key = observation[color_col][0]
                         if isinstance(color_key, str) == True:
                             slopegraph_kwargs['color'] = plot_palette_raw[color_key]
                             slopegraph_kwargs['label'] = color_key
