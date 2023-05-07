@@ -2445,6 +2445,11 @@ class EffectSizeDataFrame(object):
             fig_size=None,
             dpi=100,
             ax=None,
+             
+            gridkey_rows=None,
+            gridkey_merge_pairs = False,
+            gridkey_show_Ns = True,
+            gridkey_show_es = True,
 
             swarmplot_kwargs=None,
             barplot_kwargs=None,
@@ -2536,6 +2541,10 @@ class EffectSizeDataFrame(object):
         ax : matplotlib.Axes, default None
             Provide an existing Axes for the plots to be created. If no Axes is
             specified, a new matplotlib Figure will be created.
+        gridkey_rows : list, default None
+            Provide a list of row labels for the gridkey. The supplied idx is
+            checked against the row labels to determine whether the corresponding
+            cell should be populated or not.
         swarmplot_kwargs : dict, default None
             Pass any keyword arguments accepted by the seaborn `swarmplot`
             command here, as a dict. If None, the following keywords are
