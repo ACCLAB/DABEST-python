@@ -1,67 +1,57 @@
-from setuptools import setup, find_packages
-import os
-# Taken from setup.py in seaborn.
-# temporarily redirect config directory to prevent matplotlib importing
-# testing that for writeable directory which results in sandbox error in
-# certain easy_install versions
-os.environ["MPLCONFIGDIR"]="."
+from pkg_resources import parse_version
+from configparser import ConfigParser
+import setuptools, shlex
+assert parse_version(setuptools.__version__)>=parse_version('36.2')
 
-DESCRIPTION = 'Data Analysis and Visualization using Bootstrap-Coupled Estimation.'
-LONG_DESCRIPTION = """\
-Estimation statistics is a simple framework <https://thenewstatistics.com/itns/>
-that—while avoiding the pitfalls of significance testing—uses familiar statistical
-concepts: means, mean differences, and error bars. More importantly, it focuses on
-the effect size of one's experiment/intervention, as opposed to
-significance testing.
+# note: all settings are in settings.ini; edit there, not here
+config = ConfigParser(delimiters=['='])
+config.read('settings.ini')
+cfg = config['DEFAULT']
 
-An estimation plot has two key features. Firstly, it presents all
-datapoints as a swarmplot, which orders each point to display the
-underlying distribution. Secondly, an estimation plot presents the
-effect size as a bootstrap 95% confidence interval on a separate but
-aligned axes.
+cfg_keys = 'version description keywords author author_email'.split()
+expected = cfg_keys + "lib_name user branch license status min_python audience language".split()
+for o in expected: assert o in cfg, "missing expected setting: {}".format(o)
+setup_cfg = {o:cfg[o] for o in cfg_keys}
 
-Please cite this work as:
-Moving beyond P values: Everyday data analysis with estimation plots
-Joses Ho, Tayfun Tumkaya, Sameer Aryal, Hyungwon Choi, Adam Claridge-Chang
-https://doi.org/10.1101/377978
-"""
+licenses = {
+    'apache2': ('Apache Software License 2.0','OSI Approved :: Apache Software License'),
+    'mit': ('MIT License', 'OSI Approved :: MIT License'),
+    'gpl2': ('GNU General Public License v2', 'OSI Approved :: GNU General Public License v2 (GPLv2)'),
+    'gpl3': ('GNU General Public License v3', 'OSI Approved :: GNU General Public License v3 (GPLv3)'),
+    'bsd3': ('BSD License', 'OSI Approved :: BSD License'),
+}
+statuses = [ '1 - Planning', '2 - Pre-Alpha', '3 - Alpha',
+    '4 - Beta', '5 - Production/Stable', '6 - Mature', '7 - Inactive' ]
+py_versions = '3.6 3.7 3.8 3.9 3.10'.split()
+
+requirements = shlex.split(cfg.get('requirements', ''))
+if cfg.get('pip_requirements'): requirements += shlex.split(cfg.get('pip_requirements', ''))
+min_python = cfg['min_python']
+lic = licenses.get(cfg['license'].lower(), (cfg['license'], None))
+dev_requirements = (cfg.get('dev_requirements') or '').split()
+
+setuptools.setup(
+    name = cfg['lib_name'],
+    license = lic[0],
+    classifiers = [
+        'Development Status :: ' + statuses[int(cfg['status'])],
+        'Intended Audience :: ' + cfg['audience'].title(),
+        'Natural Language :: ' + cfg['language'].title(),
+    ] + ['Programming Language :: Python :: '+o for o in py_versions[py_versions.index(min_python):]] + (['License :: ' + lic[1] ] if lic[1] else []),
+    url = cfg['git_url'],
+    packages = setuptools.find_packages(),
+    include_package_data = True,
+    install_requires = requirements,
+    extras_require={ 'dev': dev_requirements },
+    dependency_links = cfg.get('dep_links','').split(),
+    python_requires  = '>=' + cfg['min_python'],
+    long_description = open('README.md').read(),
+    long_description_content_type = 'text/markdown',
+    zip_safe = False,
+    entry_points = {
+        'console_scripts': cfg.get('console_scripts','').split(),
+        'nbdev': [f'{cfg.get("lib_path")}={cfg.get("lib_path")}._modidx:d']
+    },
+    **setup_cfg)
 
 
-if __name__ == "__main__":
-    setup(
-        name='dabest',
-        author='Joses W. Ho',
-        author_email='joseshowh@gmail.com',
-        maintainer='Adam Claridge-Chang',
-        maintainer_email='estimationstats@gmail.com',
-        version='2023.02.14',
-        description=DESCRIPTION,
-        long_description=LONG_DESCRIPTION,
-        packages=find_packages(),
-        install_requires=[
-            'numpy~=1.19',
-            'scipy~=1.5',
-            'pandas~=1.1',
-
-            'matplotlib~=3.3',
-            'seaborn~=0.11',
-            'lqrt~=0.3'
-        ],
-        extras_require={'dev': ['pytest~=6.1', 'pytest-mpl~=0.11']},
-        python_requires='~=3.6',
-        classifiers=[
-            "Development Status :: 5 - Production/Stable",
-            "Intended Audience :: Science/Research",
-            "Intended Audience :: Education",
-            "License :: OSI Approved :: BSD License",
-            "Programming Language :: Python :: 3",
-            "Topic :: Scientific/Engineering :: Visualization",
-            "Operating System :: Microsoft :: Windows",
-            "Operating System :: POSIX :: Linux",
-            "Operating System :: Unix",
-            "Operating System :: MacOS",
-        ],
-        url='https://acclab.github.io/DABEST-python-docs',
-        download_url='https://www.github.com/ACCLAB/DABEST-python',
-        license='BSD 3-clause Clear License'
-    )
