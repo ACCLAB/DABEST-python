@@ -438,7 +438,7 @@ class Dabest(object):
     @property
     def mean_diff(self):
         """
-        Returns an :py:class:`EffectSizeDataFrame` for the mean difference, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
+        Returns an :py:class:`EffectSizeDataFrame` for the mean difference, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`
 
         """
         return self.__mean_diff
@@ -448,7 +448,7 @@ class Dabest(object):
     def median_diff(self):
         """
         Returns an :py:class:`EffectSizeDataFrame` for the median difference, its confidence interval, and relevant statistics, for all comparisons  as indicated via the `idx` and `paired` argument in `dabest.load()`.
-  
+
         """
         return self.__median_diff
         
