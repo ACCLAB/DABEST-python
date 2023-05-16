@@ -38,6 +38,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         reflines_kwargs=None,
         group_summary_kwargs=None,
         legend_kwargs=None,
+        title=None, fontsize_title = 16,
+        fontsize_rawxlabel = 12,fontsize_rawylabel = 12,
+        fontsize_contrastxlabel = 12, fontsize_contrastylabel = 12,
+        fontsize_delta2label = 12
     """
 
     import numpy as np
@@ -82,7 +86,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     all_plot_groups = dabest_obj._all_plot_groups
     idx             = dabest_obj.idx
 
-    if effect_size != "mean_diff" or not delta2:
+    if effect_size not in ["mean_diff", "delta_g"] or not delta2:
         show_delta2 = False
     else:
         show_delta2 = plot_kwargs["show_delta2"]
@@ -370,7 +374,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_ax_ylim_low = list()
             contrast_ax_ylim_high = list()
             contrast_ax_ylim_tickintervals = list()
-
+            
+        title = plot_kwargs["title"]
+        fontsize_title = plot_kwargs["fontsize_title"]
+        if title is not None:
+            fig.suptitle(title, fontsize=fontsize_title)
         rawdata_axes  = axx[0]
         contrast_axes = axx[1]
     rawdata_axes.set_frame_on(False)
@@ -561,8 +569,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             N = str(counts.loc[te])
 
         ticks_with_counts.append("{}\nN = {}".format(te, N))
-
-    rawdata_axes.set_xticklabels(ticks_with_counts)
+        
+    if plot_kwargs['fontsize_rawxlabel'] is not None:
+        fontsize_rawxlabel = plot_kwargs['fontsize_rawxlabel']
+    rawdata_axes.set_xticklabels(ticks_with_counts,fontsize=fontsize_rawxlabel)
 
     # Save the handles and labels for the legend.
     handles, labels = rawdata_axes.get_legend_handles_labels()
@@ -709,8 +719,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                            linewidth=group_summary_kwargs['lw'])
         if show_mini_meta:
             contrast_xtick_labels.extend(["","Weighted delta"])
+        elif effect_size == "delta_g":
+            contrast_xtick_labels.extend(["","deltas' g"])
         else:
-            contrast_xtick_labels.extend(["","delta-delta"])
+            contrast_xtick_labels.extend(["", "delta-delta"])
 
     # Make sure the contrast_axes x-lims match the rawdata_axes xlims,
     # and add an extra violinplot tick for delta-delta plot.
@@ -741,8 +753,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     # Properly label the contrast ticks.
     for t in ticks_to_skip:
         contrast_xtick_labels.insert(t, "")
-    
-    contrast_axes.set_xticklabels(contrast_xtick_labels)
+
+    if plot_kwargs['fontsize_contrastxlabel'] is not None:
+        fontsize_contrastxlabel = plot_kwargs['fontsize_contrastxlabel']
+
+    contrast_axes.set_xticklabels(contrast_xtick_labels,fontsize=fontsize_contrastxlabel)
 
     if bootstraps_color_by_group is False:
         legend_labels_unique = np.unique(legend_labels)
@@ -1063,10 +1078,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                            'cohens_d': "Cohen's d",
                            'hedges_g': "Hedges' g",
                            'cliffs_delta': "Cliff's delta",
-                           'cohens_h': "Cohen's h"}
+                           'cohens_h': "Cohen's h",
+                           'delta_g': "mean difference"}
 
     if proportional == True and effect_size_type != "cohens_h":
         default_contrast_label = "proportion difference"
+    elif effect_size_type == "delta_g":
+        default_contrast_label = "Hedges' g"
     else:
         default_contrast_label = contrast_label_dict[EffectSizeDataFrame.effect_size]
 
@@ -1080,15 +1098,22 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         contrast_label = plot_kwargs['contrast_label']
 
-    contrast_axes.set_ylabel(contrast_label)
+    if plot_kwargs['fontsize_rawylabel'] is not None:
+        fontsize_rawylabel = plot_kwargs['fontsize_rawylabel']
+    if plot_kwargs['fontsize_contrastylabel'] is not None:
+        fontsize_contrastylabel = plot_kwargs['fontsize_contrastylabel']
+    if plot_kwargs['fontsize_delta2label'] is not None:
+        fontsize_delta2label = plot_kwargs['fontsize_delta2label']
+
+    contrast_axes.set_ylabel(contrast_label,fontsize = fontsize_contrastylabel)
     if float_contrast is True:
         contrast_axes.yaxis.set_label_position("right")
 
     # Set the rawdata axes labels appropriately
     if proportional == False:
-        rawdata_axes.set_ylabel(swarm_label)
+        rawdata_axes.set_ylabel(swarm_label,fontsize = fontsize_rawylabel)
     else:
-        rawdata_axes.set_ylabel(bar_label)
+        rawdata_axes.set_ylabel(bar_label,fontsize = fontsize_rawylabel)
     rawdata_axes.set_xlabel("")
 
     # Because we turned the axes frame off, we also need to draw back
@@ -1114,13 +1139,15 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
     if show_delta2 is True:
-        if plot_kwargs['delta2_label'] is None:
-            delta2_label = "delta - delta"
-        else: 
+        if plot_kwargs['delta2_label'] is not None:
             delta2_label = plot_kwargs['delta2_label']
+        elif effect_size == "mean_diff" :
+            delta2_label = "delta - delta"
+        else:
+            delta2_label = "deltas' g"
         delta2_axes = contrast_axes.twinx()
         delta2_axes.set_frame_on(False)
-        delta2_axes.set_ylabel(delta2_label)
+        delta2_axes.set_ylabel(delta2_label,fontsize = fontsize_delta2label)
         og_xlim_delta = contrast_axes.get_xlim()
         og_ylim_delta = contrast_axes.get_ylim()
         delta2_axes.set_ylim(og_ylim_delta)
