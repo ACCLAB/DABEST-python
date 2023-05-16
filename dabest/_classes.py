@@ -740,6 +740,8 @@ class DeltaDelta(object):
         else:
             self.__bootstraps_delta_delta = bootstraps_delta_delta[0]
             self.__difference = bootstraps_delta_delta[1]
+            
+        sorted_delta_delta = npsort(self.__bootstraps_delta_delta)
 
         self.__bias_correction = ci2g.compute_meandiff_bias_correction(
                                     self.__bootstraps_delta_delta, self.__difference)
