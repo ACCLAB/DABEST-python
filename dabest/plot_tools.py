@@ -182,6 +182,7 @@ def error_bar(data:pd.DataFrame, # This DataFrame should be in 'long' format.
     kwargs['zorder'] = kwargs['zorder']
 
     for xpos, central_measure in enumerate(central_measures):
+        
         kwargs['color'] = custom_palette[xpos]
 
         if method == 'sankey_error_bar':
@@ -651,4 +652,3 @@ def sankeydiag(data:pd.DataFrame,
         sankey_ticks = [broadcasted_left[0], right_idx[0]]
         ax.set_xticks([0, 1])
         ax.set_xticklabels(sankey_ticks)
-
