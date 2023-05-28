@@ -149,6 +149,13 @@ class Dabest(object):
 
         # create new x & idx and record the second variable if this is a valid 2x2 ANOVA case
         if idx is None and x is not None and y is not None:
+            # Add a length check for unique values in the first element in list x, 
+            # if the length is greater than 2, force delta2 to be False
+            if len(data_in[x[0]].unique()) > 2:
+                delta2 = False
+                self.__delta2 = delta2
+                # stop the loop if delta2 is False
+            
             # add a new column which is a combination of experiment and the first variable
             new_col_name = experiment+x[0]
             while new_col_name in data_in.columns:
