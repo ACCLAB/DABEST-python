@@ -418,6 +418,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 pivot_values = [yvar]
             else:
                 pivot_values = [yvar, color_col]
+            # pivoted_plot_data = plot_data.pivot_table(index=dabest_obj.id_col, 
+            #                                           columns=xvar, values=pivot_values, fill_value='')
             pivoted_plot_data = pd.pivot(data=plot_data, index=dabest_obj.id_col,
                                          columns=xvar, values=pivot_values)
             x_start = 0
@@ -433,7 +435,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                         slopegraph_kwargs['color'] = ytick_color
                     else:
                         color_key = observation[color_col][0]
-                        if isinstance(color_key, str) == True:
+                        if isinstance(color_key, (str, np.int64, np.float64)) == True:
                             slopegraph_kwargs['color'] = plot_palette_raw[color_key]
                             slopegraph_kwargs['label'] = color_key
 
