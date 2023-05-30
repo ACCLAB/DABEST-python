@@ -418,9 +418,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 pivot_values = [yvar]
             else:
                 pivot_values = [yvar, color_col]
-            # pivoted_plot_data = pd.pivot(data=plot_data, index=dabest_obj.id_col,
-            #                              columns=xvar, values=pivot_values)
-            pivoted_plot_data = plot_data.pivot_table(index=dabest_obj.id_col, columns=xvar, values=pivot_values)
+            pivoted_plot_data = pd.pivot(data=plot_data, index=dabest_obj.id_col,
+                                         columns=xvar, values=pivot_values)
             x_start = 0
             for ii, current_tuple in enumerate(temp_idx):
                 current_pair = pivoted_plot_data.loc[:, pd.MultiIndex.from_product([pivot_values, current_tuple])].dropna()
@@ -437,11 +436,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                         if isinstance(color_key, str) == True:
                             slopegraph_kwargs['color'] = plot_palette_raw[color_key]
                             slopegraph_kwargs['label'] = color_key
-                        else:
-                            color_key = str(color_key)
-                            slopegraph_kwargs['color'] = plot_palette_raw[color_key]
-                            slopegraph_kwargs['label'] = color_key
-                        
 
                     rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
                 x_start = x_start + grp_count
