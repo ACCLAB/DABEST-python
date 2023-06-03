@@ -179,7 +179,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                         plot_kwargs["legend_kwargs"])
         
         
-################################################### GRIDKEY WIP - extracting kwargs      
+################################################### GRIDKEY WIP - extracting arguments      
     
     gridkey_rows = plot_kwargs["gridkey_rows"]
     gridkey_merge_pairs = plot_kwargs["gridkey_merge_pairs"]
@@ -190,7 +190,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         gridkey_show_Ns = False
         gridkey_show_es = False
     
-################################################### END GRIDKEY WIP - extracting kwargs
+################################################### END GRIDKEY WIP - extracting arguments
 
     # Group summaries kwargs.
     gs_default = {'mean_sd', 'median_quartiles', None}
@@ -322,8 +322,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         h_space_cummings = 0.1
     else:
         h_space_cummings = 0.3
-        
-    ##### TESTING SOME SHIT
     
     
 ###################### END GRIDKEY HSPACE ALTERATION        
@@ -453,9 +451,62 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                             slopegraph_kwargs['color'] = plot_palette_raw[color_key]
                             slopegraph_kwargs['label'] = color_key
 
-                    rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
+                    rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)                    
+
                     
                 x_start = x_start + grp_count
+         
+ ##################### DELTA PTS ON CONTRAST PLOT WIP 
+
+            contrast_show_deltas = plot_kwargs["contrast_show_deltas"]
+            
+            if is_paired == None:
+                contrast_show_deltas = False
+            
+            if contrast_show_deltas == True:
+                
+                trans = plt.gca().transData
+                
+                delta_plot_data_temp = plot_data.copy()
+                delta_id_col = dabest_obj.id_col
+                if color_col != None:
+                    delta_plot_data = delta_plot_data_temp[[xvar, yvar, delta_id_col, color_col]]
+                    deltapts_args = {"hue" : color_col, 
+                            "palette" : plot_palette_raw,
+                            "marker" : "^",
+                            "alpha" : 0.5}
+                    
+                else:
+                    delta_plot_data = delta_plot_data_temp[[xvar, yvar, delta_id_col]]
+                    deltapts_args = {"color" : "k",
+                            "marker" : "^",
+                            "alpha" : 0.5}
+                    
+                final_deltas = pd.DataFrame()
+                for i in idx:
+                    for j in i:
+                        if i.index(j) != 0:
+                            temp_df_exp = delta_plot_data[delta_plot_data[xvar].str.contains(j)].reset_index(drop=True)
+                            if is_paired == "baseline":
+                                temp_df_cont = delta_plot_data[delta_plot_data[xvar].str.contains(i[0])].reset_index(drop=True)
+                            elif is_paired == "sequential":
+                                temp_df_cont = delta_plot_data[delta_plot_data[xvar].str.contains(i[i.index(j) - 1])].reset_index(drop=True)
+                            delta_df = temp_df_exp.copy()
+                            delta_df[yvar] = temp_df_exp[yvar] - temp_df_cont[yvar]
+                            final_deltas = pd.concat([final_deltas, delta_df])                    
+        
+                
+                # Plot the raw data as a swarmplot.
+                deltapts_plot = sns.swarmplot(data=final_deltas, x=xvar, y=yvar,
+                                         ax=contrast_axes,
+                                         order=all_plot_groups, 
+                                          zorder=2,
+                                         **deltapts_args)
+                contrast_axes.legend().set_visible(False)
+                
+  ##################### DELTA PTS ON CONTRAST PLOT END
+
+            
             # Set the tick labels, because the slopegraph plotting doesn't.
             rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
             rawdata_axes.set_xticklabels(temp_all_plot_groups)
@@ -1293,7 +1344,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         contrast_axes.get_xaxis().set_visible(False)
         
  ####################################################### END GRIDKEY MAIN CODE WIP       
-        
+    
+    
+    
+    
     # Make sure no stray ticks appear!
     rawdata_axes.xaxis.set_ticks_position('bottom')
     rawdata_axes.yaxis.set_ticks_position('left')

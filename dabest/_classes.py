@@ -2450,6 +2450,8 @@ class EffectSizeDataFrame(object):
             es_sf = 2,
             es_fontsize = 10,
              
+            contrast_show_deltas = True,
+             
             gridkey_rows=None,
             gridkey_merge_pairs = False,
             gridkey_show_Ns = True,
