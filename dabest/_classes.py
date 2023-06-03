@@ -2445,6 +2445,10 @@ class EffectSizeDataFrame(object):
             fig_size=None,
             dpi=100,
             ax=None,
+            
+            contrast_show_es = False,
+            es_sf = 2,
+            es_fontsize = 10,
              
             gridkey_rows=None,
             gridkey_merge_pairs = False,

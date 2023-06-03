@@ -186,6 +186,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     gridkey_show_Ns = plot_kwargs["gridkey_show_Ns"]
     gridkey_show_es = plot_kwargs["gridkey_show_es"]
     
+    if gridkey_rows == None:
+        gridkey_show_Ns = False
+        gridkey_show_es = False
+    
 ################################################### END GRIDKEY WIP - extracting kwargs
 
     # Group summaries kwargs.
@@ -314,11 +318,14 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 ###################### GRIDKEY HSPACE ALTERATION
 
     # Sets hspace for cummings plots if gridkey is shown.
-    if gridkey_rows is not None:
+    if gridkey_rows != None:
         h_space_cummings = 0.1
     else:
         h_space_cummings = 0.3
         
+    ##### TESTING SOME SHIT
+    
+    
 ###################### END GRIDKEY HSPACE ALTERATION        
         
     if plot_kwargs["ax"] is not None:
@@ -447,6 +454,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                             slopegraph_kwargs['label'] = color_key
 
                     rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
+                    
                 x_start = x_start + grp_count
             # Set the tick labels, because the slopegraph plotting doesn't.
             rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
@@ -665,6 +673,37 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         contrast_axes.plot([tick], current_effsize, marker='o',
                            color=ytick_color,
                            markersize=es_marker_size)
+        
+################## SHOW ES ON CONTRAST PLOT WIP        
+
+        contrast_show_es = plot_kwargs["contrast_show_es"]
+        es_sf = plot_kwargs['es_sf']
+        es_fontsize = plot_kwargs['es_fontsize']
+        
+        if gridkey_show_es == True:
+            contrast_show_es = False
+        
+
+            
+        effsize_for_print = current_effsize
+            
+        printed_es = np.format_float_positional(effsize_for_print,
+                                                   precision=es_sf,
+                                                   sign=True,
+                                                   trim= 'k',
+                                                   min_digits = es_sf)
+        if contrast_show_es == True:
+            if effsize_for_print < 0:
+                textoffset = 10
+            else:
+                textoffset = 15
+            contrast_axes.annotate(text=printed_es, 
+                                   xy = (tick, effsize_for_print),
+                                   xytext = (-textoffset-len(printed_es)*es_fontsize/2,-es_fontsize/2),
+                                   textcoords = "offset points",
+                                   **{ "fontsize" : es_fontsize })
+            
+################## SHOW ES ON CONTRAST PLOT END                
         
         # Plot the confidence interval.
         contrast_axes.plot([tick, tick],
@@ -1166,7 +1205,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         if isinstance(gridkey_rows, list) is False:
             raise TypeError("gridkey_rows must be a list.")
         elif len(gridkey_rows) == 0:
-            raise ValueError("gridkey_rows cannot be an empty list.")
+            warnings.warn("gridkey_rows is an empty list.")
         
         
         # raise Warning if an item in gridkey_rows is not contained in any idx
@@ -1214,10 +1253,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             for i in enumerate(groups_for_gridkey):
                 if i[1] in results_list:
                     curr_esval = results.loc[results["test"] == i[1]]["difference"].iloc[0]
-                    if curr_esval >= 0: 
-                        curr_esval_str = "+" + str("%.2f" % curr_esval)
-                    else:
-                        curr_esval_str = str("%.2f" % curr_esval)
+                    curr_esval_str = np.format_float_positional(curr_esval,
+                                                   precision=es_sf,
+                                                   sign=True,
+                                                   trim= 'k',
+                                                   min_digits = es_sf)
                     effsize_list.append(curr_esval_str)
                 else:
                     effsize_list.append("-")
