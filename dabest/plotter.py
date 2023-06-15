@@ -38,10 +38,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         reflines_kwargs=None,
         group_summary_kwargs=None,
         legend_kwargs=None,
-        title=None, fontsize_title = 16,
-        fontsize_rawxlabel = 12,fontsize_rawylabel = 12,
-        fontsize_contrastxlabel = 12, fontsize_contrastylabel = 12,
-        fontsize_delta2label = 12
+        title=None, fontsize_title=16,
+        fontsize_rawxlabel=12, fontsize_rawylabel=12,
+        fontsize_contrastxlabel=12, fontsize_contrastylabel=12,
+        fontsize_delta2label=12
     """
 
     import numpy as np
@@ -374,7 +374,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_ax_ylim_low = list()
             contrast_ax_ylim_high = list()
             contrast_ax_ylim_tickintervals = list()
-            
+        
+        # Title
         title = plot_kwargs["title"]
         fontsize_title = plot_kwargs["fontsize_title"]
         if title is not None:
@@ -418,8 +419,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 pivot_values = [yvar]
             else:
                 pivot_values = [yvar, color_col]
-            # pivoted_plot_data = plot_data.pivot_table(index=dabest_obj.id_col, 
-            #                                           columns=xvar, values=pivot_values, fill_value='')
             pivoted_plot_data = pd.pivot(data=plot_data, index=dabest_obj.id_col,
                                          columns=xvar, values=pivot_values)
             x_start = 0
@@ -571,7 +570,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             N = str(counts.loc[te])
 
         ticks_with_counts.append("{}\nN = {}".format(te, N))
-        
+
     if plot_kwargs['fontsize_rawxlabel'] is not None:
         fontsize_rawxlabel = plot_kwargs['fontsize_rawxlabel']
     rawdata_axes.set_xticklabels(ticks_with_counts,fontsize=fontsize_rawxlabel)
@@ -722,7 +721,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         if show_mini_meta:
             contrast_xtick_labels.extend(["","Weighted delta"])
         elif effect_size == "delta_g":
-            contrast_xtick_labels.extend(["","deltas' g"])
+            contrast_xtick_labels.extend(["", "deltas' g"])
         else:
             contrast_xtick_labels.extend(["", "delta-delta"])
 
@@ -1149,7 +1148,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             delta2_label = "deltas' g"
         delta2_axes = contrast_axes.twinx()
         delta2_axes.set_frame_on(False)
-        delta2_axes.set_ylabel(delta2_label,fontsize = fontsize_delta2label)
+        delta2_axes.set_ylabel(delta2_label, fontsize = fontsize_delta2label)
         og_xlim_delta = contrast_axes.get_xlim()
         og_ylim_delta = contrast_axes.get_ylim()
         delta2_axes.set_ylim(og_ylim_delta)
