@@ -127,7 +127,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                            plot_kwargs["swarmplot_kwargs"])
 
     # Barplot kwargs
-    default_barplot_kwargs = {"estimator": np.mean, "ci": plot_kwargs["ci"]}
+    default_barplot_kwargs = {"estimator": np.mean, "errorbar": plot_kwargs["ci"]}
 
     if plot_kwargs["barplot_kwargs"] is None:
         barplot_kwargs = default_barplot_kwargs

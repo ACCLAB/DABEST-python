@@ -2672,6 +2672,9 @@ class EffectSizeDataFrame(object):
 
         # if self.__proportional:
         #     raw_marker_size = 0.01
+
+        # Modification incurred due to update of Seaborn
+        ci = ('ci', ci) if ci is not None else None
             
         all_kwargs = locals()
         del all_kwargs["self"]
