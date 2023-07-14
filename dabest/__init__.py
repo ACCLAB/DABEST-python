@@ -1,4 +1,4 @@
-from ._api import load
+from ._api import load, prop_dataset
 from ._stats_tools import effsize as effsize
 from ._classes import TwoGroupsEffectSize, PermutationTest
 
