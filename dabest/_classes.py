@@ -151,7 +151,8 @@ class Dabest(object):
         if idx is None and x is not None and y is not None:
             # Add a length check for unique values in the first element in list x, 
             # if the length is greater than 2, force delta2 to be False
-            if len(data_in[x[0]].unique()) > 2:
+            # Should be removed if delta2 for situations other than 2x2 is supported
+            if len(data_in[x[0]].unique()) > 2 and x1_level is None:
                 delta2 = False
                 self.__delta2 = delta2
                 # stop the loop if delta2 is False
