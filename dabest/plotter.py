@@ -46,6 +46,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     import numpy as np
     import seaborn as sns
+    import matplotlib
     import matplotlib.pyplot as plt
     import pandas as pd
     import warnings
@@ -559,6 +560,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     # Add the counts to the rawdata axes xticks.
     counts = plot_data.groupby(xvar).count()[yvar]
     ticks_with_counts = []
+    ticks_loc = rawdata_axes.get_xticks()
+    rawdata_axes.xaxis.set_major_locator(matplotlib.ticker.FixedLocator(ticks_loc))
     for xticklab in rawdata_axes.xaxis.get_ticklabels():
         t = xticklab.get_text()
         if t.rfind("\n") != -1:
