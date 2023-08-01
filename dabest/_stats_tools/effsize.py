@@ -59,7 +59,7 @@ def two_group_difference(control:list|tuple|np.ndarray, #Accepts lists, tuples, 
     import numpy as np
     import warnings
 
-    if effect_size == "mean_diff" or effect_size=="delta_g":
+    if effect_size == "mean_diff":
         return func_difference(control, test, np.mean, is_paired)
 
     elif effect_size == "median_diff":
