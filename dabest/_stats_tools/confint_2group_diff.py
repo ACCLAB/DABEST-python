@@ -2,8 +2,8 @@
 
 # %% auto 0
 __all__ = ['create_jackknife_indexes', 'create_repeated_indexes', 'compute_meandiff_jackknife', 'compute_bootstrapped_diff',
-           'compute_meandiff_bias_correction', 'compute_interval_limits', 'calculate_group_var',
-           'calculate_weighted_delta']
+           'compute_delta2_bootstrapped_diff', 'compute_meandiff_bias_correction', 'compute_interval_limits',
+           'calculate_group_var', 'calculate_weighted_delta']
 
 # %% ../../nbs/API/confint_2group_diff.ipynb 4
 import numpy as np
@@ -155,6 +155,77 @@ def compute_bootstrapped_diff(x0, x1, is_paired, effect_size,
         
     return out
 
+def compute_delta2_bootstrapped_diff(x1:np.ndarray,# Control group 1
+                                     x2:np.ndarray,# Test group 1
+                                     x3:np.ndarray,# Control group 2
+                                     x4:np.ndarray,# Test group 2
+                                     is_paired:str=None,
+                                     resamples:int=5000, # The number of bootstrap resamples to be taken for the calculation of the confidence interval limits.
+                                     random_seed:int=12345# `random_seed` is used to seed the random number generator during bootstrap resampling. This ensures that the confidence intervals reported are replicable.
+                                    )->tuple: # bootstraped result and empirical result of deltas' g, and the bootstraped result of delta-delta
+    """
+    Bootstraps the effect size deltas' g.
+    
+    """
+
+    import numpy as np
+    import pandas as pd
+    from numpy.random import PCG64, RandomState
+
+    rng = RandomState(PCG64(random_seed))
+    x1_len = len(x1)
+    x2_len = len(x2)
+    x3_len = len(x3)
+    x4_len = len(x4)
+    out_delta_g = np.repeat(np.nan, resamples)
+    deltadelta = np.repeat(np.nan, resamples)
+
+    n_a1_b1, n_a2_b1, n_a1_b2, n_a2_b2= x1_len, x2_len, x3_len, x4_len
+    s_a1_b1, s_a2_b1, s_a1_b2, s_a2_b2 = np.std(x1), np.std(x2), np.std(x3), np.std(x4)
+
+    sd_numerator = ((n_a2_b1 - 1) * s_a2_b1 ** 2 + (n_a1_b1 - 1) * s_a1_b1 ** 2 + (n_a2_b2 - 1) * s_a2_b2 ** 2 + (
+            n_a1_b2 - 1) * s_a1_b2 ** 2)
+    sd_denominator = (n_a2_b1 - 1) + (n_a1_b1 - 1) + (n_a2_b2 - 1) + (n_a1_b2 - 1)
+    pooled_sample_sd = np.sqrt(sd_numerator / sd_denominator)
+
+    for i in range(int(resamples)):
+        if is_paired:
+            if (x1_len != x2_len) or (x3_len != x4_len):
+                raise ValueError("The two arrays do not have the same length.")
+            df_paired_1 = pd.DataFrame({
+                'value': np.concatenate([x1, x3]),
+                'array_id': np.repeat(['x1','x3'], [x1_len, x3_len])
+            })
+            df_paired_2 = pd.DataFrame({
+                'value': np.concatenate([x2, x4]),
+                'array_id': np.repeat(['x2','x4'], [x1_len, x3_len])
+            })
+            x_sample_index = rng.choice(len(df_paired_1), len(df_paired_1), replace=True)
+            x_sample_1 = df_paired_1.loc[x_sample_index]
+            x_sample_2 = df_paired_2.loc[x_sample_index]
+            x1_sample = x_sample_1[x_sample_1['array_id'] == 'x1']['value']
+            x2_sample = x_sample_2[x_sample_2['array_id'] == 'x2']['value']
+            x3_sample = x_sample_1[x_sample_1['array_id'] == 'x3']['value']
+            x4_sample = x_sample_2[x_sample_2['array_id'] == 'x4']['value']
+        else:
+            df = pd.DataFrame({
+                'value': np.concatenate([x1, x2, x3, x4]),
+                'array_id': np.repeat(['x1', 'x2', 'x3', 'x4'], [x1_len, x2_len, x3_len, x4_len])
+            })
+            x_sample_index = rng.choice(len(df),len(df), replace=True)
+            x_sample = df.loc[x_sample_index]
+            x1_sample = x_sample[x_sample['array_id'] == 'x1']['value']
+            x2_sample = x_sample[x_sample['array_id'] == 'x2']['value']
+            x3_sample = x_sample[x_sample['array_id'] == 'x3']['value']
+            x4_sample = x_sample[x_sample['array_id'] == 'x4']['value']
+
+        delta_1 = np.mean(x2_sample)-np.mean(x1_sample)
+        delta_2 = np.mean(x4_sample)-np.mean(x3_sample)
+        delta_delta = delta_2 - delta_1
+        deltadelta[i] = delta_delta
+        out_delta_g[i] = delta_delta/pooled_sample_sd
+    delta_g = ((np.mean(x4)-np.mean(x3)) - (np.mean(x2)-np.mean(x1))) / pooled_sample_sd
+    return out_delta_g, delta_g, deltadelta
 
 
 

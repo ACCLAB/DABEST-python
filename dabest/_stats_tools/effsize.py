@@ -78,7 +78,7 @@ def two_group_difference(control:list|tuple|np.ndarray, #Accepts lists, tuples, 
     elif effect_size == "cohens_h":
         return cohens_h(control, test)
 
-    elif effect_size == "hedges_g":
+    elif effect_size == "hedges_g" or effect_size == "delta_g":
         return hedges_g(control, test, is_paired)
 
     elif effect_size == "cliffs_delta":
