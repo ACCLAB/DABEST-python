@@ -203,7 +203,6 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             gridkey_rows = list(np.concatenate([experiment_label, x1_level]))
         else:
             temp_groups = ";".join(all_plot_groups)
-            print(temp_groups)
             for delimiter in gridkey_delimiters:
                 temp_groups = temp_groups.replace(delimiter, ";")
             temp_groups = [i.strip() for i in temp_groups.split(';')]
