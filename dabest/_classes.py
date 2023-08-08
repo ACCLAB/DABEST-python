@@ -2505,6 +2505,7 @@ class EffectSizeDataFrame(object):
             contrast_show_deltas = True,
              
             gridkey_rows=None,
+            gridkey_delimiters=[';', '>', '_'],
             gridkey_merge_pairs = False,
             gridkey_show_Ns = True,
             gridkey_show_es = True,
@@ -2605,7 +2606,10 @@ class EffectSizeDataFrame(object):
         gridkey_rows : list, default None
             Provide a list of row labels for the gridkey. The supplied idx is
             checked against the row labels to determine whether the corresponding
-            cell should be populated or not.
+            cell should be populated or not. When set to 'auto', detects items in idx
+            and automatically generates a list of gridkey rows.
+        gridkey_delimiters : list, default [';', '>', '_']. 
+            The delimiters to use for breaking up strings in idx into individual components.
         swarmplot_kwargs : dict, default None
             Pass any keyword arguments accepted by the seaborn `swarmplot`
             command here, as a dict. If None, the following keywords are

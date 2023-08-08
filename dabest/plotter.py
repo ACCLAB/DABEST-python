@@ -32,6 +32,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         dpi=100,
         ax=None,
         gridkey_rows=None,
+        gridkey_delimiters=[';', '>', '_'],
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
         slopegraph_kwargs=None,
@@ -85,10 +86,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     mini_meta   = EffectSizeDataFrame.mini_meta
     effect_size = EffectSizeDataFrame.effect_size
     proportional = EffectSizeDataFrame.proportional
+    
 
     all_plot_groups = dabest_obj._all_plot_groups
     idx             = dabest_obj.idx
-
+    x1_level        = dabest_obj.x1_level
+    experiment_label= dabest_obj.experiment_label
+    
     if effect_size not in ["mean_diff", "delta_g"] or not delta2:
         show_delta2 = False
     else:
@@ -193,6 +197,20 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 ################################################### GRIDKEY WIP - extracting arguments      
     
     gridkey_rows = plot_kwargs["gridkey_rows"]
+    gridkey_delimiters = plot_kwargs["gridkey_delimiters"]
+    if gridkey_rows == "auto":
+        if experiment_label is not None:
+            gridkey_rows = list(np.concatenate([experiment_label, x1_level]))
+        else:
+            temp_groups = ";".join(all_plot_groups)
+            print(temp_groups)
+            for delimiter in gridkey_delimiters:
+                temp_groups = temp_groups.replace(delimiter, ";")
+            temp_groups = [i.strip() for i in temp_groups.split(';')]
+            unique_groups = list(set(temp_groups))
+            rank = [sum([temp_groups.index(i) for i in temp_groups if(j in i)]) for j in unique_groups]
+            gridkey_rows = [x for _,x in sorted(zip(rank,unique_groups))]
+            
     gridkey_merge_pairs = plot_kwargs["gridkey_merge_pairs"]
     gridkey_show_Ns = plot_kwargs["gridkey_show_Ns"]
     gridkey_show_es = plot_kwargs["gridkey_show_es"]
@@ -1296,7 +1314,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 groups_for_gridkey.append(i[1])
         else:
             groups_for_gridkey = all_plot_groups
-                    
+        print(all_plot_groups)           
         
         # raise errors if gridkey_rows is not a list, or if the list is empty
         if isinstance(gridkey_rows, list) is False:
