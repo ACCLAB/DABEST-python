@@ -153,3 +153,15 @@ def test_59_delta_axes_invert_ylim_not_showing_delta2():
     return unpaired.mean_diff.plot(delta2_ylim=(2, -2),
                                    delta2_label="More negative is better!",
                                    show_delta2=False);
+
+@pytest.mark.mpl_image_compare(tolerance=10)
+def test_71_unpaired_delta_g():
+    return unpaired.delta_g.plot();
+
+@pytest.mark.mpl_image_compare(tolerance=10)
+def test_72_sequential_delta_g():
+    return sequential.mean_diff.plot();
+
+@pytest.mark.mpl_image_compare(tolerance=10)
+def test_73_baseline_delta_g():
+    return baseline.mean_diff.plot();

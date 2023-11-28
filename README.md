@@ -17,7 +17,7 @@ Python**. This new version provided the following new features:
 2.  **Proportional data.** Generates proportional bar plots,
     proportional differences, and calculates Cohen’s h. Also enables
     plotting Sankey diagrams for paired binary data. This is the
-    estimation equivalent to a bar chart with Fischer’s exact test.
+    estimation equivalent to a bar chart with Fisher’s exact test.
 
 3.  **The $\Delta\Delta$ plot.** Calculates the delta-delta
     ($\Delta\Delta$) for 2 × 2 experimental designs and plots the four

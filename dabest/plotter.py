@@ -7,7 +7,8 @@ __all__ = ['EffectSizeDataFramePlotter']
 def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     """
     Custom function that creates an estimation plot from an EffectSizeDataFrame.
-    
+    Keywords
+    --------
     Parameters
     ----------
     EffectSizeDataFrame
@@ -30,6 +31,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         fig_size=None,
         dpi=100,
         ax=None,
+        gridkey_rows=None,
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
         slopegraph_kwargs=None,
@@ -37,10 +39,15 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         reflines_kwargs=None,
         group_summary_kwargs=None,
         legend_kwargs=None,
+        title=None, fontsize_title=16,
+        fontsize_rawxlabel=12, fontsize_rawylabel=12,
+        fontsize_contrastxlabel=12, fontsize_contrastylabel=12,
+        fontsize_delta2label=12
     """
 
     import numpy as np
     import seaborn as sns
+    import matplotlib
     import matplotlib.pyplot as plt
     import pandas as pd
     import warnings
@@ -65,6 +72,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     ytick_color = plt.rcParams["ytick.color"]
     face_color = plot_kwargs["face_color"]
+
     if plot_kwargs["face_color"] is None:
         face_color = "white"
 
@@ -81,7 +89,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     all_plot_groups = dabest_obj._all_plot_groups
     idx             = dabest_obj.idx
 
-    if effect_size != "mean_diff" or not delta2:
+    if effect_size not in ["mean_diff", "delta_g"] or not delta2:
         show_delta2 = False
     else:
         show_delta2 = plot_kwargs["show_delta2"]
@@ -122,7 +130,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                            plot_kwargs["swarmplot_kwargs"])
 
     # Barplot kwargs
-    default_barplot_kwargs = {"estimator": np.mean, "ci": plot_kwargs["ci"]}
+    default_barplot_kwargs = {"estimator": np.mean, "errorbar": plot_kwargs["ci"]}
 
     if plot_kwargs["barplot_kwargs"] is None:
         barplot_kwargs = default_barplot_kwargs
@@ -132,6 +140,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
     # Sankey Diagram kwargs
     default_sankey_kwargs = {"width": 0.4, "align": "center",
+                             "sankey":True, "flow":True,
                             "alpha": 0.4, "rightColor": False,
                             "bar_width":0.2}
     if plot_kwargs["sankey_kwargs"] is None:
@@ -139,7 +148,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         sankey_kwargs = merge_two_dicts(default_sankey_kwargs,
                                         plot_kwargs["sankey_kwargs"])
-                
+    # We also need to extract the `sankey` and `flow` from the kwargs for plotter.py
+    # to use for varying different kinds of paired proportional plots
+    # We also don't want to pop the parameter from the kwargs
+    sankey = sankey_kwargs['sankey']
+    flow = sankey_kwargs['flow']
 
     # Violinplot kwargs.
     default_violinplot_kwargs = {'widths':0.5, 'vert':True,
@@ -151,7 +164,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                                             plot_kwargs["violinplot_kwargs"])
 
     # slopegraph kwargs.
-    default_slopegraph_kwargs = {'lw':1, 'alpha':0.5}
+    default_slopegraph_kwargs = {'linewidth':1, 'alpha':0.5}
     if plot_kwargs["slopegraph_kwargs"] is None:
         slopegraph_kwargs = default_slopegraph_kwargs
     else:
@@ -175,6 +188,20 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         legend_kwargs = merge_two_dicts(default_legend_kwargs,
                                         plot_kwargs["legend_kwargs"])
+        
+        
+################################################### GRIDKEY WIP - extracting arguments      
+    
+    gridkey_rows = plot_kwargs["gridkey_rows"]
+    gridkey_merge_pairs = plot_kwargs["gridkey_merge_pairs"]
+    gridkey_show_Ns = plot_kwargs["gridkey_show_Ns"]
+    gridkey_show_es = plot_kwargs["gridkey_show_es"]
+    
+    if gridkey_rows == None:
+        gridkey_show_Ns = False
+        gridkey_show_es = False
+    
+################################################### END GRIDKEY WIP - extracting arguments
 
     # Group summaries kwargs.
     gs_default = {'mean_sd', 'median_quartiles', None}
@@ -298,7 +325,18 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                             ,tight_layout=True)
 
     width_ratios_ga = [2.5, 1]
-    h_space_cummings = 0.3
+    
+###################### GRIDKEY HSPACE ALTERATION
+
+    # Sets hspace for cummings plots if gridkey is shown.
+    if gridkey_rows != None:
+        h_space_cummings = 0.1
+    else:
+        h_space_cummings = 0.3
+    
+    
+###################### END GRIDKEY HSPACE ALTERATION        
+        
     if plot_kwargs["ax"] is not None:
         # New in v0.2.6.
         # Use inset axes to create the estimation plot inside a single axes.
@@ -355,7 +393,7 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         else:
             fig, axx = plt.subplots(nrows=2,
-                                    gridspec_kw={"hspace": 0.3},
+                                    gridspec_kw={"hspace": h_space_cummings},
                                     **init_fig_kwargs)
             fig.patch.set_facecolor(face_color)
             # If the contrast axes are NOT floating, create lists to store
@@ -364,7 +402,12 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_ax_ylim_low = list()
             contrast_ax_ylim_high = list()
             contrast_ax_ylim_tickintervals = list()
-
+        
+        # Title
+        title = plot_kwargs["title"]
+        fontsize_title = plot_kwargs["fontsize_title"]
+        if title is not None:
+            fig.suptitle(title, fontsize=fontsize_title)
         rawdata_axes  = axx[0]
         contrast_axes = axx[1]
     rawdata_axes.set_frame_on(False)
@@ -381,9 +424,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     if swarm_ylim is not None:
         rawdata_axes.set_ylim(swarm_ylim)
 
-    one_sankey = None
-    if is_paired is not None:
-        one_sankey = False # Flag to indicate if only one sankey is plotted.
+    one_sankey = False if is_paired is not None else False # Flag to indicate if only one sankey is plotted.
+    two_col_sankey = True if proportional == True and one_sankey == False and sankey == True and flow == False else False
 
     if show_pairs is True:
         # Determine temp_idx based on is_paired and proportional conditions
@@ -420,12 +462,66 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                         slopegraph_kwargs['color'] = ytick_color
                     else:
                         color_key = observation[color_col][0]
-                        if isinstance(color_key, str) == True:
+                        if isinstance(color_key, (str, np.int64, np.float64)) == True:
                             slopegraph_kwargs['color'] = plot_palette_raw[color_key]
                             slopegraph_kwargs['label'] = color_key
 
-                    rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
+                    rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)                    
+
+                    
                 x_start = x_start + grp_count
+         
+ ##################### DELTA PTS ON CONTRAST PLOT WIP 
+
+            contrast_show_deltas = plot_kwargs["contrast_show_deltas"]
+            
+            if is_paired == None:
+                contrast_show_deltas = False
+            
+            if contrast_show_deltas == True:
+                
+                trans = plt.gca().transData
+                
+                delta_plot_data_temp = plot_data.copy()
+                delta_id_col = dabest_obj.id_col
+                if color_col != None:
+                    delta_plot_data = delta_plot_data_temp[[xvar, yvar, delta_id_col, color_col]]
+                    deltapts_args = {"hue" : color_col, 
+                            "palette" : plot_palette_raw,
+                            "marker" : "^",
+                            "alpha" : 0.5}
+                    
+                else:
+                    delta_plot_data = delta_plot_data_temp[[xvar, yvar, delta_id_col]]
+                    deltapts_args = {"color" : "k",
+                            "marker" : "^",
+                            "alpha" : 0.5}
+                    
+                final_deltas = pd.DataFrame()
+                for i in idx:
+                    for j in i:
+                        if i.index(j) != 0:
+                            temp_df_exp = delta_plot_data[delta_plot_data[xvar].str.contains(j)].reset_index(drop=True)
+                            if is_paired == "baseline":
+                                temp_df_cont = delta_plot_data[delta_plot_data[xvar].str.contains(i[0])].reset_index(drop=True)
+                            elif is_paired == "sequential":
+                                temp_df_cont = delta_plot_data[delta_plot_data[xvar].str.contains(i[i.index(j) - 1])].reset_index(drop=True)
+                            delta_df = temp_df_exp.copy()
+                            delta_df[yvar] = temp_df_exp[yvar] - temp_df_cont[yvar]
+                            final_deltas = pd.concat([final_deltas, delta_df])                    
+        
+                
+                # Plot the raw data as a swarmplot.
+                deltapts_plot = sns.swarmplot(data=final_deltas, x=xvar, y=yvar,
+                                         ax=contrast_axes,
+                                         order=all_plot_groups, 
+                                          zorder=2,
+                                         **deltapts_args)
+                contrast_axes.legend().set_visible(False)
+                
+  ##################### DELTA PTS ON CONTRAST PLOT END
+
+            
             # Set the tick labels, because the slopegraph plotting doesn't.
             rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
             rawdata_axes.set_xticklabels(temp_all_plot_groups)
@@ -442,15 +538,21 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             if show_pairs is True:
                 sankey_control_group = []
                 sankey_test_group = []
-                for i in temp_idx:
+                # Design for Sankey Flow Diagram
+                sankey_idx = [(control, test) for i in idx for control, test in zip(i[:], (i[1:]+(i[0],)))]\
+                    if flow is True else temp_idx
+                for i in sankey_idx:
                     sankey_control_group.append(i[0])
                     sankey_test_group.append(i[1])                   
 
             if len(temp_all_plot_groups) == 2:
-                one_sankey = True   
-            
+                one_sankey = True  
+                sankey_control_group.pop(); sankey_test_group.pop() # Remove the last element from two lists
+
+            # two_col_sankey = True if proportional == True and one_sankey == False and sankey == True and flow == False else False
+
             # Replace the paired proportional plot with sankey diagram
-            sankey = sankeydiag(plot_data, xvar=xvar, yvar=yvar, 
+            sankeyplot = sankeydiag(plot_data, xvar=xvar, yvar=yvar, 
                             left_idx=sankey_control_group, 
                             right_idx=sankey_test_group,
                             palette=plot_palette_sankey,
@@ -539,6 +641,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     # Add the counts to the rawdata axes xticks.
     counts = plot_data.groupby(xvar).count()[yvar]
     ticks_with_counts = []
+    ticks_loc = rawdata_axes.get_xticks()
+    rawdata_axes.xaxis.set_major_locator(matplotlib.ticker.FixedLocator(ticks_loc))
     for xticklab in rawdata_axes.xaxis.get_ticklabels():
         t = xticklab.get_text()
         if t.rfind("\n") != -1:
@@ -551,7 +655,9 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
         ticks_with_counts.append("{}\nN = {}".format(te, N))
 
-    rawdata_axes.set_xticklabels(ticks_with_counts)
+    if plot_kwargs['fontsize_rawxlabel'] is not None:
+        fontsize_rawxlabel = plot_kwargs['fontsize_rawxlabel']
+    rawdata_axes.set_xticklabels(ticks_with_counts,fontsize=fontsize_rawxlabel)
 
     # Save the handles and labels for the legend.
     handles, labels = rawdata_axes.get_legend_handles_labels()
@@ -567,12 +673,12 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     # Plot effect sizes and bootstraps.
     # Take note of where the `control` groups are.
     if is_paired == "baseline" and show_pairs == True:
-        if proportional == True and one_sankey == False:
+        if two_col_sankey:
             ticks_to_skip = []
             ticks_to_plot = np.arange(0, len(temp_all_plot_groups)/2).tolist()
-            ticks_to_start_sankey = np.cumsum([len(i)-1 for i in idx]).tolist()
-            ticks_to_start_sankey.pop()
-            ticks_to_start_sankey.insert(0, 0)
+            ticks_to_start_twocol_sankey = np.cumsum([len(i)-1 for i in idx]).tolist()
+            ticks_to_start_twocol_sankey.pop()
+            ticks_to_start_twocol_sankey.insert(0, 0)
         else:
             # ticks_to_skip = np.arange(0, len(temp_all_plot_groups), 2).tolist()
             # ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist()
@@ -584,15 +690,15 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             ticks_to_skip_contrast = np.cumsum([(len(t)) for t in idx])[:-1].tolist()
             ticks_to_skip_contrast.insert(0, 0)
     else:
-        if proportional == True and one_sankey == False:
+        if two_col_sankey:
             ticks_to_skip = [len(sankey_control_group)]
             # Then obtain the ticks where we have to plot the effect sizes.
             ticks_to_plot = [t for t in range(0, len(temp_idx))
                         if t not in ticks_to_skip]
             ticks_to_skip = []
-            ticks_to_start_sankey = np.cumsum([len(i)-1 for i in idx]).tolist()
-            ticks_to_start_sankey.pop()
-            ticks_to_start_sankey.insert(0, 0)
+            ticks_to_start_twocol_sankey = np.cumsum([len(i)-1 for i in idx]).tolist()
+            ticks_to_start_twocol_sankey.pop()
+            ticks_to_start_twocol_sankey.insert(0, 0)
         else:
             ticks_to_skip = np.cumsum([len(t) for t in idx])[:-1].tolist()
             ticks_to_skip.insert(0, 0)
@@ -643,6 +749,38 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
         contrast_axes.plot([tick], current_effsize, marker='o',
                            color=ytick_color,
                            markersize=es_marker_size)
+        
+################## SHOW ES ON CONTRAST PLOT WIP        
+
+        contrast_show_es = plot_kwargs["contrast_show_es"]
+        es_sf = plot_kwargs['es_sf']
+        es_fontsize = plot_kwargs['es_fontsize']
+        
+        if gridkey_show_es == True:
+            contrast_show_es = False
+        
+
+            
+        effsize_for_print = current_effsize
+            
+        printed_es = np.format_float_positional(effsize_for_print,
+                                                   precision=es_sf,
+                                                   sign=True,
+                                                   trim= 'k',
+                                                   min_digits = es_sf)
+        if contrast_show_es == True:
+            if effsize_for_print < 0:
+                textoffset = 10
+            else:
+                textoffset = 15
+            contrast_axes.annotate(text=printed_es, 
+                                   xy = (tick, effsize_for_print),
+                                   xytext = (-textoffset-len(printed_es)*es_fontsize/2,-es_fontsize/2),
+                                   textcoords = "offset points",
+                                   **{ "fontsize" : es_fontsize })
+            
+################## SHOW ES ON CONTRAST PLOT END                
+        
         # Plot the confidence interval.
         contrast_axes.plot([tick, tick],
                            [current_ci_low, current_ci_high],
@@ -698,8 +836,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                            linewidth=group_summary_kwargs['lw'])
         if show_mini_meta:
             contrast_xtick_labels.extend(["","Weighted delta"])
+        elif effect_size == "delta_g":
+            contrast_xtick_labels.extend(["", "deltas' g"])
         else:
-            contrast_xtick_labels.extend(["","delta-delta"])
+            contrast_xtick_labels.extend(["", "delta-delta"])
 
     # Make sure the contrast_axes x-lims match the rawdata_axes xlims,
     # and add an extra violinplot tick for delta-delta plot.
@@ -730,8 +870,11 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     # Properly label the contrast ticks.
     for t in ticks_to_skip:
         contrast_xtick_labels.insert(t, "")
-    
-    contrast_axes.set_xticklabels(contrast_xtick_labels)
+
+    if plot_kwargs['fontsize_contrastxlabel'] is not None:
+        fontsize_contrastxlabel = plot_kwargs['fontsize_contrastxlabel']
+
+    contrast_axes.set_xticklabels(contrast_xtick_labels,fontsize=fontsize_contrastxlabel)
 
     if bootstraps_color_by_group is False:
         legend_labels_unique = np.unique(legend_labels)
@@ -941,8 +1084,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
             contrast_axes.axhline(y=0, **reflines_kwargs)
 
         if is_paired == "baseline" and show_pairs == True:
-            if proportional == True and one_sankey == False:
-                rightend_ticks_raw = np.array([len(i)-2 for i in idx]) + np.array(ticks_to_start_sankey)
+            if two_col_sankey:
+                rightend_ticks_raw = np.array([len(i)-2 for i in idx]) + np.array(ticks_to_start_twocol_sankey)
+            elif proportional and is_paired is not None:
+                rightend_ticks_raw = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
             else:    
                 rightend_ticks_raw = np.array([len(i)-1 for i in temp_idx]) + np.array(ticks_to_skip)
             for ax in [rawdata_axes]:
@@ -952,8 +1097,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 xlim = ax.get_xlim()
                 redraw_axes_kwargs['y'] = ylim[0]
         
-                if proportional == True and one_sankey == False:
-                    for k, start_tick in enumerate(ticks_to_start_sankey):
+                if two_col_sankey:
+                    for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
                         end_tick = rightend_ticks_raw[k]
                         ax.hlines(xmin=start_tick, xmax=end_tick,
                               **redraw_axes_kwargs)
@@ -969,8 +1114,10 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 temp_length = [(len(i)-1) for i in idx]
             else:
                 temp_length = [(len(i)-1)*2-1 for i in idx]
-            if proportional == True and one_sankey == False:
-                rightend_ticks_contrast = np.array([len(i)-2 for i in idx]) + np.array(ticks_to_start_sankey)
+            if two_col_sankey:
+                rightend_ticks_contrast = np.array([len(i)-2 for i in idx]) + np.array(ticks_to_start_twocol_sankey)
+            elif proportional and is_paired is not None:
+                rightend_ticks_contrast = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
             else:   
                 rightend_ticks_contrast = np.array(temp_length) + np.array(ticks_to_skip_contrast)
             for ax in [contrast_axes]:
@@ -980,8 +1127,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 xlim = ax.get_xlim()
                 redraw_axes_kwargs['y'] = ylim[0]
         
-                if proportional == True and one_sankey == False:
-                    for k, start_tick in enumerate(ticks_to_start_sankey):
+                if two_col_sankey:
+                    for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
                         end_tick = rightend_ticks_contrast[k]
                         ax.hlines(xmin=start_tick, xmax=end_tick,
                                 **redraw_axes_kwargs)
@@ -995,8 +1142,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 del redraw_axes_kwargs['y']
         else:
             # Compute the end of each x-axes line.
-            if proportional == True and one_sankey == False:
-                rightend_ticks = np.array([len(i)-2 for i in idx]) + np.array(ticks_to_start_sankey)
+            if two_col_sankey:
+                rightend_ticks = np.array([len(i)-2 for i in idx]) + np.array(ticks_to_start_twocol_sankey)
             else:
                 rightend_ticks = np.array([len(i)-1 for i in idx]) + np.array(ticks_to_skip)
         
@@ -1007,8 +1154,8 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                 xlim = ax.get_xlim()
                 redraw_axes_kwargs['y'] = ylim[0]
             
-                if proportional == True and one_sankey == False:
-                    for k, start_tick in enumerate(ticks_to_start_sankey):
+                if two_col_sankey:
+                    for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
                         end_tick = rightend_ticks[k]
                         ax.hlines(xmin=start_tick, xmax=end_tick,
                                 **redraw_axes_kwargs)
@@ -1048,10 +1195,13 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                            'cohens_d': "Cohen's d",
                            'hedges_g': "Hedges' g",
                            'cliffs_delta': "Cliff's delta",
-                           'cohens_h': "Cohen's h"}
+                           'cohens_h': "Cohen's h",
+                           'delta_g': "mean difference"}
 
     if proportional == True and effect_size_type != "cohens_h":
         default_contrast_label = "proportion difference"
+    elif effect_size_type == "delta_g":
+        default_contrast_label = "Hedges' g"
     else:
         default_contrast_label = contrast_label_dict[EffectSizeDataFrame.effect_size]
 
@@ -1065,15 +1215,22 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
     else:
         contrast_label = plot_kwargs['contrast_label']
 
-    contrast_axes.set_ylabel(contrast_label)
+    if plot_kwargs['fontsize_rawylabel'] is not None:
+        fontsize_rawylabel = plot_kwargs['fontsize_rawylabel']
+    if plot_kwargs['fontsize_contrastylabel'] is not None:
+        fontsize_contrastylabel = plot_kwargs['fontsize_contrastylabel']
+    if plot_kwargs['fontsize_delta2label'] is not None:
+        fontsize_delta2label = plot_kwargs['fontsize_delta2label']
+
+    contrast_axes.set_ylabel(contrast_label,fontsize = fontsize_contrastylabel)
     if float_contrast is True:
         contrast_axes.yaxis.set_label_position("right")
 
     # Set the rawdata axes labels appropriately
     if proportional == False:
-        rawdata_axes.set_ylabel(swarm_label)
+        rawdata_axes.set_ylabel(swarm_label,fontsize = fontsize_rawylabel)
     else:
-        rawdata_axes.set_ylabel(bar_label)
+        rawdata_axes.set_ylabel(bar_label,fontsize = fontsize_rawylabel)
     rawdata_axes.set_xlabel("")
 
     # Because we turned the axes frame off, we also need to draw back
@@ -1099,13 +1256,15 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
 
 
     if show_delta2 is True:
-        if plot_kwargs['delta2_label'] is None:
-            delta2_label = "delta - delta"
-        else: 
+        if plot_kwargs['delta2_label'] is not None:
             delta2_label = plot_kwargs['delta2_label']
+        elif effect_size == "mean_diff" :
+            delta2_label = "delta - delta"
+        else:
+            delta2_label = "deltas' g"
         delta2_axes = contrast_axes.twinx()
         delta2_axes.set_frame_on(False)
-        delta2_axes.set_ylabel(delta2_label)
+        delta2_axes.set_ylabel(delta2_label, fontsize = fontsize_delta2label)
         og_xlim_delta = contrast_axes.get_xlim()
         og_ylim_delta = contrast_axes.get_ylim()
         delta2_axes.set_ylim(og_ylim_delta)
@@ -1113,6 +1272,128 @@ def EffectSizeDataFramePlotter(EffectSizeDataFrame, **plot_kwargs):
                          og_ylim_delta[0], og_ylim_delta[1],
                          **redraw_axes_kwargs)
 
+
+################################################### GRIDKEY MAIN CODE WIP
+    
+    #if gridkey_rows is None, skip everything here
+    if gridkey_rows is not None:
+        
+        # Raise error if there are more than 2 items in any idx and gridkey_merge_pairs is True and is_paired is not None
+        if gridkey_merge_pairs is True and is_paired is not None:
+            for i in idx:
+                if len(i) > 2:
+                    warnings.warn("gridkey_merge_pairs=True only works if all idx in tuples have only two items. gridkey_merge_pairs has automatically been set to False")
+                    gridkey_merge_pairs = False
+                    break
+        elif gridkey_merge_pairs is True and is_paired is None:
+            warnings.warn("gridkey_merge_pairs=True is only applicable for paired data.")
+            gridkey_merge_pairs = False
+                    
+        # Checks for gridkey_merge_pairs and is_paired; if both are true, "merges" the gridkey per pair
+        if gridkey_merge_pairs is True and is_paired is not None:          
+            groups_for_gridkey = []
+            for i in idx:
+                groups_for_gridkey.append(i[1])
+        else:
+            groups_for_gridkey = all_plot_groups
+                    
+        
+        # raise errors if gridkey_rows is not a list, or if the list is empty
+        if isinstance(gridkey_rows, list) is False:
+            raise TypeError("gridkey_rows must be a list.")
+        elif len(gridkey_rows) == 0:
+            warnings.warn("gridkey_rows is an empty list.")
+        
+        
+        # raise Warning if an item in gridkey_rows is not contained in any idx
+        for i in gridkey_rows:
+            in_idx = 0
+            for j in groups_for_gridkey:
+                if i in j:
+                    in_idx += 1
+            if in_idx == 0:
+                if is_paired is not None:
+                    warnings.warn(i + " is not in any idx. Please check. Alternatively, merging gridkey pairs may not be suitable for your data; try passing gridkey_merge_pairs=False.")
+                else:
+                    warnings.warn(i + " is not in any idx. Please check.")   
+        
+        
+        # Populate table: checks if idx for each column contains rowlabel name
+        # IF so, marks that element as present w black dot, or space if not present
+        table_cellcols = []   
+        for i in gridkey_rows:
+            thisrow = []
+            for q in groups_for_gridkey:
+                if str(i) in q:
+                    thisrow.append(u"\u25CF")
+                else:
+                    thisrow.append("")
+            table_cellcols.append(thisrow)
+        
+        
+        # Adds a row for Ns with the Ns values
+        if gridkey_show_Ns == True:
+            gridkey_rows.append("Ns")
+            list_of_Ns = []
+            for i in groups_for_gridkey:
+                list_of_Ns.append(str(counts.loc[i]))
+            table_cellcols.append(list_of_Ns)
+
+            
+        # Adds a row for effectsizes with effectsize values
+        if gridkey_show_es == True:
+            gridkey_rows.append(u"\u0394")
+            effsize_list = []
+            results_list = results.test.to_list()
+        
+            # get the effect size, append + or -, 2 dec places
+            for i in enumerate(groups_for_gridkey):
+                if i[1] in results_list:
+                    curr_esval = results.loc[results["test"] == i[1]]["difference"].iloc[0]
+                    curr_esval_str = np.format_float_positional(curr_esval,
+                                                   precision=es_sf,
+                                                   sign=True,
+                                                   trim= 'k',
+                                                   min_digits = es_sf)
+                    effsize_list.append(curr_esval_str)
+                else:
+                    effsize_list.append("-")
+                    
+            table_cellcols.append(effsize_list)
+        
+        # If Gardner-Altman plot, plot on raw data and not contrast axes
+        if float_contrast == True:
+            axes_ploton = rawdata_axes
+        else:
+            axes_ploton = contrast_axes
+        
+        # Account for extended x axis in case of show_delta2 or show_mini_meta
+        x_groups_for_width = len(groups_for_gridkey)
+        if show_delta2 is True or show_mini_meta is True:
+              x_groups_for_width += 2                 
+        gridkey_width = len(groups_for_gridkey) / x_groups_for_width
+        
+        gridkey = axes_ploton.table(cellText = table_cellcols, 
+                                    rowLabels = gridkey_rows, 
+                                    cellLoc = "center",
+                                    bbox = [0, -len(gridkey_rows)*0.1-0.05, gridkey_width, len(gridkey_rows)*0.1],
+                                    **{"alpha" : 0.5})   
+        
+        # modifies row label cells
+        for cell in gridkey._cells:
+            if cell[1] == -1:
+                gridkey._cells[cell].visible_edges = "open"
+                gridkey._cells[cell].set_text_props(**{ "ha" : "right" }) 
+                
+        # turns off both x axes
+        rawdata_axes.get_xaxis().set_visible(False)
+        contrast_axes.get_xaxis().set_visible(False)
+        
+ ####################################################### END GRIDKEY MAIN CODE WIP       
+    
+    
+    
+    
     # Make sure no stray ticks appear!
     rawdata_axes.xaxis.set_ticks_position('bottom')
     rawdata_axes.yaxis.set_ticks_position('left')

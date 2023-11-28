@@ -1,15 +1,16 @@
 import pytest
 import numpy as np
-from scipy.stats import norm
 import pandas as pd
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.ticker as Ticker
 import matplotlib.pyplot as plt
-
 from dabest._api import load
 
+
 def create_demo_prop_dataset(seed=9999, N=40):
+    import numpy as np
+    import pandas as pd
 
     np.random.seed(9999)  # Fix the seed so the results are replicable.
     # Create samples
@@ -24,6 +25,9 @@ def create_demo_prop_dataset(seed=9999, N=40):
     t4 = np.random.binomial(n, 0.4, size=N)
     t5 = np.random.binomial(n, 0.5, size=N)
     t6 = np.random.binomial(n, 0.6, size=N)
+    t7 = np.zeros(N)
+    t8 = np.ones(N)
+    t9 = np.zeros(N)
 
     # Add a `gender` column for coloring the data.
     females = np.repeat('Female', N / 2).tolist()
@@ -38,6 +42,7 @@ def create_demo_prop_dataset(seed=9999, N=40):
                        'Control 2': c2, 'Test 2': t2,
                        'Control 3': c3, 'Test 3': t3,
                        'Test 4': t4, 'Test 5': t5, 'Test 6': t6,
+                       'Test 7': t7, 'Test 8': t8, 'Test 9': t9,
                        'Gender': gender, 'ID': id_col
                        })
 
@@ -85,6 +90,24 @@ multi_groups_sequential = load(df, idx=(("Control 1", "Test 1",),
                              ("Control 2", "Test 2","Test 3"),
                              ("Control 3", "Test 4","Test 5", "Test 6")
                              ),paired="sequential", id_col="ID", proportional=True)
+shared_control_paired = load(df, idx=("Control 1", "Test 1",
+                                "Test 2", "Test 3",
+                                "Test 4", "Test 5", "Test 6"), 
+                                paired="sequential", id_col="ID", proportional=True)
+
+zero_to_zero = load(df, idx=('Test 7', 'Test 9'), 
+                    proportional=True, paired='sequential', id_col="ID")
+zero_to_one = load(df, idx=('Test 7', 'Test 8'),
+                     proportional=True, paired='sequential', id_col="ID")
+one_to_zero = load(df, idx=('Test 8', 'Test 7'),
+                        proportional=True, paired='sequential', id_col="ID")
+
+one_in_separate_control = load(df, idx=((("Control 1", "Test 1"),
+                                ("Test 2", "Test 3"),
+                                ("Test 4", "Test 8", "Test 6"))),
+                    proportional=True, paired="sequential", id_col="ID")
+
+                             
 
 
 @pytest.mark.mpl_image_compare
@@ -239,11 +262,36 @@ def test_127_sankey_multi_group_paired():
 def test_128_sankey_transparency():
     return two_groups_paired.mean_diff.plot(sankey_kwargs = {"alpha": 0.2});
 
+@pytest.mark.mpl_image_compare
+def test_129_zero_to_zero():
+    return zero_to_zero.mean_diff.plot();
 
 @pytest.mark.mpl_image_compare
-def test_129_style_sheets():
+def test_130_zero_to_one():
+    return zero_to_one.mean_diff.plot();
+
+@pytest.mark.mpl_image_compare
+def test_131_one_to_zero():
+    return one_to_zero.mean_diff.plot();
+
+@pytest.mark.mpl_image_compare
+def test_132_shared_control_sankey_off():
+    return shared_control_paired.mean_diff.plot(sankey_kwargs={'sankey':False});
+
+@pytest.mark.mpl_image_compare
+def test_133_shared_control_flow_off():
+    return shared_control_paired.mean_diff.plot(sankey_kwargs={'flow':False});
+
+@pytest.mark.mpl_image_compare
+def test_134_separate_control_sankey_off():
+    return multi_groups_sequential.mean_diff.plot(sankey_kwargs={'sankey':False});
+
+@pytest.mark.mpl_image_compare
+def test_135_separate_control_flow_off():
+    return multi_groups_sequential.mean_diff.plot(sankey_kwargs={'flow':False});
+
+@pytest.mark.mpl_image_compare
+def test_136_style_sheets():
     # Perform this test last so we don't have to reset the plot style.
     plt.style.use("dark_background")
     return multi_2group.mean_diff.plot(face_color="black");
-
-
