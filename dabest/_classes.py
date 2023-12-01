@@ -739,6 +739,7 @@ class DeltaDelta(object):
         self.__bootstraps        = np.array(self.__effsizedf["bootstraps"])
         self.__control           = self.__dabest_obj.experiment_label[0]
         self.__test              = self.__dabest_obj.experiment_label[1]
+        self.__results           = pd.DataFrame({})
 
 
         # Compute the bootstrap delta-delta or deltas' g and the true dela-delta based on the raw data
@@ -809,9 +810,13 @@ class DeltaDelta(object):
         self.__pct_interval_idx = (pct_idx_low, pct_idx_high)
         self.__pct_low          = sorted_delta_delta[pct_idx_low]
         self.__pct_high         = sorted_delta_delta[pct_idx_high]
-        
-    
 
+        # Generate results in a Dataframe format
+        r_dict = self.to_dict()
+        self.__results = pd.DataFrame.from_dict(r_dict,orient='index').reset_index()
+        self.__results.columns = ['Attribute', 'Value']
+
+    
     def __permutation_test(self):
         """
         Perform a permutation test and obtain the permutation p-value
@@ -897,7 +902,10 @@ class DeltaDelta(object):
         for a in attrs:
             out[a] = getattr(self, a)
         return out
-
+    
+    def configure_results(self, __results: pd.DataFrame, column_names: list[str]):
+        self.__results = __results
+        self.__results.columns = column_names
 
     @property
     def ci(self):
@@ -1057,6 +1065,15 @@ class DeltaDelta(object):
             return self.__permutations_delta_delta
 
 
+    @property
+    def results(self):
+        """
+        Returns the attributes of the DeltaDelta object as a
+        Dataframe.
+        """
+        return self.__results
+
+
 
 # %% ../nbs/API/class.ipynb 32
 class MiniMetaDelta(object):
@@ -1192,6 +1209,11 @@ class MiniMetaDelta(object):
         self.__pct_interval_idx = (pct_idx_low, pct_idx_high)
         self.__pct_low          = sorted_weighted_deltas[pct_idx_low]
         self.__pct_high         = sorted_weighted_deltas[pct_idx_high]
+
+        # Generate results in a Dataframe format
+        r_dict = self.to_dict()
+        self.__results = pd.DataFrame.from_dict(r_dict,orient='index').reset_index()
+        self.__results.columns = ['Attribute', 'Value']
         
     
 
@@ -1518,6 +1540,14 @@ class MiniMetaDelta(object):
         except AttributeError:
             self.__permutation_test()
             return self.__permutations_weighted_delta
+
+    @property
+    def results(self):
+        """
+        Returns the attributes of the MiniMetaDelta object as a
+        Dataframe.
+        """
+        return self.__results
 
 
 
@@ -2374,6 +2404,9 @@ class EffectSizeDataFrame(object):
                                             self.__permutation_count,
                                             bootstraps_delta_delta,
                                             self.__ci)
+            delta_delta_results_dict = self.__delta_delta.to_dict()
+            delta_delta_results_df = pd.DataFrame.from_dict(delta_delta_results_dict, orient='index').reset_index()
+            self.__delta_delta.configure_results(delta_delta_results_df, ['Attribute', 'Value'])
             reprs.append(self.__delta_delta.__repr__(header=False))
         elif self.__delta2 is True and self.__effect_size not in ["mean_diff", "delta_g"]:
             self.__delta_delta = "Delta-delta is not supported for {}.".format(self.__effect_size)
