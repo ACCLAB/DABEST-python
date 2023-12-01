@@ -1209,11 +1209,6 @@ class MiniMetaDelta(object):
         self.__pct_interval_idx = (pct_idx_low, pct_idx_high)
         self.__pct_low          = sorted_weighted_deltas[pct_idx_low]
         self.__pct_high         = sorted_weighted_deltas[pct_idx_high]
-
-        # Generate results in a Dataframe format
-        r_dict = self.to_dict()
-        self.__results = pd.DataFrame.from_dict(r_dict,orient='index').reset_index()
-        self.__results.columns = ['Attribute', 'Value']
         
     
 
