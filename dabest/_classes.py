@@ -1108,6 +1108,7 @@ class MiniMetaDelta(object):
         self.__test              = np.array(self.__effsizedf["test"])
         self.__control_N         = np.array(self.__effsizedf["control_N"])
         self.__test_N            = np.array(self.__effsizedf["test_N"])
+        self.__results           = pd.DataFrame({})
 
 
         idx  = self.__dabest_obj.idx
@@ -1315,6 +1316,11 @@ class MiniMetaDelta(object):
         for a in attrs:
             out[a] = getattr(self, a)
         return out
+    
+    def configure_results(self, __results: pd.DataFrame, column_names: list[str]):
+        self.__results = __results
+        self.__results.columns = column_names
+
 
 
     @property
@@ -1543,8 +1549,6 @@ class MiniMetaDelta(object):
         Dataframe.
         """
         return self.__results
-
-
 
 # %% ../nbs/API/class.ipynb 37
 class TwoGroupsEffectSize(object):
@@ -2413,6 +2417,9 @@ class EffectSizeDataFrame(object):
             self.__mini_meta_delta = MiniMetaDelta(self,
                                                      self.__permutation_count,
                                                      self.__ci)
+            mini_meta_results_dict = self.__mini_meta_delta.to_dict()
+            mini_meta_results_df = pd.DataFrame.from_dict(mini_meta_results_dict, orient='index').reset_index()
+            self.__mini_meta_delta.configure_results(mini_meta_results_df, ['Attribute', 'Value'])
             reprs.append(self.__mini_meta_delta.__repr__(header=False))
         elif self.__mini_meta is True and self.__effect_size != "mean_diff":
             self.__mini_meta_delta = "Weighted delta is not supported for {}.".format(self.__effect_size)
