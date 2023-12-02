@@ -811,11 +811,6 @@ class DeltaDelta(object):
         self.__pct_low          = sorted_delta_delta[pct_idx_low]
         self.__pct_high         = sorted_delta_delta[pct_idx_high]
 
-        # Generate results in a Dataframe format
-        r_dict = self.to_dict()
-        self.__results = pd.DataFrame.from_dict(r_dict,orient='index').reset_index()
-        self.__results.columns = ['Attribute', 'Value']
-
     
     def __permutation_test(self):
         """
