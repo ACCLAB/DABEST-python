@@ -898,7 +898,7 @@ class DeltaDelta(object):
             out[a] = getattr(self, a)
         return out
     
-    def configure_results(self, __results: pd.DataFrame, column_names: list[str]):
+    def configure_results(self, __results: pd.DataFrame, column_names):
         self.__results = __results
         self.__results.columns = column_names
 
@@ -1312,7 +1312,7 @@ class MiniMetaDelta(object):
             out[a] = getattr(self, a)
         return out
     
-    def configure_results(self, __results: pd.DataFrame, column_names: list[str]):
+    def configure_results(self, __results: pd.DataFrame, column_names):
         self.__results = __results
         self.__results.columns = column_names
 
