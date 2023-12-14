@@ -4,10 +4,22 @@
 __all__ = ['Dabest', 'TwoGroupsEffectSize', 'EffectSizeDataFrame', 'PermutationTest']
 
 # %% ../nbs/API/class.ipynb 4
-import numpy as np
-from scipy.stats import norm
+# Import standard data science libraries
+from numpy import array, isnan, isinf, repeat, random, issubdtype, number, isin, abs, var
+from numpy import sort as npsort
+import lqrt
 import pandas as pd
+import seaborn as sns
+import scipy.stats as spstats
+from scipy.stats import norm
 from scipy.stats import randint
+import datetime as dt
+import statsmodels
+from statsmodels.stats.contingency_tables import mcnemar
+from string import Template
+import warnings
+from numpy import nan as npnan
+from numpy.random import PCG64, RandomState
 
 # %% ../nbs/API/class.ipynb 6
 class Dabest(object):
@@ -25,11 +37,6 @@ class Dabest(object):
         statistics. You should not be calling this class directly; instead,
         use `dabest.load()` to parse your DataFrame prior to analysis.
         """
-
-        # Import standard data science libraries.
-        import numpy as np
-        import pandas as pd
-        import seaborn as sns
 
         self.__delta2       = delta2
         self.__experiment   = experiment
@@ -65,7 +72,7 @@ class Dabest(object):
                     raise ValueError(err0 + err1)
             elif all([isinstance(i, (tuple, list)) for i in idx]):
                 all_idx_lengths = [len(t) for t in idx]
-                if (np.array(all_idx_lengths) != 2).any():
+                if (array(all_idx_lengths) != 2).any():
                     err1 = "`mini_meta` is True, but some idx "
                     err2 = "in {} does not consist only of two groups.".format(idx)
                     raise ValueError(err1 + err2)
@@ -74,10 +81,11 @@ class Dabest(object):
 
         # Check if this is a 2x2 ANOVA case and x & y are valid columns
         # Create experiment_label and x1_level
-        if delta2 is True:
-            if proportional is True:
+        if delta2:
+            if proportional:
                 err0 = '`proportional` and `delta` cannot be True at the same time.'
                 raise ValueError(err0)
+            
             # idx should not be specified
             if idx:
                 err0 = '`idx` should not be specified when `delta2` is True.'.format(len(x))
@@ -87,17 +95,18 @@ class Dabest(object):
             if len(x) != 2:
                 err0 = '`delta2` is True but the number of variables indicated by `x` is {}.'.format(len(x))
                 raise ValueError(err0)
-            else:
-                for i in x:
-                    if i not in data_in.columns:
-                        err = '{0} is not a column in `data`. Please check.'.format(i)
-                        raise IndexError(err)
+            
+            for i in x:
+                if i not in data_in.columns:
+                    err = '{0} is not a column in `data`. Please check.'.format(i)
+                    raise IndexError(err)
 
             # Check if y is valid
             if not y:
                 err0 = '`delta2` is True but `y` is not indicated.'
                 raise ValueError(err0)
-            elif y not in data_in.columns:
+            
+            if y not in data_in.columns:
                 err = '{0} is not a column in `data`. Please check.'.format(y)
                 raise IndexError(err)
 
@@ -111,11 +120,11 @@ class Dabest(object):
                 if len(experiment_label) != 2:
                     err0 = '`experiment_label` does not have a length of 2.'
                     raise ValueError(err0)
-                else: 
-                    for i in experiment_label:
-                        if i not in data_in[experiment].unique():
-                            err = '{0} is not an element in the column `{1}` of `data`. Please check.'.format(i, experiment)
-                            raise IndexError(err)
+                 
+                for i in experiment_label:
+                    if i not in data_in[experiment].unique():
+                        err = '{0} is not an element in the column `{1}` of `data`. Please check.'.format(i, experiment)
+                        raise IndexError(err)
             else:
                 experiment_label = data_in[experiment].unique()
 
@@ -231,7 +240,7 @@ class Dabest(object):
                 raise IndexError(err)
 
             # check y is numeric.
-            if not np.issubdtype(data_in[y].dtype, np.number):
+            if not issubdtype(data_in[y].dtype, number):
                 err = '{0} is a column in `data`, but it is not numeric.'.format(y)
                 raise ValueError(err)
 
@@ -350,16 +359,7 @@ class Dabest(object):
 
     def __repr__(self):
         from .__init__ import __version__
-        import datetime as dt
-        import numpy as np
-
         from .misc_tools import print_greeting
-
-        # Removed due to the deprecation of is_paired
-        #if self.__is_paired:
-        #    es = "Paired e"
-        #else:
-        #    es = "E"
 
         greeting_header = print_greeting()
 
@@ -411,13 +411,6 @@ class Dabest(object):
 
         return "\n".join(out)
 
-
-    # def __variable_name(self):
-    #     return [k for k,v in locals().items() if v is self]
-    #
-    # @property
-    # def variable_name(self):
-    #     return self.__variable_name()
     
     @property
     def mean_diff(self):
@@ -721,20 +714,6 @@ class TwoGroupsEffectSize(object):
                  resamples=5000, 
                  permutation_count=5000, 
                  random_seed=12345):
-
-        
-        import numpy as np
-        from numpy import array, isnan, isinf
-        from numpy import sort as npsort
-        from numpy.random import choice, seed
-
-        import scipy.stats as spstats
-
-        # import statsmodels.stats.power as power
-        import statsmodels
-
-        from string import Template
-        import warnings
         
         from ._stats_tools import effsize as es
         from ._stats_tools import confint_2group_diff as ci2g
@@ -763,7 +742,7 @@ class TwoGroupsEffectSize(object):
             err1 = "`proportional` is True; therefore effect size other than mean_diff and cohens_h is not defined."
             raise ValueError(err1)
 
-        if proportional==True and (np.isin(control, [0, 1]).all() == False or np.isin(test, [0, 1]).all() == False):
+        if proportional==True and (isin(control, [0, 1]).all() == False or isin(test, [0, 1]).all() == False):
             err1 = "`proportional` is True; Only accept binary data consisting of 0 and 1."
             raise ValueError(err1)
 
@@ -894,8 +873,7 @@ class TwoGroupsEffectSize(object):
             # for binary paired data, use McNemar's test
             # References:
             # https://en.wikipedia.org/wiki/McNemar%27s_test
-            from statsmodels.stats.contingency_tables import mcnemar
-            import pandas as pd
+
             df_temp = pd.DataFrame({'control': control, 'test': test})
             x1 = len(df_temp[(df_temp['control'] == 0)&(df_temp['test'] == 0)])
             x2 = len(df_temp[(df_temp['control'] == 0)&(df_temp['test'] == 1)])
@@ -921,7 +899,6 @@ class TwoGroupsEffectSize(object):
             kruskal = spstats.kruskal(control, test, nan_policy='omit')
             self.__pvalue_kruskal = kruskal.pvalue
             self.__statistic_kruskal = kruskal.statistic
-            # self.__power = np.nan
 
         else: # for mean difference, Cohen's d, and Hedges' g.
             # Welch's t-test, assumes normality of distributions,
@@ -1172,7 +1149,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_brunner_munzel(self):
-        from numpy import nan as npnan
         try:
             return self.__pvalue_brunner_munzel
         except AttributeError:
@@ -1180,7 +1156,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_brunner_munzel(self):
-        from numpy import nan as npnan
         try:
             return self.__statistic_brunner_munzel
         except AttributeError:
@@ -1190,7 +1165,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_wilcoxon(self):
-        from numpy import nan as npnan
         try:
             return self.__pvalue_wilcoxon
         except AttributeError:
@@ -1198,7 +1172,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_wilcoxon(self):
-        from numpy import nan as npnan
         try:
             return self.__statistic_wilcoxon
         except AttributeError:
@@ -1206,7 +1179,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_mcnemar(self):
-        from numpy import nan as npnan
         try:
             return self.__pvalue_mcnemar
         except AttributeError:
@@ -1214,7 +1186,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_mcnemar(self):
-        from numpy import nan as npnan
         try:
             return self.__statistic_mcnemar
         except AttributeError:
@@ -1224,7 +1195,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_paired_students_t(self):
-        from numpy import nan as npnan
         try:
             return self.__pvalue_paired_students_t
         except AttributeError:
@@ -1232,7 +1202,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_paired_students_t(self):
-        from numpy import nan as npnan
         try:
             return self.__statistic_paired_students_t
         except AttributeError:
@@ -1242,7 +1211,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_kruskal(self):
-        from numpy import nan as npnan
         try:
             return self.__pvalue_kruskal
         except AttributeError:
@@ -1250,7 +1218,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_kruskal(self):
-        from numpy import nan as npnan
         try:
             return self.__statistic_kruskal
         except AttributeError:
@@ -1260,7 +1227,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_welch(self):
-        from numpy import nan as npnan
         try:
             return self.__pvalue_welch
         except AttributeError:
@@ -1268,7 +1234,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_welch(self):
-        from numpy import nan as npnan
         try:
             return self.__statistic_welch
         except AttributeError:
@@ -1278,7 +1243,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_students_t(self):
-        from numpy import nan as npnan
         try:
             return self.__pvalue_students_t
         except AttributeError:
@@ -1286,7 +1250,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_students_t(self):
-        from numpy import nan as npnan
         try:
             return self.__statistic_students_t
         except AttributeError:
@@ -1296,7 +1259,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_mann_whitney(self):
-        from numpy import nan as npnan
         try:
             return self.__pvalue_mann_whitney
         except AttributeError:
@@ -1306,7 +1268,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_mann_whitney(self):
-        from numpy import nan as npnan
         try:
             return self.__statistic_mann_whitney
         except AttributeError:
@@ -1339,7 +1300,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def proportional_difference(self):
-        from numpy import nan as npnan
         try:
             return self.__proportional_difference
         except AttributeError:
@@ -1380,7 +1340,6 @@ class EffectSizeDataFrame(object):
 
 
     def __pre_calc(self):
-        import pandas as pd
         from .misc_tools import print_greeting, get_varname
         from ._stats_tools import confint_2group_diff as ci2g
         from ._delta_objects import MiniMetaDelta, DeltaDelta
@@ -1550,8 +1509,6 @@ class EffectSizeDataFrame(object):
             
             
     def __calc_lqrt(self):
-        import lqrt
-        import pandas as pd
         
         rnd_seed = self.__random_seed
         db_obj = self.__dabest_obj
@@ -2039,16 +1996,13 @@ class PermutationTest:
     
     """
     
-    def __init__(self, control:np.array,
-                 test:np.array, # These should be numerical iterables.
+    def __init__(self, control: array,
+                 test: array, # These should be numerical iterables.
                  effect_size:str, # Any one of the following are accepted inputs: 'mean_diff', 'median_diff', 'cohens_d', 'hedges_g', or 'cliffs_delta'
                  is_paired:str=None,
                  permutation_count:int=5000, # The number of permutations (reshuffles) to perform.
                  random_seed:int=12345,#`random_seed` is used to seed the random number generator during bootstrap resampling. This ensures that the generated permutations are replicable.
                  **kwargs):
-    
-        import numpy as np
-        from numpy.random import PCG64, RandomState
         from ._stats_tools.effsize import two_group_difference
         from ._stats_tools.confint_2group_diff import calculate_group_var
         
@@ -2060,20 +2014,20 @@ class PermutationTest:
             raise ValueError("The two arrays do not have the same length.")
 
         # Initialise random number generator.
-        # rng = np.random.default_rng(seed=random_seed)
+        # rng = random.default_rng(seed=random_seed)
         rng = RandomState(PCG64(random_seed))
 
         # Set required constants and variables
-        control = np.array(control)
-        test = np.array(test)
+        control = array(control)
+        test = array(test)
 
         control_sample = control.copy()
         test_sample    = test.copy()
 
-        BAG = np.array([*control, *test])
+        BAG = array([*control, *test])
         CONTROL_LEN = int(len(control))
         EXTREME_COUNT = 0.
-        THRESHOLD = np.abs(two_group_difference(control, test, 
+        THRESHOLD = abs(two_group_difference(control, test, 
                                                 is_paired, effect_size))
         self.__permutations = []
         self.__permutations_var = []
@@ -2103,18 +2057,18 @@ class PermutationTest:
             es = two_group_difference(control_sample, test_sample, 
                                     False, effect_size)
             
-            var = calculate_group_var(np.var(control_sample, ddof=1), 
+            group_var = calculate_group_var(var(control_sample, ddof=1), 
                                       CONTROL_LEN, 
-                                      np.var(test_sample, ddof=1), 
+                                      var(test_sample, ddof=1), 
                                       len(test_sample))
             self.__permutations.append(es)
-            self.__permutations_var.append(var)
+            self.__permutations_var.append(group_var)
 
-            if np.abs(es) > THRESHOLD:
+            if abs(es) > THRESHOLD:
                 EXTREME_COUNT += 1.
 
-        self.__permutations = np.array(self.__permutations)
-        self.__permutations_var = np.array(self.__permutations_var)
+        self.__permutations = array(self.__permutations)
+        self.__permutations_var = array(self.__permutations_var)
 
         self.pvalue = EXTREME_COUNT / permutation_count
 
