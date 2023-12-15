@@ -6,23 +6,23 @@ __all__ = ['create_bootstrap_indexes', 'compute_1group_jackknife', 'compute_1gro
 
 # %% ../../nbs/API/confint_1group.ipynb 4
 import numpy as np
+from numpy.random import PCG64, RandomState
+from scipy.stats import norm
+from numpy import sort as npsort
 
 # %% ../../nbs/API/confint_1group.ipynb 5
 def create_bootstrap_indexes(array, resamples=5000, random_seed=12345):
     """Given an array-like, returns a generator of bootstrap indexes
     to be used for resampling.
     """
-    import numpy as np
-    from numpy.random import PCG64, RandomState
+
     rng = RandomState(PCG64(random_seed))
     
     indexes = range(0, len(array))
 
     out = (rng.choice(indexes, len(indexes), replace=True)
             for i in range(0, resamples))
-            
-    # Reset RNG
-    # rng = RandomState(MT19937())
+
     return out
 
 
@@ -49,7 +49,6 @@ def compute_1group_bootstraps(x, func, resamples=5000, random_seed=12345,
                              *args, **kwargs):
     """Bootstraps func(x), with the number of specified resamples."""
 
-    import numpy as np
     
     # Create bootstrap indexes.
     boot_indexes = create_bootstrap_indexes(x, resamples=resamples,
@@ -64,7 +63,7 @@ def compute_1group_bootstraps(x, func, resamples=5000, random_seed=12345,
 
 
 def compute_1group_bias_correction(x, bootstraps, func, *args, **kwargs):
-    from scipy.stats import norm
+
     metric = func(x, *args, **kwargs)
     prop_boots_less_than_metric = sum(bootstraps < metric) / len(bootstraps)
 
@@ -101,7 +100,7 @@ def summary_ci_1group(x:np.array,# An numerical iterable.
 
     """
     from . import confint_2group_diff as ci2g
-    from numpy import sort as npsort
+
 
     boots = compute_1group_bootstraps(x, func, resamples=resamples,
                                       random_seed=random_seed,

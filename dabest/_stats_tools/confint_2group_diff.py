@@ -7,6 +7,13 @@ __all__ = ['create_jackknife_indexes', 'create_repeated_indexes', 'compute_meand
 
 # %% ../../nbs/API/confint_2group_diff.ipynb 4
 import numpy as np
+from numpy import arange, delete, errstate
+from numpy import mean as npmean
+from numpy import sum as npsum
+from numpy.random import PCG64, RandomState
+import pandas as pd
+from scipy.stats import norm
+from numpy import isnan
 
 # %% ../../nbs/API/confint_2group_diff.ipynb 5
 def create_jackknife_indexes(data):
@@ -24,7 +31,6 @@ def create_jackknife_indexes(data):
     -------
     Generator that yields all jackknife bootstrap samples.
     """
-    from numpy import arange, delete
 
     index_range = arange(0, len(data))
     return (delete(index_range, i) for i in index_range)
@@ -36,7 +42,6 @@ def create_repeated_indexes(data):
     Convenience function. Given an array-like with length N,
     returns a generator that yields N indexes [0, 1, ..., N].
     """
-    from numpy import arange
 
     index_range = arange(0, len(data))
     return (index_range for i in index_range)
@@ -92,9 +97,6 @@ def compute_meandiff_jackknife(x0, x1, is_paired, effect_size):
 
 
 def _calc_accel(jack_dist):
-    from numpy import mean as npmean
-    from numpy import sum as npsum
-    from numpy import errstate
 
     jack_mean = npmean(jack_dist)
 
@@ -111,10 +113,7 @@ def compute_bootstrapped_diff(x0, x1, is_paired, effect_size,
     """Bootstraps the effect_size for 2 groups."""
     
     from . import effsize as __es
-    import numpy as np
-    from numpy.random import PCG64, RandomState
-    
-    # rng = RandomState(default_rng(random_seed))
+
     rng = RandomState(PCG64(random_seed))
 
     out = np.repeat(np.nan, resamples)
@@ -135,23 +134,6 @@ def compute_bootstrapped_diff(x0, x1, is_paired, effect_size,
             
         out[i] = __es.two_group_difference(x0_sample, x1_sample,
                                           is_paired, effect_size)
-    
-    # check whether there are any infinities in the bootstrap,
-    # which likely indicates the sample sizes are too small as
-    # the computation of Cohen's d and Hedges' g necessitated 
-    # a division by zero.
-    # Added in v0.2.6.
-    
-    # num_infinities = len(out[np.isinf(out)])
-    # print(num_infinities)
-    # if num_infinities > 0:
-    #     warn_msg = "There are {} bootstraps that are not defined. "\
-    #     "This is likely due to smaple sample sizes. "\
-    #     "The values in a bootstrap for a group will be more likely "\
-    #     "to be all equal, with a resulting variance of zero. "\
-    #     "The computation of Cohen's d and Hedges' g will therefore "\
-    #     "involved a division by zero. "
-    #     warnings.warn(warn_msg.format(num_infinities), category="UserWarning")
         
     return out
 
@@ -167,10 +149,6 @@ def compute_delta2_bootstrapped_diff(x1:np.ndarray,# Control group 1
     Bootstraps the effect size deltas' g.
     
     """
-
-    import numpy as np
-    import pandas as pd
-    from numpy.random import PCG64, RandomState
 
     rng = RandomState(PCG64(random_seed))
     x1_len = len(x1)
@@ -243,10 +221,8 @@ def compute_meandiff_bias_correction(bootstraps, #An numerical iterable, compris
         and effect size.
 
     """
-    from scipy.stats import norm
-    from numpy import array
 
-    B = array(bootstraps)
+    B = np.array(bootstraps)
     prop_less_than_es = sum(B < effsize) / len(B)
 
     return norm.ppf(prop_less_than_es)
@@ -275,8 +251,6 @@ def compute_interval_limits(bias, acceleration, n_boots, ci=95):
 
     Supply the bias, acceleration factor, and number of bootstraps.
     """
-    from scipy.stats import norm
-    from numpy import isnan, nan
 
     alpha = _compute_alpha_from_ci(ci)
 
@@ -307,7 +281,6 @@ def calculate_weighted_delta(group_var, differences, resamples):
     '''
     Compute the weighted deltas.
     '''
-    import numpy as np
 
     weight = 1/group_var
     denom = np.sum(weight)

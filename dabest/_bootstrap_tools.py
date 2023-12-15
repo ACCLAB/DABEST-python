@@ -5,6 +5,12 @@ __all__ = ['bootstrap', 'jackknife_indexes', 'bca']
 
 # %% ../nbs/API/bootstrap.ipynb 3
 import numpy as np
+import pandas as pd
+import seaborn as sns
+from scipy.stats import norm
+from scipy.stats import ttest_1samp, ttest_ind, ttest_rel
+from scipy.stats import mannwhitneyu, wilcoxon, norm
+import warnings
 
 # %% ../nbs/API/bootstrap.ipynb 4
 class bootstrap:
@@ -58,22 +64,12 @@ class bootstrap:
         reps:int=5000 # Number of bootstrap iterations to perform.
                 ):
 
-        import numpy as np
-        import pandas as pd
-        import seaborn as sns
-
-        from scipy.stats import norm
-        from numpy.random import randint
-        from scipy.stats import ttest_1samp, ttest_ind, ttest_rel
-        from scipy.stats import mannwhitneyu, wilcoxon, norm
-        import warnings
-
         # Turn to pandas series.
         x1 = pd.Series(x1).dropna()
         diff = False
 
         # Initialise statfunction
-        if statfunction == None:
+        if statfunction is None:
             statfunction = np.mean
 
         # Compute two-sided alphas.
@@ -198,7 +194,6 @@ class bootstrap:
                         }
 
     def __repr__(self):
-        import numpy as np
 
         if 'mean' in self.statistic:
             stat = 'mean'
@@ -228,7 +223,6 @@ def jackknife_indexes(data):
     For a given set of data Y, the jackknife sample J[i] is defined as the
     data set Y with the ith data point deleted.
     """
-    import numpy as np
 
     base = np.arange(0,len(data))
     return (np.delete(base,i) for i in base)
@@ -238,14 +232,6 @@ def bca(data, alphas, statarray, statfunction, ostat, reps):
     Subroutine called to calculate the BCa statistics.
     Borrowed heavily from scikits.bootstrap code.
     '''
-    import warnings
-
-    import numpy as np
-    import pandas as pd
-    import seaborn as sns
-
-    from scipy.stats import norm
-    from numpy.random import randint
 
     # The bias correction value.
     z0 = norm.ppf( ( 1.0*np.sum(statarray < ostat, axis = 0)  ) / reps )
