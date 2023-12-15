@@ -160,7 +160,7 @@ def test_10_cummings_multi_groups():
 
 @pytest.mark.mpl_image_compare(tolerance=10)
 def test_11_inset_plots():
-
+    # TODO Better remove external dependencies in tests. Tests need to run locally without internet.
     # Load the iris dataset. Requires internet access.
     iris = pd.read_csv("https://github.com/mwaskom/seaborn-data/raw/master/iris.csv")
     iris_melt = pd.melt(iris.reset_index(),

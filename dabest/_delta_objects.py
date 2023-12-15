@@ -6,10 +6,9 @@ __all__ = ['DeltaDelta', 'MiniMetaDelta']
 # %% ../nbs/API/delta_objects.ipynb 5
 from scipy.stats import norm
 import pandas as pd
-from scipy.stats import randint
 import numpy as np
 from numpy import sort as npsort
-from numpy import sqrt, isinf, isnan
+from numpy import isnan
 from string import Template
 import warnings
 import datetime as dt
