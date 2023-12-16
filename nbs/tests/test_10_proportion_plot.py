@@ -9,8 +9,6 @@ from dabest._api import load
 
 
 def create_demo_prop_dataset(seed=9999, N=40):
-    import numpy as np
-    import pandas as pd
 
     np.random.seed(9999)  # Fix the seed so the results are replicable.
     # Create samples

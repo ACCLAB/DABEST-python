@@ -72,7 +72,7 @@ def load(data, idx=None, x=None, y=None, paired=None, id_col=None,
     -------
     A `Dabest` object.
     '''
-    from ._classes import Dabest
+    from dabest import Dabest
 
     return Dabest(data, idx, x, y, paired, id_col, ci, resamples, random_seed, proportional, delta2, experiment, experiment_label, x1_level, mini_meta)
 
@@ -81,14 +81,14 @@ def load(data, idx=None, x=None, y=None, paired=None, id_col=None,
 # %% ../nbs/API/load.ipynb 5
 import numpy as np
 from typing import Union, Optional
+import pandas as pd
 
 def prop_dataset(group:Union[list, tuple, np.ndarray, dict], #Accepts lists, tuples, or numpy ndarrays of numeric types.
                  group_names: Optional[list] = None):
     '''
     Convenient function to generate a dataframe of binary data.
     '''
-    import pandas as pd
-
+    
     if isinstance(group, dict):
         # If group_names is not provided, use the keys of the dict as group_names
         if group_names is None:

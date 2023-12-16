@@ -303,10 +303,6 @@ class TwoGroupsEffectSize(object):
                 pass
 
 
-
-
-
-
     def __repr__(self, show_resample_count=True, define_pval=True, sigfig=3):
         
         RM_STATUS = {'baseline'  : 'for repeated measures against baseline \n', 
