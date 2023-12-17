@@ -17,14 +17,12 @@ def create_bootstrap_indexes(array, resamples=5000, random_seed=12345):
     """
 
     rng = RandomState(PCG64(random_seed))
-    
+
     indexes = range(0, len(array))
 
-    out = (rng.choice(indexes, len(indexes), replace=True)
-            for i in range(0, resamples))
+    out = (rng.choice(indexes, len(indexes), replace=True) for i in range(0, resamples))
 
     return out
-
 
 
 def compute_1group_jackknife(x, func, *args, **kwargs):
@@ -32,52 +30,53 @@ def compute_1group_jackknife(x, func, *args, **kwargs):
     Returns the jackknife bootstraps for func(x).
     """
     from . import confint_2group_diff as ci_2g
+
     jackknives = [i for i in ci_2g.create_jackknife_indexes(x)]
     out = [func(x[j], *args, **kwargs) for j in jackknives]
-    del jackknives # memory management.
+    del jackknives  # memory management.
     return out
-
 
 
 def compute_1group_acceleration(jack_dist):
     from . import confint_2group_diff as ci_2g
+
     return ci_2g._calc_accel(jack_dist)
 
 
-
-def compute_1group_bootstraps(x, func, resamples=5000, random_seed=12345,
-                             *args, **kwargs):
+def compute_1group_bootstraps(
+    x, func, resamples=5000, random_seed=12345, *args, **kwargs
+):
     """Bootstraps func(x), with the number of specified resamples."""
 
-    
     # Create bootstrap indexes.
-    boot_indexes = create_bootstrap_indexes(x, resamples=resamples,
-                                            random_seed=random_seed)
+    boot_indexes = create_bootstrap_indexes(
+        x, resamples=resamples, random_seed=random_seed
+    )
 
     out = [func(x[b], *args, **kwargs) for b in boot_indexes]
-    
+
     del boot_indexes
-    
+
     return out
 
 
-
 def compute_1group_bias_correction(x, bootstraps, func, *args, **kwargs):
-
     metric = func(x, *args, **kwargs)
     prop_boots_less_than_metric = sum(bootstraps < metric) / len(bootstraps)
 
     return norm.ppf(prop_boots_less_than_metric)
 
 
-
-def summary_ci_1group(x:np.array,# An numerical iterable.
-                      func, #The function to be applied to x.
-                      resamples:int=5000, #The number of bootstrap resamples to be taken of func(x).
-                      alpha:float=0.05, #Denotes the likelihood that the confidence interval produced _does not_ include the true summary statistic. When alpha = 0.05, a 95% confidence interval is produced.
-                      random_seed:int=12345,#`random_seed` is used to seed the random number generator during bootstrap resampling. This ensures that the confidence intervals reported are replicable.
-                      sort_bootstraps:bool=True, 
-                      *args, **kwargs):
+def summary_ci_1group(
+    x: np.array,  # An numerical iterable.
+    func,  # The function to be applied to x.
+    resamples: int = 5000,  # The number of bootstrap resamples to be taken of func(x).
+    alpha: float = 0.05,  # Denotes the likelihood that the confidence interval produced _does not_ include the true summary statistic. When alpha = 0.05, a 95% confidence interval is produced.
+    random_seed: int = 12345,  # `random_seed` is used to seed the random number generator during bootstrap resampling. This ensures that the confidence intervals reported are replicable.
+    sort_bootstraps: bool = True,
+    *args,
+    **kwargs
+):
     """
     Given an array-like x, returns func(x), and a bootstrap confidence
     interval of func(x).
@@ -101,10 +100,9 @@ def summary_ci_1group(x:np.array,# An numerical iterable.
     """
     from . import confint_2group_diff as ci2g
 
-
-    boots = compute_1group_bootstraps(x, func, resamples=resamples,
-                                      random_seed=random_seed,
-                                      *args, **kwargs)
+    boots = compute_1group_bootstraps(
+        x, func, resamples=resamples, random_seed=random_seed, *args, **kwargs
+    )
     bias = compute_1group_bias_correction(x, boots, func)
 
     jk = compute_1group_jackknife(x, func, *args, **kwargs)
@@ -125,10 +123,13 @@ def summary_ci_1group(x:np.array,# An numerical iterable.
     del boots
     del boots_sorted
 
-    out = {'summary': func(x), 'func': func,
-            'bca_ci_low': low, 'bca_ci_high': high,
-            'bootstraps': B}
+    out = {
+        "summary": func(x),
+        "func": func,
+        "bca_ci_low": low,
+        "bca_ci_high": high,
+        "bootstraps": B,
+    }
 
     del B
     return out
-

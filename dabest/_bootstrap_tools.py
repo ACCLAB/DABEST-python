@@ -90,7 +90,7 @@ class bootstrap:
                 if len(x1) != len(x2):
                     raise ValueError('x1 and x2 are not the same length.')
 
-        if (x2 is None) or (paired is not None) :
+        if (x2 is None) or paired:
 
             if x2 is None:
                 tx = x1
@@ -100,7 +100,8 @@ class bootstrap:
                 ttest_2_paired = 'NIL'
                 wilcoxonresult = 'NIL'
 
-            elif paired is not None:
+            #elif paired is not None:
+            else: # only two options to enter here
                 diff = True
                 tx = x2 - x1
                 ttest_single = 'NIL'
@@ -123,7 +124,7 @@ class bootstrap:
             pct_low_high = np.nan_to_num(pct_low_high).astype('int')
 
 
-        elif x2 is not None and paired is None:
+        elif x2 and paired is None:
             diff = True
             x2 = pd.Series(x2).dropna()
             # Generate statarrays for both arrays.

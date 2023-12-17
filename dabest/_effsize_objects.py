@@ -22,7 +22,7 @@ class TwoGroupsEffectSize(object):
     """
     A class to compute and store the results of bootstrapped
     mean differences between two groups.
-    
+
     Compute the effect size between two groups.
 
         Parameters
@@ -38,7 +38,7 @@ class TwoGroupsEffectSize(object):
             The number of bootstrap resamples to be taken for the calculation
             of the confidence interval limits.
         permutation_count : int, default 5000
-            The number of permutations (reshuffles) to perform for the 
+            The number of permutations (reshuffles) to perform for the
             computation of the permutation p-value
         ci : float, default 95
             The confidence interval width. The default of 95 produces 95%
@@ -73,284 +73,159 @@ class TwoGroupsEffectSize(object):
                 The percentile confidence interval lower limit and upper limits, respectively.
     """
 
-    def __init__(self, control, test, effect_size,
-                 proportional=False,
-                 is_paired=None, ci=95,
-                 resamples=5000, 
-                 permutation_count=5000, 
-                 random_seed=12345):
-        
-        from ._stats_tools import effsize as es
+    def __init__(
+        self,
+        control,
+        test,
+        effect_size,
+        proportional=False,
+        is_paired=None,
+        ci=95,
+        resamples=5000,
+        permutation_count=5000,
+        random_seed=12345,
+    ):
         from ._stats_tools import confint_2group_diff as ci2g
+        from ._stats_tools import effsize as es
 
+        self.__EFFECT_SIZE_DICT = {
+            "mean_diff": "mean difference",
+            "median_diff": "median difference",
+            "cohens_d": "Cohen's d",
+            "cohens_h": "Cohen's h",
+            "hedges_g": "Hedges' g",
+            "cliffs_delta": "Cliff's delta",
+            "delta_g": "deltas' g",
+        }
 
-        self.__EFFECT_SIZE_DICT =  {"mean_diff" : "mean difference",
-                                    "median_diff" : "median difference",
-                                    "cohens_d" : "Cohen's d",
-                                    "cohens_h" : "Cohen's h",
-                                    "hedges_g" : "Hedges' g",
-                                    "cliffs_delta" : "Cliff's delta",
-                                    "delta_g"  : "deltas' g"}
-
-
-        kosher_es = [a for a in self.__EFFECT_SIZE_DICT.keys()]
-        if effect_size not in kosher_es:
-            err1 = "The effect size '{}'".format(effect_size)
-            err2 = "is not one of {}".format(kosher_es)
-            raise ValueError(" ".join([err1, err2]))
-
-        if effect_size == "cliffs_delta" and is_paired:
-            err1 = "`paired` is not None; therefore Cliff's delta is not defined."
-            raise ValueError(err1)
-
-        if proportional==True and effect_size not in ['mean_diff','cohens_h']:
-            err1 = "`proportional` is True; therefore effect size other than mean_diff and cohens_h is not defined."
-            raise ValueError(err1)
-
-        if proportional==True and (isin(control, [0, 1]).all() == False or isin(test, [0, 1]).all() == False):
-            err1 = "`proportional` is True; Only accept binary data consisting of 0 and 1."
-            raise ValueError(err1)
+        self.__is_paired = is_paired
+        self.__resamples = resamples
+        self.__effect_size = effect_size
+        self.__random_seed = random_seed
+        self.__ci = ci
+        self.__proportional = proportional
+        self.check_errors(control, test)
 
         # Convert to numpy arrays for speed.
         # NaNs are automatically dropped.
         control = array(control)
-        test    = array(test)
-        control = control[~isnan(control)]
-        test    = test[~isnan(test)]
-
-        self.__effect_size       = effect_size
-        # TODO refactor this
-        self.__control           = control
-        self.__test              = test
-        self.__is_paired         = is_paired
-        self.__resamples         = resamples
+        test = array(test)
+        self.__control = control[~isnan(control)]
+        self.__test = test[~isnan(test)]
         self.__permutation_count = permutation_count
-        self.__random_seed       = random_seed
-        self.__ci                = ci
-        self.__alpha             = ci2g._compute_alpha_from_ci(ci)
+
+        self.__alpha = ci2g._compute_alpha_from_ci(self.__ci)
 
         self.__difference = es.two_group_difference(
-                                control, test, is_paired, effect_size)
-        
+            self.__control, test, self.__is_paired, self.__effect_size
+        )
+
         self.__jackknives = ci2g.compute_meandiff_jackknife(
-                                control, test, is_paired, effect_size)
+            self.__control, test, self.__is_paired, self.__effect_size
+        )
 
         self.__acceleration_value = ci2g._calc_accel(self.__jackknives)
 
         bootstraps = ci2g.compute_bootstrapped_diff(
-                            control, test, is_paired, effect_size,
-                            resamples, random_seed)
+            self.__control,
+            test,
+            self.__is_paired,
+            self.__effect_size,
+            self.__resamples,
+            self.__random_seed,
+        )
         self.__bootstraps = bootstraps
-        
+
         sorted_bootstraps = npsort(self.__bootstraps)
         # Added in v0.2.6.
         # Raises a UserWarning if there are any infiinities in the bootstraps.
         num_infinities = len(self.__bootstraps[isinf(self.__bootstraps)])
-        
+
         if num_infinities > 0:
-            warn_msg = "There are {} bootstrap(s) that are not defined. "\
-            "This is likely due to smaple sample sizes. "\
-            "The values in a bootstrap for a group will be more likely "\
-            "to be all equal, with a resulting variance of zero. "\
-            "The computation of Cohen's d and Hedges' g thus "\
-            "involved a division by zero. "
-            warnings.warn(warn_msg.format(num_infinities), 
-                          category=UserWarning)
+            warn_msg = (
+                "There are {} bootstrap(s) that are not defined. "
+                "This is likely due to smaple sample sizes. "
+                "The values in a bootstrap for a group will be more likely "
+                "to be all equal, with a resulting variance of zero. "
+                "The computation of Cohen's d and Hedges' g thus "
+                "involved a division by zero. "
+            )
+            warnings.warn(warn_msg.format(num_infinities), category=UserWarning)
 
         self.__bias_correction = ci2g.compute_meandiff_bias_correction(
-                                    self.__bootstraps, self.__difference)
+            self.__bootstraps, self.__difference
+        )
 
-        # Compute BCa intervals.
-        bca_idx_low, bca_idx_high = ci2g.compute_interval_limits(
-            self.__bias_correction, self.__acceleration_value,
-            self.__resamples, ci)
-
-        self.__bca_interval_idx = (bca_idx_low, bca_idx_high)
-
-        if ~isnan(bca_idx_low) and ~isnan(bca_idx_high):
-            self.__bca_low  = sorted_bootstraps[bca_idx_low]
-            self.__bca_high = sorted_bootstraps[bca_idx_high]
-
-            err1 = "The $lim_type limit of the interval"
-            err2 = "was in the $loc 10 values."
-            err3 = "The result should be considered unstable."
-            err_temp = Template(" ".join([err1, err2, err3]))
-
-            if bca_idx_low <= 10:
-                warnings.warn(err_temp.substitute(lim_type="lower",
-                                                  loc="bottom"),
-                              stacklevel=1)
-
-            if bca_idx_high >= resamples-9:
-                warnings.warn(err_temp.substitute(lim_type="upper",
-                                                  loc="top"),
-                              stacklevel=1)
-
-        else:
-            # TODO improve error handling, separate file
-            err1 = "The $lim_type limit of the BCa interval cannot be computed."
-            err2 = "It is set to the effect size itself."
-            err3 = "All bootstrap values were likely all the same."
-            err_temp = Template(" ".join([err1, err2, err3]))
-
-            if isnan(bca_idx_low):
-                self.__bca_low  = self.__difference
-                warnings.warn(err_temp.substitute(lim_type="lower"),
-                              stacklevel=0)
-
-            if isnan(bca_idx_high):
-                self.__bca_high  = self.__difference
-                warnings.warn(err_temp.substitute(lim_type="upper"),
-                              stacklevel=0)
+        self.compute_bca_intervals(sorted_bootstraps)
 
         # Compute percentile intervals.
-        pct_idx_low  = int((self.__alpha/2)     * resamples)
-        pct_idx_high = int((1-(self.__alpha/2)) * resamples)
+        pct_idx_low = int((self.__alpha / 2) * self.__resamples)
+        pct_idx_high = int((1 - (self.__alpha / 2)) * self.__resamples)
 
         self.__pct_interval_idx = (pct_idx_low, pct_idx_high)
-        self.__pct_low  = sorted_bootstraps[pct_idx_low]
+        self.__pct_low = sorted_bootstraps[pct_idx_low]
         self.__pct_high = sorted_bootstraps[pct_idx_high]
 
-        # Perform statistical tests.
-        self.__PermutationTest_result = PermutationTest(control, test, 
-                                                        effect_size, 
-                                                        is_paired,
-                                                        permutation_count)
-        
-        if is_paired and proportional is False:
-            # Wilcoxon, a non-parametric version of the paired T-test.
-            wilcoxon = spstats.wilcoxon(control, test)
-            self.__pvalue_wilcoxon = wilcoxon.pvalue
-            self.__statistic_wilcoxon = wilcoxon.statistic
-            
-            
-            if effect_size != "median_diff":
-                # Paired Student's t-test.
-                paired_t = spstats.ttest_rel(control, test, nan_policy='omit')
-                self.__pvalue_paired_students_t = paired_t.pvalue
-                self.__statistic_paired_students_t = paired_t.statistic
-                # TODO dead code
-                standardized_es = es.cohens_d(control, test, is_paired)
-
-        elif is_paired and proportional:
-            # for binary paired data, use McNemar's test
-            # References:
-            # https://en.wikipedia.org/wiki/McNemar%27s_test
-
-            df_temp = pd.DataFrame({'control': control, 'test': test})
-            x1 = len(df_temp[(df_temp['control'] == 0)&(df_temp['test'] == 0)])
-            x2 = len(df_temp[(df_temp['control'] == 0)&(df_temp['test'] == 1)])
-            x3 = len(df_temp[(df_temp['control'] == 1)&(df_temp['test'] == 0)])
-            x4 = len(df_temp[(df_temp['control'] == 1)&(df_temp['test'] == 1)])
-            table =  [[x1,x2],[x3,x4]]
-            _mcnemar = mcnemar(table, exact=True, correction=True)
-            self.__pvalue_mcnemar = _mcnemar.pvalue
-            self.__statistic_mcnemar = _mcnemar.statistic
-
-        elif effect_size == "cliffs_delta":
-            # Let's go with Brunner-Munzel!
-            brunner_munzel = spstats.brunnermunzel(control, test,
-                                                     nan_policy='omit')
-            self.__pvalue_brunner_munzel = brunner_munzel.pvalue
-            self.__statistic_brunner_munzel = brunner_munzel.statistic
-
-
-        elif effect_size == "median_diff":
-            # According to scipy's documentation of the function,
-            # "The Kruskal-Wallis H-test tests the null hypothesis
-            # that the population median of all of the groups are equal."
-            kruskal = spstats.kruskal(control, test, nan_policy='omit')
-            self.__pvalue_kruskal = kruskal.pvalue
-            self.__statistic_kruskal = kruskal.statistic
-
-        else: # for mean difference, Cohen's d, and Hedges' g.
-            # Welch's t-test, assumes normality of distributions,
-            # but does not assume equal variances.
-            welch = spstats.ttest_ind(control, test, equal_var=False,
-                                       nan_policy='omit')
-            self.__pvalue_welch = welch.pvalue
-            self.__statistic_welch = welch.statistic
-
-            # Student's t-test, assumes normality of distributions,
-            # as well as assumption of equal variances.
-            students_t = spstats.ttest_ind(control, test, equal_var=True,
-                                            nan_policy='omit')
-            self.__pvalue_students_t = students_t.pvalue
-            self.__statistic_students_t = students_t.statistic
-
-            # Mann-Whitney test: Non parametric,
-            # does not assume normality of distributions
-            try:
-                mann_whitney = spstats.mannwhitneyu(control, test, 
-                                                    alternative='two-sided')
-                self.__pvalue_mann_whitney = mann_whitney.pvalue
-                self.__statistic_mann_whitney = mann_whitney.statistic
-            except ValueError:
-                # TODO At least print some warning?
-                # Occurs when the control and test are exactly identical
-                # in terms of rank (eg. all zeros.)
-                pass
-            
-                    
-            standardized_es = es.cohens_d(control, test, is_paired = None)
-            
-            # The Cohen's h calculation is for binary categorical data
-            try:
-                self.__proportional_difference = es.cohens_h(control, test)
-            except ValueError:
-                # TODO At least print some warning?
-                # Occur only when the data consists not only 0's and 1's.
-                pass
-
+        self.perform_statistical_test()
 
     def __repr__(self, show_resample_count=True, define_pval=True, sigfig=3):
-        
-        RM_STATUS = {'baseline'  : 'for repeated measures against baseline \n', 
-                     'sequential': 'for the sequential design of repeated-measures experiment \n',
-                     'None'      : ''
-                    }
-
-        PAIRED_STATUS = {'baseline'   : 'paired', 
-                         'sequential' : 'paired',
-                         'None'       : 'unpaired'
+        RM_STATUS = {
+            "baseline": "for repeated measures against baseline \n",
+            "sequential": "for the sequential design of repeated-measures experiment \n",
+            "None": "",
         }
 
-        first_line = {"rm_status"    : RM_STATUS[str(self.__is_paired)],
-                      "es"           : self.__EFFECT_SIZE_DICT[self.__effect_size],
-                      "paired_status": PAIRED_STATUS[str(self.__is_paired)]}
-        
+        PAIRED_STATUS = {
+            "baseline": "paired",
+            "sequential": "paired",
+            "None": "unpaired",
+        }
+
+        first_line = {
+            "rm_status": RM_STATUS[str(self.__is_paired)],
+            "es": self.__EFFECT_SIZE_DICT[self.__effect_size],
+            "paired_status": PAIRED_STATUS[str(self.__is_paired)],
+        }
 
         out1 = "The {paired_status} {es} {rm_status}".format(**first_line)
-        
+
         base_string_fmt = "{:." + str(sigfig) + "}"
         if "." in str(self.__ci):
             ci_width = base_string_fmt.format(self.__ci)
         else:
             ci_width = str(self.__ci)
-        
-        ci_out = {"es"       : base_string_fmt.format(self.__difference),
-                  "ci"       : ci_width,
-                  "bca_low"  : base_string_fmt.format(self.__bca_low),
-                  "bca_high" : base_string_fmt.format(self.__bca_high)}
-        
+
+        ci_out = {
+            "es": base_string_fmt.format(self.__difference),
+            "ci": ci_width,
+            "bca_low": base_string_fmt.format(self.__bca_low),
+            "bca_high": base_string_fmt.format(self.__bca_high),
+        }
+
         out2 = "is {es} [{ci}%CI {bca_low}, {bca_high}].".format(**ci_out)
         out = out1 + out2
-        
+
         pval_rounded = base_string_fmt.format(self.pvalue_permutation)
-        
-        p1 = "The p-value of the two-sided permutation t-test is {}, ".format(pval_rounded)
+
+        p1 = "The p-value of the two-sided permutation t-test is {}, ".format(
+            pval_rounded
+        )
         p2 = "calculated for legacy purposes only. "
         pvalue = p1 + p2
-                                                                
+
         bs1 = "{} bootstrap samples were taken; ".format(self.__resamples)
         bs2 = "the confidence interval is bias-corrected and accelerated."
         bs = bs1 + bs2
 
-        pval_def1 = "Any p-value reported is the probability of observing the" + \
-                    "effect size (or greater),\nassuming the null hypothesis of" + \
-                    "zero difference is true."
-        pval_def2 = "\nFor each p-value, 5000 reshuffles of the " + \
-                    "control and test labels were performed."
+        pval_def1 = (
+            "Any p-value reported is the probability of observing the"
+            + "effect size (or greater),\nassuming the null hypothesis of"
+            + "zero difference is true."
+        )
+        pval_def2 = (
+            "\nFor each p-value, 5000 reshuffles of the "
+            + "control and test labels were performed."
+        )
         pval_def = pval_def1 + pval_def2
 
         if show_resample_count and define_pval:
@@ -362,7 +237,179 @@ class TwoGroupsEffectSize(object):
         else:
             return "{}\n{}".format(out, pvalue)
 
+    def check_errors(self, control, test):
+        kosher_es = [a for a in self.__EFFECT_SIZE_DICT.keys()]
+        if self.__effect_size not in kosher_es:
+            err1 = "The effect size '{}'".format(self.__effect_size)
+            err2 = "is not one of {}".format(kosher_es)
+            raise ValueError(" ".join([err1, err2]))
 
+        if self.__effect_size == "cliffs_delta" and self.__is_paired:
+            err1 = "`paired` is not None; therefore Cliff's delta is not defined."
+            raise ValueError(err1)
+
+        if self.__proportional and self.__effect_size not in ["mean_diff", "cohens_h"]:
+            err1 = "`proportional` is True; therefore effect size other than mean_diff and cohens_h is not defined."
+            raise ValueError(err1)
+
+        if self.__proportional and (
+            isin(control, [0, 1]).all() == False or isin(test, [0, 1]).all() == False
+        ):
+            err1 = (
+                "`proportional` is True; Only accept binary data consisting of 0 and 1."
+            )
+            raise ValueError(err1)
+
+    def compute_bca_intervals(self, sorted_bootstraps):
+        from ._stats_tools import confint_2group_diff as ci2g
+
+        # Compute BCa intervals.
+        bca_idx_low, bca_idx_high = ci2g.compute_interval_limits(
+            self.__bias_correction,
+            self.__acceleration_value,
+            self.__resamples,
+            self.__ci,
+        )
+
+        self.__bca_interval_idx = (bca_idx_low, bca_idx_high)
+
+        if ~isnan(bca_idx_low) and ~isnan(bca_idx_high):
+            self.__bca_low = sorted_bootstraps[bca_idx_low]
+            self.__bca_high = sorted_bootstraps[bca_idx_high]
+
+            err1 = "The $lim_type limit of the interval"
+            err2 = "was in the $loc 10 values."
+            err3 = "The result should be considered unstable."
+            err_temp = Template(" ".join([err1, err2, err3]))
+
+            if bca_idx_low <= 10:
+                warnings.warn(
+                    err_temp.substitute(lim_type="lower", loc="bottom"), stacklevel=1
+                )
+
+            if bca_idx_high >= self.__resamples - 9:
+                warnings.warn(
+                    err_temp.substitute(lim_type="upper", loc="top"), stacklevel=1
+                )
+
+        else:
+            # TODO improve error handling, separate file
+            err1 = "The $lim_type limit of the BCa interval cannot be computed."
+            err2 = "It is set to the effect size itself."
+            err3 = "All bootstrap values were likely all the same."
+            err_temp = Template(" ".join([err1, err2, err3]))
+
+            if isnan(bca_idx_low):
+                self.__bca_low = self.__difference
+                warnings.warn(err_temp.substitute(lim_type="lower"), stacklevel=0)
+
+            if isnan(bca_idx_high):
+                self.__bca_high = self.__difference
+                warnings.warn(err_temp.substitute(lim_type="upper"), stacklevel=0)
+
+    def perform_statistical_test(self):
+        from ._stats_tools import effsize as es
+
+        # Perform statistical tests.
+        self.__PermutationTest_result = PermutationTest(
+            self.__control,
+            self.__test,
+            self.__effect_size,
+            self.__is_paired,
+            self.__permutation_count,
+        )
+
+        if self.__is_paired and self.__proportional is False:
+            # Wilcoxon, a non-parametric version of the paired T-test.
+            wilcoxon = spstats.wilcoxon(self.__control, self.__test)
+            self.__pvalue_wilcoxon = wilcoxon.pvalue
+            self.__statistic_wilcoxon = wilcoxon.statistic
+
+            if self.__effect_size != "median_diff":
+                # Paired Student's t-test.
+                paired_t = spstats.ttest_rel(
+                    self.__control, self.__test, nan_policy="omit"
+                )
+                self.__pvalue_paired_students_t = paired_t.pvalue
+                self.__statistic_paired_students_t = paired_t.statistic
+                # TODO dead code
+                standardized_es = es.cohens_d(
+                    self.__control, self.__test, self.__is_paired
+                )
+
+        elif self.__is_paired and self.__proportional:
+            # for binary paired data, use McNemar's test
+            # References:
+            # https://en.wikipedia.org/wiki/McNemar%27s_test
+
+            df_temp = pd.DataFrame({"control": self.__control, "test": self.__test})
+            x1 = len(df_temp[(df_temp["control"] == 0) & (df_temp["test"] == 0)])
+            x2 = len(df_temp[(df_temp["control"] == 0) & (df_temp["test"] == 1)])
+            x3 = len(df_temp[(df_temp["control"] == 1) & (df_temp["test"] == 0)])
+            x4 = len(df_temp[(df_temp["control"] == 1) & (df_temp["test"] == 1)])
+            table = [[x1, x2], [x3, x4]]
+            _mcnemar = mcnemar(table, exact=True, correction=True)
+            self.__pvalue_mcnemar = _mcnemar.pvalue
+            self.__statistic_mcnemar = _mcnemar.statistic
+
+        elif self.__effect_size == "cliffs_delta":
+            # Let's go with Brunner-Munzel!
+            brunner_munzel = spstats.brunnermunzel(
+                self.__control, self.__test, nan_policy="omit"
+            )
+            self.__pvalue_brunner_munzel = brunner_munzel.pvalue
+            self.__statistic_brunner_munzel = brunner_munzel.statistic
+
+        elif self.__effect_size == "median_diff":
+            # According to scipy's documentation of the function,
+            # "The Kruskal-Wallis H-test tests the null hypothesis
+            # that the population median of all of the groups are equal."
+            kruskal = spstats.kruskal(self.__control, self.__test, nan_policy="omit")
+            self.__pvalue_kruskal = kruskal.pvalue
+            self.__statistic_kruskal = kruskal.statistic
+
+        else:  # for mean difference, Cohen's d, and Hedges' g.
+            # Welch's t-test, assumes normality of distributions,
+            # but does not assume equal variances.
+            welch = spstats.ttest_ind(
+                self.__control, self.__test, equal_var=False, nan_policy="omit"
+            )
+            self.__pvalue_welch = welch.pvalue
+            self.__statistic_welch = welch.statistic
+
+            # Student's t-test, assumes normality of distributions,
+            # as well as assumption of equal variances.
+            students_t = spstats.ttest_ind(
+                self.__control, self.__test, equal_var=True, nan_policy="omit"
+            )
+            self.__pvalue_students_t = students_t.pvalue
+            self.__statistic_students_t = students_t.statistic
+
+            # Mann-Whitney test: Non parametric,
+            # does not assume normality of distributions
+            try:
+                mann_whitney = spstats.mannwhitneyu(
+                    self.__control, self.__test, alternative="two-sided"
+                )
+                self.__pvalue_mann_whitney = mann_whitney.pvalue
+                self.__statistic_mann_whitney = mann_whitney.statistic
+            except ValueError:
+                # TODO At least print some warning?
+                # Occurs when the control and test are exactly identical
+                # in terms of rank (eg. all zeros.)
+                pass
+
+            standardized_es = es.cohens_d(self.__control, self.__test, is_paired=None)
+
+            # The Cohen's h calculation is for binary categorical data
+            try:
+                self.__proportional_difference = es.cohens_h(
+                    self.__control, self.__test
+                )
+            except ValueError:
+                # TODO At least print some warning?
+                # Occur only when the data consists not only 0's and 1's.
+                pass
 
     def to_dict(self):
         """
@@ -370,13 +417,11 @@ class TwoGroupsEffectSize(object):
         dictionary.
         """
         # Only get public (user-facing) attributes.
-        attrs = [a for a in dir(self)
-                 if not a.startswith(("_", "to_dict"))]
+        attrs = [a for a in dir(self) if not a.startswith(("_", "to_dict"))]
         out = {}
         for a in attrs:
             out[a] = getattr(self, a)
         return out
-
 
     @property
     def difference(self):
@@ -395,6 +440,10 @@ class TwoGroupsEffectSize(object):
     @property
     def is_paired(self):
         return self.__is_paired
+
+    @property
+    def proportional(self):
+        return self.__proportional
 
     @property
     def ci(self):
@@ -469,8 +518,6 @@ class TwoGroupsEffectSize(object):
         """
         return self.__pct_high
 
-
-
     @property
     def pvalue_brunner_munzel(self):
         try:
@@ -484,8 +531,6 @@ class TwoGroupsEffectSize(object):
             return self.__statistic_brunner_munzel
         except AttributeError:
             return npnan
-
-
 
     @property
     def pvalue_wilcoxon(self):
@@ -515,8 +560,6 @@ class TwoGroupsEffectSize(object):
         except AttributeError:
             return npnan
 
-
-
     @property
     def pvalue_paired_students_t(self):
         # TODO Missing docstring
@@ -532,8 +575,6 @@ class TwoGroupsEffectSize(object):
             return self.__statistic_paired_students_t
         except AttributeError:
             return npnan
-
-
 
     @property
     def pvalue_kruskal(self):
@@ -551,7 +592,6 @@ class TwoGroupsEffectSize(object):
         except AttributeError:
             return npnan
 
-
     @property
     def pvalue_welch(self):
         # TODO Missing docstring
@@ -567,8 +607,6 @@ class TwoGroupsEffectSize(object):
             return self.__statistic_welch
         except AttributeError:
             return npnan
-
-
 
     @property
     def pvalue_students_t(self):
@@ -586,8 +624,6 @@ class TwoGroupsEffectSize(object):
         except AttributeError:
             return npnan
 
-
-
     @property
     def pvalue_mann_whitney(self):
         # TODO Missing docstring
@@ -596,8 +632,6 @@ class TwoGroupsEffectSize(object):
         except AttributeError:
             return npnan
 
-
-
     @property
     def statistic_mann_whitney(self):
         # TODO Missing docstring
@@ -605,30 +639,26 @@ class TwoGroupsEffectSize(object):
             return self.__statistic_mann_whitney
         except AttributeError:
             return npnan
-            
+
     @property
     def pvalue_permutation(self):
         # TODO Missing docstring
         return self.__PermutationTest_result.pvalue
-    
 
     @property
     def permutation_count(self):
         """
-        The number of permuations taken.
+        The number of permutations taken.
         """
         return self.__PermutationTest_result.permutation_count
 
-    
     @property
     def permutations(self):
         return self.__PermutationTest_result.permutations
 
-    
     @property
     def permutations_var(self):
         return self.__PermutationTest_result.permutations_var
-
 
     @property
     def proportional_difference(self):
@@ -636,7 +666,6 @@ class TwoGroupsEffectSize(object):
             return self.__proportional_difference
         except AttributeError:
             return npnan
-
 
 # %% ../nbs/API/effsize_objects.ipynb 10
 class EffectSizeDataFrame(object):
@@ -684,7 +713,7 @@ class EffectSizeDataFrame(object):
         out = []
         reprs = []
         
-        if self.__delta2==True:
+        if self.__delta2:
             mixed_data = []
             for j, current_tuple in enumerate(idx):
                 if self.__is_paired != "sequential":
@@ -1365,7 +1394,6 @@ class PermutationTest:
         self.__permutations_var = []
 
         for i in range(int(permutation_count)):
-            
             if is_paired:
                 # Select which control-test pairs to swap.
                 random_idx = rng.choice(CONTROL_LEN,
