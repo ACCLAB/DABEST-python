@@ -10,6 +10,7 @@ import pandas as pd
 from scipy.stats import norm
 from scipy.stats import randint
 
+
 # %% ../nbs/API/dabest_object.ipynb 6
 class Dabest(object):
 
@@ -84,7 +85,7 @@ class Dabest(object):
         # Check if this is a 2x2 ANOVA case and x & y are valid columns
         # Create experiment_label and x1_level
         if self.__delta2:
-            # TODO Wrap the errors in a separate function
+            # TODO Wrap the errors in a separate function called check_errors()
             if self.__proportional:
                 err0 = "`proportional` and `delta` cannot be True at the same time."
                 raise ValueError(err0)
@@ -254,7 +255,7 @@ class Dabest(object):
                 err = "{} is not a column in `data`. ".format(id_col)
                 raise IndexError(err)
 
-        self.compute_effectsize_dfs()
+        self._compute_effectsize_dfs()
 
     def __repr__(self):
         from .__init__ import __version__
@@ -614,7 +615,11 @@ class Dabest(object):
 
         return plot_data
 
-    def compute_effectsize_dfs(self):
+    def _compute_effectsize_dfs(self):
+        '''
+        Function to compute all attributes based on EffectSizeDataFrame.
+        It returns nothing.
+        '''
         from ._effsize_objects import EffectSizeDataFrame
 
         effectsize_df_kwargs = dict(

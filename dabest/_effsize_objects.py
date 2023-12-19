@@ -104,7 +104,7 @@ class TwoGroupsEffectSize(object):
         self.__random_seed = random_seed
         self.__ci = ci
         self.__proportional = proportional
-        self.check_errors(control, test)
+        self._check_errors(control, test)
 
         # Convert to numpy arrays for speed.
         # NaNs are automatically dropped.
@@ -117,18 +117,18 @@ class TwoGroupsEffectSize(object):
         self.__alpha = ci2g._compute_alpha_from_ci(self.__ci)
 
         self.__difference = es.two_group_difference(
-            self.__control, test, self.__is_paired, self.__effect_size
+            self.__control, self.__test, self.__is_paired, self.__effect_size
         )
 
         self.__jackknives = ci2g.compute_meandiff_jackknife(
-            self.__control, test, self.__is_paired, self.__effect_size
+            self.__control, self.__test, self.__is_paired, self.__effect_size
         )
 
         self.__acceleration_value = ci2g._calc_accel(self.__jackknives)
 
         bootstraps = ci2g.compute_bootstrapped_diff(
             self.__control,
-            test,
+            self.__test,
             self.__is_paired,
             self.__effect_size,
             self.__resamples,
@@ -156,7 +156,7 @@ class TwoGroupsEffectSize(object):
             self.__bootstraps, self.__difference
         )
 
-        self.compute_bca_intervals(sorted_bootstraps)
+        self._compute_bca_intervals(sorted_bootstraps)
 
         # Compute percentile intervals.
         pct_idx_low = int((self.__alpha / 2) * self.__resamples)
@@ -166,7 +166,7 @@ class TwoGroupsEffectSize(object):
         self.__pct_low = sorted_bootstraps[pct_idx_low]
         self.__pct_high = sorted_bootstraps[pct_idx_high]
 
-        self.perform_statistical_test()
+        self._perform_statistical_test()
 
     def __repr__(self, show_resample_count=True, define_pval=True, sigfig=3):
         RM_STATUS = {
@@ -230,14 +230,17 @@ class TwoGroupsEffectSize(object):
 
         if show_resample_count and define_pval:
             return "{}\n{}\n\n{}\n{}".format(out, pvalue, bs, pval_def)
-        elif ~show_resample_count and define_pval:
+        elif not show_resample_count and define_pval:
             return "{}\n{}\n\n{}".format(out, pvalue, pval_def)
         elif show_resample_count and ~define_pval:
             return "{}\n{}\n\n{}".format(out, pvalue, bs)
         else:
             return "{}\n{}".format(out, pvalue)
 
-    def check_errors(self, control, test):
+    def _check_errors(self, control, test):
+        '''
+        Function to check configuration errors for the given control and test data.
+        '''
         kosher_es = [a for a in self.__EFFECT_SIZE_DICT.keys()]
         if self.__effect_size not in kosher_es:
             err1 = "The effect size '{}'".format(self.__effect_size)
@@ -260,7 +263,10 @@ class TwoGroupsEffectSize(object):
             )
             raise ValueError(err1)
 
-    def compute_bca_intervals(self, sorted_bootstraps):
+    def _compute_bca_intervals(self, sorted_bootstraps):
+        '''
+        Function to compute the bca intervals given the sorted bootstraps.
+        '''
         from ._stats_tools import confint_2group_diff as ci2g
 
         # Compute BCa intervals.
@@ -293,7 +299,7 @@ class TwoGroupsEffectSize(object):
                 )
 
         else:
-            # TODO improve error handling, separate file
+            # TODO improve error handling, separate file with error messages?
             err1 = "The $lim_type limit of the BCa interval cannot be computed."
             err2 = "It is set to the effect size itself."
             err3 = "All bootstrap values were likely all the same."
@@ -307,7 +313,10 @@ class TwoGroupsEffectSize(object):
                 self.__bca_high = self.__difference
                 warnings.warn(err_temp.substitute(lim_type="upper"), stacklevel=0)
 
-    def perform_statistical_test(self):
+    def _perform_statistical_test(self):
+        '''
+        Function to complete the statistical tests
+        '''
         from ._stats_tools import effsize as es
 
         # Perform statistical tests.
@@ -319,7 +328,7 @@ class TwoGroupsEffectSize(object):
             self.__permutation_count,
         )
 
-        if self.__is_paired and self.__proportional is False:
+        if self.__is_paired and not self.__proportional:
             # Wilcoxon, a non-parametric version of the paired T-test.
             wilcoxon = spstats.wilcoxon(self.__control, self.__test)
             self.__pvalue_wilcoxon = wilcoxon.pvalue
@@ -332,10 +341,6 @@ class TwoGroupsEffectSize(object):
                 )
                 self.__pvalue_paired_students_t = paired_t.pvalue
                 self.__statistic_paired_students_t = paired_t.statistic
-                # TODO dead code
-                standardized_es = es.cohens_d(
-                    self.__control, self.__test, self.__is_paired
-                )
 
         elif self.__is_paired and self.__proportional:
             # for binary paired data, use McNemar's test
@@ -1393,7 +1398,7 @@ class PermutationTest:
         self.__permutations = []
         self.__permutations_var = []
 
-        for i in range(int(permutation_count)):
+        for i in range(int(self.__permutation_count)):
             if is_paired:
                 # Select which control-test pairs to swap.
                 random_idx = rng.choice(CONTROL_LEN,
@@ -1430,11 +1435,11 @@ class PermutationTest:
         self.__permutations = array(self.__permutations)
         self.__permutations_var = array(self.__permutations_var)
 
-        self.pvalue = EXTREME_COUNT / permutation_count
+        self.pvalue = EXTREME_COUNT / self.__permutation_count
 
 
     def __repr__(self):
-        return("{} permutations were taken. The p-value is {}.".format(self.permutation_count, 
+        return("{} permutations were taken. The p-value is {}.".format(self.__permutation_count, 
                                                                       self.pvalue))
 
 
