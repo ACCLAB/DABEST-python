@@ -15,4 +15,4 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e '.[dev]'
-          pytest nbs/tests/
+          pytest nbs/tests/ --mpl --mpl-baseline-path=nbs/tests/baseline_images
