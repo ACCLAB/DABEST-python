@@ -35,7 +35,7 @@ def test_wrong_params_combinations():
 
     assert error_msg in str(excinfo.value)
 
-    error_msg = "`proportional` and `delta` cannot be True at the same time."
+    error_msg = "`proportional` and `delta2` cannot be True at the same time."
     with pytest.raises(ValueError) as excinfo:
         my_data = load(
             dummy_df,
