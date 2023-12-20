@@ -61,7 +61,7 @@ class Dabest(object):
                 err0 = "`proportional` and `mini_meta` cannot be True at the same time."
                 raise ValueError(err0)
             if self.__delta2:
-                err0 = "`delta` and `mini_meta` cannot be True at the same time."
+                err0 = "`delta2` and `mini_meta` cannot be True at the same time."
                 raise ValueError(err0)
 
             # Check if the columns stated are valid
@@ -86,8 +86,12 @@ class Dabest(object):
         # Create experiment_label and x1_level
         if self.__delta2:
             # TODO Wrap the errors in a separate function called check_errors()
+            if x is None:
+                error_msg = "If `delta2` is True. `x` parameter cannot be None. String or list expected"
+                raise ValueError(error_msg)
+                
             if self.__proportional:
-                err0 = "`proportional` and `delta` cannot be True at the same time."
+                err0 = "`proportional` and `delta2` cannot be True at the same time."
                 raise ValueError(err0)
 
             # idx should not be specified
