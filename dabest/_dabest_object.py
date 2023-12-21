@@ -54,124 +54,16 @@ class Dabest(object):
         self.__proportional = proportional
         self.__mini_meta = mini_meta
 
-        # Check if it is a valid mini_meta case
-        if self.__mini_meta:
-            # Only mini_meta calculation but not proportional and delta-delta function
-            if self.__proportional:
-                err0 = "`proportional` and `mini_meta` cannot be True at the same time."
-                raise ValueError(err0)
-            if self.__delta2:
-                err0 = "`delta2` and `mini_meta` cannot be True at the same time."
-                raise ValueError(err0)
-
-            # Check if the columns stated are valid
-            # TODO instead of traversing twice idx you can traverse only once
-            # and break the loop if the condition is not satisfied?
-            # TODO What if the type is not str and not tuple,list? missing raise Error
-            if all([isinstance(i, str) for i in idx]):
-                if len(pd.unique([t for t in idx]).tolist()) != 2:
-                    err0 = "`mini_meta` is True, but `idx` ({})".format(idx)
-                    err1 = "does not contain exactly 2 columns."
-                    raise ValueError(err0 + err1)
-
-            if all([isinstance(i, (tuple, list)) for i in idx]):
-                all_idx_lengths = [len(t) for t in idx]
-                if (array(all_idx_lengths) != 2).any():
-                    err1 = "`mini_meta` is True, but some idx "
-                    err2 = "in {} does not consist only of two groups.".format(idx)
-                    raise ValueError(err1 + err2)
-
-        # TODO can you have True mini_meta and delta2 at the same time?
-        # Check if this is a 2x2 ANOVA case and x & y are valid columns
-        # Create experiment_label and x1_level
-        if self.__delta2:
-            # TODO Wrap the errors in a separate function called check_errors()
-            if x is None:
-                error_msg = "If `delta2` is True. `x` parameter cannot be None. String or list expected"
-                raise ValueError(error_msg)
-                
-            if self.__proportional:
-                err0 = "`proportional` and `delta2` cannot be True at the same time."
-                raise ValueError(err0)
-
-            # idx should not be specified
-            if idx:
-                err0 = "`idx` should not be specified when `delta2` is True.".format(
-                    len(x)
-                )
-                raise ValueError(err0)
-
-            # Check if x is valid
-            # TODO if x is None is fine??
-            if len(x) != 2:
-                err0 = "`delta2` is True but the number of variables indicated by `x` is {}.".format(
-                    len(x)
-                )
-                raise ValueError(err0)
-
-            for i in x:
-                if i not in self.__output_data.columns:
-                    err = "{0} is not a column in `data`. Please check.".format(i)
-                    raise IndexError(err)
-
-            # Check if y is valid
-            if not y:
-                err0 = "`delta2` is True but `y` is not indicated."
-                raise ValueError(err0)
-
-            if y not in self.__output_data.columns:
-                err = "{0} is not a column in `data`. Please check.".format(y)
-                raise IndexError(err)
-
-            # Check if experiment is valid
-            if experiment not in self.__output_data.columns:
-                err = "{0} is not a column in `data`. Please check.".format(experiment)
-                raise IndexError(err)
-
-            # Check if experiment_label is valid and create experiment when needed
-            if experiment_label:
-                if len(experiment_label) != 2:
-                    err0 = "`experiment_label` does not have a length of 2."
-                    raise ValueError(err0)
-
-                for i in experiment_label:
-                    if i not in self.__output_data[experiment].unique():
-                        err = "{0} is not an element in the column `{1}` of `data`. Please check.".format(
-                            i, experiment
-                        )
-                        raise IndexError(err)
-            else:
-                experiment_label = self.__output_data[experiment].unique()
-
-            # Check if x1_level is valid
-            if x1_level:
-                if len(x1_level) != 2:
-                    err0 = "`x1_level` does not have a length of 2."
-                    raise ValueError(err0)
-
-                for i in x1_level:
-                    if i not in self.__output_data[x[0]].unique():
-                        err = "{0} is not an element in the column `{1}` of `data`. Please check.".format(
-                            i, experiment
-                        )
-                        raise IndexError(err)
-
-            else:
-                x1_level = self.__output_data[x[0]].unique()
-
-        # TODO what if experiment is None?
-        elif experiment:
-            experiment_label = self.__output_data[experiment].unique()
-            x1_level = self.__output_data[x[0]].unique()
-        self.__experiment_label = experiment_label
-        self.__x1_level = x1_level
+        # after this call the attributes self.__experiment_label and self.__x1_level are updated
+        self._check_errors(x, y, idx, experiment, experiment_label, x1_level)
+        
 
         # create new x & idx and record the second variable if this is a valid 2x2 ANOVA case
         if idx is None and x is not None and y is not None:
             # Add a length check for unique values in the first element in list x,
             # if the length is greater than 2, force delta2 to be False
             # Should be removed if delta2 for situations other than 2x2 is supported
-            if len(self.__output_data[x[0]].unique()) > 2 and x1_level is None:
+            if len(self.__output_data[x[0]].unique()) > 2 and self.__x1_level is None:
                 self.__delta2 = False
                 # stop the loop if delta2 is False
 
@@ -188,9 +80,9 @@ class Dabest(object):
 
             # create idx and record the first and second x variable
             idx = []
-            for i in list(map(lambda x: str(x), experiment_label)):
+            for i in list(map(lambda x: str(x), self.__experiment_label)):
                 temp = []
-                for j in list(map(lambda x: str(x), x1_level)):
+                for j in list(map(lambda x: str(x), self.__x1_level)):
                     temp.append(j + " " + i)
                 idx.append(temp)
 
@@ -532,6 +424,122 @@ class Dabest(object):
         Returns the all plot groups, as indicated via the `idx` keyword.
         """
         return self.__all_plot_groups
+
+    def _check_errors(self, x, y, idx, experiment, experiment_label, x1_level):
+        '''
+        Function to check some input parameters and combinations between them.
+        At the end of this function these two class attributes are updated
+                self.__experiment_label and self.__x1_level
+        '''
+        # Check if it is a valid mini_meta case
+        if self.__mini_meta:
+            # Only mini_meta calculation but not proportional and delta-delta function
+            if self.__proportional:
+                err0 = "`proportional` and `mini_meta` cannot be True at the same time."
+                raise ValueError(err0)
+            if self.__delta2:
+                err0 = "`delta2` and `mini_meta` cannot be True at the same time."
+                raise ValueError(err0)
+
+            # Check if the columns stated are valid
+            # TODO instead of traversing twice idx you can traverse only once
+            # and break the loop if the condition is not satisfied?
+            # TODO What if the type is not str and not tuple,list? missing raise Error
+            if all([isinstance(i, str) for i in idx]):
+                if len(pd.unique([t for t in idx]).tolist()) != 2:
+                    err0 = "`mini_meta` is True, but `idx` ({})".format(idx)
+                    err1 = "does not contain exactly 2 columns."
+                    raise ValueError(err0 + err1)
+
+            if all([isinstance(i, (tuple, list)) for i in idx]):
+                all_idx_lengths = [len(t) for t in idx]
+                if (array(all_idx_lengths) != 2).any():
+                    err1 = "`mini_meta` is True, but some idx "
+                    err2 = "in {} does not consist only of two groups.".format(idx)
+                    raise ValueError(err1 + err2)
+
+        # TODO can you have True mini_meta and delta2 at the same time?
+        # Check if this is a 2x2 ANOVA case and x & y are valid columns
+        # Create experiment_label and x1_level
+        if self.__delta2:
+            if x is None:
+                error_msg = "If `delta2` is True. `x` parameter cannot be None. String or list expected"
+                raise ValueError(error_msg)
+                
+            if self.__proportional:
+                err0 = "`proportional` and `delta2` cannot be True at the same time."
+                raise ValueError(err0)
+
+            # idx should not be specified
+            if idx:
+                err0 = "`idx` should not be specified when `delta2` is True.".format(
+                    len(x)
+                )
+                raise ValueError(err0)
+
+            # Check if x is valid
+            if len(x) != 2:
+                err0 = "`delta2` is True but the number of variables indicated by `x` is {}.".format(
+                    len(x)
+                )
+                raise ValueError(err0)
+
+            for i in x:
+                if i not in self.__output_data.columns:
+                    err = "{0} is not a column in `data`. Please check.".format(i)
+                    raise IndexError(err)
+
+            # Check if y is valid
+            if not y:
+                err0 = "`delta2` is True but `y` is not indicated."
+                raise ValueError(err0)
+
+            if y not in self.__output_data.columns:
+                err = "{0} is not a column in `data`. Please check.".format(y)
+                raise IndexError(err)
+
+            # Check if experiment is valid
+            if experiment not in self.__output_data.columns:
+                err = "{0} is not a column in `data`. Please check.".format(experiment)
+                raise IndexError(err)
+
+            # Check if experiment_label is valid and create experiment when needed
+            if experiment_label:
+                if len(experiment_label) != 2:
+                    err0 = "`experiment_label` does not have a length of 2."
+                    raise ValueError(err0)
+
+                for i in experiment_label:
+                    if i not in self.__output_data[experiment].unique():
+                        err = "{0} is not an element in the column `{1}` of `data`. Please check.".format(
+                            i, experiment
+                        )
+                        raise IndexError(err)
+            else:
+                experiment_label = self.__output_data[experiment].unique()
+
+            # Check if x1_level is valid
+            if x1_level:
+                if len(x1_level) != 2:
+                    err0 = "`x1_level` does not have a length of 2."
+                    raise ValueError(err0)
+
+                for i in x1_level:
+                    if i not in self.__output_data[x[0]].unique():
+                        err = "{0} is not an element in the column `{1}` of `data`. Please check.".format(
+                            i, experiment
+                        )
+                        raise IndexError(err)
+
+            else:
+                x1_level = self.__output_data[x[0]].unique()
+
+        # TODO what if experiment is None?
+        elif experiment:
+            experiment_label = self.__output_data[experiment].unique()
+            x1_level = self.__output_data[x[0]].unique()
+        self.__experiment_label = experiment_label
+        self.__x1_level = x1_level
 
     def _get_plot_data(self, x, y, all_plot_groups):
         """
