@@ -44,6 +44,9 @@ def get_swarm_spans(coll):
     Given a matplotlib Collection, will obtain the x and y spans
     for the collection. Will return None if this fails.
     """
+    if coll is None:
+        raise ValueError("The collection `coll` parameter cannot be None")
+
     x, y = np.array(coll.get_offsets()).T
     try:
         return x.min(), x.max(), y.min(), y.max()
@@ -233,7 +236,6 @@ def normalize_dict(nested_dict, target):
     for key, value in nested_dict.items():
         if isinstance(value, dict):
             for subkey in value.keys():
-                # value[subkey] = target[subkey]['right']
                 if subkey in val.keys():
                     if val[subkey] != 0:
                         # Address the problem when one of the label have zero value
@@ -248,6 +250,12 @@ def normalize_dict(nested_dict, target):
 
 
 def width_determine(labels, data, pos="left"):
+    if labels is None:
+        raise ValueError("The `labels` parameter cannot be None")
+
+    if data is None:
+        raise ValueError("The `data` parameter cannot be None")
+    
     widths_norm = defaultdict()
     for i, label in enumerate(labels):
         myD = {}
@@ -513,16 +521,12 @@ def single_sankey(
     if sankey and strip_on:
         for leftLabel, rightLabel in itertools.product(leftLabels, rightLabels):
             labelColor = leftLabel
+            
             if rightColor:
                 labelColor = rightLabel
-            if (
-                len(
-                    dataFrame[
-                        (dataFrame.left == leftLabel) & (dataFrame.right == rightLabel)
-                    ]
-                )
-                > 0
-            ):
+            
+            if len(dataFrame[(dataFrame.left == leftLabel) & 
+                        (dataFrame.right == rightLabel)]) > 0:
                 # Create array of y values for each strip, half at left value,
                 # half at right, convolve
                 ys_d = np.array(
@@ -531,18 +535,11 @@ def single_sankey(
                 )
                 ys_d = np.convolve(ys_d, 0.05 * np.ones(20), mode="valid")
                 ys_d = np.convolve(ys_d, 0.05 * np.ones(20), mode="valid")
-                ys_u = np.array(
-                    50
-                    * [
-                        leftWidths_norm[leftLabel]["bottom"]
-                        + ns_l_norm[leftLabel][rightLabel]
-                    ]
-                    + 50
-                    * [
-                        rightWidths_norm[rightLabel]["bottom"]
-                        + ns_r_norm[leftLabel][rightLabel]
-                    ]
-                )
+                # to remove the array wrapping behaviour of black
+                # fmt: off
+                ys_u = np.array(50 * [leftWidths_norm[leftLabel]['bottom'] + ns_l_norm[leftLabel][rightLabel]] + \
+                    50 * [rightWidths_norm[rightLabel]['bottom'] + ns_r_norm[leftLabel][rightLabel]])
+                # fmt: on
                 ys_u = np.convolve(ys_u, 0.05 * np.ones(20), mode="valid")
                 ys_u = np.convolve(ys_u, 0.05 * np.ones(20), mode="valid")
 
