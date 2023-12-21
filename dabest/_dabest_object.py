@@ -246,7 +246,7 @@ class Dabest(object):
             err = "You have only specified `x`. Please also specify `y`."
             raise ValueError(err)
 
-        self.__plot_data = self.get_plot_data(x, y, all_plot_groups)
+        self.__plot_data = self._get_plot_data(x, y, all_plot_groups)
         self.__all_plot_groups = all_plot_groups
 
         # Check if `id_col` is valid
@@ -533,7 +533,7 @@ class Dabest(object):
         """
         return self.__all_plot_groups
 
-    def get_plot_data(self, x, y, all_plot_groups):
+    def _get_plot_data(self, x, y, all_plot_groups):
         """
         Function to prepare some attributes for plotting
         """
