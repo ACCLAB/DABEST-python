@@ -54,3 +54,12 @@ df_test_treatment1 = df_test[df_test["Experiment"] == "Treatment1"]
 df_test_treatment1 = df_test_treatment1.pivot(
     index="ID", columns="Time", values="Heart Rate"
 )
+
+dabest_default_kwargs = dict(
+    ci=95,
+    resamples=5000,
+    random_seed=12345,
+    idx=None,
+    proportional=False,
+    mini_meta=False,
+)

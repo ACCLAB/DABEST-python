@@ -13,3 +13,19 @@ df_mini_meta = pd.DataFrame(
     {"Rep1_Yes": rep1_yes, "Rep1_No": rep1_no, "Rep2_Yes": rep2_yes, "Rep2_No": rep2_no}
 )
 N = 6  # Size of each group
+
+# kwargs for Dabest class init.
+dabest_default_kwargs = dict(
+    x=None,
+    y=None,
+    ci=95,
+    resamples=5000,
+    random_seed=12345,
+    proportional=False,
+    delta2=False,
+    experiment=None,
+    experiment_label=None,
+    x1_level=None,
+    paired=None,
+    id_col=None,
+)
