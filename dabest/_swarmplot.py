@@ -21,6 +21,7 @@ class SwarmPlot:
         zorder: int,
         size: int = 20,
         side: str = "center",
+        jitter: int = 75,
         **kwargs,
     ):
         """
@@ -37,6 +38,7 @@ class SwarmPlot:
         - zorder (int): The z-order for drawing the swarm plot wrt other matplotlib drawings.
         - dot_size (int, optional): The size of the markers in the swarm plot. Default is 20.
         - side (str, optional): The side on which points are swarmed ("center", "left", or "right"). Default is "center".
+        - jitter (int, optional): Determines the distance between points. Default is 1.
         - **kwargs: Additional keyword arguments to be passed to the scatter plot.
 
         Returns:
@@ -48,14 +50,12 @@ class SwarmPlot:
         self.__order = order  # TODO: if None, generate our own?
         self.__hue = hue
         self.__zorder = zorder
-        self.__size = size*6.5
+        self.__size = size * 4
         self.__side = side
 
         if hue is None:
-            self.__colour_col = self.__x
             self.__palette = palette
         else:
-            self.__colour_col = hue
             self.__palette = ListedColormap([rgb for rgb in palette.values()])
 
         # Check validity of input params
@@ -79,7 +79,7 @@ class SwarmPlot:
 
         x_min = min(x_vals)
         x_max = max(x_vals)
-        ax.set_xlim(left=x_min-0.5, right=x_max+0.5)
+        ax.set_xlim(left=x_min - 0.5, right=x_max + 0.5)
 
         y_range = max(y_vals) - min(y_vals)
         y_min = min(y_vals) - 0.05 * y_range
@@ -91,12 +91,17 @@ class SwarmPlot:
         h = (ax.get_position().ymax - ax.get_position().ymin) * figh
         ax_xspan = ax.get_xlim()[1] - ax.get_xlim()[0]
         ax_yspan = ax.get_ylim()[1] - ax.get_ylim()[0]
-        self.__ax = ax
 
-        gsize = math.sqrt(self.__size) * 1.0 / 80 * ax_xspan * 1.0 / (w * 0.8)
-        dsize = math.sqrt(self.__size) * 1.0 / 80 * ax_yspan * 1.0 / (h * 0.8)
+        # increases jitter distance based on number of swarms that is being drawn
+        jitter = jitter * (1 + 0.05 * (math.log(ax_xspan)))
+
+        gsize = (
+            math.sqrt(self.__size) * 1.0 / (75 / jitter) * ax_xspan * 1.0 / (w * 0.8)
+        )
+        dsize = (
+            math.sqrt(self.__size) * 1.0 / (75 / jitter) * ax_yspan * 1.0 / (h * 0.8)
+        )
         ### END OF BOX
-
         self.__gsize = gsize
         self.__dsize = dsize
 
@@ -177,7 +182,12 @@ class SwarmPlot:
         return points_data["x"] * gsize
 
     def _adjust_gutter_points(
-        self, points_data: pd.DataFrame, is_drop_gutter: bool, gutter_limit: int, value_column: str
+        self,
+        points_data: pd.DataFrame,
+        x_position: int,
+        is_drop_gutter: bool,
+        gutter_limit: int,
+        value_column: str,
     ) -> pd.DataFrame:
         """
         Adjust points that hit the gutters or drop them based on the provided conditions.
@@ -189,29 +199,26 @@ class SwarmPlot:
         Returns:
         pd.DataFrame: Adjusted DataFrame with x-position modifications.
         """
-        x_position = 0
         if self.__side == "center":
             gutter_limit = gutter_limit / 2
-        for _, group_i in points_data.groupby(self.__x):
-            hit_gutter = abs(group_i[value_column]) >= x_position + gutter_limit
-            total_num_of_points = group_i.shape[0]
-            num_of_points_hit_gutter = group_i[hit_gutter].shape[0]
-            if any(hit_gutter):
-                if is_drop_gutter:
-                    # Drop points that hit gutter
-                    group_i.drop(group_i[hit_gutter].index.to_list(), inplace=True)
-                    err1 = f"""
-                        {num_of_points_hit_gutter/total_num_of_points:.1%} of the points cannot be placed.
-                        You might want to decrease the size of the markers.
-                        """
-                    warnings.warn(err1)
-                else:
-                    for i in group_i[hit_gutter].index:
-                        group_i.loc[i, value_column] = np.sign(group_i.loc[i, value_column]) * (
-                            x_position + gutter_limit
-                        )
-            points_data = pd.concat([points_data, group_i])
-            x_position = x_position + 1
+
+        hit_gutter = abs(points_data[value_column] - x_position) >= gutter_limit
+        total_num_of_points = points_data.shape[0]
+        num_of_points_hit_gutter = points_data[hit_gutter].shape[0]
+        if any(hit_gutter):
+            if is_drop_gutter:
+                # Drop points that hit gutter
+                points_data.drop(points_data[hit_gutter].index.to_list(), inplace=True)
+                err1 = f"""
+                    {num_of_points_hit_gutter/total_num_of_points:.1%} of the points cannot be placed.
+                    You might want to decrease the size of the markers.
+                    """
+                warnings.warn(err1)
+            else:
+                for i in points_data[hit_gutter].index:
+                    points_data.loc[i, value_column] = np.sign(
+                        points_data.loc[i, value_column]
+                    ) * (x_position + gutter_limit)
 
         return points_data
 
@@ -237,12 +244,19 @@ class SwarmPlot:
             x_new = []
             values_i_y = values_i[self.__y]
             x_offset = self._swarm(
-                values=values_i_y, gsize=self.__gsize, dsize=self.__dsize, side=self.__side
+                values=values_i_y,
+                gsize=self.__gsize,
+                dsize=self.__dsize,
+                side=self.__side,
             )
             x_new = [x_position + offset for offset in x_offset]
             values_i["x_new"] = x_new
-            values_i = self._adjust_gutter_points(values_i, is_drop_gutter, gutter_limit, "x_new")
+            values_i = self._adjust_gutter_points(
+                values_i, x_position, is_drop_gutter, gutter_limit, "x_new"
+            )
             if self.__hue is not None:
+                # TODO: edit this part to work for delta2
+                # pseudocode solution: make sure that colour is based on an order being given
                 _, index = np.unique(values_i[self.__hue], return_inverse=True)
                 ax.scatter(
                     values_i["x_new"],
@@ -251,7 +265,7 @@ class SwarmPlot:
                     c=index,
                     cmap=self.__palette,
                     zorder=self.__zorder,
-                    **kwargs,                    
+                    **kwargs,
                 )
             else:
                 ax.scatter(
