@@ -46,15 +46,15 @@ class SwarmPlot:
         self.__x = x
         self.__y = y
         self.__order = order  # if None, generate our own?
-        self.__palette = ListedColormap([rgb for rgb in palette.values()])
+        self.__palette = palette
         self.__zorder = zorder
         self.__size = size*6.5
         self.__side = side
 
         if hue is None:
-            self.__hue = self.__x
+            self.__colour_col = self.__x
         else:
-            self.__hue = hue
+            self.__colour_col = hue
 
         # Check validity of input params
         self._check_errors()
@@ -97,9 +97,6 @@ class SwarmPlot:
 
         self.__gsize = gsize
         self.__dsize = dsize
-
-    def return_palette(self) -> List[Tuple[float]]:
-        return self.__palette
 
     def _check_errors(self) -> None:
         # TODO: Check validity of params
@@ -178,7 +175,7 @@ class SwarmPlot:
         return points_data["x"] * gsize
 
     def _adjust_gutter_points(
-        self, is_drop_gutter: bool, gutter_limit: int
+        self, points_data: pd.DataFrame, is_drop_gutter: bool, gutter_limit: int, value_column: str
     ) -> pd.DataFrame:
         """
         Adjust points that hit the gutters or drop them based on the provided conditions.
@@ -190,12 +187,11 @@ class SwarmPlot:
         Returns:
         pd.DataFrame: Adjusted DataFrame with x-position modifications.
         """
-        points_data = pd.DataFrame()
         x_position = 0
         if self.__side == "center":
             gutter_limit = gutter_limit / 2
-        for _, group_i in self.__data_copy.groupby(self.__x):
-            hit_gutter = abs(group_i["xnew"]) >= x_position + gutter_limit
+        for _, group_i in points_data.groupby(self.__x):
+            hit_gutter = abs(group_i[value_column]) >= x_position + gutter_limit
             total_num_of_points = group_i.shape[0]
             num_of_points_hit_gutter = group_i[hit_gutter].shape[0]
             if any(hit_gutter):
@@ -209,9 +205,9 @@ class SwarmPlot:
                     warnings.warn(err1)
                 else:
                     for i in group_i[hit_gutter].index:
-                        group_i.loc[i, "xnew"] = np.sign(group_i.loc[i, "xnew"]) * (
+                        group_i.loc[i, value_column] = np.sign(group_i.loc[i, value_column]) * (
                             x_position + gutter_limit
-                        )  # TODO: change 6 to variable gutter value
+                        )
             points_data = pd.concat([points_data, group_i])
             x_position = x_position + 1
 
@@ -236,33 +232,26 @@ class SwarmPlot:
         x_final = []
         x_position = 0
         x_tick_tabels = []
-        for label_i, group_i in self.__data_copy.groupby(self.__x):
-            values = group_i[self.__y]
+        for group_i, values_i in self.__data_copy.groupby(self.__x):
+            x_new = []
+            values_i_y = values_i[self.__y]
             x_offset = self._swarm(
-                values=values, gsize=self.__gsize, dsize=self.__dsize, side=self.__side
+                values=values_i_y, gsize=self.__gsize, dsize=self.__dsize, side=self.__side
             )
-            x_final.extend([x_position + offset for offset in x_offset])
+            x_new = [x_position + offset for offset in x_offset]
+            values_i["x_new"] = x_new
+            values_i = self._adjust_gutter_points(values_i, is_drop_gutter, gutter_limit, "x_new")
+            ax.scatter(
+                values_i["x_new"],
+                values_i[self.__y],
+                s=self.__size,
+                c=self.__palette[group_i],
+                zorder=self.__zorder,
+                **kwargs,
+            )
             x_position = x_position + 1
-            x_tick_tabels.extend([label_i])
-
-        self.__data_copy["xnew"] = x_final
-
-        points_data = self._adjust_gutter_points(
-            is_drop_gutter=is_drop_gutter, gutter_limit=gutter_limit
-        )
-
-        if self.__hue is not None:
-            _, index = np.unique(points_data[self.__hue], return_inverse=True)
-
-        ax.scatter(
-            points_data["xnew"],
-            points_data[self.__y],
-            s=self.__size,
-            c=index,
-            cmap=self.__palette,
-            zorder=self.__zorder,
-            **kwargs,
-        )
+            x_tick_tabels.extend([group_i])
+            
         ax.get_xaxis().set_ticks(np.arange(x_position))
         ax.get_xaxis().set_ticklabels(x_tick_tabels)
 
