@@ -663,10 +663,12 @@ class TwoGroupsEffectSize(object):
 
     @property
     def permutations_var(self):
+         # TODO Missing docstring
         return self.__PermutationTest_result.permutations_var
 
     @property
     def proportional_difference(self):
+         # TODO Missing docstring
         try:
             return self.__proportional_difference
         except AttributeError:

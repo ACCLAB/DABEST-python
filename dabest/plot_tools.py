@@ -51,6 +51,7 @@ def get_swarm_spans(coll):
     try:
         return x.min(), x.max(), y.min(), y.max()
     except ValueError:
+        # TODO at least you should show a message
         return None
 
 
@@ -139,6 +140,8 @@ def error_bar(
         central_measures = medians
         lows = lower_quartiles
         highs = upper_quartiles
+    else:
+        raise ValueError("Only accepted values for type are ['mean_sd', 'median_quartiles']")
 
     n_groups = len(central_measures)
 
@@ -223,6 +226,7 @@ def check_data_matches_labels(
 
 
 def normalize_dict(nested_dict, target):
+    # TODO missing docstring 
     val = {}
     for key in nested_dict.keys():
         val[key] = np.sum(
@@ -238,7 +242,7 @@ def normalize_dict(nested_dict, target):
             for subkey in value.keys():
                 if subkey in val.keys():
                     if val[subkey] != 0:
-                        # Address the problem when one of the label have zero value
+                        # Address the problem when one of the labels has zero value
                         value[subkey] = (
                             value[subkey] * target[subkey]["right"] / val[subkey]
                         )
@@ -250,6 +254,7 @@ def normalize_dict(nested_dict, target):
 
 
 def width_determine(labels, data, pos="left"):
+    # TODO missing docstring
     if labels is None:
         raise ValueError("The `labels` parameter cannot be None")
 
@@ -284,11 +289,11 @@ def single_sankey(
     left: np.array,  # data on the left of the diagram
     right: np.array,  # data on the right of the diagram, len(left) == len(right)
     xpos: float = 0,  # the starting point on the x-axis
-    leftWeight: np.array = None,  # weights for the left labels, if None, all weights are 1
-    rightWeight: np.array = None,  # weights for the right labels, if None, all weights are corresponding leftWeight
+    left_weight: np.array = None,  # weights for the left labels, if None, all weights are 1
+    right_weight: np.array = None,  # weights for the right labels, if None, all weights are corresponding left_weight
     colorDict: dict = None,  # input format: {'label': 'color'}
-    leftLabels: list = None,  # labels for the left side of the diagram. The diagram will be sorted by these labels.
-    rightLabels: list = None,  # labels for the right side of the diagram. The diagram will be sorted by these labels.
+    left_labels: list = None,  # labels for the left side of the diagram. The diagram will be sorted by these labels.
+    right_labels: list = None,  # labels for the right side of the diagram. The diagram will be sorted by these labels.
     ax=None,  # matplotlib axes to be drawn on
     flow: bool = True,  # if True, draw the sankey in a flow, else draw 1 vs 1 Sankey diagram for each group comparison
     sankey: bool = True,  # if True, draw the sankey diagram, else draw barplot
@@ -298,7 +303,7 @@ def single_sankey(
     error_bar_on: bool = True,  # if True, draw error bar for each group comparison
     strip_on: bool = True,  # if True, draw strip for each group comparison
     one_sankey: bool = False,  # if True, only draw one sankey diagram
-    rightColor: bool = False,  # if True, each strip of the diagram will be colored according to the corresponding left labels
+    right_color: bool = False,  # if True, each strip of the diagram will be colored according to the corresponding left labels
     align: bool = "center",  # if 'center', the diagram will be centered on each xtick,  if 'edge', the diagram will be aligned with the left edge of each xtick
 ):
     """
@@ -312,19 +317,19 @@ def single_sankey(
     if ax is None:
         ax = plt.gca()
 
-    if leftWeight is None:
-        leftWeight = []
-    if rightWeight is None:
-        rightWeight = []
-    if leftLabels is None:
-        leftLabels = []
-    if rightLabels is None:
-        rightLabels = []
+    if left_weight is None:
+        left_weight = []
+    if right_weight is None:
+        right_weight = []
+    if left_labels is None:
+        left_labels = []
+    if right_labels is None:
+        right_labels = []
     # Check weights
-    if len(leftWeight) == 0:
-        leftWeight = np.ones(len(left))
-    if len(rightWeight) == 0:
-        rightWeight = np.ones(len(right))
+    if len(left_weight) == 0:
+        left_weight = np.ones(len(left))
+    if len(right_weight) == 0:
+        right_weight = np.ones(len(right))
 
     # Create Dataframe
     if isinstance(left, pd.Series):
@@ -335,8 +340,8 @@ def single_sankey(
         {
             "left": left,
             "right": right,
-            "leftWeight": leftWeight,
-            "rightWeight": rightWeight,
+            "left_weight": left_weight,
+            "right_weight": right_weight,
         },
         index=range(len(left)),
     )
@@ -350,16 +355,16 @@ def single_sankey(
     ).unique()
 
     # Identify left labels
-    if len(leftLabels) == 0:
-        leftLabels = pd.Series(np.sort(dataFrame.left.unique())[::-1]).unique()
+    if len(left_labels) == 0:
+        left_labels = pd.Series(np.sort(dataFrame.left.unique())[::-1]).unique()
     else:
-        check_data_matches_labels(leftLabels, dataFrame["left"], "left")
+        check_data_matches_labels(left_labels, dataFrame["left"], "left")
 
     # Identify right labels
-    if len(rightLabels) == 0:
-        rightLabels = pd.Series(np.sort(dataFrame.right.unique())[::-1]).unique()
+    if len(right_labels) == 0:
+        right_labels = pd.Series(np.sort(dataFrame.right.unique())[::-1]).unique()
     else:
-        check_data_matches_labels(leftLabels, dataFrame["right"], "right")
+        check_data_matches_labels(left_labels, dataFrame["right"], "right")
 
     # If no colorDict given, make one
     if colorDict is None:
@@ -400,82 +405,82 @@ def single_sankey(
     # Determine positions of left label patches and total widths
     # We also want the height of the graph to be 1
     leftWidths_norm = defaultdict()
-    for i, leftLabel in enumerate(leftLabels):
+    for i, left_label in enumerate(left_labels):
         myD = {}
         myD["left"] = (
-            dataFrame[dataFrame.left == leftLabel].leftWeight.sum()
-            / dataFrame.leftWeight.sum()
+            dataFrame[dataFrame.left == left_label].left_weight.sum()
+            / dataFrame.left_weight.sum()
         )
-        if len(leftLabels) != 1:
+        if len(left_labels) != 1:
             if i == 0:
                 myD["bottom"] = 0
                 myD["left"] -= 0.01
                 myD["top"] = myD["left"]
-            elif i == len(leftLabels) - 1:
+            elif i == len(left_labels) - 1:
                 myD["left"] -= 0.01
                 myD["bottom"] = 1 - myD["left"]
                 myD["top"] = 1
             else:
                 myD["left"] -= 0.02
-                myD["bottom"] = leftWidths_norm[leftLabels[i - 1]]["top"] + 0.02
+                myD["bottom"] = leftWidths_norm[left_labels[i - 1]]["top"] + 0.02
                 myD["top"] = myD["bottom"] + myD["left"]
                 topEdge = myD["top"]
         else:
             myD["bottom"] = 0
             myD["top"] = 1
             myD["left"] = 1
-        leftWidths_norm[leftLabel] = myD
+        leftWidths_norm[left_label] = myD
 
     # Determine positions of right label patches and total widths
     rightWidths_norm = defaultdict()
-    for i, rightLabel in enumerate(rightLabels):
+    for i, right_label in enumerate(right_labels):
         myD = {}
         myD["right"] = (
-            dataFrame[dataFrame.right == rightLabel].rightWeight.sum()
-            / dataFrame.rightWeight.sum()
+            dataFrame[dataFrame.right == right_label].right_weight.sum()
+            / dataFrame.right_weight.sum()
         )
-        if len(rightLabels) != 1:
+        if len(right_labels) != 1:
             if i == 0:
                 myD["bottom"] = 0
                 myD["right"] -= 0.01
                 myD["top"] = myD["right"]
-            elif i == len(rightLabels) - 1:
+            elif i == len(right_labels) - 1:
                 myD["right"] -= 0.01
                 myD["bottom"] = 1 - myD["right"]
                 myD["top"] = 1
             else:
                 myD["right"] -= 0.02
-                myD["bottom"] = rightWidths_norm[rightLabels[i - 1]]["top"] + 0.02
+                myD["bottom"] = rightWidths_norm[right_labelsss[i - 1]]["top"] + 0.02
                 myD["top"] = myD["bottom"] + myD["right"]
                 topEdge = myD["top"]
         else:
             myD["bottom"] = 0
             myD["top"] = 1
             myD["right"] = 1
-        rightWidths_norm[rightLabel] = myD
+        rightWidths_norm[right_label] = myD
 
     # Total width of the graph
     xMax = width
 
     # Plot vertical bars for each label
-    for leftLabel in leftLabels:
+    for left_label in left_labels:
         ax.fill_between(
             [leftpos + (-(bar_width) * xMax * 0.5), leftpos + (bar_width * xMax * 0.5)],
-            2 * [leftWidths_norm[leftLabel]["bottom"]],
-            2 * [leftWidths_norm[leftLabel]["top"]],
-            color=colorDict[leftLabel],
+            2 * [leftWidths_norm[left_label]["bottom"]],
+            2 * [leftWidths_norm[left_label]["top"]],
+            color=colorDict[left_label],
             alpha=0.99,
         )
-    if (flow == False and sankey == True) or one_sankey:
-        for rightLabel in rightLabels:
+    if (not flow and sankey) or one_sankey:
+        for right_label in right_labels:
             ax.fill_between(
                 [
                     xMax + leftpos + (-bar_width * xMax * 0.5),
                     leftpos + xMax + (bar_width * xMax * 0.5),
                 ],
-                2 * [rightWidths_norm[rightLabel]["bottom"]],
-                2 * [rightWidths_norm[rightLabel]["top"]],
-                color=colorDict[rightLabel],
+                2 * [rightWidths_norm[right_label]["bottom"]],
+                2 * [rightWidths_norm[right_label]["top"]],
+                color=colorDict[right_label],
                 alpha=0.99,
             )
 
@@ -497,21 +502,21 @@ def single_sankey(
     ns_r = defaultdict()
     ns_l_norm = defaultdict()
     ns_r_norm = defaultdict()
-    for leftLabel in leftLabels:
+    for left_label in left_labels:
         leftDict = {}
         rightDict = {}
-        for rightLabel in rightLabels:
-            leftDict[rightLabel] = dataFrame[
-                (dataFrame.left == leftLabel) & (dataFrame.right == rightLabel)
-            ].leftWeight.sum()
+        for right_label in right_labels:
+            leftDict[right_label] = dataFrame[
+                (dataFrame.left == left_label) & (dataFrame.right == right_label)
+            ].left_weight.sum()
 
-            rightDict[rightLabel] = dataFrame[
-                (dataFrame.left == leftLabel) & (dataFrame.right == rightLabel)
-            ].rightWeight.sum()
-        factorleft = leftWidths_norm[leftLabel]["left"] / sum(leftDict.values())
+            rightDict[right_label] = dataFrame[
+                (dataFrame.left == left_label) & (dataFrame.right == right_label)
+            ].right_weight.sum()
+        factorleft = leftWidths_norm[left_label]["left"] / sum(leftDict.values())
         leftDict_norm = {k: v * factorleft for k, v in leftDict.items()}
-        ns_l_norm[leftLabel] = leftDict_norm
-        ns_r[leftLabel] = rightDict
+        ns_l_norm[left_label] = leftDict_norm
+        ns_r[left_label] = rightDict
 
     # ns_r should be using a different way of normalization to fit the right side
     # It is normalized using the value with the same key in each sub-dictionary
@@ -519,34 +524,34 @@ def single_sankey(
 
     # Plot strips
     if sankey and strip_on:
-        for leftLabel, rightLabel in itertools.product(leftLabels, rightLabels):
-            labelColor = leftLabel
+        for left_label, right_label in itertools.product(left_labels, right_labels):
+            labelColor = left_label
             
-            if rightColor:
-                labelColor = rightLabel
+            if right_color:
+                labelColor = right_label
             
-            if len(dataFrame[(dataFrame.left == leftLabel) & 
-                        (dataFrame.right == rightLabel)]) > 0:
+            if len(dataFrame[(dataFrame.left == left_label) & 
+                        (dataFrame.right == right_label)]) > 0:
                 # Create array of y values for each strip, half at left value,
                 # half at right, convolve
                 ys_d = np.array(
-                    50 * [leftWidths_norm[leftLabel]["bottom"]]
-                    + 50 * [rightWidths_norm[rightLabel]["bottom"]]
+                    50 * [leftWidths_norm[left_label]["bottom"]]
+                    + 50 * [rightWidths_norm[right_label]["bottom"]]
                 )
                 ys_d = np.convolve(ys_d, 0.05 * np.ones(20), mode="valid")
                 ys_d = np.convolve(ys_d, 0.05 * np.ones(20), mode="valid")
                 # to remove the array wrapping behaviour of black
                 # fmt: off
-                ys_u = np.array(50 * [leftWidths_norm[leftLabel]['bottom'] + ns_l_norm[leftLabel][rightLabel]] + \
-                    50 * [rightWidths_norm[rightLabel]['bottom'] + ns_r_norm[leftLabel][rightLabel]])
+                ys_u = np.array(50 * [leftWidths_norm[left_label]['bottom'] + ns_l_norm[left_label][right_label]] + \
+                    50 * [rightWidths_norm[right_label]['bottom'] + ns_r_norm[left_label][right_label]])
                 # fmt: on
                 ys_u = np.convolve(ys_u, 0.05 * np.ones(20), mode="valid")
                 ys_u = np.convolve(ys_u, 0.05 * np.ones(20), mode="valid")
 
                 # Update bottom edges at each label so next strip starts at the right place
-                leftWidths_norm[leftLabel]["bottom"] += ns_l_norm[leftLabel][rightLabel]
-                rightWidths_norm[rightLabel]["bottom"] += ns_r_norm[leftLabel][
-                    rightLabel
+                leftWidths_norm[left_label]["bottom"] += ns_l_norm[left_label][right_label]
+                rightWidths_norm[right_label]["bottom"] += ns_r_norm[left_label][
+                    right_label
                 ]
                 ax.fill_between(
                     np.linspace(
@@ -568,15 +573,15 @@ def sankeydiag(
     yvar: str,  # y column to be plotted.
     left_idx: str,  # the value in column xvar that is on the left side of each sankey diagram
     right_idx: str,  # the value in column xvar that is on the right side of each sankey diagram, if len(left_idx) == 1, it will be broadcasted to the same length as right_idx, otherwise it should have the same length as right_idx
-    leftLabels: list = None,  # labels for the left side of the diagram. The diagram will be sorted by these labels.
-    rightLabels: list = None,  # labels for the right side of the diagram. The diagram will be sorted by these labels.
+    left_labels: list = None,  # labels for the left side of the diagram. The diagram will be sorted by these labels.
+    right_labels: list = None,  # labels for the right side of the diagram. The diagram will be sorted by these labels.
     palette: str | dict = None,
     ax=None,  # matplotlib axes to be drawn on
     flow: bool = True,  # if True, draw the sankey in a flow, else draw 1 vs 1 Sankey diagram for each group comparison
     sankey: bool = True,  # if True, draw the sankey diagram, else draw barplot
     one_sankey: bool = False,  # determined by the driver function on plotter.py, if True, draw the sankey diagram across the whole raw data axes
     width: float = 0.4,  # the width of each sankey diagram
-    rightColor: bool = False,  # if True, each strip of the diagram will be colored according to the corresponding left labels
+    right_color: bool = False,  # if True, each strip of the diagram will be colored according to the corresponding left labels
     align: str = "center",  # the alignment of each sankey diagram, can be 'center' or 'left'
     alpha: float = 0.65,  # the transparency of each strip
     **kwargs,
@@ -598,8 +603,8 @@ def sankeydiag(
     if "alpha" in kwargs:
         alpha = kwargs["alpha"]
 
-    if "rightColor" in kwargs:
-        rightColor = kwargs["rightColor"]
+    if "right_color" in kwargs:
+        right_color = kwargs["right_color"]
 
     if "bar_width" in kwargs:
         bar_width = kwargs["bar_width"]
@@ -654,8 +659,8 @@ def sankeydiag(
 
     draw_idx = list(zip(broadcasted_left, right_idx))
     for i, (left, right) in enumerate(draw_idx):
-        if one_sankey == False:
-            if flow == True:
+        if not one_sankey:
+            if flow:
                 width = 1
                 align = "edge"
                 sankey = (
@@ -672,10 +677,10 @@ def sankeydiag(
                 ax=ax,
                 colorDict=plot_palette,
                 width=width,
-                leftLabels=leftLabels,
-                rightLabels=rightLabels,
+                left_labels=left_labels,
+                right_labels=right_labels,
                 strip_on=strip_on[i],
-                rightColor=rightColor,
+                right_color=right_color,
                 bar_width=bar_width,
                 sankey=sankey,
                 error_bar_on=error_bar_on,
@@ -687,7 +692,7 @@ def sankeydiag(
         else:
             xpos = 0
             width = 1
-            if sankey == False:
+            if not sankey:
                 bar_width = 0.5
             single_sankey(
                 data[data[xvar] == left][yvar],
@@ -696,9 +701,9 @@ def sankeydiag(
                 ax=ax,
                 colorDict=plot_palette,
                 width=width,
-                leftLabels=leftLabels,
-                rightLabels=rightLabels,
-                rightColor=rightColor,
+                left_labels=left_labels,
+                right_labels=right_labels,
+                right_color=right_color,
                 bar_width=bar_width,
                 sankey=sankey,
                 one_sankey=one_sankey,

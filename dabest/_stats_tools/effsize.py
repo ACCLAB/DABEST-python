@@ -64,7 +64,7 @@ def two_group_difference(control:list|tuple|np.ndarray, #Accepts lists, tuples, 
     if effect_size == "mean_diff":
         return func_difference(control, test, np.mean, is_paired)
 
-    elif effect_size == "median_diff":
+    if effect_size == "median_diff":
         mes1 = "Using median as the statistic in bootstrapping may " + \
                 "result in a biased estimate and cause problems with " + \
                 "BCa confidence intervals. Consider using a different statistic, such as the mean.\n"
@@ -74,21 +74,21 @@ def two_group_difference(control:list|tuple|np.ndarray, #Accepts lists, tuples, 
         warnings.warn(message=mes1+mes2, category=UserWarning)
         return func_difference(control, test, np.median, is_paired)
 
-    elif effect_size == "cohens_d":
+    if effect_size == "cohens_d":
         return cohens_d(control, test, is_paired)
 
-    elif effect_size == "cohens_h":
+    if effect_size == "cohens_h":
         return cohens_h(control, test)
 
-    elif effect_size == "hedges_g" or effect_size == "delta_g":
+    if effect_size == "hedges_g" or effect_size == "delta_g":
         return hedges_g(control, test, is_paired)
 
-    elif effect_size == "cliffs_delta":
+    if effect_size == "cliffs_delta":
         if is_paired:
             err1 = "`is_paired` is not None; therefore Cliff's delta is not defined."
             raise ValueError(err1)
-        else:
-            return cliffs_delta(control, test)
+        
+        return cliffs_delta(control, test)
 
 
 # %% ../../nbs/API/effsize.ipynb 6
@@ -129,10 +129,10 @@ def func_difference(control:list|tuple|np.ndarray, # NaNs are automatically disc
 
         return func(test - control)
 
-    else:
-        control = control[~np.isnan(control)]
-        test    = test[~np.isnan(test)]
-        return func(test) - func(control)
+    
+    control = control[~np.isnan(control)]
+    test    = test[~np.isnan(test)]
+    return func(test) - func(control)
 
 
 # %% ../../nbs/API/effsize.ipynb 7
@@ -209,7 +209,8 @@ def cohens_d(control:list|tuple|np.ndarray,
     else:
         M = np.mean(test) - np.mean(control)
         divisor = pooled_sd
-        
+    
+    # TODO what if divisor = 0?
     return M / divisor
 
 # %% ../../nbs/API/effsize.ipynb 8
@@ -289,7 +290,6 @@ def cliffs_delta(control:list|tuple|np.ndarray,
     See [here](https://en.wikipedia.org/wiki/Effect_size#Effect_size_for_ordinal_data)
     """
 
-
     # Convert to numpy arrays for speed.
     # NaNs are automatically dropped.
     if ~isinstance(control, np.ndarray):
@@ -306,7 +306,6 @@ def cliffs_delta(control:list|tuple|np.ndarray,
     # Note the order of the control and test arrays.
     U, _ = mannwhitneyu(t, c, alternative='two-sided')
     cliffs_delta = ((2 * U) / (control_n * test_n)) - 1
-
 
     return cliffs_delta
 
@@ -332,7 +331,7 @@ def _compute_standardizers(control, test):
     # For paired standardized mean difference.
     average = np.sqrt((control_var + test_var) / 2)
 
-    return pooled, average # indent if you implement above code chunk.
+    return pooled, average 
 
 # %% ../../nbs/API/effsize.ipynb 12
 def _compute_hedges_correction_factor(n1, 
