@@ -45,16 +45,18 @@ class SwarmPlot:
         self.__data = data
         self.__x = x
         self.__y = y
-        self.__order = order  # if None, generate our own?
-        self.__palette = palette
+        self.__order = order  # TODO: if None, generate our own?
+        self.__hue = hue
         self.__zorder = zorder
         self.__size = size*6.5
         self.__side = side
 
         if hue is None:
             self.__colour_col = self.__x
+            self.__palette = palette
         else:
             self.__colour_col = hue
+            self.__palette = ListedColormap([rgb for rgb in palette.values()])
 
         # Check validity of input params
         self._check_errors()
@@ -229,7 +231,6 @@ class SwarmPlot:
         """
         # Group by x, then repeat swarm creation algo on the various group in _, groups of the pd.groupby.generic.DataFrameGroupBy object
         # Assumptions are that self.__data is already sorted according to self.__order
-        x_final = []
         x_position = 0
         x_tick_tabels = []
         for group_i, values_i in self.__data_copy.groupby(self.__x):
@@ -241,17 +242,29 @@ class SwarmPlot:
             x_new = [x_position + offset for offset in x_offset]
             values_i["x_new"] = x_new
             values_i = self._adjust_gutter_points(values_i, is_drop_gutter, gutter_limit, "x_new")
-            ax.scatter(
-                values_i["x_new"],
-                values_i[self.__y],
-                s=self.__size,
-                c=self.__palette[group_i],
-                zorder=self.__zorder,
-                **kwargs,
-            )
+            if self.__hue is not None:
+                _, index = np.unique(values_i[self.__hue], return_inverse=True)
+                ax.scatter(
+                    values_i["x_new"],
+                    values_i[self.__y],
+                    s=self.__size,
+                    c=index,
+                    cmap=self.__palette,
+                    zorder=self.__zorder,
+                    **kwargs,                    
+                )
+            else:
+                ax.scatter(
+                    values_i["x_new"],
+                    values_i[self.__y],
+                    s=self.__size,
+                    c=self.__palette[group_i],
+                    zorder=self.__zorder,
+                    **kwargs,
+                )
             x_position = x_position + 1
             x_tick_tabels.extend([group_i])
-            
+
         ax.get_xaxis().set_ticks(np.arange(x_position))
         ax.get_xaxis().set_ticklabels(x_tick_tabels)
 
