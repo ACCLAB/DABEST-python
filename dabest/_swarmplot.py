@@ -22,7 +22,6 @@ class SwarmPlot:
         size: int = 20,
         side: str = "center",
         jitter: int = 75,
-        **kwargs,
     ):
         """
         Initialize a SwarmPlot instance.
@@ -39,7 +38,6 @@ class SwarmPlot:
         - dot_size (int, optional): The size of the markers in the swarm plot. Default is 20.
         - side (str, optional): The side on which points are swarmed ("center", "left", or "right"). Default is "center".
         - jitter (int, optional): Determines the distance between points. Default is 1.
-        - **kwargs: Additional keyword arguments to be passed to the scatter plot.
 
         Returns:
         None
@@ -52,11 +50,7 @@ class SwarmPlot:
         self.__zorder = zorder
         self.__size = size * 4
         self.__side = side
-
-        if hue is None:
-            self.__palette = palette
-        else:
-            self.__palette = ListedColormap([rgb for rgb in palette.values()])
+        self.__palette = palette
 
         # Check validity of input params
         self._check_errors()
@@ -255,15 +249,20 @@ class SwarmPlot:
                 values_i, x_position, is_drop_gutter, gutter_limit, "x_new"
             )
             if self.__hue is not None:
-                # TODO: edit this part to work for delta2
-                # pseudocode solution: make sure that colour is based on an order being given
-                _, index = np.unique(values_i[self.__hue], return_inverse=True)
+                # TODO: to check if delta2 adjusting level works and changes the colours accordingly
+                cmap_values, index = np.unique(
+                    values_i[self.__hue], return_inverse=True
+                )
+                cmap = []
+                for cmap_group_i in cmap_values:
+                    cmap.append(self.__palette[cmap_group_i])
+                cmap = ListedColormap(cmap)
                 ax.scatter(
                     values_i["x_new"],
                     values_i[self.__y],
                     s=self.__size,
                     c=index,
-                    cmap=self.__palette,
+                    cmap=cmap,
                     zorder=self.__zorder,
                     **kwargs,
                 )
