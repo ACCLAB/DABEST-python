@@ -78,5 +78,4 @@ d = { 'settings': { 'branch': 'master',
                                    'dabest.plot_tools.sankeydiag': ('API/plot_tools.html#sankeydiag', 'dabest/plot_tools.py'),
                                    'dabest.plot_tools.single_sankey': ('API/plot_tools.html#single_sankey', 'dabest/plot_tools.py'),
                                    'dabest.plot_tools.width_determine': ('API/plot_tools.html#width_determine', 'dabest/plot_tools.py')},
-            'dabest.plotter': { 'dabest.plotter.EffectSizeDataFramePlotter': ( 'API/plotter.html#effectsizedataframeplotter',
-                                                                               'dabest/plotter.py')}}}
+            'dabest.plotter': {'dabest.plotter.effectsize_df_plotter': ('API/plotter.html#effectsize_df_plotter', 'dabest/plotter.py')}}}
