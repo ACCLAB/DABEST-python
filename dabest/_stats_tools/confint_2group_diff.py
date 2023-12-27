@@ -98,6 +98,7 @@ def compute_meandiff_jackknife(x0, x1, is_paired, effect_size):
 
 
 def _calc_accel(jack_dist):
+    # TODO Missing docstring
     jack_mean = npmean(jack_dist)
 
     numer = npsum((jack_mean - jack_dist) ** 3)
@@ -283,17 +284,17 @@ def compute_interval_limits(bias, acceleration, n_boots, ci=95):
     if isnan(low) or isnan(high):
         return low, high
 
-    else:
-        low = int(norm.cdf(low) * n_boots)
-        high = int(norm.cdf(high) * n_boots)
-        return low, high
+    
+    low = int(norm.cdf(low) * n_boots)
+    high = int(norm.cdf(high) * n_boots)
+    return low, high
 
 
 def calculate_group_var(control_var, control_N, test_var, test_N):
     return control_var / control_N + test_var / test_N
 
 
-def calculate_weighted_delta(group_var, differences, resamples):
+def calculate_weighted_delta(group_var, differences):
     """
     Compute the weighted deltas.
     """

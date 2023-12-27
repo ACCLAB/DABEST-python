@@ -409,8 +409,7 @@ class MiniMetaDelta(object):
         # weights
         self.__bootstraps_weighted_delta = ci2g.calculate_weighted_delta(
                                                           self.__group_var, 
-                                                          self.__bootstraps, 
-                                                          self.__resamples)
+                                                          self.__bootstraps)
 
         # Compute the weighted average mean difference based on the raw data
         self.__difference = es.weighted_delta(self.__effsizedf["difference"],

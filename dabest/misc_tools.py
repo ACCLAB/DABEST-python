@@ -33,6 +33,7 @@ def unpack_and_add(l, c):
 
 
 def print_greeting():
+    # TODO missing docstring
     from .__init__ import __version__
 
     line1 = "DABEST v{}".format(__version__)

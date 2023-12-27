@@ -88,10 +88,10 @@ class bootstrap:
             # check x2 is not None:
             if x2 is None:
                 raise ValueError("Please specify x2.")
-            else:
-                x2 = pd.Series(x2).dropna()
-                if len(x1) != len(x2):
-                    raise ValueError("x1 and x2 are not the same length.")
+            
+            x2 = pd.Series(x2).dropna()
+            if len(x1) != len(x2):
+                raise ValueError("x1 and x2 are not the same length.")
 
         if (x2 is None) or (paired is not None):
             if x2 is None:
@@ -102,7 +102,6 @@ class bootstrap:
                 ttest_2_paired = "NIL"
                 wilcoxonresult = "NIL"
 
-            # elif paired is not None:
             else:  # only two options to enter here
                 diff = True
                 tx = x2 - x1
@@ -234,18 +233,18 @@ def jackknife_indexes(data):
     return (np.delete(base, i) for i in base)
 
 
-def bca(data, alphas, statarray, stat_function, ostat, reps):
+def bca(data, alphas, stat_array, stat_function, ostat, reps):
     """
     Subroutine called to calculate the BCa statistics.
     Borrowed heavily from scikits.bootstrap code.
     """
 
     # The bias correction value.
-    z0 = norm.ppf((1.0 * np.sum(statarray < ostat, axis=0)) / reps)
+    z0 = norm.ppf((1.0 * np.sum(stat_array < ostat, axis=0)) / reps)
 
     # Statistics of the jackknife distribution
-    jackindexes = jackknife_indexes(data[0])
-    jstat = [stat_function(*(x[indexes] for x in data)) for indexes in jackindexes]
+    jack_indexes = jackknife_indexes(data[0])
+    jstat = [stat_function(*(x[indexes] for x in data)) for indexes in jack_indexes]
     jmean = np.mean(jstat, axis=0)
 
     # Acceleration value

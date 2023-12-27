@@ -128,6 +128,7 @@ def prop_dataset(
         elif not set(group_names) == set(group.keys()):
             # Check if the group_names provided is the same as the keys of the dict
             raise ValueError("group_names must be the same as the keys of the dict.")
+        
         # Check if the values in the dict are numeric
         if not all(
             [isinstance(group[name], (list, tuple, np.ndarray)) for name in group_names]
@@ -135,6 +136,7 @@ def prop_dataset(
             raise ValueError(
                 "group must be a dict of lists, tuples, or numpy ndarrays of numeric types."
             )
+        
         # Check if the values in the dict only have two elements under each parent key
         if not all([len(group[name]) == 2 for name in group_names]):
             raise ValueError("Each parent key should have only two elements.")
@@ -143,6 +145,7 @@ def prop_dataset(
     else:
         if group_names is None:
             raise ValueError("group_names must be provided if group is not a dict.")
+        
         # Check if the length of group is two times of the length of group_names
         if not len(group) == 2 * len(group_names):
             raise ValueError(

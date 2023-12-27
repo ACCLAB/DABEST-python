@@ -663,10 +663,12 @@ class TwoGroupsEffectSize(object):
 
     @property
     def permutations_var(self):
+         # TODO Missing docstring
         return self.__PermutationTest_result.permutations_var
 
     @property
     def proportional_difference(self):
+         # TODO Missing docstring
         try:
             return self.__proportional_difference
         except AttributeError:
@@ -1139,7 +1141,7 @@ class EffectSizeDataFrame(object):
 
         """
 
-        from .plotter import EffectSizeDataFramePlotter
+        from .plotter import effectsize_df_plotter
 
         if hasattr(self, "results") is False:
             self.__pre_calc()
@@ -1156,7 +1158,7 @@ class EffectSizeDataFrame(object):
         all_kwargs = locals()
         del all_kwargs["self"]
 
-        out = EffectSizeDataFramePlotter(self, **all_kwargs)
+        out = effectsize_df_plotter(self, **all_kwargs)
 
         return out
 
