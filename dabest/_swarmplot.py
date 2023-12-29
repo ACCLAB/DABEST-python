@@ -13,18 +13,58 @@ def swarmplot(
     data: pd.DataFrame,
     x: str,
     y: str,
-    ax: axes.Subplot,
-    order: Iterable[str],
-    hue: str,
-    palette: Dict[str, Tuple[float, float, float]],
-    zorder: int,
-    size: int = 20,
+    ax: axes.Subplot = None,
+    order: List = None,
+    hue: str = None,
+    palette: Union[Iterable, str] = "black",
+    zorder: Union[int, float] = 1,
+    size: Union[int, float] = 20,
     side: str = "center",
-    jitter: int = 75,
+    jitter: Union[int, float] = 75,
     is_drop_gutter: bool = True,
     gutter_limit: int = 0.5,
     **kwargs,
 ):
+    """
+    API to plot a swarm plot.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input data as a pandas DataFrame.
+    x : str
+        The column in the DataFrame to be used as the x-axis.
+    y : str
+        The column in the DataFrame to be used as the y-axis.
+    ax : axes.Subplot
+        Matplotlib AxesSubplot object for which the plot would be drawn on. Default is None.
+    order : List
+        The order in which x-axis categories should be displayed. Default is None.
+    hue : str
+        The column in the DataFrame that determines the grouping for colour.
+        If None (by default), it assumes that it is being grouped by x.
+    palette : Union[Iterable, str]
+        The color palette to be used for plotting. Default is "black".
+    zorder : int | float
+        The z-order for drawing the swarm plot wrt other matplotlib drawings. Default is 1.
+    dot_size : int | float
+        The size of the markers in the swarm plot. Default is 20.
+    side : str
+        The side on which points are swarmed ("center", "left", or "right"). Default is "center".
+    jitter : int | float
+        Determines the distance between points. Default is 1.
+    is_drop_gutter : bool
+        If True, drop points that hit the gutters; otherwise, readjust them.
+    gutter_limit : int | float
+        The limit for points hitting the gutters.
+    **kwargs:
+        Additional keyword arguments to be passed to the swarm plot.
+
+    Returns
+    -------
+    axes.Subplot
+        Matplotlib AxesSubplot object for which the swarm plot has been drawn on.
+    """
     s = SwarmPlot(data, x, y, ax, order, hue, palette, zorder, size, side, jitter)
     ax = s.plot(is_drop_gutter, gutter_limit, ax, **kwargs)
     return ax
@@ -36,10 +76,10 @@ class SwarmPlot:
         data: pd.DataFrame,
         x: str,
         y: str,
-        ax: axes.Subplot,
-        order: Iterable[str] = None,
+        ax: axes.Subplot = None,
+        order: List = None,
         hue: str = None,
-        palette: Dict[str, Tuple[float, float, float]] or str = "black",
+        palette: Union[Iterable, str] = "black",
         zorder: Union[int, float] = 1,
         size: Union[int, float] = 20,
         side: str = "center",
@@ -48,20 +88,34 @@ class SwarmPlot:
         """
         Initialize a SwarmPlot instance.
 
-        Parameters:
-        - data (pd.DataFrame): The input data as a pandas DataFrame.
-        - x (str): The column in the DataFrame to be used as the x-axis.
-        - y (str): The column in the DataFrame to be used as the y-axis.
-        - ax (plt.figure): The matplotlib figure object to which the swarm plot will be added.
-        - order (List[str]): The order in which x-axis categories should be displayed.
-        - hue (str): The column in the DataFrame that determines the grouping for colour, if none, it assumes that it is being grouped by x.
-        - palette (Tuple[str]): The color palette to be used for plotting.
-        - zorder (int): The z-order for drawing the swarm plot wrt other matplotlib drawings.
-        - dot_size (int, optional): The size of the markers in the swarm plot. Default is 20.
-        - side (str, optional): The side on which points are swarmed ("center", "left", or "right"). Default is "center".
-        - jitter (int, optional): Determines the distance between points. Default is 1.
+        Parameters
+        ----------
+        data : pd.DataFrame
+            The input data as a pandas DataFrame.
+        x : str
+            The column in the DataFrame to be used as the x-axis.
+        y : str
+            The column in the DataFrame to be used as the y-axis.
+        ax : axes.Subplot
+            Matplotlib AxesSubplot object for which the plot would be drawn on. Default is None.
+        order : List
+            The order in which x-axis categories should be displayed. Default is None.
+        hue : str
+            The column in the DataFrame that determines the grouping for colour.
+            If None (by default), it assumes that it is being grouped by x.
+        palette : Union[Iterable, str]
+            The color palette to be used for plotting. Default is "black".
+        zorder : int | float
+            The z-order for drawing the swarm plot wrt other matplotlib drawings. Default is 1.
+        dot_size : int | float
+            The size of the markers in the swarm plot. Default is 20.
+        side : str
+            The side on which points are swarmed ("center", "left", or "right"). Default is "center".
+        jitter : int | float
+            Determines the distance between points. Default is 1.
 
-        Returns:
+        Returns
+        -------
         None
         """
         self.__x = x
@@ -119,7 +173,7 @@ class SwarmPlot:
         ax_xspan = ax.get_xlim()[1] - ax.get_xlim()[0]
         ax_yspan = ax.get_ylim()[1] - ax.get_ylim()[0]
 
-        # increases jitter distance based on number of swarms that is being drawn
+        # increases jitter distance based on number of swarms that is going to be drawn
         jitter = jitter * (1 + 0.05 * (math.log(ax_xspan)))
 
         gsize = (
@@ -137,8 +191,8 @@ class SwarmPlot:
         """
         Check the validity of input parameters. Raises exceptions if detected.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         data : pd.Dataframe
             Input data used for generation of the swarmplot.
         ax : axes.Subplot
@@ -148,7 +202,8 @@ class SwarmPlot:
         side: str
             The side on which points are swarmed ("center", "left", or "right"). Default is "center".
 
-        Returns:
+        Returns
+        -------
         None
         """
         # Type Enforcement
@@ -210,7 +265,19 @@ class SwarmPlot:
 
         return None
 
-    def _generate_order(self) -> List[str]:
+    def _generate_order(self) -> List:
+        """
+        Generates order value that determines the order in which x-axis categories should be displayed.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        List:
+            contains the order in which the x-axis categories should be displayed.
+        """
         if isinstance(self.__data[self.__x].dtype, pd.CategoricalDtype):
             order = pd.unique(self.__data[self.__x]).categories.tolist()
         else:
@@ -218,7 +285,25 @@ class SwarmPlot:
 
         return order
 
-    def _format_palette(self, palette) -> Dict:
+    def _format_palette(self, palette: Union[str, List, Tuple]) -> Dict:
+        """
+        Reformats palette into appropriate Dictionary form for swarm plot
+
+        Parameters
+        ----------
+        palette: str | List | Tuple
+            The color palette used for the swarm plot. Conventions are based on Matplotlib color
+            specifications.
+
+            Could be a singular string value - in which case, would be a singular color name.
+            In the case of a List or Tuple - it could be a Sequence of color names or RGB(A) values.
+
+        Returns
+        -------
+        Dict:
+            Dictionary mapping unique groupings in the color column (of the data used for the swarm plot)
+            to a color name (str) or a RGB(A) value (Tuple[float, float, float] | List[float, float, float]).
+        """
         reformatted_palette = dict()
         groups = pd.unique(self.__data[self.__color_col]).tolist()
 
@@ -239,19 +324,36 @@ class SwarmPlot:
 
         return reformatted_palette
 
-    def _swarm(self, values: int, gsize: int, dsize: int, side: str) -> pd.Series:
+    def _swarm(
+        self, values: Iterable[float], gsize: float, dsize: float, side: str
+    ) -> pd.Series:
         """
         Perform the swarm algorithm to position points without overlap.
 
-        Parameters:
-        - values (int): The values to be plotted.
-        - gsize (int): The size of the gap between points.
-        - dsize (int): The size of the markers.
-        - side (str): The side on which points are swarmed ("center", "left", or "right").
+        Parameters
+        ----------
+        values : Iterable[int | float]
+            The values to be plotted.
+        gsize : int | float
+            The size of the gap between points.
+        dsize : int | float
+            The size of the markers.
+        side : str
+            The side on which points are swarmed ("center", "left", or "right").
 
-        Returns:
-        pd.Series: The x-offset values for the swarm plot.
+        Returns
+        -------
+        pd.Series:
+            The x-offset values for the swarm plot.
         """
+        # Input validation checks
+        if not isinstance(values, Iterable):
+            raise ValueError("`values` must be an Iterable")
+        if not isinstance(gsize, (int, float)):
+            raise ValueError("`gsize` must be a scalar or float.")
+        if not isinstance(dsize, (int, float)):
+            raise ValueError("`dsize` must be a scalar or float.")
+
         # sorting algorithm based off of: https://github.com/mgymrek/pybeeswarm
         points_data = pd.DataFrame(
             {"y": [yval * 1.0 / dsize for yval in values], "x": [0] * len(values)}
@@ -306,20 +408,31 @@ class SwarmPlot:
     def _adjust_gutter_points(
         self,
         points_data: pd.DataFrame,
-        x_position: int,
+        x_position: float,
         is_drop_gutter: bool,
-        gutter_limit: int,
+        gutter_limit: float,
         value_column: str,
     ) -> pd.DataFrame:
         """
         Adjust points that hit the gutters or drop them based on the provided conditions.
 
-        Parameters:
-        - is_drop_gutter (bool): If True, drop points that hit the gutters; otherwise, readjust them.
-        - gutter_limit (int): The limit for points hitting the gutters.
+        Parameters
+        ----------
+        points_data: pd.DataFrame
+            Data containing coordinates of points for the swarm plot.
+        x_position: int | float
+            X-coordinate of the center of a singular swarm group of the swarm plot
+        is_drop_gutter : bool
+            If True, drop points that hit the gutters; otherwise, readjust them.
+        gutter_limit : int | float
+            The limit for points hitting the gutters.
+        value_column : str
+            column in points_data that contains the coordinates for the points in the axis against the gutter
 
-        Returns:
-        pd.DataFrame: Adjusted DataFrame with x-position modifications.
+        Returns
+        -------
+        pd.DataFrame:
+            DataFrame with adjusted points based on the gutter limit.
         """
         if self.__side == "center":
             gutter_limit = gutter_limit / 2
@@ -345,24 +458,26 @@ class SwarmPlot:
         return points_data
 
     def plot(
-        self, is_drop_gutter: bool, gutter_limit: int, ax: axes.Subplot, **kwargs
+        self, is_drop_gutter: bool, gutter_limit: float, ax: axes.Subplot, **kwargs
     ) -> axes.Subplot:
         """
         Generate a swarm plot.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         is_drop_gutter : bool
             If True, drop points that hit the gutters; otherwise, readjust them.
-        gutter_limit : int
+        gutter_limit : int | float
             The limit for points hitting the gutters.
         ax : axes.Subplot
             The matplotlib figure object to which the swarm plot will be added.
         **kwargs:
             Additional keyword arguments to be passed to the scatter plot.
 
-        Returns:
-        plt.figure: The matplotlib figure containing the swarm plot.
+        Returns
+        -------
+        axes.Subplot:
+            The matplotlib figure containing the swarm plot.
         """
         # Validation Checks
         if not isinstance(is_drop_gutter, bool):
