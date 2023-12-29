@@ -2,10 +2,32 @@ import math
 import warnings
 import pandas as pd
 import numpy as np
+import matplotlib.axes._subplots as axes
 import matplotlib.pyplot as plt
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Iterable, Union
 from pandas.api.types import CategoricalDtype
 from matplotlib.colors import ListedColormap
+
+
+def swarmplot(
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    ax: axes.Subplot,
+    order: Iterable[str],
+    hue: str,
+    palette: Dict[str, Tuple[float, float, float]],
+    zorder: int,
+    size: int = 20,
+    side: str = "center",
+    jitter: int = 75,
+    is_drop_gutter: bool = True,
+    gutter_limit: int = 0.5,
+    **kwargs,
+):
+    s = SwarmPlot(data, x, y, ax, order, hue, palette, zorder, size, side, jitter)
+    ax = s.plot(is_drop_gutter, gutter_limit, ax, **kwargs)
+    return ax
 
 
 class SwarmPlot:
@@ -14,14 +36,14 @@ class SwarmPlot:
         data: pd.DataFrame,
         x: str,
         y: str,
-        ax: plt.figure,
-        order: List[str],
-        hue: str,
-        palette: Dict[str, Tuple[float, float, float]],
-        zorder: int,
-        size: int = 20,
+        ax: axes.Subplot,
+        order: Iterable[str] = None,
+        hue: str = None,
+        palette: Dict[str, Tuple[float, float, float]] or str = "black",
+        zorder: Union[int, float] = 1,
+        size: Union[int, float] = 20,
         side: str = "center",
-        jitter: int = 75,
+        jitter: Union[int, float] = 75,
     ):
         """
         Initialize a SwarmPlot instance.
@@ -32,7 +54,7 @@ class SwarmPlot:
         - y (str): The column in the DataFrame to be used as the y-axis.
         - ax (plt.figure): The matplotlib figure object to which the swarm plot will be added.
         - order (List[str]): The order in which x-axis categories should be displayed.
-        - hue (str): The column in the DataFrame that determines the grouping for colour.
+        - hue (str): The column in the DataFrame that determines the grouping for colour, if none, it assumes that it is being grouped by x.
         - palette (Tuple[str]): The color palette to be used for plotting.
         - zorder (int): The z-order for drawing the swarm plot wrt other matplotlib drawings.
         - dot_size (int, optional): The size of the markers in the swarm plot. Default is 20.
@@ -42,34 +64,42 @@ class SwarmPlot:
         Returns:
         None
         """
-        self.__data = data
         self.__x = x
         self.__y = y
-        self.__order = order  # TODO: if None, generate our own?
+        self.__order = order
         self.__hue = hue
         self.__zorder = zorder
-        self.__size = size * 4
-        self.__side = side
         self.__palette = palette
+        self.__jitter = jitter
 
-        # Check validity of input params
-        self._check_errors()
+        # Input validation
+        self._check_errors(data, ax, size, side)
 
+        self.__size = size * 4
+        self.__side = side.lower()
+        self.__data = data
+        self.__color_col = self.__x if self.__hue is None else self.__hue
+
+        # Generate default values
+        if order is None:
+            self.__order = self._generate_order()
+        if ax is None:
+            ax = plt.gca()
+
+        # Reformatting
+        if not isinstance(self.__palette, dict):
+            self.__palette = self._format_palette(self.__palette)
         data_copy = data.copy(deep=True)
-        # make x column into CategoricalDType to sort by
-        data_copy[x] = data_copy[x].astype(
-            CategoricalDtype(categories=self.__order, ordered=True)
-        )
+        if not isinstance(self.__data[self.__x].dtype, pd.CategoricalDtype):
+            # make x column into CategoricalDType to sort by
+            data_copy[self.__x] = data_copy[self.__x].astype(
+                CategoricalDtype(categories=self.__order, ordered=True)
+            )
         data_copy.sort_values(by=[self.__x, self.__y], inplace=True)
         self.__data_copy = data_copy
 
-        # TODO: figure out how the boxed up part below works
-        ### START OF BOX
         x_vals = range(len(self.__order))
         y_vals = self.__data_copy[self.__y]
-
-        if ax is None:
-            ax = plt.gca()
 
         x_min = min(x_vals)
         x_max = max(x_vals)
@@ -78,7 +108,10 @@ class SwarmPlot:
         y_range = max(y_vals) - min(y_vals)
         y_min = min(y_vals) - 0.05 * y_range
         y_max = max(y_vals) + 0.05 * y_range
-        ax.set_ylim(bottom=y_min, top=y_max)
+
+        # ylim is set manually to override Axes.autoscale if it hasn't already been scaled at least once
+        if ax.get_autoscaley_on():
+            ax.set_ylim(bottom=y_min, top=y_max)
 
         figw, figh = ax.get_figure().get_size_inches()
         w = (ax.get_position().xmax - ax.get_position().xmin) * figw
@@ -95,22 +128,116 @@ class SwarmPlot:
         dsize = (
             math.sqrt(self.__size) * 1.0 / (75 / jitter) * ax_yspan * 1.0 / (h * 0.8)
         )
-        ### END OF BOX
         self.__gsize = gsize
         self.__dsize = dsize
 
-    def _check_errors(self) -> None:
-        # TODO: Check validity of params
+    def _check_errors(
+        self, data: pd.DataFrame, ax: axes.Subplot, size: Union[int, float], side: str
+    ) -> None:
         """
         Check the validity of input parameters. Raises exceptions if detected.
 
         Parameters:
-        None
+        -----------
+        data : pd.Dataframe
+            Input data used for generation of the swarmplot.
+        ax : axes.Subplot
+            Matplotlib AxesSubplot object for which the plot would be drawn on.
+        size : Union[int, float]
+            scalar value determining size of dots of the swarmplot.
+        side: str
+            The side on which points are swarmed ("center", "left", or "right"). Default is "center".
 
         Returns:
         None
         """
+        # Type Enforcement
+        if not isinstance(data, pd.DataFrame):
+            raise ValueError("`data` must be a Pandas Dataframe.")
+        if not isinstance(ax, axes.Subplot):
+            raise ValueError("`ax` must be a Matplotlib AxesSubplot.")
+        if not isinstance(size, (int, float)):
+            raise ValueError("`size` must be a scalar or float.")
+        if not isinstance(side, str):
+            raise ValueError(
+                "Invalid `side`. Must be one of 'center', 'right', or 'left'."
+            )
+        if not isinstance(self.__x, str):
+            raise ValueError("`x` must be a string.")
+        if not isinstance(self.__y, str):
+            raise ValueError("`y` must be a string.")
+        if not isinstance(self.__zorder, (int, float)):
+            raise ValueError("`zorder` must be a scalar or float.")
+        if not isinstance(self.__jitter, (int, float)):
+            raise ValueError("`jitter` must be a scalar or float.")
+        if not isinstance(self.__palette, (str, dict)):
+            raise ValueError("`palette` must be either a string or a dict.")
+        if self.__hue is not None and not isinstance(self.__hue, str):
+            raise ValueError("`hue` must be either a string or None.")
+        if self.__order is not None and not isinstance(self.__order, Iterable):
+            raise ValueError("`order` must be either an Iterable or None.")
+
+        # More thorough Input Validation Checks
+        if self.__x not in data.columns:
+            err = "{0} is not a column in `data`.".format(self.__x)
+            raise IndexError(err)
+        if self.__y not in data.columns:
+            err = "{0} is not a column in `data`.".format(self.__y)
+            raise IndexError(err)
+        if self.__hue is not None and self.__hue not in data.columns:
+            err = "{0} is not a column in `data`.".format(self.__hue)
+            raise IndexError(err)
+
+        color_col = self.__x if self.__hue is None else self.__hue
+        if self.__order is not None:
+            for group_i in self.__order:
+                if group_i not in pd.unique(data[self.__x]):
+                    err = "{0} in `order` is not in the {1} column of `data`.".format(
+                        group_i, self.__x
+                    )
+                    raise IndexError(err)
+        for group_i in self.__palette.keys():
+            if group_i not in pd.unique(data[color_col]):
+                err = "{0} in `palette` is not in the {1} column of `data`.".format(
+                    group_i, color_col
+                )
+                raise IndexError(err)
+
+        if side.lower() not in ["center", "right", "left"]:
+            raise ValueError(
+                "Invalid `side`. Must be one of 'center', 'right', or 'left'."
+            )
+
         return None
+
+    def _generate_order(self) -> List[str]:
+        if isinstance(self.__data[self.__x].dtype, pd.CategoricalDtype):
+            order = pd.unique(self.__data[self.__x]).categories.tolist()
+        else:
+            order = pd.unique(self.__data[self.__x]).tolist()
+
+        return order
+
+    def _format_palette(self, palette) -> Dict:
+        reformatted_palette = dict()
+        groups = pd.unique(self.__data[self.__color_col]).tolist()
+
+        if isinstance(palette, str):
+            for group_i in groups:
+                reformatted_palette[group_i] = palette
+        if isinstance(palette, (list, tuple)):
+            if len(groups) != len(palette):
+                err = "unique values in {0} column in `data` \
+                    and `palette` do not have the same length. Number of unique values is {1} \
+                    while length of palette is {2}. The assignment of the colours in the \
+                    palette will be cycled".format(
+                    self.__color_col, len(groups), len(palette)
+                )
+                warnings.warn(err)
+            for i, group_i in enumerate(groups):
+                reformatted_palette[group_i] = palette[i % len(palette)]
+
+        return reformatted_palette
 
     def _swarm(self, values: int, gsize: int, dsize: int, side: str) -> pd.Series:
         """
@@ -125,6 +252,7 @@ class SwarmPlot:
         Returns:
         pd.Series: The x-offset values for the swarm plot.
         """
+        # sorting algorithm based off of: https://github.com/mgymrek/pybeeswarm
         points_data = pd.DataFrame(
             {"y": [yval * 1.0 / dsize for yval in values], "x": [0] * len(values)}
         )
@@ -216,20 +344,32 @@ class SwarmPlot:
 
         return points_data
 
-    def swarmplot(
-        self, is_drop_gutter: bool, gutter_limit: int, ax: plt.figure, **kwargs
-    ) -> plt.figure:
+    def plot(
+        self, is_drop_gutter: bool, gutter_limit: int, ax: axes.Subplot, **kwargs
+    ) -> axes.Subplot:
         """
         Generate a swarm plot.
 
         Parameters:
-        - is_drop_gutter (bool): If True, drop points that hit the gutters; otherwise, readjust them.
-        - gutter_limit (int): The limit for points hitting the gutters.
-        - **kwargs: Additional keyword arguments to be passed to the scatter plot.
+        -----------
+        is_drop_gutter : bool
+            If True, drop points that hit the gutters; otherwise, readjust them.
+        gutter_limit : int
+            The limit for points hitting the gutters.
+        ax : axes.Subplot
+            The matplotlib figure object to which the swarm plot will be added.
+        **kwargs:
+            Additional keyword arguments to be passed to the scatter plot.
 
         Returns:
         plt.figure: The matplotlib figure containing the swarm plot.
         """
+        # Validation Checks
+        if not isinstance(is_drop_gutter, bool):
+            raise ValueError("`is_drop_gutter` must be a boolean.")
+        if not isinstance(gutter_limit, (int, float)):
+            raise ValueError("`gutter_limit` must be a scalar or float.")
+
         # Group by x, then repeat swarm creation algo on the various group in _, groups of the pd.groupby.generic.DataFrameGroupBy object
         # Assumptions are that self.__data is already sorted according to self.__order
         x_position = 0
@@ -249,7 +389,6 @@ class SwarmPlot:
                 values_i, x_position, is_drop_gutter, gutter_limit, "x_new"
             )
             if self.__hue is not None:
-                # TODO: to check if delta2 adjusting level works and changes the colours accordingly
                 cmap_values, index = np.unique(
                     values_i[self.__hue], return_inverse=True
                 )
