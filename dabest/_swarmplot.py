@@ -3,7 +3,6 @@ import warnings
 import pandas as pd
 import numpy as np
 import matplotlib.axes._subplots as axes
-import matplotlib.pyplot as plt
 from typing import List, Tuple, Dict, Iterable, Union
 from pandas.api.types import CategoricalDtype
 from matplotlib.colors import ListedColormap
@@ -13,16 +12,16 @@ def swarmplot(
     data: pd.DataFrame,
     x: str,
     y: str,
-    ax: axes.Subplot = None,
+    ax: axes.Subplot,
     order: List = None,
     hue: str = None,
     palette: Union[Iterable, str] = "black",
-    zorder: Union[int, float] = 1,
-    size: Union[int, float] = 20,
+    zorder: float = 1,
+    size: float = 5,
     side: str = "center",
-    jitter: Union[int, float] = 75,
+    jitter: float = 1,
     is_drop_gutter: bool = True,
-    gutter_limit: int = 0.5,
+    gutter_limit: float = 0.5,
     **kwargs,
 ):
     """
@@ -41,7 +40,7 @@ def swarmplot(
     order : List
         The order in which x-axis categories should be displayed. Default is None.
     hue : str
-        The column in the DataFrame that determines the grouping for colour.
+        The column in the DataFrame that determines the grouping for color.
         If None (by default), it assumes that it is being grouped by x.
     palette : Union[Iterable, str]
         The color palette to be used for plotting. Default is "black".
@@ -76,14 +75,14 @@ class SwarmPlot:
         data: pd.DataFrame,
         x: str,
         y: str,
-        ax: axes.Subplot = None,
+        ax: axes.Subplot,
         order: List = None,
         hue: str = None,
         palette: Union[Iterable, str] = "black",
-        zorder: Union[int, float] = 1,
-        size: Union[int, float] = 20,
+        zorder: float = 1,
+        size: float = 5,
         side: str = "center",
-        jitter: Union[int, float] = 75,
+        jitter: float = 1,
     ):
         """
         Initialize a SwarmPlot instance.
@@ -97,11 +96,11 @@ class SwarmPlot:
         y : str
             The column in the DataFrame to be used as the y-axis.
         ax : axes.Subplot
-            Matplotlib AxesSubplot object for which the plot would be drawn on. Default is None.
+            Matplotlib AxesSubplot object for which the plot would be drawn on.
         order : List
             The order in which x-axis categories should be displayed. Default is None.
         hue : str
-            The column in the DataFrame that determines the grouping for colour.
+            The column in the DataFrame that determines the grouping for color.
             If None (by default), it assumes that it is being grouped by x.
         palette : Union[Iterable, str]
             The color palette to be used for plotting. Default is "black".
@@ -137,8 +136,6 @@ class SwarmPlot:
         # Generate default values
         if order is None:
             self.__order = self._generate_order()
-        if ax is None:
-            ax = plt.gca()
 
         # Reformatting
         if not isinstance(self.__palette, dict):
@@ -186,7 +183,7 @@ class SwarmPlot:
         self.__dsize = dsize
 
     def _check_errors(
-        self, data: pd.DataFrame, ax: axes.Subplot, size: Union[int, float], side: str
+        self, data: pd.DataFrame, ax: axes.Subplot, size: float, side: str
     ) -> None:
         """
         Check the validity of input parameters. Raises exceptions if detected.
@@ -197,7 +194,7 @@ class SwarmPlot:
             Input data used for generation of the swarmplot.
         ax : axes.Subplot
             Matplotlib AxesSubplot object for which the plot would be drawn on.
-        size : Union[int, float]
+        size : int | float
             scalar value determining size of dots of the swarmplot.
         side: str
             The side on which points are swarmed ("center", "left", or "right"). Default is "center".
@@ -225,14 +222,14 @@ class SwarmPlot:
             raise ValueError("`zorder` must be a scalar or float.")
         if not isinstance(self.__jitter, (int, float)):
             raise ValueError("`jitter` must be a scalar or float.")
-        if not isinstance(self.__palette, (str, dict)):
-            raise ValueError("`palette` must be either a string or a dict.")
+        if not isinstance(self.__palette, (str, Iterable)):
+            raise ValueError("`palette` must be either a string or an Iterable.")
         if self.__hue is not None and not isinstance(self.__hue, str):
             raise ValueError("`hue` must be either a string or None.")
         if self.__order is not None and not isinstance(self.__order, Iterable):
             raise ValueError("`order` must be either an Iterable or None.")
 
-        # More thorough Input Validation Checks
+        # More thorough input validation checks
         if self.__x not in data.columns:
             err = "{0} is not a column in `data`.".format(self.__x)
             raise IndexError(err)
@@ -247,16 +244,19 @@ class SwarmPlot:
         if self.__order is not None:
             for group_i in self.__order:
                 if group_i not in pd.unique(data[self.__x]):
-                    err = "{0} in `order` is not in the {1} column of `data`.".format(
+                    err = "{0} in `order` is not in the '{1}' column of `data`.".format(
                         group_i, self.__x
                     )
                     raise IndexError(err)
-        for group_i in self.__palette.keys():
-            if group_i not in pd.unique(data[color_col]):
-                err = "{0} in `palette` is not in the {1} column of `data`.".format(
-                    group_i, color_col
-                )
-                raise IndexError(err)
+        if isinstance(self.__palette, dict):
+            for group_i in self.__palette.keys():
+                if group_i not in pd.unique(data[color_col]):
+                    err = (
+                        "{0} in `palette` is not in the '{1}' column of `data`.".format(
+                            group_i, color_col
+                        )
+                    )
+                    raise IndexError(err)
 
         if side.lower() not in ["center", "right", "left"]:
             raise ValueError(
@@ -312,12 +312,12 @@ class SwarmPlot:
                 reformatted_palette[group_i] = palette
         if isinstance(palette, (list, tuple)):
             if len(groups) != len(palette):
-                err = "unique values in {0} column in `data` \
-                    and `palette` do not have the same length. Number of unique values is {1} \
-                    while length of palette is {2}. The assignment of the colours in the \
-                    palette will be cycled".format(
-                    self.__color_col, len(groups), len(palette)
-                )
+                err = (
+                    "unique values in '{0}' column in `data` "
+                    "and `palette` do not have the same length. Number of unique values is {1} "
+                    "while length of palette is {2}. The assignment of the colors in the "
+                    "palette will be cycled."
+                ).format(self.__color_col, len(groups), len(palette))
                 warnings.warn(err)
             for i, group_i in enumerate(groups):
                 reformatted_palette[group_i] = palette[i % len(palette)]
@@ -346,7 +346,7 @@ class SwarmPlot:
         pd.Series:
             The x-offset values for the swarm plot.
         """
-        # Input validation checks
+        # Input validation
         if not isinstance(values, Iterable):
             raise ValueError("`values` must be an Iterable")
         if not isinstance(gsize, (int, float)):
@@ -354,7 +354,7 @@ class SwarmPlot:
         if not isinstance(dsize, (int, float)):
             raise ValueError("`dsize` must be a scalar or float.")
 
-        # sorting algorithm based off of: https://github.com/mgymrek/pybeeswarm
+        # Sorting algorithm based off of: https://github.com/mgymrek/pybeeswarm
         points_data = pd.DataFrame(
             {"y": [yval * 1.0 / dsize for yval in values], "x": [0] * len(values)}
         )
@@ -444,11 +444,11 @@ class SwarmPlot:
             if is_drop_gutter:
                 # Drop points that hit gutter
                 points_data.drop(points_data[hit_gutter].index.to_list(), inplace=True)
-                err1 = f"""
-                    {num_of_points_hit_gutter/total_num_of_points:.1%} of the points cannot be placed.
-                    You might want to decrease the size of the markers.
-                    """
-                warnings.warn(err1)
+                err = (
+                    "{0:.1%} of the points cannot be placed. "
+                    "You might want to decrease the size of the markers."
+                ).format(num_of_points_hit_gutter / total_num_of_points)
+                warnings.warn(err)
             else:
                 for i in points_data[hit_gutter].index:
                     points_data.loc[i, value_column] = np.sign(
@@ -479,15 +479,16 @@ class SwarmPlot:
         axes.Subplot:
             The matplotlib figure containing the swarm plot.
         """
-        # Validation Checks
+        # Input validation
         if not isinstance(is_drop_gutter, bool):
             raise ValueError("`is_drop_gutter` must be a boolean.")
         if not isinstance(gutter_limit, (int, float)):
             raise ValueError("`gutter_limit` must be a scalar or float.")
 
-        # Group by x, then repeat swarm creation algo on the various group in _, groups of the pd.groupby.generic.DataFrameGroupBy object
-        # Assumptions are that self.__data is already sorted according to self.__order
-        x_position = 0
+        # Assumptions are that self.__data_copy is already sorted according to self.__order
+        x_position = (
+            0  # x-coordinate of center of each individual swarm of the swarm plot
+        )
         x_tick_tabels = []
         for group_i, values_i in self.__data_copy.groupby(self.__x):
             x_new = []
@@ -498,12 +499,28 @@ class SwarmPlot:
                 dsize=self.__dsize,
                 side=self.__side,
             )
-            x_new = [x_position + offset for offset in x_offset]
+            x_new = [
+                x_position + offset for offset in x_offset
+            ]  # apply x-offsets based on _swarm algo
             values_i["x_new"] = x_new
             values_i = self._adjust_gutter_points(
                 values_i, x_position, is_drop_gutter, gutter_limit, "x_new"
             )
+            x_tick_tabels.extend([group_i])
+            x_position = x_position + 1
+
+            if values_i.empty:
+                ax.scatter(
+                    values_i["x_new"],
+                    values_i[self.__y],
+                    s=self.__size,
+                    zorder=self.__zorder,
+                    **kwargs,
+                )
+                continue
+
             if self.__hue is not None:
+                # color swarms based on `hue` column
                 cmap_values, index = np.unique(
                     values_i[self.__hue], return_inverse=True
                 )
@@ -521,6 +538,7 @@ class SwarmPlot:
                     **kwargs,
                 )
             else:
+                # color swarms based on `x` column
                 ax.scatter(
                     values_i["x_new"],
                     values_i[self.__y],
@@ -529,8 +547,6 @@ class SwarmPlot:
                     zorder=self.__zorder,
                     **kwargs,
                 )
-            x_position = x_position + 1
-            x_tick_tabels.extend([group_i])
 
         ax.get_xaxis().set_ticks(np.arange(x_position))
         ax.get_xaxis().set_ticklabels(x_tick_tabels)
