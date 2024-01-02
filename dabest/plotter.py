@@ -440,7 +440,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         rawdata_axes.set_ylim(swarm_ylim)
 
     one_sankey = (
-        False if is_paired is not None else False
+        False if is_paired is not None else None
     )  # Flag to indicate if only one sankey is plotted.
     two_col_sankey = (
         True if proportional and not one_sankey and sankey and not flow else False
