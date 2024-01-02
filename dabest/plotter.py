@@ -55,7 +55,13 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         fontsize_delta2label=12
     """
     from .misc_tools import merge_two_dicts
-    from .plot_tools import halfviolin, get_swarm_spans, error_bar, sankeydiag
+    from .plot_tools import (
+        halfviolin,
+        get_swarm_spans,
+        error_bar,
+        sankeydiag,
+        swarmplot,
+    )
     from ._stats_tools.effsize import (
         _compute_standardizers,
         _compute_hedges_correction_factor,
@@ -129,6 +135,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         show_pairs = plot_kwargs["show_pairs"]
 
     # Set default kwargs first, then merge with user-dictated ones.
+    # Swarmplot kwargs
     default_swarmplot_kwargs = {"size": plot_kwargs["raw_marker_size"]}
     if plot_kwargs["swarmplot_kwargs"] is None:
         swarmplot_kwargs = default_swarmplot_kwargs
@@ -136,6 +143,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         swarmplot_kwargs = merge_two_dicts(
             default_swarmplot_kwargs, plot_kwargs["swarmplot_kwargs"]
         )
+    asymmetric_side = (
+        "left"  # TODO: allow users to control side for swarms of swarmplot.
+    )
 
     # Barplot kwargs
     default_barplot_kwargs = {"estimator": np.mean, "errorbar": plot_kwargs["ci"]}
@@ -183,7 +193,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             default_violinplot_kwargs, plot_kwargs["violinplot_kwargs"]
         )
 
-    # slopegraph kwargs.
+    # Slopegraph kwargs.
     default_slopegraph_kwargs = {"linewidth": 1, "alpha": 0.5}
     if plot_kwargs["slopegraph_kwargs"] is None:
         slopegraph_kwargs = default_slopegraph_kwargs
@@ -430,7 +440,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         rawdata_axes.set_ylim(swarm_ylim)
 
     one_sankey = (
-        False if is_paired is not None else False
+        False if is_paired is not None else None
     )  # Flag to indicate if only one sankey is plotted.
     two_col_sankey = (
         True if proportional and not one_sankey and sankey and not flow else False
@@ -502,19 +512,19 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 delta_plot_data_temp = plot_data.copy()
                 delta_id_col = dabest_obj.id_col
                 if color_col is not None:
+                    plot_palette_deltapts = plot_palette_raw
                     delta_plot_data = delta_plot_data_temp[
                         [xvar, yvar, delta_id_col, color_col]
                     ]
                     deltapts_args = {
-                        "hue": color_col,
-                        "palette": plot_palette_raw,
                         "marker": "^",
                         "alpha": 0.5,
                     }
 
                 else:
+                    plot_palette_deltapts = "k"
                     delta_plot_data = delta_plot_data_temp[[xvar, yvar, delta_id_col]]
-                    deltapts_args = {"color": "k", "marker": "^", "alpha": 0.5}
+                    deltapts_args = {"marker": "^", "alpha": 0.5}
 
                 final_deltas = pd.DataFrame()
                 for i in idx:
@@ -537,14 +547,27 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                             delta_df[yvar] = temp_df_exp[yvar] - temp_df_cont[yvar]
                             final_deltas = pd.concat([final_deltas, delta_df])
 
+                # Change jitter for Gardner-Altman plot
+                if float_contrast:
+                    jitter = 0.6
+                else:
+                    jitter = 1
+
                 # Plot the raw data as a swarmplot.
-                deltapts_plot = sns.swarmplot(
+                deltapts_plot = swarmplot(
                     data=final_deltas,
                     x=xvar,
                     y=yvar,
                     ax=contrast_axes,
-                    order=all_plot_groups,
+                    order=None,
+                    hue=color_col,
+                    palette=plot_palette_deltapts,
                     zorder=2,
+                    size=3,
+                    side="right",
+                    jitter=jitter,
+                    is_drop_gutter=True,
+                    gutter_limit=1,
                     **deltapts_args
                 )
                 contrast_axes.legend().set_visible(False)
@@ -604,7 +627,15 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     else:
         if not proportional:
             # Plot the raw data as a swarmplot.
-            rawdata_plot = sns.swarmplot(
+            asymmetric_side = "right"
+            if show_mini_meta:
+                jitter = 1.25
+            elif show_delta2:
+                jitter = 1.4
+            else:
+                jitter = 1
+
+            rawdata_plot = swarmplot(
                 data=plot_data,
                 x=xvar,
                 y=yvar,
@@ -613,6 +644,10 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 hue=color_col,
                 palette=plot_palette_raw,
                 zorder=1,
+                side=asymmetric_side,
+                jitter=jitter,
+                is_drop_gutter=True,
+                gutter_limit=0.45,
                 **swarmplot_kwargs
             )
         else:
@@ -662,8 +697,11 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             line_colors = []
             for jj, c in enumerate(rawdata_axes.collections):
                 try:
-                    _, x_max, _, _ = get_swarm_spans(c)
-                    x_max_span = x_max - jj
+                    if asymmetric_side == "right":
+                        x_max_span = -0.2
+                    else:
+                        _, x_max, _, _ = get_swarm_spans(c)
+                        x_max_span = x_max - jj
                     xspans.append(x_max_span)
                 except TypeError:
                     # we have got a None, so skip and move on.
