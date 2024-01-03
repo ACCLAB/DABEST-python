@@ -1,0 +1,23 @@
+# bumpver.toml
+# This file is used for BumpVer, don't use nbdev_bump_version to bump version
+# since it's only available for increasing one digit.
+# After finishing all the setup for this package, run through all the notebooks for version updates in docs.
+
+[bumpver]
+current_version = "2023.03.29"
+version_pattern = "YYYY.0M.0D"
+commit_message = "bump version {old_version} -> {new_version}"
+commit = true
+tag = true
+push = false
+
+[bumpver.file_patterns]
+"bumpver.toml" = [
+    'current_version = "{version}"',
+]
+"settings.ini" = [
+    'version = {version}'
+]
+"dabest/__init__.py" = [
+    '__version__ = "{version}"'
+]

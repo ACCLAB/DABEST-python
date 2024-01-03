@@ -3,6 +3,9 @@
 # %% ../../nbs/API/effsize.ipynb 4
 from __future__ import annotations
 import numpy as np
+import warnings
+from scipy.special import gamma
+from scipy.stats import mannwhitneyu
 
 # %% auto 0
 __all__ = ['two_group_difference', 'func_difference', 'cohens_d', 'cohens_h', 'hedges_g', 'cliffs_delta', 'weighted_delta']
@@ -56,13 +59,12 @@ def two_group_difference(control:list|tuple|np.ndarray, #Accepts lists, tuples, 
                         median of `test`.
 
     """
-    import numpy as np
-    import warnings
+
 
     if effect_size == "mean_diff":
         return func_difference(control, test, np.mean, is_paired)
 
-    elif effect_size == "median_diff":
+    if effect_size == "median_diff":
         mes1 = "Using median as the statistic in bootstrapping may " + \
                 "result in a biased estimate and cause problems with " + \
                 "BCa confidence intervals. Consider using a different statistic, such as the mean.\n"
@@ -72,21 +74,21 @@ def two_group_difference(control:list|tuple|np.ndarray, #Accepts lists, tuples, 
         warnings.warn(message=mes1+mes2, category=UserWarning)
         return func_difference(control, test, np.median, is_paired)
 
-    elif effect_size == "cohens_d":
+    if effect_size == "cohens_d":
         return cohens_d(control, test, is_paired)
 
-    elif effect_size == "cohens_h":
+    if effect_size == "cohens_h":
         return cohens_h(control, test)
 
-    elif effect_size == "hedges_g":
+    if effect_size == "hedges_g" or effect_size == "delta_g":
         return hedges_g(control, test, is_paired)
 
-    elif effect_size == "cliffs_delta":
+    if effect_size == "cliffs_delta":
         if is_paired:
             err1 = "`is_paired` is not None; therefore Cliff's delta is not defined."
             raise ValueError(err1)
-        else:
-            return cliffs_delta(control, test)
+        
+        return cliffs_delta(control, test)
 
 
 # %% ../../nbs/API/effsize.ipynb 6
@@ -100,13 +102,12 @@ def func_difference(control:list|tuple|np.ndarray, # NaNs are automatically disc
     Applies func to `control` and `test`, and then returns the difference.
     
     """
-    import numpy as np
 
     # Convert to numpy arrays for speed.
     # NaNs are automatically dropped.
-    if control.__class__ != np.ndarray:
+    if ~isinstance(control, np.ndarray):
         control = np.array(control)
-    if test.__class__ != np.ndarray:
+    if ~isinstance(test, np.ndarray):
         test    = np.array(test)
 
     if is_paired:
@@ -128,10 +129,10 @@ def func_difference(control:list|tuple|np.ndarray, # NaNs are automatically disc
 
         return func(test - control)
 
-    else:
-        control = control[~np.isnan(control)]
-        test    = test[~np.isnan(test)]
-        return func(test) - func(control)
+    
+    control = control[~np.isnan(control)]
+    test    = test[~np.isnan(test)]
+    return func(test) - func(control)
 
 
 # %% ../../nbs/API/effsize.ipynb 7
@@ -178,13 +179,12 @@ def cohens_d(control:list|tuple|np.ndarray,
         - https://en.wikipedia.org/wiki/Bessel%27s_correction
         - https://en.wikipedia.org/wiki/Standard_deviation#Corrected_sample_standard_deviation
     """
-    import numpy as np
 
     # Convert to numpy arrays for speed.
     # NaNs are automatically dropped.
-    if control.__class__ != np.ndarray:
+    if ~isinstance(control, np.ndarray):
         control = np.array(control)
-    if test.__class__ != np.ndarray:
+    if ~isinstance(test, np.ndarray):
         test    = np.array(test)
     control = control[~np.isnan(control)]
     test    = test[~np.isnan(test)]
@@ -209,7 +209,8 @@ def cohens_d(control:list|tuple|np.ndarray,
     else:
         M = np.mean(test) - np.mean(control)
         divisor = pooled_sd
-        
+    
+    # TODO what if divisor = 0?
     return M / divisor
 
 # %% ../../nbs/API/effsize.ipynb 8
@@ -226,9 +227,7 @@ def cohens_h(control:list|tuple|np.ndarray,
     and a dict for mapping the 0s and 1s to the actual labels, e.g.{1: "Smoker", 0: "Non-smoker"}
     '''
 
-    import numpy as np
     np.seterr(divide='ignore', invalid='ignore')
-    import pandas as pd
 
     # Check whether dataframe contains only 0s and 1s.
     if np.isin(control, [0, 1]).all() == False or np.isin(test, [0, 1]).all() == False:
@@ -237,10 +236,10 @@ def cohens_h(control:list|tuple|np.ndarray,
     # Convert to numpy arrays for speed.
     # NaNs are automatically dropped.
     # Aligned with cohens_d calculation.
-    if control.__class__ != np.ndarray:
+    if ~isinstance(control, np.ndarray):
         control = np.array(control)
-    if test.__class__ != np.ndarray:
-        test = np.array(test)
+    if ~isinstance(test, np.ndarray):
+        test    = np.array(test)
     control = control[~np.isnan(control)]
     test = test[~np.isnan(test)]
 
@@ -266,13 +265,12 @@ def hedges_g(control:list|tuple|np.ndarray,
     See [here](https://en.wikipedia.org/wiki/Effect_size#Hedges'_g)
 
     """
-    import numpy as np
 
     # Convert to numpy arrays for speed.
     # NaNs are automatically dropped.
-    if control.__class__ != np.ndarray:
+    if ~isinstance(control, np.ndarray):
         control = np.array(control)
-    if test.__class__ != np.ndarray:
+    if ~isinstance(test, np.ndarray):
         test    = np.array(test)
     control = control[~np.isnan(control)]
     test    = test[~np.isnan(test)]
@@ -291,14 +289,12 @@ def cliffs_delta(control:list|tuple|np.ndarray,
     Computes Cliff's delta for 2 samples.
     See [here](https://en.wikipedia.org/wiki/Effect_size#Effect_size_for_ordinal_data)
     """
-    import numpy as np
-    from scipy.stats import mannwhitneyu
 
     # Convert to numpy arrays for speed.
     # NaNs are automatically dropped.
-    if control.__class__ != np.ndarray:
+    if ~isinstance(control, np.ndarray):
         control = np.array(control)
-    if test.__class__ != np.ndarray:
+    if ~isinstance(test, np.ndarray):
         test    = np.array(test)
 
     c = control[~np.isnan(control)]
@@ -311,55 +307,31 @@ def cliffs_delta(control:list|tuple|np.ndarray,
     U, _ = mannwhitneyu(t, c, alternative='two-sided')
     cliffs_delta = ((2 * U) / (control_n * test_n)) - 1
 
-    # more = 0
-    # less = 0
-    #
-    # for i, c in enumerate(control):
-    #     for j, t in enumerate(test):
-    #         if t > c:
-    #             more += 1
-    #         elif t < c:
-    #             less += 1
-    #
-    # cliffs_delta = (more - less) / (control_n * test_n)
-
     return cliffs_delta
 
 
 # %% ../../nbs/API/effsize.ipynb 11
 def _compute_standardizers(control, test):
-    from numpy import mean, var, sqrt, nan
+    # TODO missing docstring
     # For calculation of correlation; not currently used.
     # from scipy.stats import pearsonr
 
     control_n = len(control)
     test_n = len(test)
 
-    control_mean = mean(control)
-    test_mean = mean(test)
+    control_var = np.var(control, ddof=1) # use N-1 to compute the variance.
+    test_var = np.var(test, ddof=1)
 
-    control_var = var(control, ddof=1) # use N-1 to compute the variance.
-    test_var = var(test, ddof=1)
-
-    control_std = sqrt(control_var)
-    test_std = sqrt(test_var)
 
     # For unpaired 2-groups standardized mean difference.
-    pooled = sqrt(((control_n - 1) * control_var + (test_n - 1) * test_var) /
+    pooled = np.sqrt(((control_n - 1) * control_var + (test_n - 1) * test_var) /
                (control_n + test_n - 2)
                )
 
     # For paired standardized mean difference.
-    average = sqrt((control_var + test_var) / 2)
+    average = np.sqrt((control_var + test_var) / 2)
 
-    # if len(control) == len(test):
-    #     corr = pearsonr(control, test)[0]
-    #     std_diff = sqrt(control_var + test_var - (2 * corr * control_std * test_std))
-    #     std_diff_corrected = std_diff / (sqrt(2 * (1 - corr)))
-    #     return pooled, average, std_diff_corrected
-    #
-    # else:
-    return pooled, average # indent if you implement above code chunk.
+    return pooled, average 
 
 # %% ../../nbs/API/effsize.ipynb 12
 def _compute_hedges_correction_factor(n1, 
@@ -377,16 +349,12 @@ def _compute_hedges_correction_factor(n1,
     ISBN 0-12-336380-2.
     """
 
-    from scipy.special import gamma
-    from numpy import sqrt, isinf
-    import warnings
-
     df = n1 + n2 - 2
     numer = gamma(df / 2)
     denom0 = gamma((df - 1) / 2)
-    denom = sqrt(df / 2) * denom0
+    denom = np.sqrt(df / 2) * denom0
 
-    if isinf(numer) or isinf(denom):
+    if np.isinf(numer) or np.isinf(denom):
         # occurs when df is too large.
         # Apply Hedges and Olkin's approximation.
         df_sum = n1 + n2
@@ -404,7 +372,6 @@ def weighted_delta(difference, group_var):
     Compute the weighted deltas where the weight is the inverse of the
     pooled group difference.
     '''
-    import numpy as np
 
     weight = np.true_divide(1, group_var)
     return np.sum(difference*weight)/np.sum(weight)
