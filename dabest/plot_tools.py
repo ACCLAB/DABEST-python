@@ -456,7 +456,7 @@ def single_sankey(
                 myD["top"] = 1
             else:
                 myD["right"] -= 0.02
-                myD["bottom"] = rightWidths_norm[right_labelsss[i - 1]]["top"] + 0.02
+                myD["bottom"] = rightWidths_norm[right_labels[i - 1]]["top"] + 0.02
                 myD["top"] = myD["bottom"] + myD["right"]
                 topEdge = myD["top"]
         else:
