@@ -719,7 +719,7 @@ def sankeydiag(
             )
 
     # Now only draw vs xticks for two-column sankey diagram
-    if ~one_sankey or (sankey and not flow):
+    if not one_sankey or (sankey and not flow):
         sankey_ticks = (
             [f"{left}" for left in broadcasted_left]
             if flow
