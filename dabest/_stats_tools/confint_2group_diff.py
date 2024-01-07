@@ -155,74 +155,57 @@ def compute_delta2_bootstrapped_diff(
     """
 
     rng = RandomState(PCG64(random_seed))
-    x1_len = len(x1)
-    x2_len = len(x2)
-    x3_len = len(x3)
-    x4_len = len(x4)
-    out_delta_g = np.repeat(np.nan, resamples)
-    deltadelta = np.repeat(np.nan, resamples)
 
-    n_a1_b1, n_a2_b1, n_a1_b2, n_a2_b2 = x1_len, x2_len, x3_len, x4_len
-    s_a1_b1, s_a2_b1, s_a1_b2, s_a2_b2 = np.std(x1), np.std(x2), np.std(x3), np.std(x4)
+    x1, x2, x3, x4 = map(np.asarray, [x1, x2, x3, x4])
 
-    sd_numerator = (
-        (n_a2_b1 - 1) * s_a2_b1**2
-        + (n_a1_b1 - 1) * s_a1_b1**2
-        + (n_a2_b2 - 1) * s_a2_b2**2
-        + (n_a1_b2 - 1) * s_a1_b2**2
-    )
-    sd_denominator = (n_a2_b1 - 1) + (n_a1_b1 - 1) + (n_a2_b2 - 1) + (n_a1_b2 - 1)
+    # Calculating pooled sample standard deviation
+    stds = [np.std(x) for x in [x1, x2, x3, x4]]
+    ns = [len(x) for x in [x1, x2, x3, x4]]
+
+    sd_numerator = sum((n - 1) * s**2 for n, s in zip(ns, stds))
+    sd_denominator = sum(n - 1 for n in ns)
+
+    # Avoid division by zero
+    if sd_denominator == 0:
+        raise ValueError("Insufficient data to compute pooled standard deviation.")
+
     pooled_sample_sd = np.sqrt(sd_numerator / sd_denominator)
 
-    for i in range(int(resamples)):
-        if is_paired:
-            if (x1_len != x2_len) or (x3_len != x4_len):
-                raise ValueError("The two arrays do not have the same length.")
-            df_paired_1 = pd.DataFrame(
-                {
-                    "value": np.concatenate([x1, x3]),
-                    "array_id": np.repeat(["x1", "x3"], [x1_len, x3_len]),
-                }
-            )
-            df_paired_2 = pd.DataFrame(
-                {
-                    "value": np.concatenate([x2, x4]),
-                    "array_id": np.repeat(["x2", "x4"], [x1_len, x3_len]),
-                }
-            )
-            x_sample_index = rng.choice(
-                len(df_paired_1), len(df_paired_1), replace=True
-            )
-            x_sample_1 = df_paired_1.loc[x_sample_index]
-            x_sample_2 = df_paired_2.loc[x_sample_index]
-            x1_sample = x_sample_1[x_sample_1["array_id"] == "x1"]["value"]
-            x2_sample = x_sample_2[x_sample_2["array_id"] == "x2"]["value"]
-            x3_sample = x_sample_1[x_sample_1["array_id"] == "x3"]["value"]
-            x4_sample = x_sample_2[x_sample_2["array_id"] == "x4"]["value"]
-        else:
-            df = pd.DataFrame(
-                {
-                    "value": np.concatenate([x1, x2, x3, x4]),
-                    "array_id": np.repeat(
-                        ["x1", "x2", "x3", "x4"], [x1_len, x2_len, x3_len, x4_len]
-                    ),
-                }
-            )
-            x_sample_index = rng.choice(len(df), len(df), replace=True)
-            x_sample = df.loc[x_sample_index]
-            x1_sample = x_sample[x_sample["array_id"] == "x1"]["value"]
-            x2_sample = x_sample[x_sample["array_id"] == "x2"]["value"]
-            x3_sample = x_sample[x_sample["array_id"] == "x3"]["value"]
-            x4_sample = x_sample[x_sample["array_id"] == "x4"]["value"]
+    # Ensure pooled_sample_sd is not NaN or zero (to avoid division by zero later)
+    if np.isnan(pooled_sample_sd) or pooled_sample_sd == 0:
+        raise ValueError("Pooled sample standard deviation is NaN or zero.")
 
+    out_delta_g = np.empty(resamples)
+    deltadelta = np.empty(resamples)
+
+    # Bootstrapping
+    for i in range(resamples):
+        # Paired or unpaired resampling
+        if is_paired:
+            if len(x1) != len(x2) or len(x3) != len(x4):
+                raise ValueError("Each control group must have the same length as its corresponding test group in paired analysis.")
+            indices_1 = rng.choice(len(x1), len(x1), replace=True)
+            indices_2 = rng.choice(len(x3), len(x3), replace=True)
+
+            x1_sample, x2_sample = x1[indices_1], x2[indices_1]
+            x3_sample, x4_sample = x3[indices_2], x4[indices_2]
+        else:
+            x1_sample = rng.choice(x1, len(x1), replace=True)
+            x2_sample = rng.choice(x2, len(x2), replace=True)
+            x3_sample = rng.choice(x3, len(x3), replace=True)
+            x4_sample = rng.choice(x4, len(x4), replace=True)
+
+        # Calculating deltas
         delta_1 = np.mean(x2_sample) - np.mean(x1_sample)
         delta_2 = np.mean(x4_sample) - np.mean(x3_sample)
         delta_delta = delta_2 - delta_1
+
         deltadelta[i] = delta_delta
         out_delta_g[i] = delta_delta / pooled_sample_sd
-    delta_g = (
-        (np.mean(x4) - np.mean(x3)) - (np.mean(x2) - np.mean(x1))
-    ) / pooled_sample_sd
+
+    # Empirical delta_g calculation
+    delta_g = ((np.mean(x4) - np.mean(x3)) - (np.mean(x2) - np.mean(x1))) / pooled_sample_sd
+
     return out_delta_g, delta_g, deltadelta
 
 
