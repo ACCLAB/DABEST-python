@@ -29,63 +29,35 @@ def test_width_determine():
 
 
 # swarmplot() UNIT TESTS
-@pytest.mark.parametrize(
-    "param_name, param_value, error_msg, error_type",
-    [
-        # Basic input validation checks
-        ("data", None, "`data` must be a Pandas Dataframe.", ValueError),
-        ("x", None, "`x` must be a string.", ValueError),
-        ("y", None, "`y` must be a string.", ValueError),
-        (
-            "ax",
-            None,
-            "`ax` must be a Matplotlib AxesSubplot. The current `ax` is a <class 'NoneType'>",
-            ValueError,
-        ),
-        ("order", 5, "`order` must be either an Iterable or None.", ValueError),
-        ("hue", 5, "`hue` must be either a string or None.", ValueError),
-        (
-            "palette",
-            None,
-            "`palette` must be either a string or an Iterable.",
-            ValueError,
-        ),
-        ("zorder", None, "`zorder` must be a scalar or float.", ValueError),
-        ("size", None, "`size` must be a scalar or float.", ValueError),
-        (
-            "side",
-            None,
-            "Invalid `side`. Must be one of 'center', 'right', or 'left'.",
-            ValueError,
-        ),
-        ("jitter", None, "`jitter` must be a scalar or float.", ValueError),
-        ("is_drop_gutter", None, "`is_drop_gutter` must be a boolean.", ValueError),
-        ("gutter_limit", None, "`gutter_limit` must be a scalar or float.", ValueError),
-        # More thorough input validation checks
-        ("x", "a", "a is not a column in `data`.", IndexError),
-        ("y", "b", "b is not a column in `data`.", IndexError),
-        ("hue", "c", "c is not a column in `data`.", IndexError),
-        (
-            "order",
-            ["Control 1", "Test 2"],
-            "Test 2 in `order` is not in the 'group' column of `data`.",
-            IndexError,
-        ),
-        (
-            "palette",
-            {"Control 3": "black"},
-            "Control 3 in `palette` is not in the 'group' column of `data`.",
-            IndexError,
-        ),
-        # TODO: to add palette validation testing for when color_col is hue
-        (
-            "side",
-            "top",
-            "Invalid `side`. Must be one of 'center', 'right', or 'left'.",
-            ValueError,
-        ),
-    ],
-)
+# fmt: off
+@pytest.mark.parametrize("param_name, param_value, error_msg, error_type", [
+    # Basic input validation checks
+    ("data", None, "`data` must be a Pandas Dataframe.", ValueError),
+    ("x", None, "`x` must be a string.", ValueError),
+    ("y", None, "`y` must be a string.", ValueError),
+    ("ax", None, "`ax` must be a Matplotlib AxesSubplot. The current `ax` is a <class 'NoneType'>", ValueError),
+    ("order", 5, "`order` must be either an Iterable or None.", ValueError),
+    ("hue", 5, "`hue` must be either a string or None.", ValueError),
+    ("palette", None, "`palette` must be either a string or an Iterable.", ValueError),
+    ("zorder", None, "`zorder` must be a scalar or float.", ValueError),
+    ("size", None, "`size` must be a scalar or float.", ValueError),
+    ("side", None, "Invalid `side`. Must be one of 'center', 'right', or 'left'.", ValueError),
+    ("jitter", None, "`jitter` must be a scalar or float.", ValueError),
+    ("is_drop_gutter", None, "`is_drop_gutter` must be a boolean.", ValueError),
+    ("gutter_limit", None, "`gutter_limit` must be a scalar or float.", ValueError),
+
+    # More thorough input validation checks
+    ("x", "a", "a is not a column in `data`.", IndexError),
+    ("y", "b", "b is not a column in `data`.", IndexError),
+    ("hue", "c", "c is not a column in `data`.", IndexError),
+    ("order", ["Control 1", "Test 2"], "Test 2 in `order` is not in the 'group' column of `data`.", IndexError),
+    ("palette", " ", "`palette` cannot be an empty string. It must be either a string indicating a color name or an Iterable.", ValueError),
+    ("palette", {"Control 1": " "}, "The color mapping for Control 3 in `palette` is an empty string. It must contain a color name.", ValueError),
+    ("palette", {"Control 1": "black"}, "Control 3 in `palette` is not in the 'group' column of `data`.", IndexError),
+    # TODO: to add palette validation testing for when color_col is hue
+    ("side", "top", "Invalid `side`. Must be one of 'center', 'right', or 'left'.", ValueError)
+])
+# fmt: on
 def test_swarmplot_input_error_handling(param_name, param_value, error_msg, error_type):
     with pytest.raises(error_type) as excinfo:
         my_data = swarmplot(
@@ -107,6 +79,7 @@ def test_swarmplot_input_error_handling(param_name, param_value, error_msg, erro
     assert error_msg in str(excinfo.value)
 
 
+# fmt: on
 def test_swarmplot_warnings():
     warning_msg = (
         "{0:.1f}% of the points cannot be placed. "
@@ -132,48 +105,32 @@ def test_swarmplot_warnings():
 
 def test_swarmplot_order_params():
     # `order` should be able to handle customised order -> swapping of params in `order` list
-    check_exceptions(
-        swarmplot, order=["Control 1", "Test 1"], **default_swarmplot_kwargs
-    )
-    check_exceptions(
-        swarmplot, order=["Test 1", "Control 1"], **default_swarmplot_kwargs
-    )
+    swarmplot(order=["Control 1", "Test 1"], **default_swarmplot_kwargs)
+    swarmplot(order=["Test 1", "Control 1"], **default_swarmplot_kwargs)
     # `order` should be able to handle None, where it will then be autogenerated
-    check_exceptions(swarmplot, order=None, **default_swarmplot_kwargs)
+    swarmplot(order=None, **default_swarmplot_kwargs)
 
 
 def test_swarmplot_hue_params():
-    check_exceptions(swarmplot, hue="gender", **default_swarmplot_kwargs)
+    swarmplot(hue="gender", **default_swarmplot_kwargs)
 
 
 def test_swarmplot_palette_params():
     # `palette` can be a string, list, tuple or a dict
     # Testing `palette` when color of swarms is based on `x` value
-    check_exceptions(swarmplot, hue=None, palette="black", **default_swarmplot_kwargs)
-    check_exceptions(
-        swarmplot, hue=None, palette=["black", "red"], **default_swarmplot_kwargs
-    )
-    check_exceptions(
-        swarmplot, hue=None, palette=("black", "red"), **default_swarmplot_kwargs
-    )
-    check_exceptions(
-        swarmplot,
+    swarmplot(hue=None, palette="black", **default_swarmplot_kwargs)
+    swarmplot(hue=None, palette=["", "red"], **default_swarmplot_kwargs)
+    swarmplot(hue=None, palette=("black", "red"), **default_swarmplot_kwargs)
+    swarmplot(
         hue=None,
         palette={"Control 1": "black", "Test 1": "red"},
         **default_swarmplot_kwargs
     )
     # Testing `palette` when color of swarms is based on `hue` value
-    check_exceptions(
-        swarmplot, hue="gender", palette="black", **default_swarmplot_kwargs
-    )
-    check_exceptions(
-        swarmplot, hue="gender", palette=["black", "red"], **default_swarmplot_kwargs
-    )
-    check_exceptions(
-        swarmplot, hue="gender", palette=("black", "red"), **default_swarmplot_kwargs
-    )
-    check_exceptions(
-        swarmplot,
+    swarmplot(hue="gender", palette="black", **default_swarmplot_kwargs)
+    swarmplot(hue="gender", palette=["black", "red"], **default_swarmplot_kwargs)
+    swarmplot(hue="gender", palette=("black", "red"), **default_swarmplot_kwargs)
+    swarmplot(
         hue="gender",
         palette={"Female": "black", "Male": "red"},
         **default_swarmplot_kwargs
@@ -184,6 +141,6 @@ def test_swarmplot_palette_params():
 
 
 def test_swarmplot_side_params():
-    check_exceptions(swarmplot, side="center", **default_swarmplot_kwargs)
-    check_exceptions(swarmplot, side="right", **default_swarmplot_kwargs)
-    check_exceptions(swarmplot, side="left", **default_swarmplot_kwargs)
+    swarmplot(side="center", **default_swarmplot_kwargs)
+    swarmplot(side="right", **default_swarmplot_kwargs)
+    swarmplot(side="left", **default_swarmplot_kwargs)
