@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from dabest.plot_tools import get_swarm_spans, width_determine, swarmplot
 from data.mocked_data_test_swarmplot import dummy_df, default_swarmplot_kwargs
-from testing_helper_functions import check_exceptions
 
 
 def test_get_swarm_spans_wrong_parameters():
