@@ -953,7 +953,7 @@ class SwarmPlot:
         if not isinstance(self.__jitter, (int, float)):
             raise ValueError("`jitter` must be a scalar or float.")
         if not isinstance(self.__palette, (str, Iterable)):
-            raise ValueError("`palette` must be either a string or an Iterable.")
+            raise ValueError("`palette` must be either a string indicating a color name or an Iterable.")
         if self.__hue is not None and not isinstance(self.__hue, str):
             raise ValueError("`hue` must be either a string or None.")
         if self.__order is not None and not isinstance(self.__order, Iterable):
@@ -978,8 +978,13 @@ class SwarmPlot:
                         group_i, self.__x
                     )
                     raise IndexError(err)
+
+        if isinstance(self.__palette, str) and self.__palette.strip() == "":
+            err = "`palette` cannot be an empty string. It must be either a string indicating a color name or an Iterable."
+            raise ValueError(err)
         if isinstance(self.__palette, dict):
-            for group_i in self.__palette.keys():
+            # TODO: to add detection of when dict length is less than size of unique_items
+            for group_i, color_i in self.__palette.items():
                 if group_i not in pd.unique(data[color_col]):
                     err = (
                         "{0} in `palette` is not in the '{1}' column of `data`.".format(
@@ -987,6 +992,9 @@ class SwarmPlot:
                         )
                     )
                     raise IndexError(err)
+                if isinstance(color_i, str) and color_i.strip() == "":
+                    err = "The color mapping for {0} in `palette` is an empty string. It must contain a color name.".format(group_i)
+                    raise ValueError(err) 
 
         if side.lower() not in ["center", "right", "left"]:
             raise ValueError(
