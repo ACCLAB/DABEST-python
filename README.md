@@ -53,21 +53,21 @@ DABEST is a package for **D**ata **A**nalysis using
 **B**ootstrap-Coupled **EST**imation.
 
 [Estimation
-statistics](https://en.wikipedia.org/wiki/Estimation_statistics) is a
+statistics](https://en.wikipedia.org/wiki/Estimation_statistics) are a
 [simple framework](https://thenewstatistics.com/itns/) that avoids the
 [pitfalls](https://www.nature.com/articles/nmeth.3288) of significance
-testing. It uses familiar statistical concepts: means, mean differences,
-and error bars. More importantly, it focuses on the effect size of one’s
-experiment/intervention, as opposed to a false dichotomy engendered by
-*P* values.
+testing. It employs familiar statistical concepts such as means, mean
+differences, and error bars. More importantly, it focuses on the effect
+size of one’s experiment or intervention, rather than succumbing to a
+false dichotomy engendered by *P* values.
 
-An estimation plot has two key features.
+An estimation plot comprises two key features.
 
-1.  It presents all datapoints as a swarmplot, which orders each point
-    to display the underlying distribution.
+1.  It presents all data points as a swarm plot, ordering each point to
+    display the underlying distribution.
 
-2.  It presents the effect size as a **bootstrap 95% confidence
-    interval** on a **separate but aligned axes**.
+2.  It illustrates the effect size as a **bootstrap 95% confidence
+    interval** on a **separate but aligned axis**.
 
 ![The five kinds of estimation
 plots](showpiece.png "The five kinds of estimation plots.")
@@ -77,21 +77,24 @@ allowing everyone access to high-quality estimation plots.
 
 ## Installation
 
-This package is tested on Python 3.6, 3.7, and 3.8. It is highly
+This package is tested on Python 3.6, 3.7, 3.8 and 3.10. It is highly
 recommended to download the [Anaconda
 distribution](https://www.continuum.io/downloads) of Python in order to
 obtain the dependencies easily.
 
 You can install this package via `pip`.
 
-To install, at the command line run <!-- ```shell
+To install, at the command line run
+
+``` shell
 conda config --add channels conda-forge
 conda install dabest
 ```
-or -->
+
+or –\>
 
 ``` shell
-pip install --upgrade dabest
+pip install dabest
 ```
 
 You can also
@@ -110,7 +113,7 @@ pip install .
 import pandas as pd
 import dabest
 
-# Load the iris dataset. Requires internet access.
+# Load the iris dataset. This step requires internet access.
 iris = pd.read_csv("https://github.com/mwaskom/seaborn-data/raw/master/iris.csv")
 
 # Load the above data into `dabest`.
@@ -150,50 +153,16 @@ tracker](https://github.com/ACCLAB/DABEST-python/issues/new).
 ## Contributing
 
 All contributions are welcome; please read the [Guidelines for
-contributing](https://github.com/ACCLAB/DABEST-python/blob/master/CONTRIBUTING.md)
-first.
+contributing](CONTRIBUTING.md) first.
 
-We also have a [Code of
-Conduct](https://github.com/ACCLAB/DABEST-python/blob/master/CODE_OF_CONDUCT.md)
-to foster an inclusive and productive space.
+We also have a [Code of Conduct](CODE_OF_CONDUCT.md) to foster an
+inclusive and productive space.
 
 ### A wish list for new features
 
-Currently, DABEST offers functions to handle data traditionally analyzed
-with Student’s paired and unpaired t-tests. It also offers plots for
-multiplexed versions of these, and the estimation counterpart to a 1-way
-analysis of variance (ANOVA), the shared-control design. While these
-five functions execute a large fraction of common biomedical data
-analyses, there remain three others: 2-way data, time-series group data,
-and proportional data. We aim to add these new functions to both the R
-and Python libraries.
-
-- In many experiments, four groups are investigate to isolate an
-  interaction, for example: a genotype × drug effect. Here, wild-type
-  and mutant animals are each subjected to drug or sham treatments; the
-  data are traditionally analysed with a 2×2 ANOVA. We have received
-  requests by email, Twitter, and GitHub to implement an estimation
-  counterpart to the 2-way ANOVA. To do this, we will implement
-  $\Delta\Delta$ plots, in which the difference of means ($\Delta$) of
-  two groups is subtracted from a second two-group $\Delta$.
-  **Implemented in v2023.02.14.**
-
-- Currently, DABEST can analyse multiple paired data in a single plot,
-  and multiple groups with a common, shared control. However, a common
-  design in biomedical science is to follow the same group of subjects
-  over multiple, successive time points. An estimation plot for this
-  would combine elements of the two other designs, and could be used in
-  place of a repeated-measures ANOVA. **Implemented in v2023.02.14**
-
-- We have observed that proportional data are often analyzed in
-  neuroscience and other areas of biomedical research. However, compared
-  to other data types, the charts are frequently impoverished: often,
-  they omit error bars, sample sizes, and even P values—let alone effect
-  sizes. We would like DABEST to feature proportion charts, with error
-  bars and a curve for the distribution of the proportional differences.
-  **Implemented in v2023.02.14**
-
-We encourage contributions for the above features.
+If you have any specific comments and ideas for new features that you
+would like to share with us, please fill this
+[form](https://docs.google.com/forms/d/1XnF-dkPFUYDPxH9WNXK0L2uU0uv2ZDy4paiCJuk_Kn0).
 
 ## Acknowledgements
 
@@ -206,13 +175,20 @@ Stanislav Ott.
 
 ## Testing
 
-To test DABEST, you will need to install
-[pytest](https://docs.pytest.org/en/latest).
+To test DABEST, you need to install
+[pytest](https://docs.pytest.org/en/latest) and
+[nbdev](https://nbdev.fast.ai/).
 
-Run `pytest` in the root directory of the source distribution. This runs
-the test suite in the folder `dabest/tests`. The test suite will ensure
-that the bootstrapping functions and the plotting functions perform as
-expected.
+- Run `pytest` in the root directory of the source distribution. This
+  runs the test suite in the folder `dabest/tests/mpl_image_tests`.
+- Run `nbdev_test` in the root directory of the source distribution.
+  This runs the value assertion tests in parent folder `dabest/tests`
+
+The test suite ensures that the bootstrapping functions and the plotting
+functions perform as expected.
+
+For detailed information, please refer to the [test
+folder](nbs/tests/README.md)
 
 ## DABEST in other languages
 
