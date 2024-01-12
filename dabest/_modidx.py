@@ -2,8 +2,8 @@
 
 d = { 'settings': { 'branch': 'master',
                 'doc_baseurl': '/DABEST-python',
-                'doc_host': 'https://ZHANGROU-99.github.io',
-                'git_url': 'https://github.com/ZHANGROU-99/DABEST-python',
+                'doc_host': 'https://acclab.github.io',
+                'git_url': 'https://github.com/acclab/DABEST-python',
                 'lib_path': 'dabest'},
   'syms': { 'dabest._stats_tools.confint_1group': { 'dabest._stats_tools.confint_1group.compute_1group_acceleration': ( 'API/confint_1group.html#compute_1group_acceleration',
                                                                                                                         'dabest/_stats_tools/confint_1group.py'),
