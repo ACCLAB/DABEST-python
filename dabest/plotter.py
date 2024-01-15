@@ -547,7 +547,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                             delta_df[yvar] = temp_df_exp[yvar] - temp_df_cont[yvar]
                             final_deltas = pd.concat([final_deltas, delta_df])
 
-                # Change jitter for Gardner-Altman plot
+                # swarmplot() plots swarms based on current size of ax
+                # Therefore, since the ax size for Gardner-Altman plot changes later on, there has to be decreased jitter
+                # TODO: to make jitter value more accurate and not just a hardcoded eyeball value
                 if float_contrast:
                     jitter = 0.6
                 else:
@@ -627,7 +629,13 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     else:
         if not proportional:
             # Plot the raw data as a swarmplot.
-            asymmetric_side = "right"
+            asymmetric_side = (
+                plot_kwargs["swarm_side"] if plot_kwargs["swarm_side"] is not None else "right"
+            )  # Default asymmetric side is right
+
+            # swarmplot() plots swarms based on current size of ax
+            # Therefore, since the ax size for mini_meta and show_delta changes later on, there has to be increased jitter
+            # TODO: to make jitter value more accurate and not just a hardcoded eyeball value
             if show_mini_meta:
                 jitter = 1.25
             elif show_delta2:
@@ -698,6 +706,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             for jj, c in enumerate(rawdata_axes.collections):
                 try:
                     if asymmetric_side == "right":
+                        # currently offset is hardcoded with value of -0.2
                         x_max_span = -0.2
                     else:
                         _, x_max, _, _ = get_swarm_spans(c)
