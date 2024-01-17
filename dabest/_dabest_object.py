@@ -442,26 +442,45 @@ class Dabest(object):
                 raise ValueError(err0)
 
             # Check if the columns stated are valid
-            # TODO instead of traversing twice idx you can traverse only once
-            # and break the loop if the condition is not satisfied?
-            # TODO What if the type is not str and not tuple,list? missing raise Error
-            if all([isinstance(i, str) for i in idx]):
-                if len(pd.unique([t for t in idx]).tolist()) != 2:
+            # Initialize a flag to track if any element in idx is neither str nor (tuple, list)
+            valid_types = True
+
+            # Initialize variables to track the conditions for str and (tuple, list)
+            is_str_condition_met, is_tuple_list_condition_met = False, False
+
+            # Single traversal for optimization
+            for item in idx:
+                if isinstance(item, str):
+                    is_str_condition_met = True
+                elif isinstance(item, (tuple, list)) and len(item) == 2:
+                    is_tuple_list_condition_met = True
+                else:
+                    valid_types = False
+                    break  # Exit the loop if an invalid type is found
+
+            # Check if all types are valid
+            if not valid_types:
+                raise TypeError("Invalid type found in idx. Expected str, tuple, or list.")
+
+            # Handling str type condition
+            if is_str_condition_met:
+                if len(pd.unique(idx).tolist()) != 2:
                     err0 = "`mini_meta` is True, but `idx` ({})".format(idx)
-                    err1 = "does not contain exactly 2 columns."
+                    err1 = "does not contain exactly 2 unique columns."
                     raise ValueError(err0 + err1)
 
-            if all([isinstance(i, (tuple, list)) for i in idx]):
+            # Handling (tuple, list) type condition
+            if is_tuple_list_condition_met:
                 all_idx_lengths = [len(t) for t in idx]
                 if (array(all_idx_lengths) != 2).any():
-                    err1 = "`mini_meta` is True, but some idx "
-                    err2 = "in {} does not consist only of two groups.".format(idx)
+                    err1 = "`mini_meta` is True, but some elements in idx "
+                    err2 = "in {} do not consist only of two groups.".format(idx)
                     raise ValueError(err1 + err2)
 
-        # TODO can you have True mini_meta and delta2 at the same time?
+
         # Check if this is a 2x2 ANOVA case and x & y are valid columns
         # Create experiment_label and x1_level
-        if self.__delta2:
+        elif self.__delta2:
             if x is None:
                 error_msg = "If `delta2` is True. `x` parameter cannot be None. String or list expected"
                 raise ValueError(error_msg)
@@ -534,7 +553,6 @@ class Dabest(object):
             else:
                 x1_level = self.__output_data[x[0]].unique()
 
-        # TODO what if experiment is None?
         elif experiment:
             experiment_label = self.__output_data[experiment].unique()
             x1_level = self.__output_data[x[0]].unique()
@@ -611,10 +629,7 @@ class Dabest(object):
         # Added in v0.2.7.
         plot_data.dropna(axis=0, how="any", subset=[self.__yvar], inplace=True)
 
-        # TODO these comments should not be in the code but on the release notes of the package version
-        # Lines 131 to 140 added in v0.2.3.
-        # Fixes a bug that jammed up when the xvar column was already
-        # a pandas Categorical. Now we check for this and act appropriately.
+
         if isinstance(plot_data[self.__xvar].dtype, pd.CategoricalDtype):
             plot_data[self.__xvar].cat.remove_unused_categories(inplace=True)
             plot_data[self.__xvar].cat.reorder_categories(

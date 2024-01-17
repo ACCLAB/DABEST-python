@@ -15,6 +15,7 @@ import seaborn as sns
 import numpy as np
 import itertools
 import matplotlib.lines as mlines
+import warnings
 
 # %% ../nbs/API/plot_tools.ipynb 5
 def halfviolin(v, half="right", fill_color="k", alpha=1, line_color="k", line_width=0):
@@ -50,8 +51,8 @@ def get_swarm_spans(coll):
     x, y = np.array(coll.get_offsets()).T
     try:
         return x.min(), x.max(), y.min(), y.max()
-    except ValueError:
-        # TODO at least you should show a message
+    except ValueError as e:
+        warnings.warn(f"Failed to calculate spans for the collection. Details: {e}")
         return None
 
 
@@ -226,7 +227,30 @@ def check_data_matches_labels(
 
 
 def normalize_dict(nested_dict, target):
-    # TODO missing docstring 
+    """
+    Normalizes the values in a nested dictionary based on a target dictionary.
+
+    This function iterates through a nested dictionary, calculates the sum of values for each key
+    across all sub-dictionaries, and then normalizes these values according to a target dictionary.
+    The normalization is performed such that the values in each sub-dictionary are proportionally
+    scaled to match the corresponding 'right' values in the target dictionary.
+
+    Parameters:
+    nested_dict (dict of dict): A nested dictionary where each key maps to another dictionary.
+                                The values in these inner dictionaries are subject to normalization.
+    target (dict): A dictionary with the target values for normalization. Each key in nested_dict
+                   should have a corresponding key in target, and each target[key] should be a
+                   dictionary with a 'right' key containing the target normalization value.
+
+    Returns:
+    dict: The normalized nested dictionary. The original nested_dict is modified in place.
+
+    Note:
+    - If the sum of values for a particular key in nested_dict is zero, the normalized value is set to 0.
+    - If a key in a sub-dictionary of nested_dict does not exist in the target dictionary, the
+      corresponding 'right' value from the target dictionary is directly assigned.
+    - The function modifies the input nested_dict in place and also returns it.
+    """
     val = {}
     for key in nested_dict.keys():
         val[key] = np.sum(
@@ -254,7 +278,27 @@ def normalize_dict(nested_dict, target):
 
 
 def width_determine(labels, data, pos="left"):
-    # TODO missing docstring
+    """
+    Calculates normalized width positions for a set of labels based on their associated data.
+
+    This function is designed to determine width positions for plotting or graphical representation.
+    It takes into account the cumulative weight of each label in the data and adjusts their positions
+    accordingly. The function allows for adjusting the position of labels to either the 'left' or 'right'.
+
+    Parameters:
+    labels (list): A list of labels whose width positions are to be calculated.
+    data (DataFrame): A pandas DataFrame containing the data used for calculating width positions.
+                      The DataFrame should have columns corresponding to the 'pos' and 'posWeight'.
+    pos (str, optional): The position of labels. It can be either 'left' or 'right'. Defaults to 'left'.
+
+    Returns:
+    defaultdict: A dictionary where each key is a label and the value is another dictionary with keys
+                 'bottom', 'top', and 'pos', representing the calculated width positions.
+
+    Note:
+    The function assumes that the data DataFrame contains columns named after the value of 'pos' and
+    an additional column named 'posWeight' which represents the weight of each label.
+    """
     if labels is None:
         raise ValueError("The `labels` parameter cannot be None")
 

@@ -108,7 +108,13 @@ class bootstrap:
                 ttest_single = "NIL"
                 ttest_2_ind = "NIL"
                 ttest_2_paired = ttest_rel(x1, x2)[1]
-                wilcoxonresult = wilcoxon(x1, x2)[1]
+
+                try:
+                    wilcoxonresult = wilcoxon(x1, x2)[1]
+                except ValueError as e:
+                    warnings.warn("Wilcoxon test could not be performed. This might be due "
+                      "to identical values under the same group. "
+                      "Details: {}".format(e))
             mannwhitneyresult = "NIL"
 
             # Turns data into array, then tuple.
