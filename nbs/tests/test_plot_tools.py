@@ -112,6 +112,7 @@ def test_swarmplot_order_params():
 def test_swarmplot_hue_params():
     swarmplot(hue="gender", **default_swarmplot_kwargs)
 
+
 @pytest.mark.parametrize("hue, palette", [
     # `palette` can be a string, list, tuple or a dict
     # Testing `palette` when color of swarms is based on `x` value
