@@ -10,7 +10,6 @@ import pandas as pd
 from scipy.stats import norm
 from scipy.stats import randint
 
-
 # %% ../nbs/API/dabest_object.ipynb 6
 class Dabest(object):
 
@@ -625,6 +624,10 @@ class Dabest(object):
                 value_name=self.__yvar,
                 var_name=self.__xvar,
             )
+
+        if self.__is_paired is not None and plot_data.isnull().values.any():
+            import warnings
+            warnings.warn("NaN values detected in paired setting, please remove NaNs and corresponding rows before proceeding.")
 
         # Added in v0.2.7.
         plot_data.dropna(axis=0, how="any", subset=[self.__yvar], inplace=True)
