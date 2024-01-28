@@ -57,6 +57,18 @@ class Dabest(object):
         self._check_errors(x, y, idx, experiment, experiment_label, x1_level)
         
 
+        # Check if there is NaN under any of the paired settings
+        if self.__is_paired and self.__output_data.isnull().values.any():
+            import warnings
+            warn1 = f"NaN values detected under paired setting and removed,"
+            warn2 = f" please check your data."
+            warnings.warn(warn1 + warn2)
+            if x is not None and y is not None:
+                rmname = self.__output_data[self.__output_data[y].isnull()][self.__id_col].tolist()
+                self.__output_data = self.__output_data[~self.__output_data[self.__id_col].isin(rmname)]
+            elif x is None and y is None:
+                self.__output_data.dropna(inplace=True)
+
         # create new x & idx and record the second variable if this is a valid 2x2 ANOVA case
         if idx is None and x is not None and y is not None:
             # Add a length check for unique values in the first element in list x,
@@ -562,7 +574,16 @@ class Dabest(object):
         """
         Function to prepare some attributes for plotting
         """
-
+        # Check if there is NaN under any of the paired settings
+        if self.__is_paired is not None and self.__output_data.isnull().values.any():
+            print("Nan")
+            import warnings
+            warn1 = f"NaN values detected under paired setting and removed,"
+            warn2 = f" please check your data."
+            warnings.warn(warn1 + warn2)
+            rmname = self.__output_data[self.__output_data[y].isnull()][self.__id_col].tolist()
+            self.__output_data = self.__output_data[~self.__output_data[self.__id_col].isin(rmname)]
+                
         # Identify the type of data that was passed in.
         if x is not None and y is not None:
             # Assume we have a long dataset.
@@ -606,6 +627,13 @@ class Dabest(object):
             self.__xvar = "group"
             self.__yvar = "value"
 
+            # Check if there is NaN under any of the paired settings
+            if self.__is_paired is not None and self.__output_data.isnull().values.any():
+                import warnings
+                warn1 = f"NaN values detected under paired setting and removed,"
+                warn2 = f" please check your data."
+                warnings.warn(warn1 + warn2)
+
             # First, check we have all columns in the dataset.
             for g in all_plot_groups:
                 if g not in self.__output_data.columns:
@@ -624,10 +652,6 @@ class Dabest(object):
                 value_name=self.__yvar,
                 var_name=self.__xvar,
             )
-
-        if self.__is_paired is not None and plot_data.isnull().values.any():
-            import warnings
-            warnings.warn("NaN values detected in paired setting, please remove NaNs and corresponding rows before proceeding.")
 
         # Added in v0.2.7.
         plot_data.dropna(axis=0, how="any", subset=[self.__yvar], inplace=True)
