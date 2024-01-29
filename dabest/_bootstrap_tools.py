@@ -113,8 +113,10 @@ class bootstrap:
                     wilcoxonresult = wilcoxon(x1, x2)[1]
                 except ValueError as e:
                     warnings.warn("Wilcoxon test could not be performed. This might be due "
-                      "to identical values under the same group. "
-                      "Details: {}".format(e))
+                    "to no variability in the difference of the paired groups. \n"
+                    "Error: {}\n"
+                    "For detailed information, please refer to https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html "
+                    .format(e))
             mannwhitneyresult = "NIL"
 
             # Turns data into array, then tuple.
