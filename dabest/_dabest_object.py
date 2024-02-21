@@ -471,7 +471,9 @@ class Dabest(object):
 
             # Check if all types are valid
             if not valid_types:
-                raise TypeError("Invalid type found in idx. Expected str, tuple, or list.")
+                err0 = "`mini_meta` is True, but `idx` ({})".format(idx)
+                err1 = "does not contain exactly 2 unique columns."
+                raise ValueError(err0 + err1)
 
             # Handling str type condition
             if is_str_condition_met:
