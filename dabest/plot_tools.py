@@ -748,6 +748,7 @@ def swarmplot(
     size: float = 5,
     side: str = "center",
     jitter: float = 1,
+    filled: Union[bool, List, Tuple] = True,
     is_drop_gutter: bool = True,
     gutter_limit: float = 0.5,
     **kwargs,
@@ -780,6 +781,11 @@ def swarmplot(
         The side on which points are swarmed ("center", "left", or "right"). Default is "center".
     jitter : int | float
         Determines the distance between points. Default is 1.
+    filled : bool | List | Tuple
+        Determines whether the dots in the swarmplot are filled or not. If set to False,
+        dots are not filled. If provided as a List or Tuple, it should contain boolean values,
+        each corresponding to a swarm group in order, indicating whether the dot should be
+        filled or not.
     is_drop_gutter : bool
         If True, drop points that hit the gutters; otherwise, readjust them.
     gutter_limit : int | float
@@ -792,8 +798,10 @@ def swarmplot(
     axes._subplots.Subplot | axes._axes.Axes
         Matplotlib AxesSubplot object for which the swarm plot has been drawn on.
     """
-    s = SwarmPlot(data, x, y, ax, order, hue, palette, zorder, size, side, jitter)
-    ax = s.plot(is_drop_gutter, gutter_limit, ax, **kwargs)
+    s = SwarmPlot(
+        data, x, y, ax, order, hue, palette, zorder, size, side, jitter, filled
+    )
+    ax = s.plot(is_drop_gutter, gutter_limit, ax, filled, **kwargs)
     return ax
 
 
@@ -811,6 +819,7 @@ class SwarmPlot:
         size: float = 5,
         side: str = "center",
         jitter: float = 1,
+        filled: Union[bool, List, Tuple] = True,
     ):
         """
         Initialize a SwarmPlot instance.
@@ -840,6 +849,11 @@ class SwarmPlot:
             The side on which points are swarmed ("center", "left", or "right"). Default is "center".
         jitter : int | float
             Determines the distance between points. Default is 1.
+        filled : bool | List | Tuple
+            Determines whether the dots in the swarmplot are filled or not. If set to False,
+            dots are not filled. If provided as a List or Tuple, it should contain boolean values,
+            each corresponding to a swarm group in order, indicating whether the dot should be
+            filled or not.
 
         Returns
         -------
@@ -953,7 +967,9 @@ class SwarmPlot:
         if not isinstance(self.__jitter, (int, float)):
             raise ValueError("`jitter` must be a scalar or float.")
         if not isinstance(self.__palette, (str, Iterable)):
-            raise ValueError("`palette` must be either a string indicating a color name or an Iterable.")
+            raise ValueError(
+                "`palette` must be either a string indicating a color name or an Iterable."
+            )
         if self.__hue is not None and not isinstance(self.__hue, str):
             raise ValueError("`hue` must be either a string or None.")
         if self.__order is not None and not isinstance(self.__order, Iterable):
@@ -993,8 +1009,10 @@ class SwarmPlot:
                     )
                     raise IndexError(err)
                 if isinstance(color_i, str) and color_i.strip() == "":
-                    err = "The color mapping for {0} in `palette` is an empty string. It must contain a color name.".format(group_i)
-                    raise ValueError(err) 
+                    err = "The color mapping for {0} in `palette` is an empty string. It must contain a color name.".format(
+                        group_i
+                    )
+                    raise ValueError(err)
 
         if side.lower() not in ["center", "right", "left"]:
             raise ValueError(
@@ -1196,7 +1214,12 @@ class SwarmPlot:
         return points_data
 
     def plot(
-        self, is_drop_gutter: bool, gutter_limit: float, ax: axes.Subplot, **kwargs
+        self,
+        is_drop_gutter: bool,
+        gutter_limit: float,
+        ax: axes.Subplot,
+        filled: Union[bool, List, Tuple],
+        **kwargs,
     ) -> axes.Subplot:
         """
         Generate a swarm plot.
@@ -1209,6 +1232,11 @@ class SwarmPlot:
             The limit for points hitting the gutters.
         ax : axes.Subplot
             The matplotlib figure object to which the swarm plot will be added.
+        filled : bool | List | Tuple
+            Determines whether the dots in the swarmplot are filled or not. If set to False,
+            dots are not filled. If provided as a List or Tuple, it should contain boolean values,
+            each corresponding to a swarm group in order, indicating whether the dot should be
+            filled or not.
         **kwargs:
             Additional keyword arguments to be passed to the scatter plot.
 
@@ -1278,13 +1306,21 @@ class SwarmPlot:
                 )
             else:
                 # color swarms based on `x` column
+                if not isinstance(filled, bool):
+                    facecolor = (
+                        "none"
+                        if not filled[x_position - 1]
+                        else self.__palette[group_i]
+                    )
+                else:
+                    facecolor = "none" if not filled else self.__palette[group_i]
                 ax.scatter(
                     values_i["x_new"],
                     values_i[self.__y],
                     s=self.__size,
-                    c=self.__palette[group_i],
                     zorder=self.__zorder,
-                    edgecolor="face",
+                    facecolor=facecolor,
+                    edgecolor=self.__palette[group_i],
                     **kwargs,
                 )
 
