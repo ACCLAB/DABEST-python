@@ -269,7 +269,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     # Handle the color palette.
     filled = True
     empty_circle = plot_kwargs["empty_circle"]
-    color_by_subgroups = True if empty_circle else False # boolean flag to determine if colour is being grouped by subgroup or the default
+    color_by_subgroups = (
+        True if empty_circle else False
+    )  # boolean flag to determine if colour is being grouped by subgroup or the default
     if empty_circle:
         # Handling color_by_subgroups
         # For now, color_by_subgroups can only be True for multi-2-group and 2-group comparison
@@ -280,7 +282,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             for group_i in idx:
                 if len(group_i) > 2:
                     color_by_subgroups = False
-        
+
         # filled is now a list, which determines the which group in idx has their dots filled for the swarmplot
         filled = []
         for i in range(len(idx)):
@@ -1194,7 +1196,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 # Draw reference line.
                 axx.hlines(
                     ref,  # y-coordinates
-                    -0.1 if asymmetric_side=="right" else 0,
+                    -0.1 if asymmetric_side == "right" else 0,
                     xlimhigh,  # x-coordinates, start and end.
                     **reflines_kwargs,
                 )
