@@ -94,30 +94,32 @@ def forest_plot(
     Generates a customized forest plot using contrast objects. This function supports both horizontal and vertical orientations of the plot, as determined by the 'horizontal' parameter.
 
     Parameters:
+    __________
     contrasts (List): List of contrast objects to be plotted.
-    selected_indices (Optional[List]): Specific indices of contrasts to be plotted, if not plotting all.
-    contrast_type (str): Specifies the type of analysis (e.g., 'delta2', 'minimeta') for the contrasts.
-    xticklabels (Optional[List]): Custom labels for the x-axis ticks. If not provided, indices are used.
-    effect_size (str): Specifies the type of effect size to be plotted (e.g., 'mean_diff', 'median_diff').
-    contrast_labels (List[str]): Labels for each contrast. Used for labeling the plot elements.
-    ylabel (str): Label for the y-axis. Used to describe the data or effect size being plotted.
-    plot_elements_to_extract (Optional[List]): Specifies which plot elements to extract for custom plotting.
-    title (str): The title of the plot.
-    custom_palette (Optional[Union[dict, list, str]]): A custom color palette for the violin plots. Can be specified as a dictionary mapping contrasts to colors, a list of colors, or a string name of a seaborn or matplotlib colormap.
-    fontsize (int): Font size for all text elements in the plot (labels, title, tick labels).
-    violin_kwargs (Optional[dict]): Additional keyword arguments passed to the violinplot function.
-    marker_size (int): Size of the markers used for plotting mean differences or effect sizes.
-    ci_line_width (float): Line width for the confidence interval lines.
-    zero_line_width (int): Width of the line representing the zero effect size or reference line.
-    remove_spines (bool): If True, removes the top and right spines from the plot.
-    ax (Optional[plt.Axes]): An existing matplotlib Axes object to plot on. If None, a new figure and axes are created.
-    additional_plotting_kwargs (Optional[dict]): Additional keyword arguments for customizing the plot.
-    rotation_for_xlabels (int): Rotation angle (in degrees) for the x-axis labels, to help with label readability.
-    alpha_violin_plot (float): Transparency level for the violin plots.
-    horizontal (bool): If True, plots the forest plot horizontally (with effect sizes along the y-axis). Otherwise, plots vertically with effect sizes along the x-axis.
+    selected_indices (Optional[List]): Specific indices of contrasts to be plotted, if not plotting all. Default is None, which means all contrasts are plotted.
+    contrast_type (str): Specifies the type of analysis (e.g., 'delta2', 'minimeta') for the contrasts. This determines the statistical approach used for the contrasts.
+    xticklabels (Optional[List]): Custom labels for the x-axis ticks. If not provided, the default is to use indices.
+    effect_size (str): Specifies the type of effect size to be plotted (e.g., 'mean_diff', 'median_diff'). This is crucial for interpreting the results correctly.
+    contrast_labels (List[str]): Labels for each contrast. These are used for labeling the plot elements and must correspond to the contrasts provided.
+    ylabel (str): Label for the y-axis. This should describe the data or effect size being plotted and is essential for plot interpretation.
+    plot_elements_to_extract (Optional[List]): Specifies which plot elements to extract for custom plotting. This allows for more detailed customization of the plot. Default is None.
+    title (str): The title of the plot. This should provide a concise summary of what the plot represents.
+    custom_palette (Optional[Union[dict, list, str]]): A custom color palette for the plot. Can be specified as a dictionary mapping contrasts to colors, a list of colors, or a string name of a seaborn or matplotlib colormap. Default is None.
+    fontsize (int): Font size for all text elements in the plot, including labels, title, and tick labels. This is important for ensuring the plot is readable.
+    violin_kwargs (Optional[dict]): Additional keyword arguments passed to the violinplot function. This allows for further customization of the violin plots. Default is None.
+    marker_size (int): Size of the markers used for plotting mean differences or effect sizes. This affects the visual representation of the data points.
+    ci_line_width (float): Line width for the confidence interval lines. This helps to visually distinguish the confidence intervals.
+    zero_line_width (int): Width of the line representing the zero effect size or reference line. This is important for identifying the point of no effect.
+    remove_spines (bool): If True, removes the top and right spines from the plot, which can make the plot look cleaner. Default is False.
+    ax (Optional[plt.Axes]): An existing matplotlib Axes object to plot on. If None, a new figure and axes are created. This allows for integration into larger figures.  
+    additional_plotting_kwargs (Optional[dict]): Additional keyword arguments for customizing the plot. This provides flexibility for advanced plot customization. Default is None.
+    rotation_for_xlabels (int): Rotation angle (in degrees) for the x-axis labels. This can help with label readability, especially for long labels. Default is 0.
+    alpha_violin_plot (float): Transparency level for the violin plots. This can be adjusted to make the plot more visually appealing. Default is 1.0 (fully opaque).
+    horizontal (bool): If True, plots the forest plot horizontally (with effect sizes along the y-axis). Otherwise, plots vertically with effect sizes along the x-axis. This affects the orientation of the plot.
 
     Returns:
-    plt.Figure: The matplotlib figure object containing the generated plot.
+    _______
+    plt.Figure: The matplotlib figure object containing the generated plot. This object can be further modified or saved as an image file.
     """
     from .plot_tools import halfviolin
 
