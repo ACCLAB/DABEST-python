@@ -363,6 +363,16 @@ class TwoGroupsEffectSize(object):
             self.__pvalue_mcnemar = _mcnemar.pvalue
             self.__statistic_mcnemar = _mcnemar.statistic
 
+        elif self.__proportional:
+            # The Cohen's h calculation is for binary categorical data
+            try:
+                self.__proportional_difference = es.cohens_h(
+                    self.__control, self.__test
+                )
+            except ValueError as e:
+                warnings.warn(f"Calculation of Cohen's h failed. This method is applicable "
+                  f"only for binary data (0's and 1's). Details: {e}")
+
         elif self.__effect_size == "cliffs_delta":
             # Let's go with Brunner-Munzel!
             brunner_munzel = spstats.brunnermunzel(
@@ -411,14 +421,6 @@ class TwoGroupsEffectSize(object):
 
             standardized_es = es.cohens_d(self.__control, self.__test, is_paired=None)
 
-            # The Cohen's h calculation is for binary categorical data
-            try:
-                self.__proportional_difference = es.cohens_h(
-                    self.__control, self.__test
-                )
-            except ValueError as e:
-                warnings.warn(f"Calculation of Cohen's h failed. This method is applicable "
-                  f"only for binary data (0's and 1's). Details: {e}")
 
     def to_dict(self):
         """
