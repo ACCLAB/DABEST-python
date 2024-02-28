@@ -84,14 +84,17 @@ obtain the dependencies easily.
 
 You can install this package via `pip`.
 
-To install, at the command line run <!-- ```shell
+To install, at the command line run
+
+``` shell
 conda config --add channels conda-forge
 conda install dabest
 ```
-or -->
+
+or –\>
 
 ``` shell
-pip install --upgrade dabest
+pip install dabest
 ```
 
 You can also
@@ -150,18 +153,19 @@ tracker](https://github.com/ACCLAB/DABEST-python/issues/new).
 ## Contributing
 
 All contributions are welcome; please read the [Guidelines for
-contributing](https://github.com/ACCLAB/DABEST-python/blob/master/CONTRIBUTING.md)
-first.
+contributing](CONTRIBUTING.md) first.
 
-We also have a [Code of
-Conduct](https://github.com/ACCLAB/DABEST-python/blob/master/CODE_OF_CONDUCT.md)
-to foster an inclusive and productive space.
+We also have a [Code of Conduct](CODE_OF_CONDUCT.md) to foster an
+inclusive and productive space.
 
 ### A wish list for new features
 
 If you have any specific comments and ideas for new features that you
-would like to share with us, please fill this form. **Add the link to a
-google doc form**
+would like to share with us, please read the [Guidelines for
+contributing](CONTRIBUTING.md), create a new issue using Feature request
+template or create a new post in [our Google
+Group](https://groups.google.com/g/estimationstats).
+
 
 ## Acknowledgements
 
@@ -175,12 +179,20 @@ Stanislav Ott.
 ## Testing
 
 To test DABEST, you need to install
-[pytest](https://docs.pytest.org/en/latest).
 
-Run `pytest` in the root directory of the source distribution. This runs
-the test suite in the folder `dabest/tests`. The test suite ensures that
-the bootstrapping functions and the plotting functions perform as
-expected.
+[pytest](https://docs.pytest.org/en/latest) and
+[nbdev](https://nbdev.fast.ai/).
+
+- Run `pytest` in the root directory of the source distribution. This
+  runs the test suite in the folder `dabest/tests/mpl_image_tests`.
+- Run `nbdev_test` in the root directory of the source distribution.
+  This runs the value assertion tests in parent folder `dabest/tests`
+
+The test suite ensures that the bootstrapping functions and the plotting
+functions perform as expected.
+
+For detailed information, please refer to the [test
+folder](nbs/tests/README.md)
 
 ## DABEST in other languages
 
