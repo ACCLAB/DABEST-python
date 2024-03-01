@@ -210,7 +210,9 @@ def cohens_d(control:list|tuple|np.ndarray,
         M = np.mean(test) - np.mean(control)
         divisor = pooled_sd
     
-    # TODO what if divisor = 0?
+    if divisor == 0:
+        raise ValueError("The divisor is zero, indicating no variability in the data.")
+
     return M / divisor
 
 # %% ../../nbs/API/effsize.ipynb 8
@@ -312,8 +314,33 @@ def cliffs_delta(control:list|tuple|np.ndarray,
 
 # %% ../../nbs/API/effsize.ipynb 11
 def _compute_standardizers(control, test):
-    # TODO missing docstring
-    # For calculation of correlation; not currently used.
+    """
+    Computes the pooled and average standard deviations for two datasets.
+
+    This function is useful in the context of statistical analysis, particularly
+    when calculating standardized mean differences between two groups. It supports
+    both unpaired and paired data scenarios.
+
+    Parameters:
+    control (array-like): A numeric array representing the control group data.
+    test (array-like): A numeric array representing the test group data.
+
+    Returns:
+    tuple: A tuple containing two elements:
+        - pooled (float): The pooled standard deviation, calculated for unpaired two-group 
+                          scenarios. It is computed using the sample variances of the 
+                          control and test groups, weighted by their sample sizes.
+        - average (float): The average standard deviation, calculated for paired data 
+                           scenarios. It is the average of the sample standard deviations 
+                           of the control and test groups.
+
+    Note:
+    The function assumes that the input arrays are independent samples and calculates
+    the sample variances using N-1 degrees of freedom.
+
+    For calculation of correlation; not currently used.
+
+    """
     # from scipy.stats import pearsonr
 
     control_n = len(control)

@@ -10,7 +10,6 @@ import pandas as pd
 from scipy.stats import norm
 from scipy.stats import randint
 
-
 # %% ../nbs/API/dabest_object.ipynb 6
 class Dabest(object):
 
@@ -57,6 +56,18 @@ class Dabest(object):
         # after this call the attributes self.__experiment_label and self.__x1_level are updated
         self._check_errors(x, y, idx, experiment, experiment_label, x1_level)
         
+
+        # Check if there is NaN under any of the paired settings
+        if self.__is_paired and self.__output_data.isnull().values.any():
+            import warnings
+            warn1 = f"NaN values detected under paired setting and removed,"
+            warn2 = f" please check your data."
+            warnings.warn(warn1 + warn2)
+            if x is not None and y is not None:
+                rmname = self.__output_data[self.__output_data[y].isnull()][self.__id_col].tolist()
+                self.__output_data = self.__output_data[~self.__output_data[self.__id_col].isin(rmname)]
+            elif x is None and y is None:
+                self.__output_data.dropna(inplace=True)
 
         # create new x & idx and record the second variable if this is a valid 2x2 ANOVA case
         if idx is None and x is not None and y is not None:
@@ -442,26 +453,47 @@ class Dabest(object):
                 raise ValueError(err0)
 
             # Check if the columns stated are valid
-            # TODO instead of traversing twice idx you can traverse only once
-            # and break the loop if the condition is not satisfied?
-            # TODO What if the type is not str and not tuple,list? missing raise Error
-            if all([isinstance(i, str) for i in idx]):
-                if len(pd.unique([t for t in idx]).tolist()) != 2:
+            # Initialize a flag to track if any element in idx is neither str nor (tuple, list)
+            valid_types = True
+
+            # Initialize variables to track the conditions for str and (tuple, list)
+            is_str_condition_met, is_tuple_list_condition_met = False, False
+
+            # Single traversal for optimization
+            for item in idx:
+                if isinstance(item, str):
+                    is_str_condition_met = True
+                elif isinstance(item, (tuple, list)) and len(item) == 2:
+                    is_tuple_list_condition_met = True
+                else:
+                    valid_types = False
+                    break  # Exit the loop if an invalid type is found
+
+            # Check if all types are valid
+            if not valid_types:
+                err0 = "`mini_meta` is True, but `idx` ({})".format(idx)
+                err1 = "does not contain exactly 2 unique columns."
+                raise ValueError(err0 + err1)
+
+            # Handling str type condition
+            if is_str_condition_met:
+                if len(pd.unique(idx).tolist()) != 2:
                     err0 = "`mini_meta` is True, but `idx` ({})".format(idx)
-                    err1 = "does not contain exactly 2 columns."
+                    err1 = "does not contain exactly 2 unique columns."
                     raise ValueError(err0 + err1)
 
-            if all([isinstance(i, (tuple, list)) for i in idx]):
+            # Handling (tuple, list) type condition
+            if is_tuple_list_condition_met:
                 all_idx_lengths = [len(t) for t in idx]
                 if (array(all_idx_lengths) != 2).any():
-                    err1 = "`mini_meta` is True, but some idx "
-                    err2 = "in {} does not consist only of two groups.".format(idx)
+                    err1 = "`mini_meta` is True, but some elements in idx "
+                    err2 = "in {} do not consist only of two groups.".format(idx)
                     raise ValueError(err1 + err2)
 
-        # TODO can you have True mini_meta and delta2 at the same time?
+
         # Check if this is a 2x2 ANOVA case and x & y are valid columns
         # Create experiment_label and x1_level
-        if self.__delta2:
+        elif self.__delta2:
             if x is None:
                 error_msg = "If `delta2` is True. `x` parameter cannot be None. String or list expected"
                 raise ValueError(error_msg)
@@ -534,7 +566,6 @@ class Dabest(object):
             else:
                 x1_level = self.__output_data[x[0]].unique()
 
-        # TODO what if experiment is None?
         elif experiment:
             experiment_label = self.__output_data[experiment].unique()
             x1_level = self.__output_data[x[0]].unique()
@@ -545,7 +576,16 @@ class Dabest(object):
         """
         Function to prepare some attributes for plotting
         """
-
+        # Check if there is NaN under any of the paired settings
+        if self.__is_paired is not None and self.__output_data.isnull().values.any():
+            print("Nan")
+            import warnings
+            warn1 = f"NaN values detected under paired setting and removed,"
+            warn2 = f" please check your data."
+            warnings.warn(warn1 + warn2)
+            rmname = self.__output_data[self.__output_data[y].isnull()][self.__id_col].tolist()
+            self.__output_data = self.__output_data[~self.__output_data[self.__id_col].isin(rmname)]
+                
         # Identify the type of data that was passed in.
         if x is not None and y is not None:
             # Assume we have a long dataset.
@@ -589,6 +629,13 @@ class Dabest(object):
             self.__xvar = "group"
             self.__yvar = "value"
 
+            # Check if there is NaN under any of the paired settings
+            if self.__is_paired is not None and self.__output_data.isnull().values.any():
+                import warnings
+                warn1 = f"NaN values detected under paired setting and removed,"
+                warn2 = f" please check your data."
+                warnings.warn(warn1 + warn2)
+
             # First, check we have all columns in the dataset.
             for g in all_plot_groups:
                 if g not in self.__output_data.columns:
@@ -611,10 +658,7 @@ class Dabest(object):
         # Added in v0.2.7.
         plot_data.dropna(axis=0, how="any", subset=[self.__yvar], inplace=True)
 
-        # TODO these comments should not be in the code but on the release notes of the package version
-        # Lines 131 to 140 added in v0.2.3.
-        # Fixes a bug that jammed up when the xvar column was already
-        # a pandas Categorical. Now we check for this and act appropriately.
+
         if isinstance(plot_data[self.__xvar].dtype, pd.CategoricalDtype):
             plot_data[self.__xvar].cat.remove_unused_categories(inplace=True)
             plot_data[self.__xvar].cat.reorder_categories(
