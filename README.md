@@ -161,8 +161,10 @@ inclusive and productive space.
 ### A wish list for new features
 
 If you have any specific comments and ideas for new features that you
-would like to share with us, please fill this
-[form](https://docs.google.com/forms/d/1XnF-dkPFUYDPxH9WNXK0L2uU0uv2ZDy4paiCJuk_Kn0).
+would like to share with us, please read the [Guidelines for
+contributing](CONTRIBUTING.md), create a new issue using Feature request
+template or create a new post in [our Google
+Group](https://groups.google.com/g/estimationstats).
 
 ## Acknowledgements
 
