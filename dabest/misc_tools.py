@@ -33,7 +33,17 @@ def unpack_and_add(l, c):
 
 
 def print_greeting():
-    # TODO missing docstring
+    """
+    Generates a greeting message based on the current time, along with the version information of DABEST.
+
+    This function dynamically generates a greeting ('Good morning', 'Good afternoon', 'Good evening')
+    based on the current system time. It also retrieves and displays the version of DABEST (Data Analysis
+    using Bootstrap-Coupled ESTimation). The message includes a header with the DABEST version and the
+    current time formatted in a user-friendly manner.
+
+    Returns:
+    str: A formatted string containing the greeting message, DABEST version, and current time.
+    """
     from .__init__ import __version__
 
     line1 = "DABEST v{}".format(__version__)

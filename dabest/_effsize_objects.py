@@ -219,7 +219,7 @@ class TwoGroupsEffectSize(object):
 
         pval_def1 = (
             "Any p-value reported is the probability of observing the"
-            + "effect size (or greater),\nassuming the null hypothesis of"
+            + "effect size (or greater),\nassuming the null hypothesis of "
             + "zero difference is true."
         )
         pval_def2 = (
@@ -299,7 +299,6 @@ class TwoGroupsEffectSize(object):
                 )
 
         else:
-            # TODO improve error handling, separate file with error messages?
             err1 = "The $lim_type limit of the BCa interval cannot be computed."
             err2 = "It is set to the effect size itself."
             err3 = "All bootstrap values were likely all the same."
@@ -330,9 +329,16 @@ class TwoGroupsEffectSize(object):
 
         if self.__is_paired and not self.__proportional:
             # Wilcoxon, a non-parametric version of the paired T-test.
-            wilcoxon = spstats.wilcoxon(self.__control, self.__test)
-            self.__pvalue_wilcoxon = wilcoxon.pvalue
-            self.__statistic_wilcoxon = wilcoxon.statistic
+            try:
+                wilcoxon = spstats.wilcoxon(self.__control, self.__test)
+                self.__pvalue_wilcoxon = wilcoxon.pvalue
+                self.__statistic_wilcoxon = wilcoxon.statistic
+            except ValueError as e:
+                warnings.warn("Wilcoxon test could not be performed. This might be due "
+                    "to no variability in the difference of the paired groups. \n"
+                    "Error: {}\n"
+                    "For detailed information, please refer to https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html "
+                    .format(e))
 
             if self.__effect_size != "median_diff":
                 # Paired Student's t-test.
@@ -356,6 +362,16 @@ class TwoGroupsEffectSize(object):
             _mcnemar = mcnemar(table, exact=True, correction=True)
             self.__pvalue_mcnemar = _mcnemar.pvalue
             self.__statistic_mcnemar = _mcnemar.statistic
+
+        elif self.__proportional:
+            # The Cohen's h calculation is for binary categorical data
+            try:
+                self.__proportional_difference = es.cohens_h(
+                    self.__control, self.__test
+                )
+            except ValueError as e:
+                warnings.warn(f"Calculation of Cohen's h failed. This method is applicable "
+                  f"only for binary data (0's and 1's). Details: {e}")
 
         elif self.__effect_size == "cliffs_delta":
             # Let's go with Brunner-Munzel!
@@ -398,23 +414,13 @@ class TwoGroupsEffectSize(object):
                 )
                 self.__pvalue_mann_whitney = mann_whitney.pvalue
                 self.__statistic_mann_whitney = mann_whitney.statistic
-            except ValueError:
-                # TODO At least print some warning?
-                # Occurs when the control and test are exactly identical
-                # in terms of rank (eg. all zeros.)
-                pass
+            except ValueError as e:
+                warnings.warn("Mann-Whitney test could not be performed. This might be due "
+                  "to identical rank values in both control and test groups. "
+                  "Details: {}".format(e))
 
             standardized_es = es.cohens_d(self.__control, self.__test, is_paired=None)
 
-            # The Cohen's h calculation is for binary categorical data
-            try:
-                self.__proportional_difference = es.cohens_h(
-                    self.__control, self.__test
-                )
-            except ValueError:
-                # TODO At least print some warning?
-                # Occur only when the data consists not only 0's and 1's.
-                pass
 
     def to_dict(self):
         """
@@ -567,7 +573,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_paired_students_t(self):
-        # TODO Missing docstring
         try:
             return self.__pvalue_paired_students_t
         except AttributeError:
@@ -575,7 +580,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_paired_students_t(self):
-        # TODO Missing docstring
         try:
             return self.__statistic_paired_students_t
         except AttributeError:
@@ -583,7 +587,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_kruskal(self):
-        # TODO Missing docstring
         try:
             return self.__pvalue_kruskal
         except AttributeError:
@@ -591,7 +594,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_kruskal(self):
-        # TODO Missing docstring
         try:
             return self.__statistic_kruskal
         except AttributeError:
@@ -599,7 +601,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_welch(self):
-        # TODO Missing docstring
         try:
             return self.__pvalue_welch
         except AttributeError:
@@ -607,7 +608,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_welch(self):
-        # TODO Missing docstring
         try:
             return self.__statistic_welch
         except AttributeError:
@@ -615,7 +615,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_students_t(self):
-        # TODO Missing docstring
         try:
             return self.__pvalue_students_t
         except AttributeError:
@@ -623,7 +622,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_students_t(self):
-        # TODO Missing docstring
         try:
             return self.__statistic_students_t
         except AttributeError:
@@ -631,7 +629,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_mann_whitney(self):
-        # TODO Missing docstring
         try:
             return self.__pvalue_mann_whitney
         except AttributeError:
@@ -639,7 +636,6 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_mann_whitney(self):
-        # TODO Missing docstring
         try:
             return self.__statistic_mann_whitney
         except AttributeError:
@@ -647,7 +643,9 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_permutation(self):
-        # TODO Missing docstring
+        """
+        p value of permutation test
+        """
         return self.__PermutationTest_result.pvalue
 
     @property
@@ -663,12 +661,10 @@ class TwoGroupsEffectSize(object):
 
     @property
     def permutations_var(self):
-         # TODO Missing docstring
         return self.__PermutationTest_result.permutations_var
 
     @property
     def proportional_difference(self):
-         # TODO Missing docstring
         try:
             return self.__proportional_difference
         except AttributeError:
@@ -679,47 +675,54 @@ class EffectSizeDataFrame(object):
     """A class that generates and stores the results of bootstrapped effect
     sizes for several comparisons."""
 
-    def __init__(self, dabest, effect_size,
-                 is_paired, ci=95, proportional=False,
-                 resamples=5000, 
-                 permutation_count=5000,
-                 random_seed=12345, 
-                 x1_level=None, x2=None, 
-                 delta2=False, experiment_label=None,
-                 mini_meta=False):
+    def __init__(
+        self,
+        dabest,
+        effect_size,
+        is_paired,
+        ci=95,
+        proportional=False,
+        resamples=5000,
+        permutation_count=5000,
+        random_seed=12345,
+        x1_level=None,
+        x2=None,
+        delta2=False,
+        experiment_label=None,
+        mini_meta=False,
+    ):
         """
         Parses the data from a Dabest object, enabling plotting and printing
         capability for the effect size of interest.
         """
 
-        self.__dabest_obj        = dabest
-        self.__effect_size       = effect_size
-        self.__is_paired         = is_paired
-        self.__ci                = ci
-        self.__resamples         = resamples
+        self.__dabest_obj = dabest
+        self.__effect_size = effect_size
+        self.__is_paired = is_paired
+        self.__ci = ci
+        self.__resamples = resamples
         self.__permutation_count = permutation_count
-        self.__random_seed       = random_seed
-        self.__proportional      = proportional
-        self.__x1_level          = x1_level
-        self.__experiment_label  = experiment_label 
-        self.__x2                = x2
-        self.__delta2            = delta2 
-        self.__mini_meta         = mini_meta
-
+        self.__random_seed = random_seed
+        self.__proportional = proportional
+        self.__x1_level = x1_level
+        self.__experiment_label = experiment_label
+        self.__x2 = x2
+        self.__delta2 = delta2
+        self.__mini_meta = mini_meta
 
     def __pre_calc(self):
         from .misc_tools import print_greeting, get_varname
         from ._stats_tools import confint_2group_diff as ci2g
         from ._delta_objects import MiniMetaDelta, DeltaDelta
 
-        idx  = self.__dabest_obj.idx
-        dat  = self.__dabest_obj._plot_data
+        idx = self.__dabest_obj.idx
+        dat = self.__dabest_obj._plot_data
         xvar = self.__dabest_obj._xvar
         yvar = self.__dabest_obj._yvar
 
         out = []
         reprs = []
-        
+
         if self.__delta2:
             mixed_data = []
             for j, current_tuple in enumerate(idx):
@@ -734,12 +737,18 @@ class EffectSizeDataFrame(object):
                     test = dat[dat[xvar] == tname][yvar].copy()
                     mixed_data.append(control)
                     mixed_data.append(test)
-            bootstraps_delta_delta = ci2g.compute_delta2_bootstrapped_diff(mixed_data[0], mixed_data[1], mixed_data[2], mixed_data[3],
-                                                                           self.__is_paired, self.__resamples, self.__random_seed)
-
+            bootstraps_delta_delta = ci2g.compute_delta2_bootstrapped_diff(
+                mixed_data[0],
+                mixed_data[1],
+                mixed_data[2],
+                mixed_data[3],
+                self.__is_paired,
+                self.__resamples,
+                self.__random_seed,
+            )
 
         for j, current_tuple in enumerate(idx):
-            if self.__is_paired!="sequential":
+            if self.__is_paired != "sequential":
                 cname = current_tuple[0]
                 control = dat[dat[xvar] == cname][yvar].copy()
 
@@ -749,123 +758,139 @@ class EffectSizeDataFrame(object):
                     control = dat[dat[xvar] == cname][yvar].copy()
                 test = dat[dat[xvar] == tname][yvar].copy()
 
-                result = TwoGroupsEffectSize(control, test,
-                                             self.__effect_size,
-                                             self.__proportional,
-                                             self.__is_paired,
-                                             self.__ci,
-                                             self.__resamples,
-                                             self.__permutation_count,
-                                             self.__random_seed)
+                result = TwoGroupsEffectSize(
+                    control,
+                    test,
+                    self.__effect_size,
+                    self.__proportional,
+                    self.__is_paired,
+                    self.__ci,
+                    self.__resamples,
+                    self.__permutation_count,
+                    self.__random_seed,
+                )
                 r_dict = result.to_dict()
-                r_dict["control"]   = cname
-                r_dict["test"]      = tname
+                r_dict["control"] = cname
+                r_dict["test"] = tname
                 r_dict["control_N"] = int(len(control))
-                r_dict["test_N"]    = int(len(test))
+                r_dict["test_N"] = int(len(test))
                 out.append(r_dict)
-                if j == len(idx)-1 and ix == len(current_tuple)-2:
-                    if self.__delta2 and self.__effect_size in ["mean_diff","delta_g"]:
+                if j == len(idx) - 1 and ix == len(current_tuple) - 2:
+                    if self.__delta2 and self.__effect_size in ["mean_diff", "delta_g"]:
                         resamp_count = False
-                        def_pval     = False
+                        def_pval = False
                     elif self.__mini_meta and self.__effect_size == "mean_diff":
                         resamp_count = False
-                        def_pval     = False
+                        def_pval = False
                     else:
                         resamp_count = True
-                        def_pval     = True
+                        def_pval = True
                 else:
                     resamp_count = False
-                    def_pval     = False
+                    def_pval = False
 
-                text_repr = result.__repr__(show_resample_count=resamp_count,
-                                            define_pval=def_pval)
+                text_repr = result.__repr__(
+                    show_resample_count=resamp_count, define_pval=def_pval
+                )
 
                 to_replace = "between {} and {} is".format(cname, tname)
                 text_repr = text_repr.replace("is", to_replace, 1)
 
                 reprs.append(text_repr)
 
-
         self.__for_print = "\n\n".join(reprs)
 
-        out_             = pd.DataFrame(out)
+        out_ = pd.DataFrame(out)
 
-        columns_in_order = ['control', 'test', 'control_N', 'test_N',
-                            'effect_size', 'is_paired',
-                            'difference', 'ci',
-
-                            'bca_low', 'bca_high', 'bca_interval_idx',
-                            'pct_low', 'pct_high', 'pct_interval_idx',
-                            
-                            'bootstraps', 'resamples', 'random_seed',
-                            
-                            'permutations', 'pvalue_permutation', 'permutation_count', 'permutations_var',
-                            
-                            'pvalue_welch',
-                            'statistic_welch',
-
-                            'pvalue_students_t',
-                            'statistic_students_t',
-
-                            'pvalue_mann_whitney',
-                            'statistic_mann_whitney',
-
-                            'pvalue_brunner_munzel',
-                            'statistic_brunner_munzel',
-
-                            'pvalue_wilcoxon',
-                            'statistic_wilcoxon',
-
-                            'pvalue_mcnemar',
-                            'statistic_mcnemar',
-
-                            'pvalue_paired_students_t',
-                            'statistic_paired_students_t',
-
-                            'pvalue_kruskal',
-                            'statistic_kruskal',
-                            'proportional_difference'
-                           ]
-        self.__results   = out_.reindex(columns=columns_in_order)
+        columns_in_order = [
+            "control",
+            "test",
+            "control_N",
+            "test_N",
+            "effect_size",
+            "is_paired",
+            "difference",
+            "ci",
+            "bca_low",
+            "bca_high",
+            "bca_interval_idx",
+            "pct_low",
+            "pct_high",
+            "pct_interval_idx",
+            "bootstraps",
+            "resamples",
+            "random_seed",
+            "permutations",
+            "pvalue_permutation",
+            "permutation_count",
+            "permutations_var",
+            "pvalue_welch",
+            "statistic_welch",
+            "pvalue_students_t",
+            "statistic_students_t",
+            "pvalue_mann_whitney",
+            "statistic_mann_whitney",
+            "pvalue_brunner_munzel",
+            "statistic_brunner_munzel",
+            "pvalue_wilcoxon",
+            "statistic_wilcoxon",
+            "pvalue_mcnemar",
+            "statistic_mcnemar",
+            "pvalue_paired_students_t",
+            "statistic_paired_students_t",
+            "pvalue_kruskal",
+            "statistic_kruskal",
+            "proportional_difference",
+        ]
+        self.__results = out_.reindex(columns=columns_in_order)
         self.__results.dropna(axis="columns", how="all", inplace=True)
-        
+
         # Add the is_paired column back when is_paired is None
         if self.is_paired is None:
-            self.__results.insert(5, 'is_paired', self.__results.apply(lambda _: None, axis=1))
-        
+            self.__results.insert(
+                5, "is_paired", self.__results.apply(lambda _: None, axis=1)
+            )
+
         # Create and compute the delta-delta statistics
         if self.__delta2:
-            self.__delta_delta = DeltaDelta(self,
-                                            self.__permutation_count,
-                                            bootstraps_delta_delta,
-                                            self.__ci)
+            self.__delta_delta = DeltaDelta(
+                self, self.__permutation_count, bootstraps_delta_delta, self.__ci
+            )
             reprs.append(self.__delta_delta.__repr__(header=False))
         elif self.__delta2 and self.__effect_size not in ["mean_diff", "delta_g"]:
-            self.__delta_delta = "Delta-delta is not supported for {}.".format(self.__effect_size)
+            self.__delta_delta = "Delta-delta is not supported for {}.".format(
+                self.__effect_size
+            )
         else:
-            self.__delta_delta = "`delta2` is False; delta-delta is therefore not calculated."
+            self.__delta_delta = (
+                "`delta2` is False; delta-delta is therefore not calculated."
+            )
 
         # Create and compute the weighted average statistics
         if self.__mini_meta and self.__effect_size == "mean_diff":
-            self.__mini_meta_delta = MiniMetaDelta(self,
-                                                     self.__permutation_count,
-                                                     self.__ci)
+            self.__mini_meta_delta = MiniMetaDelta(
+                self, self.__permutation_count, self.__ci
+            )
             reprs.append(self.__mini_meta_delta.__repr__(header=False))
         elif self.__mini_meta and self.__effect_size != "mean_diff":
-            self.__mini_meta_delta = "Weighted delta is not supported for {}.".format(self.__effect_size)
+            self.__mini_meta_delta = "Weighted delta is not supported for {}.".format(
+                self.__effect_size
+            )
         else:
-            self.__mini_meta_delta = "`mini_meta` is False; weighted delta is therefore not calculated."
-        
-        
+            self.__mini_meta_delta = (
+                "`mini_meta` is False; weighted delta is therefore not calculated."
+            )
+
         varname = get_varname(self.__dabest_obj)
-        lastline = "To get the results of all valid statistical tests, " +\
-        "use `{}.{}.statistical_tests`".format(varname, self.__effect_size)
+        lastline = (
+            "To get the results of all valid statistical tests, "
+            + "use `{}.{}.statistical_tests`".format(varname, self.__effect_size)
+        )
         reprs.append(lastline)
 
         reprs.insert(0, print_greeting())
 
         self.__for_print = "\n\n".join(reprs)
-
 
     def __repr__(self):
         try:
@@ -873,18 +898,14 @@ class EffectSizeDataFrame(object):
         except AttributeError:
             self.__pre_calc()
             return self.__for_print
-            
-            
-            
+
     def __calc_lqrt(self):
-        
         rnd_seed = self.__random_seed
         db_obj = self.__dabest_obj
-        dat  = db_obj._plot_data
+        dat = db_obj._plot_data
         xvar = db_obj._xvar
         yvar = db_obj._yvar
         delta2 = self.__delta2
-        
 
         out = []
 
@@ -898,95 +919,108 @@ class EffectSizeDataFrame(object):
                     cname = current_tuple[ix]
                     control = dat[dat[xvar] == cname][yvar].copy()
                 test = dat[dat[xvar] == tname][yvar].copy()
-                
-                if self.__is_paired:                    
+
+                if self.__is_paired:
                     # Refactored here in v0.3.0 for performance issues.
-                    lqrt_result = lqrt.lqrtest_rel(control, test, 
-                                            random_state=rnd_seed)
-                    
-                    out.append({"control": cname, "test": tname, 
-                                "control_N": int(len(control)), 
-                                "test_N": int(len(test)),
-                                "pvalue_paired_lqrt": lqrt_result.pvalue,
-                                "statistic_paired_lqrt": lqrt_result.statistic
-                                })
+                    lqrt_result = lqrt.lqrtest_rel(control, test, random_state=rnd_seed)
+
+                    out.append(
+                        {
+                            "control": cname,
+                            "test": tname,
+                            "control_N": int(len(control)),
+                            "test_N": int(len(test)),
+                            "pvalue_paired_lqrt": lqrt_result.pvalue,
+                            "statistic_paired_lqrt": lqrt_result.statistic,
+                        }
+                    )
 
                 else:
                     # Likelihood Q-Ratio test:
-                    lqrt_equal_var_result = lqrt.lqrtest_ind(control, test, 
-                                                random_state=rnd_seed,
-                                                equal_var=True)
-                                                
-                                                
-                    lqrt_unequal_var_result = lqrt.lqrtest_ind(control, test, 
-                                                random_state=rnd_seed,
-                                                equal_var=False)
-                                                
-                    out.append({"control": cname, "test": tname, 
-                                "control_N": int(len(control)), 
-                                "test_N": int(len(test)),
-                                
-                                "pvalue_lqrt_equal_var"      : lqrt_equal_var_result.pvalue,
-                                "statistic_lqrt_equal_var"   : lqrt_equal_var_result.statistic,
-                                "pvalue_lqrt_unequal_var"    : lqrt_unequal_var_result.pvalue,
-                                "statistic_lqrt_unequal_var" : lqrt_unequal_var_result.statistic,
-                                })                     
+                    lqrt_equal_var_result = lqrt.lqrtest_ind(
+                        control, test, random_state=rnd_seed, equal_var=True
+                    )
+
+                    lqrt_unequal_var_result = lqrt.lqrtest_ind(
+                        control, test, random_state=rnd_seed, equal_var=False
+                    )
+
+                    out.append(
+                        {
+                            "control": cname,
+                            "test": tname,
+                            "control_N": int(len(control)),
+                            "test_N": int(len(test)),
+                            "pvalue_lqrt_equal_var": lqrt_equal_var_result.pvalue,
+                            "statistic_lqrt_equal_var": lqrt_equal_var_result.statistic,
+                            "pvalue_lqrt_unequal_var": lqrt_unequal_var_result.pvalue,
+                            "statistic_lqrt_unequal_var": lqrt_unequal_var_result.statistic,
+                        }
+                    )
         self.__lqrt_results = pd.DataFrame(out)
 
-
-    def plot(self, color_col=None,
-
-            raw_marker_size=6, es_marker_size=9,
-
-            swarm_label=None, contrast_label=None, delta2_label=None,
-            swarm_ylim=None, contrast_ylim=None, delta2_ylim=None,
-
-            custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
-            halfviolin_alpha=0.8, 
-
-            face_color = None,
-            #bar plot
-            bar_label=None, bar_desat=0.5, bar_width = 0.5,bar_ylim = None,
-            # error bar of proportion plot
-            ci=None, ci_type='bca', err_color=None,
-
-            float_contrast=True,
-            show_pairs=True,
-            show_delta2=True,
-            show_mini_meta=True,
-            group_summaries=None,
-            group_summaries_offset=0.1,
-
-            fig_size=None,
-            dpi=100,
-            ax=None,
-            
-            contrast_show_es = False,
-            es_sf = 2,
-            es_fontsize = 10,
-             
-            contrast_show_deltas = True,
-             
-            gridkey_rows=None,
-            gridkey_merge_pairs = False,
-            gridkey_show_Ns = True,
-            gridkey_show_es = True,
-
-            swarmplot_kwargs=None,
-            barplot_kwargs=None,
-            violinplot_kwargs=None,
-            slopegraph_kwargs=None,
-            sankey_kwargs=None,
-            reflines_kwargs=None,
-            group_summary_kwargs=None,
-            legend_kwargs=None,
-            title=None, fontsize_title = 16,
-            fontsize_rawxlabel = 12,fontsize_rawylabel = 12,fontsize_contrastxlabel = 12, fontsize_contrastylabel = 12,
-            fontsize_delta2label = 12):
-
+    def plot(
+        self,
+        color_col=None,
+        raw_marker_size=6,
+        es_marker_size=9,
+        swarm_label=None,
+        contrast_label=None,
+        delta2_label=None,
+        swarm_ylim=None,
+        contrast_ylim=None,
+        delta2_ylim=None,
+        swarm_side=None,
+        custom_palette=None,
+        swarm_desat=0.5,
+        halfviolin_desat=1,
+        halfviolin_alpha=0.8,
+        face_color=None,
+        # bar plot
+        bar_label=None,
+        bar_desat=0.5,
+        bar_width=0.5,
+        bar_ylim=None,
+        # error bar of proportion plot
+        ci=None,
+        ci_type="bca",
+        err_color=None,
+        float_contrast=True,
+        show_pairs=True,
+        show_delta2=True,
+        show_mini_meta=True,
+        group_summaries=None,
+        group_summaries_offset=0.1,
+        fig_size=None,
+        dpi=100,
+        ax=None,
+        contrast_show_es=False,
+        es_sf=2,
+        es_fontsize=10,
+        contrast_show_deltas=True,
+        gridkey_rows=None,
+        gridkey_merge_pairs=False,
+        gridkey_show_Ns=True,
+        gridkey_show_es=True,
+        swarmplot_kwargs=None,
+        barplot_kwargs=None,
+        violinplot_kwargs=None,
+        slopegraph_kwargs=None,
+        sankey_kwargs=None,
+        reflines_kwargs=None,
+        group_summary_kwargs=None,
+        legend_kwargs=None,
+        title=None,
+        fontsize_title=16,
+        fontsize_rawxlabel=12,
+        fontsize_rawylabel=12,
+        fontsize_contrastxlabel=12,
+        fontsize_contrastylabel=12,
+        fontsize_delta2label=12,
+    ):
         """
         Creates an estimation plot for the effect size of interest.
-        
+
 
         Parameters
         ----------
@@ -1003,19 +1037,19 @@ class EffectSizeDataFrame(object):
             respectively. If `swarm_label` is not specified, it defaults to
             "value", unless a column name was passed to `y`. If
             `contrast_label` is not specified, it defaults to the effect size
-            being plotted. If `delta2_label` is not specifed, it defaults to 
+            being plotted. If `delta2_label` is not specifed, it defaults to
             "delta - delta"
         swarm_ylim, contrast_ylim, delta2_ylim : tuples, default None
             The desired y-limits of the raw data (swarmplot) axes, the
-            difference axes and the delta-delta axes respectively, as a tuple. 
-            These will be autoscaled to sensible values if they are not 
-            specified. The delta2 axes and contrast axes should have the same 
+            difference axes and the delta-delta axes respectively, as a tuple.
+            These will be autoscaled to sensible values if they are not
+            specified. The delta2 axes and contrast axes should have the same
             limits for y. When `show_delta2` is True, if both of the `contrast_ylim`
-            and `delta2_ylim` are not None, then they must be specified with the 
+            and `delta2_ylim` are not None, then they must be specified with the
             same values; when `show_delta2` is True and only one of them is specified,
             then the other will automatically be assigned with the same value.
             Specifying `delta2_ylim` does not have any effect when `show_delta2` is
-            False. 
+            False.
         custom_palette : dict, list, or matplotlib color palette, default None
             This keyword accepts a dictionary with {'group':'color'} pairings,
             a list of RGB colors, or a specified matplotlib palette. This
@@ -1038,7 +1072,7 @@ class EffectSizeDataFrame(object):
             curves by the desired proportion. Uses `seaborn.desaturate()` to
             acheive this.
         halfviolin_alpha : float, default 0.8
-            The alpha (transparency) level of the half-violin bootstrap curves.            
+            The alpha (transparency) level of the half-violin bootstrap curves.
         float_contrast : boolean, default True
             Whether or not to display the halfviolin bootstrapped difference
             distribution alongside the raw data.
@@ -1047,7 +1081,7 @@ class EffectSizeDataFrame(object):
             swarmplot, or as slopegraph, with a line joining each pair of
             observations.
         show_delta2, show_mini_meta : boolean, default True
-            If delta-delta or mini-meta delta is calculated, whether or not to 
+            If delta-delta or mini-meta delta is calculated, whether or not to
             show the delta-delta plot or mini-meta plot.
         group_summaries : ['mean_sd', 'median_quartiles', 'None'], default None.
             Plots the summary statistics for each group. If 'mean_sd', then
@@ -1057,7 +1091,7 @@ class EffectSizeDataFrame(object):
             instead. If 'None', the summaries are not shown.
         group_summaries_offset : float, default 0.1
             If group summaries are displayed, they will be offset from the raw
-            data swarmplot groups by this value. 
+            data swarmplot groups by this value.
         fig_size : tuple, default None
             The desired dimensions of the figure as a (length, width) tuple.
         dpi : int, default 100
@@ -1086,7 +1120,7 @@ class EffectSizeDataFrame(object):
             passed to plot() : {'linewidth':1, 'alpha':0.5}.
         sankey_kwargs: dict, default None
             Whis will change the appearance of the sankey diagram used to depict
-            paired proportional data when `show_pairs=True` and `proportional=True`. 
+            paired proportional data when `show_pairs=True` and `proportional=True`.
             Pass any keyword arguments accepted by plot_tools.sankeydiag() function
             here, as a dict. If None, the following keywords are passed to sankey diagram:
             {"width": 0.5, "align": "center", "alpha": 0.4, "bar_width": 0.1, "rightColor": False}
@@ -1130,13 +1164,13 @@ class EffectSizeDataFrame(object):
         Returns
         -------
         A :class:`matplotlib.figure.Figure` with 2 Axes, if ``ax = None``.
-        
+
         The first axes (accessible with ``FigName.axes[0]``) contains the rawdata swarmplot; the second axes (accessible with ``FigName.axes[1]``) has the bootstrap distributions and effect sizes (with confidence intervals) plotted on it.
-        
-        If ``ax`` is specified, the rawdata swarmplot is accessed at ``ax`` 
+
+        If ``ax`` is specified, the rawdata swarmplot is accessed at ``ax``
         itself, while the effect size axes is accessed at ``ax.contrast_axes``.
         See the last example below.
-        
+
 
 
         """
@@ -1153,15 +1187,14 @@ class EffectSizeDataFrame(object):
         #     raw_marker_size = 0.01
 
         # Modification incurred due to update of Seaborn
-        ci = ('ci', ci) if ci is not None else None
-            
+        ci = ("ci", ci) if ci is not None else None
+
         all_kwargs = locals()
         del all_kwargs["self"]
 
         out = effectsize_df_plotter(self, **all_kwargs)
 
         return out
-
 
     @property
     def proportional(self):
@@ -1180,24 +1213,33 @@ class EffectSizeDataFrame(object):
             self.__pre_calc()
             return self.__results
 
-
-
     @property
     def statistical_tests(self):
         results_df = self.results
 
         # Select only the statistics and p-values.
-        stats_columns = [c for c in results_df.columns
-                         if c.startswith("statistic") or c.startswith("pvalue")]
+        stats_columns = [
+            c
+            for c in results_df.columns
+            if c.startswith("statistic") or c.startswith("pvalue")
+        ]
 
-        default_cols = ['control', 'test', 'control_N', 'test_N',
-                        'effect_size', 'is_paired',
-                        'difference', 'ci', 'bca_low', 'bca_high']
+        default_cols = [
+            "control",
+            "test",
+            "control_N",
+            "test_N",
+            "effect_size",
+            "is_paired",
+            "difference",
+            "ci",
+            "bca_low",
+            "bca_high",
+        ]
 
         cols_of_interest = default_cols + stats_columns
 
         return results_df[cols_of_interest]
-
 
     @property
     def _for_print(self):
@@ -1234,21 +1276,17 @@ class EffectSizeDataFrame(object):
     def x1_level(self):
         return self.__x1_level
 
-
     @property
     def x2(self):
         return self.__x2
 
-
     @property
     def experiment_label(self):
         return self.__experiment_label
-    
 
     @property
     def delta2(self):
         return self.__delta2
-    
 
     @property
     def resamples(self):
@@ -1284,12 +1322,12 @@ class EffectSizeDataFrame(object):
         class.
         """
         return self.__proportional
-        
+
     @property
     def lqrt(self):
-        """Returns all pairwise Lq-Likelihood Ratio Type test results 
+        """Returns all pairwise Lq-Likelihood Ratio Type test results
         as a pandas DataFrame.
-        
+
         For more information on LqRT tests, see https://arxiv.org/abs/1911.11922
         """
         try:
@@ -1297,8 +1335,7 @@ class EffectSizeDataFrame(object):
         except AttributeError:
             self.__calc_lqrt()
             return self.__lqrt_results
-        
-    
+
     @property
     def mini_meta(self):
         """
@@ -1306,7 +1343,6 @@ class EffectSizeDataFrame(object):
         """
         return self.__mini_meta
 
-    
     @property
     def mini_meta_delta(self):
         """
@@ -1318,7 +1354,6 @@ class EffectSizeDataFrame(object):
             self.__pre_calc()
             return self.__mini_meta_delta
 
-    
     @property
     def delta_delta(self):
         """
@@ -1329,8 +1364,6 @@ class EffectSizeDataFrame(object):
         except AttributeError:
             self.__pre_calc()
             return self.__delta_delta
-
-
 
 # %% ../nbs/API/effsize_objects.ipynb 29
 class PermutationTest:

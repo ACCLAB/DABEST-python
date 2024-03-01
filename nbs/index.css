@@ -1,7 +1,7 @@
 :root {
-  --background: #33373F;
-  --background-2: #41454E;
-  --foreground: white;
+  --background: white;
+  --background-2: #c3c8d4;
+  --foreground: #484d54;
   --foreground-2: #484d54;
   --content-width: 1000px;
 }
