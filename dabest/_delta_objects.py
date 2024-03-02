@@ -555,7 +555,7 @@ class MiniMetaDelta(object):
         bs = bs1 + bs2
 
         pval_def1 = "Any p-value reported is the probability of observing the" + \
-                    "effect size (or greater),\nassuming the null hypothesis of" + \
+                    "effect size (or greater),\nassuming the null hypothesis of " + \
                     "zero difference is true."
         pval_def2 = "\nFor each p-value, 5000 reshuffles of the " + \
                     "control and test labels were performed."

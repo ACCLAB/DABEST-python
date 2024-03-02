@@ -98,7 +98,9 @@ def compute_meandiff_jackknife(x0, x1, is_paired, effect_size):
 
 
 def _calc_accel(jack_dist):
-    # TODO Missing docstring
+    """
+    Given the Jackknife distribution, calculates the acceleration factor.
+    """
     jack_mean = npmean(jack_dist)
 
     numer = npsum((jack_mean - jack_dist) ** 3)
