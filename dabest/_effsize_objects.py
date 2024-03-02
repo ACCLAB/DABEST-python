@@ -219,7 +219,7 @@ class TwoGroupsEffectSize(object):
 
         pval_def1 = (
             "Any p-value reported is the probability of observing the"
-            + "effect size (or greater),\nassuming the null hypothesis of "
+            + "effect size (or greater),\nassuming the null hypothesis of"
             + "zero difference is true."
         )
         pval_def2 = (
@@ -299,6 +299,7 @@ class TwoGroupsEffectSize(object):
                 )
 
         else:
+            # TODO improve error handling, separate file with error messages?
             err1 = "The $lim_type limit of the BCa interval cannot be computed."
             err2 = "It is set to the effect size itself."
             err3 = "All bootstrap values were likely all the same."
@@ -329,16 +330,9 @@ class TwoGroupsEffectSize(object):
 
         if self.__is_paired and not self.__proportional:
             # Wilcoxon, a non-parametric version of the paired T-test.
-            try:
-                wilcoxon = spstats.wilcoxon(self.__control, self.__test)
-                self.__pvalue_wilcoxon = wilcoxon.pvalue
-                self.__statistic_wilcoxon = wilcoxon.statistic
-            except ValueError as e:
-                warnings.warn("Wilcoxon test could not be performed. This might be due "
-                    "to no variability in the difference of the paired groups. \n"
-                    "Error: {}\n"
-                    "For detailed information, please refer to https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html "
-                    .format(e))
+            wilcoxon = spstats.wilcoxon(self.__control, self.__test)
+            self.__pvalue_wilcoxon = wilcoxon.pvalue
+            self.__statistic_wilcoxon = wilcoxon.statistic
 
             if self.__effect_size != "median_diff":
                 # Paired Student's t-test.
@@ -362,16 +356,6 @@ class TwoGroupsEffectSize(object):
             _mcnemar = mcnemar(table, exact=True, correction=True)
             self.__pvalue_mcnemar = _mcnemar.pvalue
             self.__statistic_mcnemar = _mcnemar.statistic
-
-        elif self.__proportional:
-            # The Cohen's h calculation is for binary categorical data
-            try:
-                self.__proportional_difference = es.cohens_h(
-                    self.__control, self.__test
-                )
-            except ValueError as e:
-                warnings.warn(f"Calculation of Cohen's h failed. This method is applicable "
-                  f"only for binary data (0's and 1's). Details: {e}")
 
         elif self.__effect_size == "cliffs_delta":
             # Let's go with Brunner-Munzel!
@@ -414,13 +398,23 @@ class TwoGroupsEffectSize(object):
                 )
                 self.__pvalue_mann_whitney = mann_whitney.pvalue
                 self.__statistic_mann_whitney = mann_whitney.statistic
-            except ValueError as e:
-                warnings.warn("Mann-Whitney test could not be performed. This might be due "
-                  "to identical rank values in both control and test groups. "
-                  "Details: {}".format(e))
+            except ValueError:
+                # TODO At least print some warning?
+                # Occurs when the control and test are exactly identical
+                # in terms of rank (eg. all zeros.)
+                pass
 
             standardized_es = es.cohens_d(self.__control, self.__test, is_paired=None)
 
+            # The Cohen's h calculation is for binary categorical data
+            try:
+                self.__proportional_difference = es.cohens_h(
+                    self.__control, self.__test
+                )
+            except ValueError:
+                # TODO At least print some warning?
+                # Occur only when the data consists not only 0's and 1's.
+                pass
 
     def to_dict(self):
         """
@@ -573,6 +567,7 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_paired_students_t(self):
+        # TODO Missing docstring
         try:
             return self.__pvalue_paired_students_t
         except AttributeError:
@@ -580,6 +575,7 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_paired_students_t(self):
+        # TODO Missing docstring
         try:
             return self.__statistic_paired_students_t
         except AttributeError:
@@ -587,6 +583,7 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_kruskal(self):
+        # TODO Missing docstring
         try:
             return self.__pvalue_kruskal
         except AttributeError:
@@ -594,6 +591,7 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_kruskal(self):
+        # TODO Missing docstring
         try:
             return self.__statistic_kruskal
         except AttributeError:
@@ -601,6 +599,7 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_welch(self):
+        # TODO Missing docstring
         try:
             return self.__pvalue_welch
         except AttributeError:
@@ -608,6 +607,7 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_welch(self):
+        # TODO Missing docstring
         try:
             return self.__statistic_welch
         except AttributeError:
@@ -615,6 +615,7 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_students_t(self):
+        # TODO Missing docstring
         try:
             return self.__pvalue_students_t
         except AttributeError:
@@ -622,6 +623,7 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_students_t(self):
+        # TODO Missing docstring
         try:
             return self.__statistic_students_t
         except AttributeError:
@@ -629,6 +631,7 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_mann_whitney(self):
+        # TODO Missing docstring
         try:
             return self.__pvalue_mann_whitney
         except AttributeError:
@@ -636,6 +639,7 @@ class TwoGroupsEffectSize(object):
 
     @property
     def statistic_mann_whitney(self):
+        # TODO Missing docstring
         try:
             return self.__statistic_mann_whitney
         except AttributeError:
@@ -643,9 +647,7 @@ class TwoGroupsEffectSize(object):
 
     @property
     def pvalue_permutation(self):
-        """
-        p value of permutation test
-        """
+        # TODO Missing docstring
         return self.__PermutationTest_result.pvalue
 
     @property
@@ -661,10 +663,12 @@ class TwoGroupsEffectSize(object):
 
     @property
     def permutations_var(self):
+         # TODO Missing docstring
         return self.__PermutationTest_result.permutations_var
 
     @property
     def proportional_difference(self):
+         # TODO Missing docstring
         try:
             return self.__proportional_difference
         except AttributeError:

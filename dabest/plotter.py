@@ -643,39 +643,21 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             else:
                 jitter = 1
 
-            if color_col is None: # Determine the use of hue
-                rawdata_plot = swarmplot(
-                    data=plot_data,
-                    x=xvar,
-                    y=yvar,
-                    ax=rawdata_axes,
-                    order=all_plot_groups,
-                    hue=xvar,
-                    palette=plot_palette_raw,
-                    zorder=1,
-                    side=asymmetric_side,
-                    jitter=jitter,
-                    is_drop_gutter=True,
-                    gutter_limit=0.45,
-                    **swarmplot_kwargs
-                )
-                rawdata_plot.legend().set_visible(False)
-            else:
-                rawdata_plot = swarmplot(
-                    data=plot_data,
-                    x=xvar,
-                    y=yvar,
-                    ax=rawdata_axes,
-                    order=all_plot_groups,
-                    hue=color_col,
-                    palette=plot_palette_raw,
-                    zorder=1,
-                    side=asymmetric_side,
-                    jitter=jitter,
-                    is_drop_gutter=True,
-                    gutter_limit=0.45,
-                    **swarmplot_kwargs
-                )
+            rawdata_plot = swarmplot(
+                data=plot_data,
+                x=xvar,
+                y=yvar,
+                ax=rawdata_axes,
+                order=all_plot_groups,
+                hue=color_col,
+                palette=plot_palette_raw,
+                zorder=1,
+                side=asymmetric_side,
+                jitter=jitter,
+                is_drop_gutter=True,
+                gutter_limit=0.45,
+                **swarmplot_kwargs
+            )
         else:
             # Plot the raw data as a barplot.
             bar1_df = pd.DataFrame(
@@ -736,10 +718,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
                 if bootstraps_color_by_group:
                     line_colors.append(plot_palette_raw[all_plot_groups[jj]])
-
-                # Break the loop since hue in Seaborn adds collections to axes and it will result in index out of range
-                if jj >= n_groups - 1 and color_col is None:
-                    break
 
             if len(line_colors) != len(all_plot_groups):
                 line_colors = ytick_color
@@ -1603,4 +1581,3 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     # Return the figure.
     return fig
-

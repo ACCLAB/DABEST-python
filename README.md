@@ -166,6 +166,7 @@ contributing](CONTRIBUTING.md), create a new issue using Feature request
 template or create a new post in [our Google
 Group](https://groups.google.com/g/estimationstats).
 
+
 ## Acknowledgements
 
 We would like to thank alpha testers from the [Claridge-Chang
@@ -178,6 +179,7 @@ Stanislav Ott.
 ## Testing
 
 To test DABEST, you need to install
+
 [pytest](https://docs.pytest.org/en/latest) and
 [nbdev](https://nbdev.fast.ai/).
 
