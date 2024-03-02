@@ -140,9 +140,9 @@ def forest_plot(
     # Adjust figure size based on orientation
     all_groups_count = len(contrasts)
     if horizontal:
-        fig_size = (4, 2.5 * all_groups_count)
+        fig_size = (4, 1.5 * all_groups_count)
     else:
-        fig_size = (2.5 * all_groups_count, 4)
+        fig_size = (1.5 * all_groups_count, 4)
 
     if ax is None:
         fig, ax = plt.subplots(figsize=fig_size)
