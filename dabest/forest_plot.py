@@ -45,7 +45,9 @@ def load_plot_data(
     contrast_attr = contrast_attr_map.get(contrast_type)
 
     if not effect_attr:
-        raise ValueError(f"Invalid effect_size: {effect_size}")
+        raise ValueError(f"Invalid effect_size: {effect_size}") 
+    if not contrast_attr:
+        raise ValueError(f"Invalid contrast_type: {contrast_type}. Available options: [`delta2`, `mini_meta`]")
 
     return [
         getattr(getattr(contrast, effect_attr), contrast_attr) for contrast in contrasts
@@ -150,12 +152,63 @@ def forest_plot(
     from .plot_tools import halfviolin
 
     # Validate inputs
-    if not contrasts:
-        raise ValueError("The `contrasts` list cannot be empty.")
+    if contrasts is None:
+        raise ValueError("The `contrasts` parameter cannot be None")
+    
+    if not isinstance(contrasts, list) or not contrasts:
+        raise ValueError("The `contrasts` argument must be a non-empty list.")
+    
+    if selected_indices is not None and not isinstance(selected_indices, (list, type(None))):
+        raise TypeError("The `selected_indices` must be a list of integers or `None`.")
+    
+    if not isinstance(contrast_type, str):
+        raise TypeError("The `contrast_type` argument must be a string.")
+    
+    if xticklabels is not None and not all(isinstance(label, str) for label in xticklabels):
+        raise TypeError("The `xticklabels` must be a list of strings or `None`.")
+    
+    if not isinstance(effect_size, str):
+        raise TypeError("The `effect_size` argument must be a string.")
+    
+    if contrast_labels is not None and not all(isinstance(label, str) for label in contrast_labels):
+        raise TypeError("The `contrast_labels` must be a list of strings or `None`.")
     
     if contrast_labels is not None and len(contrast_labels) != len(contrasts):
         raise ValueError("`contrast_labels` must match the number of `contrasts` if provided.")
     
+    if not isinstance(ylabel, str):
+        raise TypeError("The `ylabel` argument must be a string.")
+    
+    if custom_palette is not None and not isinstance(custom_palette, (dict, list, str, type(None))):
+        raise TypeError("The `custom_palette` must be either a dictionary, list, string, or `None`.")
+    
+    if not isinstance(fontsize, (int, float)):
+        raise TypeError("`fontsize` must be an integer or float.")
+    
+    if not isinstance(marker_size, (int, float)) or marker_size <= 0:
+        raise TypeError("`marker_size` must be a positive integer or float.")
+    
+    if not isinstance(ci_line_width, (int, float)) or ci_line_width <= 0:
+        raise TypeError("`ci_line_width` must be a positive integer or float.")
+    
+    if not isinstance(zero_line_width, (int, float)) or zero_line_width <= 0:
+        raise TypeError("`zero_line_width` must be a positive integer or float.")
+    
+    if not isinstance(remove_spines, bool):
+        raise TypeError("`remove_spines` must be a boolean value.")
+    
+    if ax is not None and not isinstance(ax, plt.Axes):
+        raise TypeError("`ax` must be a `matplotlib.axes.Axes` instance or `None`.")
+    
+    if not isinstance(rotation_for_xlabels, (int, float)) or not 0 <= rotation_for_xlabels <= 360:
+        raise TypeError("`rotation_for_xlabels` must be an integer or float between 0 and 360.")
+    
+    if not isinstance(alpha_violin_plot, float) or not 0 <= alpha_violin_plot <= 1:
+        raise TypeError("`alpha_violin_plot` must be a float between 0 and 1.")
+    
+    if not isinstance(horizontal, bool):
+        raise TypeError("`horizontal` must be a boolean value.")
+
     # Load plot data
     contrast_plot_data = load_plot_data(contrasts, effect_size, contrast_type)
 
