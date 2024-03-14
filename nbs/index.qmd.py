@@ -15,12 +15,14 @@ def btn(txt, link): return qmd.btn(txt, link=link, classes=['btn-action-primary'
 def banner(txt, classes=None, style=None): return qmd.div(txt, L('hero-banner')+classes, style=style)
 
 features = L(
-    ('docs', 'Beautiful technical documentation and scientific articles with Quarto'),
-    ('testing', 'Out-of-the-box continuous integration with GitHub Actions'),
-    ('packaging', 'Publish code to PyPI and conda, and prose to GitHub Pages'),
-    ('visualization', 'Estimation plots are robust, beautiful, and convey important statistical information elegantly and efficiently.'),
-    ('jupyter', 'Write prose, code, and tests in notebooks'),
-    ('git', 'Git-friendly notebooks: human-readable merge conflicts')
+    ('estimations', 'Shift from p-values to effect size and confidence intervals for richer data insights'),
+    # ('User-Friendly Interface', 'Accessible to both novices and experts, ensuring ease of use'),
+    ('gaussian', 'Robust and elegant statistical visualizations for efficient information conveyance'),
+    ('python', 'Seamless integration with the scientific Python libraries for comprehensive data analysis'),
+    ('customizable', 'Flexible plot customization to meet diverse presentation needs'),
+    ('jupyter', 'Promotes reproducibility with easy sharing of data and analysis code'),
+    # ('Educational Resources', 'Extensive documentation and tutorials to enhance statistical literacy'),
+    ('git', 'Ongoing support and development through an engaged user community')
 )
 
 def industry(im, **kwargs): return qmd.div(img(im, **kwargs), ["g-col-12", "g-col-sm-6", "g-col-md-3"])
@@ -33,7 +35,7 @@ def testm(im, nm, detl, txt):
 ## {detl}
 
 ### {txt}""", ["testimonial", "g-col-12", "g-col-md-6"])
-
+ 
 
 def feature(im, desc): return qmd.div(f"{img(im+'.svg')}\n\n{desc}\n", ['feature', 'g-col-12', 'g-col-sm-6', 'g-col-md-4'])
 
