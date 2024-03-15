@@ -65,9 +65,3 @@ d(feature_h+feature_d, "content-block")
 b(f"""## Get started in seconds
 
 {btn('Install dabest', '/01-getting_started.ipynb')}""", 'content-block', style={"margin-top": "40px"})
-
-
-
-
-
-

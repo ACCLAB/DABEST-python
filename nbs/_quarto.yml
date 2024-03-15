@@ -20,7 +20,7 @@ website:
         contents: tutorials/*
       - section: API
         contents: API/*
-  favicon: images/favicon.svg
+  favicon: images/DABEST-square-outline.svg
   navbar:
     background: primary
     search: true
