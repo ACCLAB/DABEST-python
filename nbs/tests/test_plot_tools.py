@@ -44,6 +44,7 @@ def test_width_determine():
     ("jitter", None, "`jitter` must be a scalar or float.", ValueError),
     ("is_drop_gutter", None, "`is_drop_gutter` must be a boolean.", ValueError),
     ("gutter_limit", None, "`gutter_limit` must be a scalar or float.", ValueError),
+    ("filled", 1, "`filled` must be a boolean, list or tuple.", ValueError),
 
     # More thorough input validation checks
     ("x", "a", "a is not a column in `data`.", IndexError),
@@ -54,7 +55,9 @@ def test_width_determine():
     ("palette", {"Control 1": " "}, "The color mapping for Control 1 in `palette` is an empty string. It must contain a color name.", ValueError),
     ("palette", {"Control 3": "black"}, "Control 3 in `palette` is not in the 'group' column of `data`.", IndexError),
     # TODO: to add palette validation testing for when color_col is hue
-    ("side", "top", "Invalid `side`. Must be one of 'center', 'right', or 'left'.", ValueError)
+    ("side", "top", "Invalid `side`. Must be one of 'center', 'right', or 'left'.", ValueError),
+    ("filled", [True, "a"], "All values in `filled` must be a boolean.", ValueError),
+    ("filled", [True], "There are 2 unique values in `x` column in `data` but `filled` has a length of 1.", ValueError),
 ])
 def test_swarmplot_input_error_handling(param_name, param_value, error_msg, error_type):
     with pytest.raises(error_type) as excinfo:
@@ -70,6 +73,7 @@ def test_swarmplot_input_error_handling(param_name, param_value, error_msg, erro
             size=5 if param_name != "size" else param_value,
             side="center" if param_name != "side" else param_value,
             jitter=1 if param_name != "jitter" else param_value,
+            filled=True if param_name != "filled" else param_value,
             is_drop_gutter=True if param_name != "is_drop_gutter" else param_value,
             gutter_limit=0.5 if param_name != "gutter_limit" else param_value,
         )
