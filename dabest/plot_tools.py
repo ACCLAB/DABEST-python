@@ -798,9 +798,7 @@ def swarmplot(
     axes._subplots.Subplot | axes._axes.Axes
         Matplotlib AxesSubplot object for which the swarm plot has been drawn on.
     """
-    s = SwarmPlot(
-        data, x, y, ax, order, hue, palette, zorder, size, side, jitter, filled
-    )
+    s = SwarmPlot(data, x, y, ax, order, hue, palette, zorder, size, side, jitter)
     ax = s.plot(is_drop_gutter, gutter_limit, ax, filled, **kwargs)
     return ax
 
@@ -819,7 +817,6 @@ class SwarmPlot:
         size: float = 5,
         side: str = "center",
         jitter: float = 1,
-        filled: Union[bool, List, Tuple] = True,
     ):
         """
         Initialize a SwarmPlot instance.
@@ -849,11 +846,6 @@ class SwarmPlot:
             The side on which points are swarmed ("center", "left", or "right"). Default is "center".
         jitter : int | float
             Determines the distance between points. Default is 1.
-        filled : bool | List | Tuple
-            Determines whether the dots in the swarmplot are filled or not. If set to False,
-            dots are not filled. If provided as a List or Tuple, it should contain boolean values,
-            each corresponding to a swarm group in order, indicating whether the dot should be
-            filled or not.
 
         Returns
         -------
@@ -999,7 +991,6 @@ class SwarmPlot:
             err = "`palette` cannot be an empty string. It must be either a string indicating a color name or an Iterable."
             raise ValueError(err)
         if isinstance(self.__palette, dict):
-            # TODO: to add detection of when dict length is less than size of unique_items
             for group_i, color_i in self.__palette.items():
                 if group_i not in pd.unique(data[color_col]):
                     err = (
@@ -1250,6 +1241,21 @@ class SwarmPlot:
             raise ValueError("`is_drop_gutter` must be a boolean.")
         if not isinstance(gutter_limit, (int, float)):
             raise ValueError("`gutter_limit` must be a scalar or float.")
+        if not isinstance(filled, (bool, list, tuple)):
+            raise ValueError("`filled` must be a boolean, list or tuple.")
+
+        # More thorough input validation checks
+        if isinstance(filled, (list, tuple)):
+            if len(filled) != len(self.__order):
+                err = (
+                    "There are {0} unique values in `x` column in `data` "
+                    "but `filled` has a length of {1}. If `filled` is a list "
+                    "or a tuple, it must have the same length as the number of "
+                    "unique values/groups in the `x` column of data."
+                ).format(len(self.__order), len(filled))
+                raise ValueError(err)
+            if not all(isinstance(_, bool) for _ in filled):
+                raise ValueError("All values in `filled` must be a boolean.")
 
         # Assumptions are that self.__data_copy is already sorted according to self.__order
         x_position = (
