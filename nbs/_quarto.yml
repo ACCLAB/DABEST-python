@@ -15,12 +15,12 @@ website:
   sidebar:
     style: floating
     contents:
-      - auto: "/*.ipynb"
+      - auto: "/0*.ipynb"
       - section: Tutorials
         contents: tutorials/*
       - section: API
         contents: API/*
-  favicon: images/DABEST-square-outline.svg
+  favicon: images/Favicon-3-outline.svg
   navbar:
     background: primary
     search: true
