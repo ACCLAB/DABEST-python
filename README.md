@@ -145,8 +145,8 @@ iris_dabest.mean_diff.plot();
 dataset](iris.png)
 
 Please refer to the official
-[tutorial](https://acclab.github.io/DABEST-python-docs/tutorial.html)
-for more useful code snippets.
+[tutorial](https://acclab.github.io/DABEST-python/) for more useful code
+snippets.
 
 ## How to cite
 
