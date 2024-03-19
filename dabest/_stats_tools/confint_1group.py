@@ -38,7 +38,9 @@ def compute_1group_jackknife(x, func, *args, **kwargs):
 
 
 def compute_1group_acceleration(jack_dist):
-    # TODO is it needed a function to just call one line?
+    """
+    Returns the accaleration value based on the jackknife distribution.
+    """
     from . import confint_2group_diff as ci_2g
 
     return ci_2g._calc_accel(jack_dist)
