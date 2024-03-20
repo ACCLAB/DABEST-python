@@ -54,7 +54,7 @@ b(f"""# <span style='color:#009AF1'>Data Analysis using</span><br>Bootstrap\-Cou
 
 {btn('Get started', '/01-getting_started.ipynb')}
 
-{img('showpiece.png', style={"margin-top": "20px", "margin-bottom": "20px"}, link=True)}""", "content-block")
+{img('splash-propplot.png', style={"margin-top": "100px", "margin-bottom": "20px"}, link=True)}""", "content-block")
 
 feature_h = banner(f"""## <span style='color:#009AF1'>Robust and Beautiful</span><br>Statistical Visualization
 
