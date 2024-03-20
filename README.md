@@ -8,19 +8,7 @@ On 22 March 2024, we officially released **DABEST v2024.3.29 for
 Python**. This new version provides several new features and includes
 performance improvements.
 
-1.  **Forest Plot**: With the new forest plot functionality, DABEST
-    users can now generate forest plots, a mainstay in meta-analysis.
-    This plot type is invaluable for visualizing the results of multiple
-    studies or analyses simultaneously, showing not just the estimated
-    effect sizes but also their confidence intervals. It is built upon
-    the calculation and existing DABEST feature of delta-delta and
-    mini-meta analysis and facilitates systematic reviews by generating
-    a summary plot that compares delta-delta or mini-meta effect size
-    plots from different studies or analysis. It’s an essential tool for
-    researchers conducting systematic reviews or wanting to summarize a
-    body of evidence in a single, comprehensive visual.
-
-2.  **New Paired Proportion Plot**: This feature builds upon the
+1.  **New Paired Proportion Plot**: This feature builds upon the
     existing proportional analysis capabilities by introducing advanced
     aesthetics and clearer visualization of changes in proportions
     between different groups, inspired by the informative nature of
@@ -28,18 +16,18 @@ performance improvements.
     detailed examination of how proportions shift in paired
     observations.
 
-3.  **Customizable Swarm Plot**: Enhancements allow for tailored swarm
+2.  **Customizable Swarm Plot**: Enhancements allow for tailored swarm
     plot aesthetics, notably the adjustment of swarm sides to produce
     asymmetric swarm plots. This customization enhances data
     representation, making visual distinctions more pronounced and
     interpretations clearer.
 
-4.  **Standardized Delta-delta Effect Size**: We added a new metric akin
+3.  **Standardized Delta-delta Effect Size**: We added a new metric akin
     to a Hedges’ g for delta-delta effect size, which allows comparisons
     between delta-delta effects generated from metrics with different
     units.
 
-5.  **Miscellaneous Improvements**: This version also encompasses a
+4.  **Miscellaneous Improvements**: This version also encompasses a
     broad range of miscellaneous enhancements, including bug fixes,
     Bootstrapping speed improvements, new templates for raising issues,
     and updated unit tests. These improvements are designed to
