@@ -4,9 +4,13 @@
 __all__ = ['merge_two_dicts', 'unpack_and_add', 'print_greeting', 'get_varname']
 
 # %% ../nbs/API/misc_tools.ipynb 4
-def merge_two_dicts(x:dict,
-                    y:dict
-                   )->dict:#A dictionary containing a union of all keys in both original dicts.
+import datetime as dt
+from numpy import repeat
+
+# %% ../nbs/API/misc_tools.ipynb 5
+def merge_two_dicts(
+    x: dict, y: dict
+) -> dict:  # A dictionary containing a union of all keys in both original dicts.
     """
     Given two dicts, merge them into a new dict as a shallow copy.
     Any overlapping keys in `y` will override the values in `x`.
@@ -20,24 +24,31 @@ def merge_two_dicts(x:dict,
     return z
 
 
-
 def unpack_and_add(l, c):
     """Convenience function to allow me to add to an existing list
     without altering that list."""
     t = [a for a in l]
     t.append(c)
-    return(t)
-
+    return t
 
 
 def print_greeting():
+    """
+    Generates a greeting message based on the current time, along with the version information of DABEST.
+
+    This function dynamically generates a greeting ('Good morning', 'Good afternoon', 'Good evening')
+    based on the current system time. It also retrieves and displays the version of DABEST (Data Analysis
+    using Bootstrap-Coupled ESTimation). The message includes a header with the DABEST version and the
+    current time formatted in a user-friendly manner.
+
+    Returns:
+    str: A formatted string containing the greeting message, DABEST version, and current time.
+    """
     from .__init__ import __version__
-    import datetime as dt
-    import numpy as np
 
     line1 = "DABEST v{}".format(__version__)
-    header = "".join(np.repeat("=", len(line1)))
-    spacer = "".join(np.repeat(" ", len(line1)))
+    header = "".join(repeat("=", len(line1)))
+    spacer = "".join(repeat(" ", len(line1)))
 
     now = dt.datetime.now()
     if 0 < now.hour < 12:
@@ -53,9 +64,7 @@ def print_greeting():
 
 
 def get_varname(obj):
-    matching_vars = [k for k,v in globals().items() if v is obj]
+    matching_vars = [k for k, v in globals().items() if v is obj]
     if len(matching_vars) > 0:
         return matching_vars[0]
-    else:
-        return ""
-
+    return ""
