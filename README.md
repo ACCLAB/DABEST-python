@@ -101,13 +101,6 @@ You can install this package via `pip`.
 To install, at the command line run
 
 ``` shell
-conda config --add channels conda-forge
-conda install dabest
-```
-
-or –\>
-
-``` shell
 pip install dabest
 ```
 
