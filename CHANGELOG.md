@@ -2,7 +2,7 @@
 
 <!-- do not remove -->
 
-## 2024.03.29
+## v2024.03.29
 
 ### New Features
 
@@ -18,7 +18,7 @@
 
 
 
-## 2023.03.29
+## v2023.03.29
 
 ### New Features
 - **Repeated measures**: Augments the prior function for plotting (independent) multiple test groups versus a shared control; it can now do the same for repeated-measures experimental designs. Thus, together, these two methods can be used to replace both flavors of the 1-way ANOVA with an estimation analysis.
