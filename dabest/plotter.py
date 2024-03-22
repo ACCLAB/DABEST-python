@@ -288,6 +288,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         for i in range(len(idx)):
             filled.append(False)
             filled.extend([True] * (len(idx[i]) - 1))
+        print(f"filled is {filled}")
 
     names = color_groups if not color_by_subgroups else idx
     n_groups = len(color_groups)
@@ -686,39 +687,22 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             else:
                 jitter = 1
 
-            if color_col is None: # Determine the use of hue
-                rawdata_plot = swarmplot(
-                    data=plot_data,
-                    x=xvar,
-                    y=yvar,
-                    ax=rawdata_axes,
-                    order=all_plot_groups,
-                    hue=xvar,
-                    palette=plot_palette_raw,
-                    zorder=1,
-                    side=asymmetric_side,
-                    jitter=jitter,
-                    is_drop_gutter=True,
-                    gutter_limit=0.45,
-                    **swarmplot_kwargs
-                )
-                rawdata_plot.legend().set_visible(False)
-            else:
-                rawdata_plot = swarmplot(
-                    data=plot_data,
-                    x=xvar,
-                    y=yvar,
-                    ax=rawdata_axes,
-                    order=all_plot_groups,
-                    hue=color_col,
-                    palette=plot_palette_raw,
-                    zorder=1,
-                    side=asymmetric_side,
-                    jitter=jitter,
-                    is_drop_gutter=True,
-                    gutter_limit=0.45,
-                    **swarmplot_kwargs
-                )
+            rawdata_plot = swarmplot(
+                data=plot_data,
+                x=xvar,
+                y=yvar,
+                ax=rawdata_axes,
+                order=all_plot_groups,
+                hue=color_col,
+                palette=plot_palette_raw,
+                zorder=3,
+                side=asymmetric_side,
+                jitter=jitter,
+                filled=filled,
+                is_drop_gutter=True,
+                gutter_limit=0.45,
+                **swarmplot_kwargs,
+            )
         else:
             # Plot the raw data as a barplot.
             bar1_df = pd.DataFrame(
@@ -1646,4 +1630,3 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     # Return the figure.
     return fig
-
