@@ -13,9 +13,9 @@ citation](https://zenodo.org/badge/DOI/10.1038/s41592-019-0470-3.svg)](https://r
 
 ## Recent Version Update
 
-On 22 March 2024, we officially released **DABEST Version Ondeh
-(v2024.03.29)**. This new version provides several new features and
-includes performance improvements.
+We are proud to announce **DABEST Version Ondeh (v2024.03.29)**. This
+new version of the DABEST Python library provides several new features
+and includes performance improvements.
 
 1.  **New Paired Proportion Plot**: This feature builds upon the
     existing proportional analysis capabilities by introducing advanced
