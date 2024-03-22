@@ -3,4 +3,4 @@ from ._stats_tools import effsize as effsize
 from ._effsize_objects import TwoGroupsEffectSize, PermutationTest
 from ._dabest_object import Dabest
 
-__version__ = "2023.03.29"
+__version__ = "2024.03.29"
