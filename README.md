@@ -4,10 +4,8 @@
 
 [![minimal Python
 version](https://img.shields.io/badge/Python%3E%3D-3.8-6666ff.svg)](https://www.anaconda.com/distribution/)
-[![PyPI
-version](https://badge.fury.io/py/dabest)](https://badge.fury.io/py/dabest)
-[![Downloads](https://static.pepy.tech/badge/dabest.png)](https://pepy.tech/project/dabest)
-[![Free-to-view
+[![PyPI version](https://badge.fury.io/py/dabest.svg)](https://badge.fury.io/py/dabest)
+[![Downloads](https://static.pepy.tech/badge/dabest)](https://pepy.tech/project/dabest)
 citation](https://zenodo.org/badge/DOI/10.1038/s41592-019-0470-3.svg)](https://rdcu.be/bHhJ4)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause--Clear-orange.svg)](https://spdx.org/licenses/BSD-3-Clause-Clear.html)
 
