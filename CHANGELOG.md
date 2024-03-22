@@ -6,8 +6,6 @@
 
 ### New Features
 
-- **Forest Plot**: With the new forest plot functionality, DABEST users can now generate forest plots, a mainstay in meta-analysis. This plot type is invaluable for visualizing the results of multiple studies or analyses simultaneously, showing not just the estimated effect sizes but also their confidence intervals. It is built upon the calculation and existing DABEST feature of delta-delta and mini-meta analysis and facilitates systematic reviews by generating a summary plot that compares delta-delta or mini-meta effect size plots from different studies or analysis. It's an essential tool for researchers conducting systematic reviews or wanting to summarize a body of evidence in a single, comprehensive visual.
-
 - **Standardized Delta-delta Effect Size**: We added a new metric akin to a Hedges’ g for delta-delta effect size, which allows comparisons between delta-delta effects generated from metrics with different units. 
 
 - **New Paired Proportion Plot**: This feature builds upon the existing proportional analysis capabilities by introducing advanced aesthetics and clearer visualization of changes in proportions between different groups, inspired by the informative nature of Sankey Diagrams. It's particularly useful for studies that require detailed examination of how proportions shift in paired observations.
