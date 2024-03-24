@@ -1305,6 +1305,7 @@ class SwarmPlot:
             0  # x-coordinate of center of each individual swarm of the swarm plot
         )
         x_tick_tabels = []
+
         for group_i, values_i in self.__data_copy.groupby(self.__x):
             x_new = []
             values_i_y = values_i[self.__y]
@@ -1363,6 +1364,7 @@ class SwarmPlot:
                     )
                 else:
                     facecolor = "none" if not filled else self.__palette[group_i]
+
                 ax.scatter(
                     values_i["x_new"],
                     values_i[self.__y],
@@ -1370,8 +1372,22 @@ class SwarmPlot:
                     zorder=self.__zorder,
                     facecolor=facecolor,
                     edgecolor=self.__palette[group_i],
+                    label=group_i,
                     **kwargs,
                 )
+
+        # Handling of legends
+        # This is currently a workaround because c and cmap is unable to map the labels when calling scatter()
+        # labels has to be used to designate legend labels and handles in scatter() due to the potential calling of ax.get_legend_handles_labels()
+        if self.__hue is not None:
+            for cmap_group_i in self.__palette:
+                ax.scatter(
+                    [],
+                    [],
+                    c=self.__palette[cmap_group_i],
+                    label=cmap_group_i,
+                )
+            handles, labels = ax.get_legend_handles_labels()
 
         ax.get_xaxis().set_ticks(np.arange(x_position))
         ax.get_xaxis().set_ticklabels(x_tick_tabels)
