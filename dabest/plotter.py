@@ -288,7 +288,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         for i in range(len(idx)):
             filled.append(False)
             filled.extend([True] * (len(idx[i]) - 1))
-        print(f"filled is {filled}")
 
     names = color_groups if not color_by_subgroups else idx
     n_groups = len(color_groups)
@@ -301,7 +300,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         unsat_colors = sns.color_palette(n_colors=n_groups)
         if empty_circle and not color_by_subgroups:
             unsat_colors = [sns.color_palette("gray")[3]] + unsat_colors
-            print(unsat_colors)
     else:
         if isinstance(custom_pal, dict):
             groups_in_palette = {
@@ -764,12 +762,12 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 if bootstraps_color_by_group:
                     line_colors.append(plot_palette_raw[all_plot_groups[jj]])
 
-                # Break the loop since hue in Seaborn adds collections to axes and it will result in index out of range
-                if jj >= n_groups - 1 and color_col is None:
-                    break
-
             if len(line_colors) != len(all_plot_groups):
                 line_colors = ytick_color
+
+            # hue in swarmplot would add collections to axes which will result in len(xspans) = len(all_plot_groups) + len(unique groups in hue)
+            if len(xspans) > len(all_plot_groups):
+                xspans = xspans[:len(all_plot_groups)]
 
             error_bar(
                 plot_data,
