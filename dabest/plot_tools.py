@@ -173,7 +173,8 @@ def error_bar(
 
     kwargs["zorder"] = kwargs["zorder"]
 
-    for xpos, central_measure in enumerate(central_measures):
+    for xpos, val in enumerate(central_measures.index):
+        central_measure = central_measures[val]
         kwargs["color"] = custom_palette[xpos]
 
         if method == "sankey_error_bar":
@@ -181,8 +182,14 @@ def error_bar(
         else:
             _xpos = xpos + offset[xpos]
 
-        low = lows[xpos]
-        high = highs[xpos]
+        # Fix for the non-string x-axis issue #108
+        if central_measures.index.dtype.name == "category":
+            low = lows[xpos]
+            high = highs[xpos]
+        else: 
+            low = lows[val]
+            high = highs[val]
+
         if low == high == central_measure:
             low_to_mean = mlines.Line2D(
                 [_xpos, _xpos], [low, central_measure], **kwargs
@@ -791,6 +798,7 @@ def swarmplot(
     size: float = 5,
     side: str = "center",
     jitter: float = 1,
+    filled: Union[bool, List, Tuple] = True,
     is_drop_gutter: bool = True,
     gutter_limit: float = 0.5,
     **kwargs,
@@ -823,6 +831,11 @@ def swarmplot(
         The side on which points are swarmed ("center", "left", or "right"). Default is "center".
     jitter : int | float
         Determines the distance between points. Default is 1.
+    filled : bool | List | Tuple
+        Determines whether the dots in the swarmplot are filled or not. If set to False,
+        dots are not filled. If provided as a List or Tuple, it should contain boolean values,
+        each corresponding to a swarm group in order, indicating whether the dot should be
+        filled or not.
     is_drop_gutter : bool
         If True, drop points that hit the gutters; otherwise, readjust them.
     gutter_limit : int | float
@@ -836,7 +849,7 @@ def swarmplot(
         Matplotlib AxesSubplot object for which the swarm plot has been drawn on.
     """
     s = SwarmPlot(data, x, y, ax, order, hue, palette, zorder, size, side, jitter)
-    ax = s.plot(is_drop_gutter, gutter_limit, ax, **kwargs)
+    ax = s.plot(is_drop_gutter, gutter_limit, ax, filled, **kwargs)
     return ax
 
 
@@ -996,7 +1009,9 @@ class SwarmPlot:
         if not isinstance(self.__jitter, (int, float)):
             raise ValueError("`jitter` must be a scalar or float.")
         if not isinstance(self.__palette, (str, Iterable)):
-            raise ValueError("`palette` must be either a string indicating a color name or an Iterable.")
+            raise ValueError(
+                "`palette` must be either a string indicating a color name or an Iterable."
+            )
         if self.__hue is not None and not isinstance(self.__hue, str):
             raise ValueError("`hue` must be either a string or None.")
         if self.__order is not None and not isinstance(self.__order, Iterable):
@@ -1026,7 +1041,6 @@ class SwarmPlot:
             err = "`palette` cannot be an empty string. It must be either a string indicating a color name or an Iterable."
             raise ValueError(err)
         if isinstance(self.__palette, dict):
-            # TODO: to add detection of when dict length is less than size of unique_items
             for group_i, color_i in self.__palette.items():
                 if group_i not in pd.unique(data[color_col]):
                     err = (
@@ -1036,8 +1050,10 @@ class SwarmPlot:
                     )
                     raise IndexError(err)
                 if isinstance(color_i, str) and color_i.strip() == "":
-                    err = "The color mapping for {0} in `palette` is an empty string. It must contain a color name.".format(group_i)
-                    raise ValueError(err) 
+                    err = "The color mapping for {0} in `palette` is an empty string. It must contain a color name.".format(
+                        group_i
+                    )
+                    raise ValueError(err)
 
         if side.lower() not in ["center", "right", "left"]:
             raise ValueError(
@@ -1239,7 +1255,12 @@ class SwarmPlot:
         return points_data
 
     def plot(
-        self, is_drop_gutter: bool, gutter_limit: float, ax: axes.Subplot, **kwargs
+        self,
+        is_drop_gutter: bool,
+        gutter_limit: float,
+        ax: axes.Subplot,
+        filled: Union[bool, List, Tuple],
+        **kwargs,
     ) -> axes.Subplot:
         """
         Generate a swarm plot.
@@ -1252,6 +1273,11 @@ class SwarmPlot:
             The limit for points hitting the gutters.
         ax : axes.Subplot
             The matplotlib figure object to which the swarm plot will be added.
+        filled : bool | List | Tuple
+            Determines whether the dots in the swarmplot are filled or not. If set to False,
+            dots are not filled. If provided as a List or Tuple, it should contain boolean values,
+            each corresponding to a swarm group in order, indicating whether the dot should be
+            filled or not.
         **kwargs:
             Additional keyword arguments to be passed to the scatter plot.
 
@@ -1265,12 +1291,28 @@ class SwarmPlot:
             raise ValueError("`is_drop_gutter` must be a boolean.")
         if not isinstance(gutter_limit, (int, float)):
             raise ValueError("`gutter_limit` must be a scalar or float.")
+        if not isinstance(filled, (bool, list, tuple)):
+            raise ValueError("`filled` must be a boolean, list or tuple.")
+
+        # More thorough input validation checks
+        if isinstance(filled, (list, tuple)):
+            if len(filled) != len(self.__order):
+                err = (
+                    "There are {0} unique values in `x` column in `data` "
+                    "but `filled` has a length of {1}. If `filled` is a list "
+                    "or a tuple, it must have the same length as the number of "
+                    "unique values/groups in the `x` column of data."
+                ).format(len(self.__order), len(filled))
+                raise ValueError(err)
+            if not all(isinstance(_, bool) for _ in filled):
+                raise ValueError("All values in `filled` must be a boolean.")
 
         # Assumptions are that self.__data_copy is already sorted according to self.__order
         x_position = (
             0  # x-coordinate of center of each individual swarm of the swarm plot
         )
         x_tick_tabels = []
+
         for group_i, values_i in self.__data_copy.groupby(self.__x):
             x_new = []
             values_i_y = values_i[self.__y]
@@ -1321,15 +1363,38 @@ class SwarmPlot:
                 )
             else:
                 # color swarms based on `x` column
+                if not isinstance(filled, bool):
+                    facecolor = (
+                        "none"
+                        if not filled[x_position - 1]
+                        else self.__palette[group_i]
+                    )
+                else:
+                    facecolor = "none" if not filled else self.__palette[group_i]
+
                 ax.scatter(
                     values_i["x_new"],
                     values_i[self.__y],
                     s=self.__size,
-                    c=self.__palette[group_i],
                     zorder=self.__zorder,
-                    edgecolor="face",
+                    facecolor=facecolor,
+                    edgecolor=self.__palette[group_i],
+                    label=group_i,
                     **kwargs,
                 )
+
+        # Handling of legends
+        # This is currently a workaround because c and cmap is unable to map the labels when calling scatter()
+        # labels has to be used to designate legend labels and handles in scatter() due to the potential calling of ax.get_legend_handles_labels()
+        if self.__hue is not None:
+            for cmap_group_i in self.__palette:
+                ax.scatter(
+                    [],
+                    [],
+                    c=self.__palette[cmap_group_i],
+                    label=cmap_group_i,
+                )
+            handles, labels = ax.get_legend_handles_labels()
 
         ax.get_xaxis().set_ticks(np.arange(x_position))
         ax.get_xaxis().set_ticklabels(x_tick_tabels)

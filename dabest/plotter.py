@@ -267,7 +267,29 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         bootstraps_color_by_group = False
 
     # Handle the color palette.
-    names = color_groups
+    filled = True
+    empty_circle = plot_kwargs["empty_circle"]
+    color_by_subgroups = (
+        True if empty_circle else False
+    )  # boolean flag to determine if colour is being grouped by subgroup or the default
+    if empty_circle:
+        # Handling color_by_subgroups
+        # For now, color_by_subgroups can only be True for multi-2-group and 2-group comparison
+        if isinstance(idx[0], str):
+            if len(idx) > 2:
+                color_by_subgroups = False
+        else:
+            for group_i in idx:
+                if len(group_i) > 2:
+                    color_by_subgroups = False
+
+        # filled is now a list, which determines the which group in idx has their dots filled for the swarmplot
+        filled = []
+        for i in range(len(idx)):
+            filled.append(False)
+            filled.extend([True] * (len(idx[i]) - 1))
+
+    names = color_groups if not color_by_subgroups else idx
     n_groups = len(color_groups)
     custom_pal = plot_kwargs["custom_palette"]
     swarm_desat = plot_kwargs["swarm_desat"]
@@ -276,6 +298,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     if custom_pal is None:
         unsat_colors = sns.color_palette(n_colors=n_groups)
+        if empty_circle and not color_by_subgroups:
+            unsat_colors = [sns.color_palette("gray")[3]] + unsat_colors
     else:
         if isinstance(custom_pal, dict):
             groups_in_palette = {
@@ -299,13 +323,21 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     if custom_pal is None and color_col is None:
         swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
-        plot_palette_raw = dict(zip(names.categories, swarm_colors))
-
-        bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
-        plot_palette_bar = dict(zip(names.categories, bar_color))
-
         contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
-        plot_palette_contrast = dict(zip(names.categories, contrast_colors))
+        if color_by_subgroups:
+            plot_palette_raw = dict()
+            plot_palette_contrast = dict()
+            # No plot_palette_bar because currently there is no empty_circle toggle for proportion plots
+            for i in range(len(idx)):
+                for names_i in idx[i]:
+                    plot_palette_raw[names_i] = swarm_colors[i]
+                    plot_palette_contrast[names_i] = contrast_colors[i]
+        else:
+            plot_palette_raw = dict(zip(names.categories, swarm_colors))
+            plot_palette_contrast = dict(zip(names.categories, contrast_colors))
+
+            bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
+            plot_palette_bar = dict(zip(names.categories, bar_color))
 
         # For Sankey Diagram plot, no need to worry about the color, each bar will have the same two colors
         # default color palette will be set to "hls"
@@ -313,13 +345,21 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     else:
         swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
-        plot_palette_raw = dict(zip(names, swarm_colors))
-
-        bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
-        plot_palette_bar = dict(zip(names, bar_color))
-
         contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
-        plot_palette_contrast = dict(zip(names, contrast_colors))
+        if color_by_subgroups:
+            plot_palette_raw = dict()
+            plot_palette_contrast = dict()
+            # No plot_palette_bar because currently there is no empty_circle toggle for proportion plots
+            for i in range(len(idx)):
+                for names_i in idx[i]:
+                    plot_palette_raw[names_i] = swarm_colors[i]
+                    plot_palette_contrast[names_i] = contrast_colors[i]
+        else:
+            plot_palette_raw = dict(zip(names, swarm_colors))
+            plot_palette_contrast = dict(zip(names, contrast_colors))
+
+            bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
+            plot_palette_bar = dict(zip(names, bar_color))
 
         plot_palette_sankey = custom_pal
 
@@ -406,7 +446,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             fig, axx = plt.subplots(
                 ncols=2,
                 gridspec_kw={"width_ratios": width_ratios_ga, "wspace": 0},
-                **init_fig_kwargs
+                **init_fig_kwargs,
             )
             fig.patch.set_facecolor(face_color)
 
@@ -564,13 +604,13 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                     order=None,
                     hue=color_col,
                     palette=plot_palette_deltapts,
-                    zorder=2,
+                    zorder=3,
                     size=3,
                     side="right",
                     jitter=jitter,
                     is_drop_gutter=True,
                     gutter_limit=1,
-                    **deltapts_args
+                    **deltapts_args,
                 )
                 contrast_axes.legend().set_visible(False)
 
@@ -623,14 +663,16 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 palette=plot_palette_sankey,
                 ax=rawdata_axes,
                 one_sankey=one_sankey,
-                **sankey_kwargs
+                **sankey_kwargs,
             )
 
     else:
         if not proportional:
             # Plot the raw data as a swarmplot.
             asymmetric_side = (
-                plot_kwargs["swarm_side"] if plot_kwargs["swarm_side"] is not None else "right"
+                plot_kwargs["swarm_side"]
+                if plot_kwargs["swarm_side"] is not None
+                else "right"
             )  # Default asymmetric side is right
 
             # swarmplot() plots swarms based on current size of ax
@@ -643,39 +685,22 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             else:
                 jitter = 1
 
-            if color_col is None: # Determine the use of hue
-                rawdata_plot = swarmplot(
-                    data=plot_data,
-                    x=xvar,
-                    y=yvar,
-                    ax=rawdata_axes,
-                    order=all_plot_groups,
-                    hue=xvar,
-                    palette=plot_palette_raw,
-                    zorder=1,
-                    side=asymmetric_side,
-                    jitter=jitter,
-                    is_drop_gutter=True,
-                    gutter_limit=0.45,
-                    **swarmplot_kwargs
-                )
-                rawdata_plot.legend().set_visible(False)
-            else:
-                rawdata_plot = swarmplot(
-                    data=plot_data,
-                    x=xvar,
-                    y=yvar,
-                    ax=rawdata_axes,
-                    order=all_plot_groups,
-                    hue=color_col,
-                    palette=plot_palette_raw,
-                    zorder=1,
-                    side=asymmetric_side,
-                    jitter=jitter,
-                    is_drop_gutter=True,
-                    gutter_limit=0.45,
-                    **swarmplot_kwargs
-                )
+            rawdata_plot = swarmplot(
+                data=plot_data,
+                x=xvar,
+                y=yvar,
+                ax=rawdata_axes,
+                order=all_plot_groups,
+                hue=color_col,
+                palette=plot_palette_raw,
+                zorder=3,
+                side=asymmetric_side,
+                jitter=jitter,
+                filled=filled,
+                is_drop_gutter=True,
+                gutter_limit=0.45,
+                **swarmplot_kwargs,
+            )
         else:
             # Plot the raw data as a barplot.
             bar1_df = pd.DataFrame(
@@ -700,7 +725,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 order=all_plot_groups,
                 palette=plot_palette_bar,
                 zorder=1,
-                **barplot_kwargs
+                **barplot_kwargs,
             )
             # adjust the width of bars
             bar_width = plot_kwargs["bar_width"]
@@ -737,12 +762,12 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 if bootstraps_color_by_group:
                     line_colors.append(plot_palette_raw[all_plot_groups[jj]])
 
-                # Break the loop since hue in Seaborn adds collections to axes and it will result in index out of range
-                if jj >= n_groups - 1 and color_col is None:
-                    break
-
             if len(line_colors) != len(all_plot_groups):
                 line_colors = ytick_color
+
+            # hue in swarmplot would add collections to axes which will result in len(xspans) = len(all_plot_groups) + len(unique groups in hue)
+            if len(xspans) > len(all_plot_groups):
+                xspans = xspans[:len(all_plot_groups)]
 
             error_bar(
                 plot_data,
@@ -755,7 +780,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 type=group_summaries,
                 ax=rawdata_axes,
                 method="gapped_lines",
-                **group_summary_kwargs
+                **group_summary_kwargs,
             )
 
         if group_summaries is not None and proportional:
@@ -772,7 +797,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 type=group_summaries,
                 ax=rawdata_axes,
                 method="proportional_error_bar",
-                **group_summary_kwargs
+                **group_summary_kwargs,
             )
 
     # Add the counts to the rawdata axes xticks.
@@ -780,17 +805,33 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     ticks_with_counts = []
     ticks_loc = rawdata_axes.get_xticks()
     rawdata_axes.xaxis.set_major_locator(matplotlib.ticker.FixedLocator(ticks_loc))
+    def lookup_value(text, counts):
+        try:
+            return str(counts.loc[text])
+        except KeyError:
+            try:
+                numeric_key = pd.to_numeric(text, errors='coerce')
+                if pd.notnull(numeric_key):
+                    return str(counts.loc[numeric_key])
+                else:
+                    raise ValueError
+            except (ValueError, KeyError):
+                print(f"Key '{text}' not found in counts.")
+                return "N/A"
     for xticklab in rawdata_axes.xaxis.get_ticklabels():
         t = xticklab.get_text()
+        # Extract the text after the last newline, if present
         if t.rfind("\n") != -1:
-            te = t[t.rfind("\n") + len("\n") :]
-            N = str(counts.loc[te])
+            te = t[t.rfind("\n") + len("\n"):]
+            value = lookup_value(te, counts)
             te = t
         else:
             te = t
-            N = str(counts.loc[te])
+            value = lookup_value(te, counts)
 
-        ticks_with_counts.append("{}\nN = {}".format(te, N))
+        # Append the modified tick label with the count to the list
+        ticks_with_counts.append(f"{te}\nN = {value}")
+
 
     if plot_kwargs["fontsize_rawxlabel"] is not None:
         fontsize_rawxlabel = plot_kwargs["fontsize_rawxlabel"]
@@ -872,7 +913,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         v = contrast_axes.violinplot(
             current_bootstrap[~np.isinf(current_bootstrap)],
             positions=[tick],
-            **violinplot_kwargs
+            **violinplot_kwargs,
         )
         # Turn the violinplot into half, and color it the same as the swarmplot.
         # Do this only if the color column is not specified.
@@ -921,7 +962,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                     -es_fontsize / 2,
                 ),
                 textcoords="offset points",
-                **{"fontsize": es_fontsize}
+                **{"fontsize": es_fontsize},
             )
 
         ################## SHOW ES ON CONTRAST PLOT END
@@ -1056,7 +1097,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 legend_handles_unique,
                 legend_labels_unique,
                 bbox_to_anchor=bta,
-                **legend_kwargs
+                **legend_kwargs,
             )
             if show_pairs:
                 for line in leg.get_lines():
@@ -1162,7 +1203,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 if jj == 0:
                     ref = control_group_summary
                     diff = test_group_summary
-                    effsize_line_start = 1
+                    effsize_line_start = 0.9 if asymmetric_side == "right" else 1
 
                 elif jj == 1:
                     ref = 0
@@ -1174,9 +1215,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 # Draw reference line.
                 axx.hlines(
                     ref,  # y-coordinates
-                    0,
+                    -0.1 if asymmetric_side == "right" else 0,
                     xlimhigh,  # x-coordinates, start and end.
-                    **reflines_kwargs
+                    **reflines_kwargs,
                 )
 
                 # Draw effect size line.
@@ -1191,7 +1232,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 ref,  # y-coordinates
                 effsize_line_start,
                 xlimhigh,  # x-coordinates, start and end.
-                **reflines_kwargs
+                **reflines_kwargs,
             )
 
             # Draw effect size line.
@@ -1207,7 +1248,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             og_ylim_raw[0],  # yindex
             rawdata_axes.get_xlim()[0],
             1.3,  # xmin, xmax
-            **redraw_axes_kwargs
+            **redraw_axes_kwargs,
         )
         rawdata_axes.set_ylim(og_ylim_raw)
 
@@ -1215,7 +1256,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             contrast_axes.get_ylim()[0],
             contrast_xlim_max - 0.8,
             contrast_xlim_max,
-            **redraw_axes_kwargs
+            **redraw_axes_kwargs,
         )
 
     else:
@@ -1575,7 +1616,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 gridkey_width,
                 len(gridkey_rows) * 0.1,
             ],
-            **{"alpha": 0.5}
+            **{"alpha": 0.5},
         )
 
         # modifies row label cells
@@ -1603,4 +1644,3 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     # Return the figure.
     return fig
-
