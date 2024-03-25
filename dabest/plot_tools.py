@@ -173,7 +173,8 @@ def error_bar(
 
     kwargs["zorder"] = kwargs["zorder"]
 
-    for xpos, central_measure in enumerate(central_measures):
+    for xpos, val in enumerate(central_measures.index):
+        central_measure = central_measures[val]
         kwargs["color"] = custom_palette[xpos]
 
         if method == "sankey_error_bar":
@@ -181,8 +182,14 @@ def error_bar(
         else:
             _xpos = xpos + offset[xpos]
 
-        low = lows[xpos]
-        high = highs[xpos]
+        # Fix for the non-string x-axis issue #108
+        if central_measures.index.dtype.name == "category":
+            low = lows[xpos]
+            high = highs[xpos]
+        else: 
+            low = lows[val]
+            high = highs[val]
+
         if low == high == central_measure:
             low_to_mean = mlines.Line2D(
                 [_xpos, _xpos], [low, central_measure], **kwargs
