@@ -805,32 +805,32 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     ticks_with_counts = []
     ticks_loc = rawdata_axes.get_xticks()
     rawdata_axes.xaxis.set_major_locator(matplotlib.ticker.FixedLocator(ticks_loc))
+    def lookup_value(text, counts):
+        try:
+            return str(counts.loc[text])
+        except KeyError:
+            try:
+                numeric_key = pd.to_numeric(text, errors='coerce')
+                if pd.notnull(numeric_key):
+                    return str(counts.loc[numeric_key])
+                else:
+                    raise ValueError
+            except (ValueError, KeyError):
+                print(f"Key '{text}' not found in counts.")
+                return "N/A"
     for xticklab in rawdata_axes.xaxis.get_ticklabels():
         t = xticklab.get_text()
         # Extract the text after the last newline, if present
-        te = t[t.rfind("\n") + len("\n"):] if t.rfind("\n") != -1 else t
-
-        try:
-            # Try to access 'counts' directly with 'te'.
-            N = str(counts.loc[te])
-        except KeyError:
-            # If direct access fails, attempt a numeric interpretation.
-            try:
-                # Attempt to convert 'te' to numeric (float or int, as appropriate)
-                numeric_key = pd.to_numeric(te, errors='coerce')
-                # 'pd.to_numeric()' will convert strings to float or int, as appropriate,
-                # and will return NaN if conversion fails. It preserves integers.
-                if pd.notnull(numeric_key):  # Check if conversion was successful
-                    N = str(counts.loc[numeric_key])
-                else:
-                    raise ValueError  # Raise an error to trigger the except block
-            except (ValueError, KeyError):
-                # Handle cases where 'te' cannot be converted or the converted key doesn't exist
-                print(f"Key '{te}' not found in counts.")
-                N = "N/A"
+        if t.rfind("\n") != -1:
+            te = t[t.rfind("\n") + len("\n"):]
+            value = lookup_value(te, counts)
+            te = t
+        else:
+            te = t
+            value = lookup_value(te, counts)
 
         # Append the modified tick label with the count to the list
-        ticks_with_counts.append(f"{te}\nN = {N}")
+        ticks_with_counts.append(f"{te}\nN = {value}")
 
 
     if plot_kwargs["fontsize_rawxlabel"] is not None:
