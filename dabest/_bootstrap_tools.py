@@ -66,7 +66,9 @@ class bootstrap:
         reps: int = 5000,  # Number of bootstrap iterations to perform.
     ):
         # Turn to pandas series.
-        x1 = pd.Series(x1).dropna()
+        # x1 = pd.Series(x1).dropna()
+        x1 = x1[~np.isnan(x1)]
+
         diff = False
 
         # Initialise stat_function
@@ -89,7 +91,9 @@ class bootstrap:
             if x2 is None:
                 raise ValueError("Please specify x2.")
             
-            x2 = pd.Series(x2).dropna()
+            # x2 = pd.Series(x2).dropna()
+            x2 = x1[~np.isnan(x2)]
+
             if len(x1) != len(x2):
                 raise ValueError("x1 and x2 are not the same length.")
 
@@ -134,7 +138,8 @@ class bootstrap:
 
         elif x2 is not None and paired is None:
             diff = True
-            x2 = pd.Series(x2).dropna()
+            # x2 = pd.Series(x2).dropna()
+            x2 = x2[~np.isnan(x2)]
             # Generate statarrays for both arrays.
             ref_statarray = sns.algorithms.bootstrap(x1, **sns_bootstrap_kwargs)
             exp_statarray = sns.algorithms.bootstrap(x2, **sns_bootstrap_kwargs)

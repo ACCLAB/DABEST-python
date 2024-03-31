@@ -68,3 +68,18 @@ def get_varname(obj):
     if len(matching_vars) > 0:
         return matching_vars[0]
     return ""
+
+def unique_with_types(lst):
+    """
+    Given a list, return a new list with only the unique elements of the original list and preserve
+    the type of each element.
+    """
+    unique_list = []
+    seen_types = {}
+    for item in lst:
+        # Create a type-specific key
+        key = (type(item), item)
+        if key not in seen_types:
+            seen_types[key] = True
+            unique_list.append(item)
+    return unique_list

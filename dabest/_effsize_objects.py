@@ -7,6 +7,7 @@ __all__ = ['TwoGroupsEffectSize', 'EffectSizeDataFrame', 'PermutationTest']
 import pandas as pd
 import lqrt
 from scipy.stats import norm
+import numpy as np
 from numpy import array, isnan, isinf, repeat, random, isin, abs, var
 from numpy import sort as npsort
 from numpy import nan as npnan
@@ -353,12 +354,17 @@ class TwoGroupsEffectSize(object):
             # References:
             # https://en.wikipedia.org/wiki/McNemar%27s_test
 
-            df_temp = pd.DataFrame({"control": self.__control, "test": self.__test})
-            x1 = len(df_temp[(df_temp["control"] == 0) & (df_temp["test"] == 0)])
-            x2 = len(df_temp[(df_temp["control"] == 0) & (df_temp["test"] == 1)])
-            x3 = len(df_temp[(df_temp["control"] == 1) & (df_temp["test"] == 0)])
-            x4 = len(df_temp[(df_temp["control"] == 1) & (df_temp["test"] == 1)])
-            table = [[x1, x2], [x3, x4]]
+            # df_temp = pd.DataFrame({"control": self.__control, "test": self.__test})
+            # x1 = len(df_temp[(df_temp["control"] == 0) & (df_temp["test"] == 0)])
+            # x2 = len(df_temp[(df_temp["control"] == 0) & (df_temp["test"] == 1)])
+            # x3 = len(df_temp[(df_temp["control"] == 1) & (df_temp["test"] == 0)])
+            # x4 = len(df_temp[(df_temp["control"] == 1) & (df_temp["test"] == 1)])
+            # table = [[x1, x2], [x3, x4]]
+            x1 = np.sum((self.__control == 0) & (self.__test == 0))
+            x2 = np.sum((self.__control == 0) & (self.__test == 1))
+            x3 = np.sum((self.__control == 1) & (self.__test == 0))
+            x4 = np.sum((self.__control == 1) & (self.__test == 1))
+            table = np.array([[x1, x2], [x3, x4]])
             _mcnemar = mcnemar(table, exact=True, correction=True)
             self.__pvalue_mcnemar = _mcnemar.pvalue
             self.__statistic_mcnemar = _mcnemar.statistic

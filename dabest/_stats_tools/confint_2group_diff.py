@@ -11,7 +11,6 @@ from numpy import arange, delete, errstate
 from numpy import mean as npmean
 from numpy import sum as npsum
 from numpy.random import PCG64, RandomState
-import pandas as pd
 from scipy.stats import norm
 from numpy import isnan
 
