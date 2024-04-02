@@ -915,16 +915,18 @@ class EffectSizeDataFrame(object):
 
         out = []
 
+        grouped_data = {name:group[yvar].copy() for name, group in dat.groupby(xvar)}
+
         for j, current_tuple in enumerate(db_obj.idx):
             if self.__is_paired != "sequential":
                 cname = current_tuple[0]
-                control = dat[dat[xvar] == cname][yvar].copy()
+                control = grouped_data[cname]
 
             for ix, tname in enumerate(current_tuple[1:]):
                 if self.__is_paired == "sequential":
                     cname = current_tuple[ix]
-                    control = dat[dat[xvar] == cname][yvar].copy()
-                test = dat[dat[xvar] == tname][yvar].copy()
+                    control = grouped_data[cname]
+                test = grouped_data[tname]
 
                 if self.__is_paired:
                     # Refactored here in v0.3.0 for performance issues.
