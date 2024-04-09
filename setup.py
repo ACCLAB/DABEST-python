@@ -2,6 +2,14 @@ from pkg_resources import parse_version
 from configparser import ConfigParser
 import setuptools, shlex
 assert parse_version(setuptools.__version__)>=parse_version('36.2')
+from setuptools.command.install import install
+import os
+
+class CustomInstallCommand(install):
+    """Customized setuptools install command to trigger Numba precompilation"""
+    def run(self):
+        install.run(self)
+        os.system('python precompile_numba.py')
 
 # note: all settings are in settings.ini; edit there, not here
 config = ConfigParser(delimiters=['='])
@@ -54,6 +62,7 @@ setuptools.setup(
         'nbdev': [f'{cfg.get("lib_path")}={cfg.get("lib_path")}._modidx:d']
     },
     project_urls = project_urls,
+    cmdclass={'install': CustomInstallCommand,},
     **setup_cfg)
 
 

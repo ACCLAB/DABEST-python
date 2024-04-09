@@ -4,6 +4,9 @@ import pandas as pd
 from dabest._api import load
 
 from scipy.stats import norm # Used in generation of populations.
+
+import cProfile
+
 np.random.seed(9999) # Fix the seed to ensure reproducibility of results.
 
 # Create samples
@@ -44,8 +47,12 @@ df_delta2 = pd.DataFrame({'ID'        : id_col,
                    'Treatment': treatment,
                    'Y'         : y
                 })
+def main():
+    unpaired_delta2 = load(data = df_delta2, x = ["Genotype", "Genotype"], y = "Y", delta2 = True, experiment = "Treatment")
 
-unpaired_delta2 = load(data = df_delta2, x = ["Genotype", "Genotype"], y = "Y", delta2 = True, experiment = "Treatment")
+    print(unpaired_delta2.mean_diff)
+    # unpaired_delta2.mean_diff.plot();
 
-print(unpaired_delta2.mean_diff)
-unpaired_delta2.mean_diff.plot();
+if __name__ == "__main__":
+    # cProfile.run('main()')
+    main()
