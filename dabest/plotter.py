@@ -8,6 +8,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import pandas as pd
 import warnings
 import logging
@@ -1589,6 +1590,67 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         contrast_axes.get_xaxis().set_visible(False)
 
     ####################################################### END GRIDKEY MAIN CODE WIP
+    
+    ################################################### Contrast Bars WIP
+    
+    # Swarm Bars WIP
+    swarm_bars = plot_kwargs["swarm_bars"]
+    default_swarm_bars_kwargs = {"color": None, "alpha": 0.1}
+    if plot_kwargs["swarm_bars_kwargs"] is None:
+        swarm_bars_kwargs = default_swarm_bars_kwargs
+    else:
+        swarm_bars_kwargs = merge_two_dicts(default_swarm_bars_kwargs, plot_kwargs["swarm_bars_kwargs"])
+
+    if swarm_bars and not proportional:
+        # if is_paired:
+        #     swarm_bar_xlocs_adjustleft = {'right': -0.2, 'left': -0.2, 'center': -0.2}
+        #     swarm_bar_xlocs_adjustright = {'right': -0.1, 'left': -0.1, 'center': -0.1}            
+        # else:
+        #     swarm_bar_xlocs_adjustleft = {'right': 0, 'left': -0.4, 'center': -0.2}
+        #     swarm_bar_xlocs_adjustright = {'right': -0.1, 'left': -0.1, 'center': -0.1}
+    
+        if isinstance(plot_data[xvar].dtype, pd.CategoricalDtype):
+            swarm_bars_order = pd.unique(plot_data[xvar]).categories
+        else:
+            swarm_bars_order = pd.unique(plot_data[xvar])
+
+        swarm_means = plot_data.groupby(xvar)[yvar].mean().reindex(index=swarm_bars_order)
+        swarm_bar_colors = [swarm_bars_kwargs.get('color')]*(len(swarm_bars_order)+1) if swarm_bars_kwargs.get('color') is not None else ['black']*(len(swarm_bars_order)+1) if color_col is not None or is_paired else swarm_colors
+        swarm_bars_kwargs.pop('color')
+        for swarm_bars_x,swarm_bars_y,c in zip(np.arange(0,len(swarm_bars_order)+1,1), swarm_means, swarm_bar_colors):
+            rawdata_axes.add_patch(mpatches.Rectangle((swarm_bars_x-0.2,0),
+            0.5-0.1, swarm_bars_y, zorder=-1,color=c,**swarm_bars_kwargs))
+
+    else:
+        pass
+    
+    # Contrast Bars WIP
+    contrast_bars = plot_kwargs["contrast_bars"]
+    default_contrast_bars_kwargs = {"color": None, "alpha": 0.15}
+    if plot_kwargs["contrast_bars_kwargs"] is None:
+        contrast_bars_kwargs = default_contrast_bars_kwargs
+    else:
+        contrast_bars_kwargs = merge_two_dicts(default_contrast_bars_kwargs, plot_kwargs["contrast_bars_kwargs"])
+    if contrast_bars and not float_contrast:
+        contrast_means = []
+        for j, tick in enumerate(ticks_to_plot):
+            contrast_means.append(results.difference[j])
+
+        contrast_bar_colors = [contrast_bars_kwargs.get('color')]*(len(ticks_to_plot)+1) if contrast_bars_kwargs.get('color') is not None else ['black']*(max(ticks_to_plot)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
+        contrast_bars_kwargs.pop('color')
+        for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
+            contrast_axes.add_patch(mpatches.Rectangle((contrast_bars_x,0),0.25, contrast_bars_y, zorder=-1, color=contrast_bar_colors[contrast_bars_x], **contrast_bars_kwargs))
+
+        if show_mini_meta:
+            contrast_axes.add_patch(mpatches.Rectangle((max(rawdata_axes.get_xticks())+2,0),0.25, mini_meta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
+
+        if show_delta2:
+            contrast_axes.add_patch(mpatches.Rectangle((max(rawdata_axes.get_xticks())+2,0),0.25, delta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
+
+    else:
+        pass
+  
+    ################################################### Contrast Bars WIP
 
     # Make sure no stray ticks appear!
     rawdata_axes.xaxis.set_ticks_position("bottom")

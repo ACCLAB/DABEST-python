@@ -1017,6 +1017,11 @@ class EffectSizeDataFrame(object):
         fontsize_contrastxlabel=12,
         fontsize_contrastylabel=12,
         fontsize_delta2label=12,
+        #### Contrast bars WIP  ####
+        contrast_bars=True,
+        swarm_bars=True,
+        contrast_bars_kwargs=None,
+        swarm_bars_kwargs=None,
     ):
         """
         Creates an estimation plot for the effect size of interest.
@@ -1159,6 +1164,20 @@ class EffectSizeDataFrame(object):
             Font size for the contrast axes ylabel.
         fontsize_delta2label : float, default 12
             Font size for the delta-delta axes ylabel.
+            
+            
+        contrast_bars : boolean, default True
+            Whether or not to display the contrast bars.
+        swarm_bars : boolean, default True
+            Whether or not to display the swarm bars.
+        contrast_bars_kwargs : dict, default None
+            Pass relevant keyword arguments to the contrast bars. Pass any keyword argumentd accepted by 
+            matplotlib.patches.Rectangle here, as a string. If None, the following keywords are passed:
+            {"color": None, "alpha": 0.1}
+        swarm_bars_kwargs : dict, default None
+            Pass relevant keyword arguments to the swarm bars. Pass any keyword argumentd accepted by 
+            matplotlib.patches.Rectangle here, as a string. If None, the following keywords are passed:
+            {"color": None, "alpha": 0.15}
 
 
         Returns
