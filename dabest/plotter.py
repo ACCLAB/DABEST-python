@@ -53,7 +53,10 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         title=None, fontsize_title=16,
         fontsize_rawxlabel=12, fontsize_rawylabel=12,
         fontsize_contrastxlabel=12, fontsize_contrastylabel=12,
-        fontsize_delta2label=12
+        fontsize_delta2label=12,
+        swarm_bars=True, swarm_bars_kwargs=None,
+        contrast_bars=True, contrast_bars_kwargs=None,
+
     """
     from .misc_tools import merge_two_dicts
     from .plot_tools import (
@@ -1591,7 +1594,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     ####################################################### END GRIDKEY MAIN CODE WIP
     
-    ################################################### Contrast Bars WIP
+    ################################################### Swarm & Contrast Bars WIP
     
     # Swarm Bars WIP
     swarm_bars = plot_kwargs["swarm_bars"]
@@ -1615,14 +1618,11 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             swarm_bars_order = pd.unique(plot_data[xvar])
 
         swarm_means = plot_data.groupby(xvar)[yvar].mean().reindex(index=swarm_bars_order)
-        swarm_bar_colors = [swarm_bars_kwargs.get('color')]*(len(swarm_bars_order)+1) if swarm_bars_kwargs.get('color') is not None else ['black']*(len(swarm_bars_order)+1) if color_col is not None or is_paired else swarm_colors
+        swarm_bars_colors = [swarm_bars_kwargs.get('color')]*(len(swarm_bars_order)+1) if swarm_bars_kwargs.get('color') is not None else ['black']*(len(swarm_bars_order)+1) if color_col is not None or is_paired else swarm_colors
         swarm_bars_kwargs.pop('color')
-        for swarm_bars_x,swarm_bars_y,c in zip(np.arange(0,len(swarm_bars_order)+1,1), swarm_means, swarm_bar_colors):
-            rawdata_axes.add_patch(mpatches.Rectangle((swarm_bars_x-0.2,0),
-            0.5-0.1, swarm_bars_y, zorder=-1,color=c,**swarm_bars_kwargs))
-
-    else:
-        pass
+        for swarm_bars_x,swarm_bars_y,c in zip(np.arange(0,len(swarm_bars_order)+1,1), swarm_means, swarm_bars_colors):
+            rawdata_axes.add_patch(mpatches.Rectangle((swarm_bars_x-0.25,0),
+            0.5, swarm_bars_y, zorder=-1,color=c,**swarm_bars_kwargs))
     
     # Contrast Bars WIP
     contrast_bars = plot_kwargs["contrast_bars"]
@@ -1636,21 +1636,58 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         for j, tick in enumerate(ticks_to_plot):
             contrast_means.append(results.difference[j])
 
-        contrast_bar_colors = [contrast_bars_kwargs.get('color')]*(len(ticks_to_plot)+1) if contrast_bars_kwargs.get('color') is not None else ['black']*(max(ticks_to_plot)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
+        contrast_bars_colors = [contrast_bars_kwargs.get('color')]*(len(ticks_to_plot)+1) if contrast_bars_kwargs.get('color') is not None else ['black']*(max(ticks_to_plot)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
         contrast_bars_kwargs.pop('color')
         for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
-            contrast_axes.add_patch(mpatches.Rectangle((contrast_bars_x,0),0.25, contrast_bars_y, zorder=-1, color=contrast_bar_colors[contrast_bars_x], **contrast_bars_kwargs))
+            contrast_axes.add_patch(mpatches.Rectangle((contrast_bars_x-0.25,0),0.5, contrast_bars_y, zorder=-1, color=contrast_bars_colors[contrast_bars_x], **contrast_bars_kwargs))
 
         if show_mini_meta:
-            contrast_axes.add_patch(mpatches.Rectangle((max(rawdata_axes.get_xticks())+2,0),0.25, mini_meta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
+            contrast_axes.add_patch(mpatches.Rectangle((max(rawdata_axes.get_xticks())+2-0.25,0),0.5, mini_meta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
 
         if show_delta2:
-            contrast_axes.add_patch(mpatches.Rectangle((max(rawdata_axes.get_xticks())+2,0),0.25, delta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
+            contrast_axes.add_patch(mpatches.Rectangle((max(rawdata_axes.get_xticks())+2-0.25,0),0.5, delta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
 
+    ################################################### Swarm & Contrast Bars WIP
+
+    ################################################### Summary Bars WIP
+
+    summary_bars = plot_kwargs["summary_bars"]
+    default_summary_bars_kwargs = {"color": None, "alpha": 0.15}
+    if plot_kwargs["summary_bars_kwargs"] is None:
+        summary_bars_kwargs = default_summary_bars_kwargs
     else:
-        pass
-  
-    ################################################### Contrast Bars WIP
+        summary_bars_kwargs = merge_two_dicts(default_summary_bars_kwargs, plot_kwargs["summary_bars_kwargs"])
+
+    if summary_bars is not None:
+        if not isinstance(summary_bars, list):
+            raise TypeError("summary_bars must be a list of indices (ints).")
+        if not all(isinstance(i, int) for i in summary_bars):
+            raise TypeError("summary_bars must be a list of indices (ints).")
+        if any(i >= len(results) for i in summary_bars):
+            raise ValueError("Index {} chosen is out of range for the contrast objects.".format([i for i in summary_bars if i >= len(results)]))
+        if float_contrast:
+            raise ValueError("summary_bars cannot be used with Gardner-Altman plots.")
+        else:
+            print('Summary plots WIP')
+            summary_xmin, summary_xmax = contrast_axes.get_xlim()
+            summary_bars_colors = [summary_bars_kwargs.get('color')]*(len(summary_bars)+1) if summary_bars_kwargs.get('color') is not None else ['black']*(max(summary_bars)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
+            summary_bars_kwargs.pop('color')
+            for summary_index in summary_bars:
+                print('Summary plot for contrast object:', summary_index)
+                if ci_type == "bca":
+                    summary_ci_low = results.bca_low[summary_index]
+                    summary_ci_high = results.bca_high[summary_index]
+                else:
+                    summary_ci_low = results.pct_low[summary_index]
+                    summary_ci_high = results.pct_high[summary_index]
+
+                summary_color = summary_bars_colors[ticks_to_plot[summary_index]]
+
+                contrast_axes.add_patch(mpatches.Rectangle((summary_xmin,summary_ci_low),summary_xmax+1, 
+                summary_ci_high-summary_ci_low, zorder=-2, color=summary_color, **summary_bars_kwargs))
+
+
+    ################################################### Summary Bars WIP
 
     # Make sure no stray ticks appear!
     rawdata_axes.xaxis.set_ticks_position("bottom")
