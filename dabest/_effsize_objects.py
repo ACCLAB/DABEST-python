@@ -729,18 +729,19 @@ class EffectSizeDataFrame(object):
         out = []
         reprs = []
 
+        grouped_data = {name: group[yvar].copy() for name, group in dat.groupby(xvar)}
         if self.__delta2:
             mixed_data = []
             for j, current_tuple in enumerate(idx):
                 if self.__is_paired != "sequential":
                     cname = current_tuple[0]
-                    control = dat[dat[xvar] == cname][yvar].copy()
+                    control = grouped_data[cname]
 
                 for ix, tname in enumerate(current_tuple[1:]):
                     if self.__is_paired == "sequential":
                         cname = current_tuple[ix]
-                        control = dat[dat[xvar] == cname][yvar].copy()
-                    test = dat[dat[xvar] == tname][yvar].copy()
+                        control = grouped_data[cname]
+                    test = grouped_data[tname]
                     mixed_data.append(control)
                     mixed_data.append(test)
             bootstraps_delta_delta = ci2g.compute_delta2_bootstrapped_diff(
@@ -756,13 +757,13 @@ class EffectSizeDataFrame(object):
         for j, current_tuple in enumerate(idx):
             if self.__is_paired != "sequential":
                 cname = current_tuple[0]
-                control = dat[dat[xvar] == cname][yvar].copy()
+                control = grouped_data[cname]
 
             for ix, tname in enumerate(current_tuple[1:]):
                 if self.__is_paired == "sequential":
                     cname = current_tuple[ix]
-                    control = dat[dat[xvar] == cname][yvar].copy()
-                test = dat[dat[xvar] == tname][yvar].copy()
+                    control = grouped_data[tname]
+                test = grouped_data[tname]
 
                 result = TwoGroupsEffectSize(
                     control,

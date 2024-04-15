@@ -1,16 +1,14 @@
 import numpy as np
 import pandas as pd
-
-from dabest._api import load
+import dabest
+import cProfile
+print(dabest.__version__)
 
 from scipy.stats import norm # Used in generation of populations.
-
-import cProfile
-
 np.random.seed(9999) # Fix the seed to ensure reproducibility of results.
 
 # Create samples
-N = 20
+N = 100
 y = norm.rvs(loc=3, scale=0.4, size=N*4)
 y[N:2*N] = y[N:2*N]+1
 y[2*N:3*N] = y[2*N:3*N]-0.5
@@ -47,12 +45,19 @@ df_delta2 = pd.DataFrame({'ID'        : id_col,
                    'Treatment': treatment,
                    'Y'         : y
                 })
-def main():
-    unpaired_delta2 = load(data = df_delta2, x = ["Genotype", "Genotype"], y = "Y", delta2 = True, experiment = "Treatment")
 
-    print(unpaired_delta2.mean_diff)
-    # unpaired_delta2.mean_diff.plot();
+
+
+file_rec = 'nprandom'
+import cProfile
+
+def main():
+    unpaired_delta3 = dabest.load(data = df_delta2, x = ["Genotype", "Genotype"], y = "Y", delta2 = True, experiment = "Treatment")
+    
+    print(unpaired_delta3.mean_diff)
 
 if __name__ == "__main__":
-    # cProfile.run('main()')
-    main()
+    cProfile.run('main()', file_rec)
+    import pstats
+    p = pstats.Stats(file_rec)
+    p.sort_stats('tottime').print_stats(10)

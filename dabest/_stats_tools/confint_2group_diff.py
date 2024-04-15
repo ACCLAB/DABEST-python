@@ -16,7 +16,7 @@ from scipy.stats import norm
 from numpy import isnan
 
 # %% ../../nbs/API/confint_2group_diff.ipynb 5
-@njit
+@njit(cache=True, parallel=True)
 def create_jackknife_indexes(data):
     """
     Given an array-like, creates a jackknife bootstrap.
@@ -35,12 +35,12 @@ def create_jackknife_indexes(data):
 
     n = len(data)
     indexes = np.empty((n, n - 1), dtype=np.int64)
-    for i in range(n):
+    for i in prange(n):
         indexes[i] = np.concatenate((np.arange(i), np.arange(i + 1, n)))
     return indexes
 
 
-@njit
+@njit(cache=True, parallel=True)
 def create_repeated_indexes(data):
     """
     Convenience function. Given an array-like with length N,
@@ -49,7 +49,7 @@ def create_repeated_indexes(data):
 
     n = len(data)
     indexes = np.empty((n, n), dtype=np.int64)  # Pre-allocate the output array
-    for i in range(n):
+    for i in prange(n):
         indexes[i, :] = np.arange(n)  # Fill each row with the full index range
     return indexes
 
@@ -119,7 +119,7 @@ def _calc_accel(jack_dist):
         return numer / denom
 
 
-@njit(cache=True)
+@njit(cache=True, parallel=True)
 def bootstrap_indices(is_paired, x0_len, x1_len, resamples, random_seed):
     np.random.seed(random_seed)
     indices = np.empty((resamples, x0_len if is_paired else x0_len + x1_len), dtype=np.int64)
@@ -156,18 +156,22 @@ def compute_bootstrapped_diff(
 
     return out
 
-@njit(cache=True)
+@njit(cache=True, parallel=True)
 def delta2_bootstrap_loop(x1, x2, x3, x4, resamples, pooled_sd, rng_seed, is_paired):
     np.random.seed(rng_seed)
     out_delta_g = np.empty(resamples)
     deltadelta = np.empty(resamples)
+    
+    n1, n2, n3, n4 = len(x1), len(x2), len(x3), len(x4)
+    if is_paired:
+        if n1 != n2 or n3 != n4:
+            raise ValueError("Each control group must have the same length as its corresponding test group in paired analysis.")
+    
 
     # Bootstrapping
     for i in prange(resamples):
         # Paired or unpaired resampling
         if is_paired:
-            if len(x1) != len(x2) or len(x3) != len(x4):
-                raise ValueError("Each control group must have the same length as its corresponding test group in paired analysis.")
             indices_1 = np.random.choice(len(x1),len(x1))
             indices_2 = np.random.choice(len(x3),len(x3))
             x1_sample, x2_sample = x1[indices_1], x2[indices_1]

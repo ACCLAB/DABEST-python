@@ -386,13 +386,14 @@ class MiniMetaDelta(object):
         # compute the variances of each control group and each test group
         control_var=[]
         test_var=[]
+        grouped_data = {name: group[yvar].copy() for name, group in dat.groupby(xvar)}
         for j, current_tuple in enumerate(idx):
             cname = current_tuple[0]
-            control = dat[dat[xvar] == cname][yvar].copy()
+            control = grouped_data[cname]
             control_var.append(np.var(control, ddof=1))
 
             tname = current_tuple[1]
-            test = dat[dat[xvar] == tname][yvar].copy()
+            test = grouped_data[tname]
             test_var.append(np.var(test, ddof=1))
         self.__control_var = np.array(control_var)
         self.__test_var    = np.array(test_var)
