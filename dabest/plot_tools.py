@@ -5,7 +5,8 @@ from __future__ import annotations
 
 # %% auto 0
 __all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'width_determine',
-           'single_sankey', 'sankeydiag', 'swarmplot', 'SwarmPlot']
+           'single_sankey', 'sankeydiag', 'summary_bars_plotter', 'contrast_bars_plotter', 'swarm_bars_plotter',
+           'swarmplot', 'SwarmPlot']
 
 # %% ../nbs/API/plot_tools.ipynb 4
 import math
@@ -17,6 +18,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import matplotlib.axes as axes
+import matplotlib.patches as mpatches
 from collections import defaultdict
 from typing import List, Tuple, Dict, Iterable, Union
 from pandas.api.types import CategoricalDtype
@@ -777,6 +779,162 @@ def sankeydiag(
         sankey_ticks = [broadcasted_left[0], right_idx[0]]
         ax.set_xticks([0, 1])
         ax.set_xticklabels(sankey_ticks)
+
+def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object,
+                 float_contrast: bool,summary_bars_kwargs: dict, ci_type: str,
+                 ticks_to_plot: list, color_col: str, swarm_colors: list, 
+                 proportional: bool, is_paired: bool):
+    """
+    Add summary bars to the contrast plot.
+
+    Parameters
+    ----------
+    summary_bars : list
+        List of indices of the contrast objects to plot summary bars for.
+    results : object (Dataframe)
+        Dataframe of contrast object comparisons.
+    ax_to_plot : object
+        Matplotlib axis object to plot on.
+    float_contrast : bool
+        Whether the DABEST plot uses Gardner-Altman or Cummings.
+    summary_bars_kwargs : dict
+        Keyword arguments for the summary bars.
+    ci_type : str 
+        Type of confidence interval to plot.
+    ticks_to_plot : list
+        List of indices of the contrast objects.
+    color_col : str
+        Column name of the color column.
+    swarm_colors : list
+        List of colors used in the plot.
+    proportional : bool
+        Whether the data is proportional.
+    is_paired : bool
+        Whether the data is paired.
+    """
+# Begin checks        
+    if not isinstance(summary_bars, list):
+        raise TypeError("summary_bars must be a list of indices (ints).")
+    if not all(isinstance(i, int) for i in summary_bars):
+        raise TypeError("summary_bars must be a list of indices (ints).")
+    if any(i >= len(results) for i in summary_bars):
+        raise ValueError("Index {} chosen is out of range for the contrast objects.".format([i for i in summary_bars if i >= len(results)]))
+    if float_contrast:
+        raise ValueError("summary_bars cannot be used with Gardner-Altman plots.")
+# End checks
+    else:
+        summary_xmin, summary_xmax = ax_to_plot.get_xlim()
+        summary_bars_colors = [summary_bars_kwargs.get('color')]*(len(summary_bars)+1) if summary_bars_kwargs.get('color') is not None else ['black']*(max(summary_bars)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
+        summary_bars_kwargs.pop('color')
+        for summary_index in summary_bars:
+            if ci_type == "bca":
+                summary_ci_low = results.bca_low[summary_index]
+                summary_ci_high = results.bca_high[summary_index]
+            else:
+                summary_ci_low = results.pct_low[summary_index]
+                summary_ci_high = results.pct_high[summary_index]
+
+            summary_color = summary_bars_colors[ticks_to_plot[summary_index]]
+
+            ax_to_plot.add_patch(mpatches.Rectangle((summary_xmin,summary_ci_low),summary_xmax+1, 
+            summary_ci_high-summary_ci_low, zorder=-2, color=summary_color, **summary_bars_kwargs))
+
+
+def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: object,
+                          ticks_to_plot: list, contrast_bars_kwargs: dict, color_col: str, 
+                          swarm_colors: list, show_mini_meta: bool, mini_meta_delta: object, 
+                          show_delta2: bool, delta_delta: object, proportional: bool, is_paired: bool):
+    """
+    Add contrast bars to the contrast plot.
+
+    Parameters
+    ----------
+    results : object (Dataframe)
+        Dataframe of contrast object comparisons.
+    ax_to_plot : object
+        Matplotlib axis object to plot on.
+    swarm_plot_ax : object (ax)
+        Matplotlib axis object of the swarm plot.
+    ticks_to_plot : list
+        List of indices of the contrast objects.
+    contrast_bars_kwargs : dict 
+        Keyword arguments for the contrast bars.
+    color_col : str
+        Column name of the color column.
+    swarm_colors : list 
+        List of colors used in the plot.
+    show_mini_meta : bool   
+        Whether to show the mini meta-analysis.
+    mini_meta_delta : object    
+        Mini meta-analysis object.
+    show_delta2 : bool
+        Whether to show the delta-delta.
+    delta_delta : object
+        delta-delta object.
+    proportional : bool
+        Whether the data is proportional.
+    is_paired : bool
+        Whether the data is paired.
+    """
+    contrast_means = []
+    for j, tick in enumerate(ticks_to_plot):
+        contrast_means.append(results.difference[j])
+
+    contrast_bars_colors = [contrast_bars_kwargs.get('color')]*(len(ticks_to_plot)+1) if contrast_bars_kwargs.get('color') is not None else ['black']*(max(ticks_to_plot)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
+    contrast_bars_kwargs.pop('color')
+    for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
+        ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25,0),0.5, contrast_bars_y, zorder=-1, color=contrast_bars_colors[contrast_bars_x], **contrast_bars_kwargs))
+
+    if show_mini_meta:
+        ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25,0),0.5, mini_meta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
+
+    if show_delta2:
+        ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25,0),0.5, delta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
+
+def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
+                       swarm_bars_kwargs: dict, color_col: str, swarm_colors: list, is_paired: bool):
+    """
+    Add bars to the raw data plot.
+
+    Parameters
+    ----------
+    plot_data : object (Dataframe)
+        Dataframe of the plot data.
+    xvar : str
+        Column name of the x variable.
+    yvar : str
+        Column name of the y variable.
+    ax : object  
+        Matplotlib axis object to plot on.
+    swarm_bars_kwargs : dict
+        Keyword arguments for the swarm bars.
+    color_col : str
+        Column name of the color column.
+    swarm_colors : list
+        List of colors used in the plot.
+    is_paired : bool
+        Whether the data is paired.
+    """
+
+    # if is_paired:
+    #     swarm_bar_xlocs_adjustleft = {'right': -0.2, 'left': -0.2, 'center': -0.2}
+    #     swarm_bar_xlocs_adjustright = {'right': -0.1, 'left': -0.1, 'center': -0.1}            
+    # else:
+    #     swarm_bar_xlocs_adjustleft = {'right': 0, 'left': -0.4, 'center': -0.2}
+    #     swarm_bar_xlocs_adjustright = {'right': -0.1, 'left': -0.1, 'center': -0.1}
+
+    if isinstance(plot_data[xvar].dtype, pd.CategoricalDtype):
+        swarm_bars_order = pd.unique(plot_data[xvar]).categories
+    else:
+        swarm_bars_order = pd.unique(plot_data[xvar])
+
+    swarm_means = plot_data.groupby(xvar)[yvar].mean().reindex(index=swarm_bars_order)
+    swarm_bars_colors = [swarm_bars_kwargs.get('color')]*(len(swarm_bars_order)+1) if swarm_bars_kwargs.get('color') is not None else ['black']*(len(swarm_bars_order)+1) if color_col is not None or is_paired else swarm_colors
+    swarm_bars_kwargs.pop('color')
+    for swarm_bars_x,swarm_bars_y,c in zip(np.arange(0,len(swarm_bars_order)+1,1), swarm_means, swarm_bars_colors):
+        ax.add_patch(mpatches.Rectangle((swarm_bars_x-0.25,0),
+        0.5, swarm_bars_y, zorder=-1,color=c,**swarm_bars_kwargs))
+
 
 # %% ../nbs/API/plot_tools.ipynb 6
 def swarmplot(
