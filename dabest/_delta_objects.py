@@ -413,7 +413,7 @@ class MiniMetaDelta(object):
                                                           self.__bootstraps)
 
         # Compute the weighted average mean difference based on the raw data
-        self.__difference = es.weighted_delta(self.__effsizedf["difference"],
+        self.__difference = es.weighted_delta(np.array(self.__effsizedf["difference"]),
                                                    self.__group_var)
 
         sorted_weighted_deltas = npsort(self.__bootstraps_weighted_delta)

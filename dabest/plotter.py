@@ -1118,8 +1118,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 which_std = 1
             else:
                 which_std = 0
-            temp_control = plot_data[plot_data[xvar] == current_control][yvar]
-            temp_test = plot_data[plot_data[xvar] == current_group][yvar]
+            temp_control = np.array(plot_data[plot_data[xvar] == current_control][yvar])
+            temp_test = np.array(plot_data[plot_data[xvar] == current_group][yvar])
 
             stds = _compute_standardizers(temp_control, temp_test)
             if is_paired:
