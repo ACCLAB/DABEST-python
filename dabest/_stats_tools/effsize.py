@@ -8,7 +8,6 @@ import warnings
 from scipy.special import gamma
 from scipy.stats import mannwhitneyu
 
-
 # %% auto 0
 __all__ = ['two_group_difference', 'func_difference', 'cohens_d', 'cohens_h', 'hedges_g', 'cliffs_delta', 'weighted_delta']
 
@@ -289,6 +288,7 @@ def cliffs_delta(control:list|tuple|np.ndarray,
     cliffs_delta = ((2 * U) / (control_n * test_n)) - 1
 
     return cliffs_delta
+
 
 # %% ../../nbs/API/effsize.ipynb 11
 @njit(cache=True)
