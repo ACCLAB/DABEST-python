@@ -8,6 +8,7 @@ import warnings
 from scipy.special import gamma
 from scipy.stats import mannwhitneyu
 
+
 # %% auto 0
 __all__ = ['two_group_difference', 'func_difference', 'cohens_d', 'cohens_h', 'hedges_g', 'cliffs_delta', 'weighted_delta']
 
@@ -208,6 +209,7 @@ def cohens_d(control:list|tuple|np.ndarray,
     return M / divisor
 
 # %% ../../nbs/API/effsize.ipynb 8
+# @njit(cache=True) # It uses np.seterr which is not supported by Numba
 def cohens_h(control:list|tuple|np.ndarray, 
              test:list|tuple|np.ndarray
             )->float:

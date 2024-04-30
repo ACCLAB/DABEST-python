@@ -120,7 +120,7 @@ def _calc_accel(jack_dist):
         return numer / denom
 
 
-@njit(cache=True, parallel=True)
+@njit(cache=True) # parallelization must be turned off for random number generation
 def bootstrap_indices(is_paired, x0_len, x1_len, resamples, random_seed):
     np.random.seed(random_seed)
     indices = np.empty((resamples, x0_len if is_paired else x0_len + x1_len), dtype=np.int64)
@@ -157,7 +157,7 @@ def compute_bootstrapped_diff(
 
     return out
 
-@njit(cache=True, parallel=True)
+@njit(cache=True) # parallelization must be turned off for random number generation
 def delta2_bootstrap_loop(x1, x2, x3, x4, resamples, pooled_sd, rng_seed, is_paired):
     np.random.seed(rng_seed)
     out_delta_g = np.empty(resamples)
@@ -268,7 +268,7 @@ def _compute_alpha_from_ci(ci):
     return (100.0 - ci) / 100.0
 
 
-@njit(cache=True)
+# @njit(cache=True)
 def _compute_quantile(z, bias, acceleration):
     numer = bias + z
     denom = 1 - (acceleration * numer)

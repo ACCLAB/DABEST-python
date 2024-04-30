@@ -762,7 +762,7 @@ class EffectSizeDataFrame(object):
             for ix, tname in enumerate(current_tuple[1:]):
                 if self.__is_paired == "sequential":
                     cname = current_tuple[ix]
-                    control = grouped_data[tname]
+                    control = grouped_data[cname]
                 test = grouped_data[tname]
 
                 result = TwoGroupsEffectSize(
