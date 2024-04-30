@@ -125,7 +125,7 @@ def bootstrap_indices(is_paired, x0_len, x1_len, resamples, random_seed):
     np.random.seed(random_seed)
     indices = np.empty((resamples, x0_len if is_paired else x0_len + x1_len), dtype=np.int64)
     
-    for i in prange(resamples):
+    for i in range(resamples):
         if is_paired:
             indices[i, :x0_len] = np.random.choice(x0_len, x0_len)
         else:  
@@ -170,7 +170,7 @@ def delta2_bootstrap_loop(x1, x2, x3, x4, resamples, pooled_sd, rng_seed, is_pai
     
 
     # Bootstrapping
-    for i in prange(resamples):
+    for i in range(resamples):
         # Paired or unpaired resampling
         if is_paired:
             indices_1 = np.random.choice(len(x1),len(x1))
