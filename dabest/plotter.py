@@ -17,42 +17,6 @@ import logging
 def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     """
     Custom function that creates an estimation plot from an EffectSizeDataFrame.
-    Keywords
-    --------
-    Parameters
-    ----------
-    effectsize_df
-        A `dabest` EffectSizeDataFrame object.
-    plot_kwargs
-        color_col=None
-        raw_marker_size=6, es_marker_size=9,
-        swarm_label=None, contrast_label=None, delta2_label=None,
-        swarm_ylim=None, contrast_ylim=None, delta2_ylim=None,
-        custom_palette=None, swarm_desat=0.5, halfviolin_desat=1,
-        halfviolin_alpha=0.8,
-        face_color = None,
-        bar_label=None, bar_desat=0.8, bar_width = 0.5,bar_ylim = None,
-        ci=None, ci_type='bca', err_color=None,
-        float_contrast=True,
-        show_pairs=True,
-        show_delta2=True,
-        group_summaries=None,
-        group_summaries_offset=0.1,
-        fig_size=None,
-        dpi=100,
-        ax=None,
-        gridkey_rows=None,
-        swarmplot_kwargs=None,
-        violinplot_kwargs=None,
-        slopegraph_kwargs=None,
-        sankey_kwargs=None,
-        reflines_kwargs=None,
-        group_summary_kwargs=None,
-        legend_kwargs=None,
-        title=None, fontsize_title=16,
-        fontsize_rawxlabel=12, fontsize_rawylabel=12,
-        fontsize_contrastxlabel=12, fontsize_contrastylabel=12,
-        fontsize_delta2label=12
     """
     from .misc_tools import merge_two_dicts
     from .plot_tools import (
