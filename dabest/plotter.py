@@ -45,6 +45,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
         slopegraph_kwargs=None,
+        slopegraph_xjitter=0,
+        slopegraph_yjitter=0,
+        jitter_seed=9876543210,
         sankey_kwargs=None,
         reflines_kwargs=None,
         group_summary_kwargs=None,
@@ -478,6 +481,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 columns=xvar,
                 values=pivot_values,
             )
+            rng = np.random.default_rng(plot_kwargs["jitter_seed"])
             x_start = 0
             for ii, current_tuple in enumerate(temp_idx):
                 current_pair = pivoted_plot_data.loc[
@@ -486,8 +490,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 grp_count = len(current_tuple)
                 # Iterate through the data for the current tuple.
                 for ID, observation in current_pair.iterrows():
-                    x_points = [t for t in range(x_start, x_start + grp_count)]
-                    y_points = observation[yvar].tolist()
+                    x_points = [t + plot_kwargs["slopegraph_xjitter"]*rng.standard_t(df=6, size=None) for t in range(x_start, x_start + grp_count)]
+                    y_points = np.array(observation[yvar].tolist()) + plot_kwargs["slopegraph_yjitter"]*rng.standard_t(df=6, size=len(observation[yvar].tolist()))
 
                     if color_col is None:
                         slopegraph_kwargs["color"] = ytick_color
