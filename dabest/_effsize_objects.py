@@ -7,6 +7,10 @@ __all__ = ['TwoGroupsEffectSize', 'EffectSizeDataFrame', 'PermutationTest']
 import pandas as pd
 import lqrt
 from scipy.stats import norm
+from scipy.special import binom as binomcoeff  # devMJBL
+from scipy.stats import binom  # devMJBL
+from scipy.integrate import fixed_quad  # devMJBL
+from numpy import arange, mean  # devMJBL
 from numpy import array, isnan, isinf, repeat, random, isin, abs, var
 from numpy import sort as npsort
 from numpy import nan as npnan
@@ -1006,9 +1010,9 @@ class EffectSizeDataFrame(object):
         barplot_kwargs=None,
         violinplot_kwargs=None,
         slopegraph_kwargs=None,
-        slopegraph_xjitter=0,
-        slopegraph_yjitter=0,
-        jitter_seed=9876543210,
+        slopegraph_xjitter=0,  # devMJBL
+        slopegraph_yjitter=0,  # devMJBL
+        jitter_seed=9876543210,  # devMJBL
         sankey_kwargs=None,
         reflines_kwargs=None,
         group_summary_kwargs=None,
@@ -1430,6 +1434,7 @@ class PermutationTest:
 
         BAG = array([*control, *test])
         CONTROL_LEN = int(len(control))
+        TEST_LEN = int(len(test))  # devMJBL
         EXTREME_COUNT = 0.
         THRESHOLD = abs(two_group_difference(control, test, 
                                                 is_paired, effect_size))
@@ -1470,10 +1475,40 @@ class PermutationTest:
             if abs(es) > THRESHOLD:
                 EXTREME_COUNT += 1.
 
+        # devMJBL
+        # adjust calculated p-value according to Phipson & Smyth (2010)
+        # https://doi.org/10.2202/1544-6115.1585
+        # as per R code in statmod::permp
+        # https://rdrr.io/cran/statmod/src/R/permp.R
+        # (assumes two-sided test)
+        
+        if CONTROL_LEN == TEST_LEN:
+            totalPermutations = binomcoeff(CONTROL_LEN + TEST_LEN, TEST_LEN)/2
+        else:
+            totalPermutations = binomcoeff(CONTROL_LEN + TEST_LEN, TEST_LEN)
+
+        if totalPermutations <= 10e3:
+            # use exact calculation
+            p = arange(1, totalPermutations + 1)/totalPermutations
+            x2 = repeat(EXTREME_COUNT, repeats=totalPermutations)
+            Y = binom.cdf(k=x2, n=permutation_count, p=p)
+            self.pvalue = mean(Y)
+        else:
+            # use integral approximation
+            def binomcdf(p, k, n):
+                return binom.cdf(k, n, p)
+
+            integrationVal, _ = fixed_quad(binomcdf,
+                                           a=0, b=0.5/totalPermutations,
+                                           args=(EXTREME_COUNT, permutation_count),
+                                           n=128)
+
+            self.pvalue = (EXTREME_COUNT + 1)/(permutation_count + 1) - integrationVal
+
         self.__permutations = array(self.__permutations)
         self.__permutations_var = array(self.__permutations_var)
 
-        self.pvalue = EXTREME_COUNT / self.__permutation_count
+       # self.pvalue = EXTREME_COUNT / self.__permutation_count
 
 
     def __repr__(self):
