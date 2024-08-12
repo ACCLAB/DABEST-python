@@ -783,7 +783,7 @@ def swarmplot(
     data: pd.DataFrame,
     x: str,
     y: str,
-    ax: axes.Subplot,
+    ax: axes.Axes,
     order: List = None,
     hue: str = None,
     palette: Union[Iterable, str] = "black",
@@ -806,8 +806,8 @@ def swarmplot(
         The column in the DataFrame to be used as the x-axis.
     y : str
         The column in the DataFrame to be used as the y-axis.
-    ax : axes._subplots.Subplot | axes._axes.Axes
-        Matplotlib AxesSubplot object for which the plot would be drawn on. Default is None.
+    ax : axes.Axes
+        Matplotlib axes.Axes object for which the plot would be drawn on. Default is None.
     order : List
         The order in which x-axis categories should be displayed. Default is None.
     hue : str
@@ -832,8 +832,8 @@ def swarmplot(
 
     Returns
     -------
-    axes._subplots.Subplot | axes._axes.Axes
-        Matplotlib AxesSubplot object for which the swarm plot has been drawn on.
+    axes.Axes
+        Matplotlib axes.Axes object for which the swarm plot has been drawn on.
     """
     s = SwarmPlot(data, x, y, ax, order, hue, palette, zorder, size, side, jitter)
     ax = s.plot(is_drop_gutter, gutter_limit, ax, **kwargs)
@@ -846,7 +846,7 @@ class SwarmPlot:
         data: pd.DataFrame,
         x: str,
         y: str,
-        ax: axes.Subplot,
+        ax: axes.Axes,
         order: List = None,
         hue: str = None,
         palette: Union[Iterable, str] = "black",
@@ -866,8 +866,8 @@ class SwarmPlot:
             The column in the DataFrame to be used as the x-axis.
         y : str
             The column in the DataFrame to be used as the y-axis.
-        ax : axes.Subplot
-            Matplotlib AxesSubplot object for which the plot would be drawn on.
+        ax : axes.Axes
+            Matplotlib axes.Axes object for which the plot would be drawn on.
         order : List
             The order in which x-axis categories should be displayed. Default is None.
         hue : str
@@ -954,7 +954,7 @@ class SwarmPlot:
         self.__dsize = dsize
 
     def _check_errors(
-        self, data: pd.DataFrame, ax: axes.Subplot, size: float, side: str
+        self, data: pd.DataFrame, ax: axes.Axes, size: float, side: str
     ) -> None:
         """
         Check the validity of input parameters. Raises exceptions if detected.
@@ -963,8 +963,8 @@ class SwarmPlot:
         ----------
         data : pd.Dataframe
             Input data used for generation of the swarmplot.
-        ax : axes.Subplot
-            Matplotlib AxesSubplot object for which the plot would be drawn on.
+        ax : axes.Axes
+            Matplotlib axes.Axes object for which the plot would be drawn on.
         size : int | float
             scalar value determining size of dots of the swarmplot.
         side: str
@@ -977,9 +977,9 @@ class SwarmPlot:
         # Type enforcement
         if not isinstance(data, pd.DataFrame):
             raise ValueError("`data` must be a Pandas Dataframe.")
-        if not isinstance(ax, (axes._subplots.Subplot, axes._axes.Axes)):
+        if not isinstance(ax, axes.Axes):
             raise ValueError(
-                f"`ax` must be a Matplotlib AxesSubplot. The current `ax` is a {type(ax)}"
+                f"`ax` must be a Matplotlib axes.Axes. The current `ax` is a {type(ax)}"
             )
         if not isinstance(size, (int, float)):
             raise ValueError("`size` must be a scalar or float.")
@@ -1239,8 +1239,8 @@ class SwarmPlot:
         return points_data
 
     def plot(
-        self, is_drop_gutter: bool, gutter_limit: float, ax: axes.Subplot, **kwargs
-    ) -> axes.Subplot:
+        self, is_drop_gutter: bool, gutter_limit: float, ax: axes.Axes, **kwargs
+    ) -> axes.Axes:
         """
         Generate a swarm plot.
 
@@ -1250,15 +1250,15 @@ class SwarmPlot:
             If True, drop points that hit the gutters; otherwise, readjust them.
         gutter_limit : int | float
             The limit for points hitting the gutters.
-        ax : axes.Subplot
+        ax : axes.Axes
             The matplotlib figure object to which the swarm plot will be added.
         **kwargs:
             Additional keyword arguments to be passed to the scatter plot.
 
         Returns
         -------
-        axes.Subplot:
-            The matplotlib figure containing the swarm plot.
+        axes.Axes:
+            The matplotlib axes containing the swarm plot.
         """
         # Input validation
         if not isinstance(is_drop_gutter, bool):
