@@ -824,7 +824,7 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
 # End checks
     else:
         summary_xmin, summary_xmax = ax_to_plot.get_xlim()
-        summary_bars_colors = [summary_bars_kwargs.get('color')]*(len(summary_bars)+1) if summary_bars_kwargs.get('color') is not None else ['black']*(max(summary_bars)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
+        summary_bars_colors = [summary_bars_kwargs.get('color')]*(max(summary_bars)+1) if summary_bars_kwargs.get('color') is not None else ['black']*(max(summary_bars)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
         summary_bars_kwargs.pop('color')
         for summary_index in summary_bars:
             if ci_type == "bca":
@@ -880,7 +880,7 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
     for j, tick in enumerate(ticks_to_plot):
         contrast_means.append(results.difference[j])
 
-    contrast_bars_colors = [contrast_bars_kwargs.get('color')]*(len(ticks_to_plot)+1) if contrast_bars_kwargs.get('color') is not None else ['black']*(max(ticks_to_plot)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
+    contrast_bars_colors = [contrast_bars_kwargs.get('color')]*(max(ticks_to_plot)+1) if contrast_bars_kwargs.get('color') is not None else ['black']*(max(ticks_to_plot)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
     contrast_bars_kwargs.pop('color')
     for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
         ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25,0),0.5, contrast_bars_y, zorder=-1, color=contrast_bars_colors[contrast_bars_x], **contrast_bars_kwargs))
@@ -929,7 +929,7 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
         swarm_bars_order = pd.unique(plot_data[xvar])
 
     swarm_means = plot_data.groupby(xvar)[yvar].mean().reindex(index=swarm_bars_order)
-    swarm_bars_colors = [swarm_bars_kwargs.get('color')]*(len(swarm_bars_order)+1) if swarm_bars_kwargs.get('color') is not None else ['black']*(len(swarm_bars_order)+1) if color_col is not None or is_paired else swarm_colors
+    swarm_bars_colors = [swarm_bars_kwargs.get('color')]*(max(swarm_bars_order)+1) if swarm_bars_kwargs.get('color') is not None else ['black']*(len(swarm_bars_order)+1) if color_col is not None or is_paired else swarm_colors
     swarm_bars_kwargs.pop('color')
     for swarm_bars_x,swarm_bars_y,c in zip(np.arange(0,len(swarm_bars_order)+1,1), swarm_means, swarm_bars_colors):
         ax.add_patch(mpatches.Rectangle((swarm_bars_x-0.25,0),

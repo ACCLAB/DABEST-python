@@ -1024,6 +1024,8 @@ class EffectSizeDataFrame(object):
         swarm_bars_kwargs=None,
         summary_bars=None,
         summary_bars_kwargs=None,
+        delta_text=True,
+        delta_text_kwargs=None,
     ):
         """
         Creates an estimation plot for the effect size of interest.
@@ -1186,6 +1188,14 @@ class EffectSizeDataFrame(object):
             For example, [0,1] will show summary bars for the first two contrast objects.
         summary_bars_kwargs: dict, default None
             If None, the following keywords are passed: {"color": None, "alpha": 0.15}
+        delta_text : boolean, default True
+            Whether or not to display the text deltas.
+        delta_text_kwargs : dict, default None
+            Pass relevant keyword arguments to the delta text. Pass any keyword arguments accepted by
+            matplotlib.text.Text here, as a string. If None, the following keywords are passed:
+            {"color": None, "alpha": 1, "fontsize": 10, "ha": 'center', "va": 'center', "rotation": 0, 
+            "x_location": 'right', "x_coordinates": None, "y_coordinates": None}
+            Use "x_coordinates" and "y_coordinates" if you would like to specify the text locations manually.
 
         Returns
         -------
