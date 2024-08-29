@@ -6,7 +6,7 @@ from __future__ import annotations
 # %% auto 0
 __all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'width_determine',
            'single_sankey', 'sankeydiag', 'summary_bars_plotter', 'contrast_bars_plotter', 'swarm_bars_plotter',
-           'swarmplot', 'SwarmPlot']
+           'delta_text_plotter', 'swarmplot', 'SwarmPlot']
 
 # %% ../nbs/API/plot_tools.ipynb 4
 import math
@@ -934,6 +934,71 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
     for swarm_bars_x,swarm_bars_y,c in zip(np.arange(0,len(swarm_bars_order)+1,1), swarm_means, swarm_bars_colors):
         ax.add_patch(mpatches.Rectangle((swarm_bars_x-0.25,0),
         0.5, swarm_bars_y, zorder=-1,color=c,**swarm_bars_kwargs))
+
+def delta_text_plotter(results: object, ax: object, ticks_to_plot: list, delta_text_kwargs: dict, color_col: str, 
+                       swarm_colors: list, is_paired: bool):
+    """
+    Add text to the contrast plot.
+
+    Parameters
+    ----------
+    results : object (Dataframe)
+        Dataframe of contrast object comparisons.
+    ax : object
+        Matplotlib axis object to plot on.
+    ticks_to_plot : list
+        List of indices of the contrast objects.
+    delta_text_kwargs : dict
+        Keyword arguments for the delta text.
+    color_col : str
+        Column name of the color column.
+    swarm_colors : list
+        List of colors used in the plot.
+    is_paired : bool
+        Whether the data is paired.
+    """
+    
+    delta_text_x_location = delta_text_kwargs.get('x_location')
+    if delta_text_x_location != 'right' and delta_text_x_location != 'left':
+        raise ValueError("delta_text_kwargs['x_location'] must be either 'right' or 'left'.")
+    delta_text_kwargs.pop('x_location')
+
+    delta_text_colors = [delta_text_kwargs.get('color')]*(max(ticks_to_plot)+1) if delta_text_kwargs.get('color') is not None else ['black']*(max(ticks_to_plot)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
+    delta_text_kwargs.pop('color')
+
+    Delta_Values = []
+    for j, tick in enumerate(ticks_to_plot):
+        Delta_Values.append(results.difference[j])
+
+    delta_text_x_coordinates = delta_text_kwargs.get('x_coordinates')
+    delta_text_y_coordinates = delta_text_kwargs.get('y_coordinates')
+
+    if delta_text_x_coordinates is not None:
+        if not isinstance(delta_text_x_coordinates, list):
+            raise TypeError("delta_text_kwargs['x_coordinates'] must be a list of x-coordinates.")
+        if len(delta_text_x_coordinates) != len(ticks_to_plot):
+            raise ValueError("delta_text_kwargs['x_coordinates'] must have the same length as the number of ticks to plot.")
+        delta_text_x_coordinates_default = False
+        delta_text_kwargs.pop('x_coordinates')
+    else:
+        delta_text_x_coordinates = ticks_to_plot
+        delta_text_x_coordinates_default = True
+        delta_text_kwargs.pop('x_coordinates')
+
+    if delta_text_y_coordinates is not None:
+        if not isinstance(delta_text_y_coordinates, list):
+            raise TypeError("delta_text_kwargs['y_coordinates'] must be a list of y-coordinates.")
+        if len(delta_text_y_coordinates) != len(ticks_to_plot):
+            raise ValueError("delta_text_kwargs['y_coordinates'] must have the same length as the number of ticks to plot.")
+        delta_text_kwargs.pop('y_coordinates')
+    else:
+        delta_text_y_coordinates = Delta_Values
+        delta_text_kwargs.pop('y_coordinates')
+
+    for x,y,t,tick in zip(delta_text_x_coordinates, delta_text_y_coordinates,Delta_Values,ticks_to_plot):
+        Delta_Text = '+'+'{0:.2f}'.format(t) if t > 0 else '{0:.2f}'.format(t)
+        X_Adjust = 0 if not delta_text_x_coordinates_default else 0.53 if delta_text_x_location == 'right' else -0.35
+        ax.text(x+X_Adjust, y, Delta_Text, color=delta_text_colors[tick],**delta_text_kwargs)
 
 
 # %% ../nbs/API/plot_tools.ipynb 6

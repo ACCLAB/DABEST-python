@@ -68,6 +68,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         swarm_bars_plotter,
         contrast_bars_plotter,
         summary_bars_plotter,
+        delta_text_plotter,
     )
     from ._stats_tools.effsize import (
         _compute_standardizers,
@@ -1639,55 +1640,15 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     ################################################### Delta numbers WIP START
     delta_text = plot_kwargs["delta_text"]
+    default_delta_text_kwargs = {"color": None, "alpha": 1, "fontsize": 10, "ha": 'center', "va": 'center', "rotation": 0, "x_location": 'right', "x_coordinates": None, "y_coordinates": None}
+    if plot_kwargs["delta_text_kwargs"] is None:
+        delta_text_kwargs = default_delta_text_kwargs
+    else:
+        delta_text_kwargs = merge_two_dicts(default_delta_text_kwargs, plot_kwargs["delta_text_kwargs"])
+
     if delta_text:
-        default_delta_text_kwargs = {"color": None, "alpha": 1, "fontsize": 10, "ha": 'center', "va": 'center', "rotation": 0, "x_location": 'right', "x_coordinates": None, "y_coordinates": None}
-        if plot_kwargs["delta_text_kwargs"] is None:
-            delta_text_kwargs = default_delta_text_kwargs
-        else:
-            delta_text_kwargs = merge_two_dicts(default_delta_text_kwargs, plot_kwargs["delta_text_kwargs"])
-
-        delta_text_x_location = delta_text_kwargs.get('x_location')
-        if delta_text_x_location != 'right' and delta_text_x_location != 'left':
-            raise ValueError("delta_text_kwargs['x_location'] must be either 'right' or 'left'.")
-        delta_text_kwargs.pop('x_location')
-
-        delta_text_colors = [delta_text_kwargs.get('color')]*(max(ticks_to_plot)+1) if delta_text_kwargs.get('color') is not None else ['black']*(max(ticks_to_plot)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
-        delta_text_kwargs.pop('color')
-
-        Delta_Values = []
-        for j, tick in enumerate(ticks_to_plot):
-            Delta_Values.append(results.difference[j])
-
-        delta_text_x_coordinates = delta_text_kwargs.get('x_coordinates')
-        delta_text_y_coordinates = delta_text_kwargs.get('y_coordinates')
-
-        if delta_text_x_coordinates is not None:
-            if not isinstance(delta_text_x_coordinates, list):
-                raise TypeError("delta_text_kwargs['x_coordinates'] must be a list of x-coordinates.")
-            if len(delta_text_x_coordinates) != len(ticks_to_plot):
-                raise ValueError("delta_text_kwargs['x_coordinates'] must have the same length as the number of ticks to plot.")
-            delta_text_x_coordinates_default = False
-            delta_text_kwargs.pop('x_coordinates')
-        else:
-            delta_text_x_coordinates = ticks_to_plot
-            delta_text_x_coordinates_default = True
-            delta_text_kwargs.pop('x_coordinates')
-
-
-        if delta_text_y_coordinates is not None:
-            if not isinstance(delta_text_y_coordinates, list):
-                raise TypeError("delta_text_kwargs['y_coordinates'] must be a list of y-coordinates.")
-            if len(delta_text_y_coordinates) != len(ticks_to_plot):
-                raise ValueError("delta_text_kwargs['y_coordinates'] must have the same length as the number of ticks to plot.")
-            delta_text_kwargs.pop('y_coordinates')
-        else:
-            delta_text_y_coordinates = Delta_Values
-            delta_text_kwargs.pop('y_coordinates')
-
-        for x,y,t,tick in zip(delta_text_x_coordinates, delta_text_y_coordinates,Delta_Values,ticks_to_plot):
-            Delta_Text = '+'+'{0:.2f}'.format(t) if t > 0 else '{0:.2f}'.format(t)
-            X_Adjust = 0 if not delta_text_x_coordinates_default else 0.53 if delta_text_x_location == 'right' else -0.35
-            contrast_axes.text(x+X_Adjust, y, Delta_Text, color=delta_text_colors[tick],**delta_text_kwargs)
+        delta_text_plotter(results=results, ax=contrast_axes, ticks_to_plot=ticks_to_plot, delta_text_kwargs=delta_text_kwargs, color_col=color_col, swarm_colors=swarm_colors, 
+                           is_paired=is_paired)
 
     ################################################### Delta numbers WIP END
 
