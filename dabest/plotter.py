@@ -1648,7 +1648,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     if delta_text:
         delta_text_plotter(results=results, ax=contrast_axes, ticks_to_plot=ticks_to_plot, delta_text_kwargs=delta_text_kwargs, color_col=color_col, swarm_colors=swarm_colors, 
-                           is_paired=is_paired,proportional=proportional)
+                           is_paired=is_paired,proportional=proportional, float_contrast=float_contrast)
 
     ################################################### Delta numbers WIP END
 

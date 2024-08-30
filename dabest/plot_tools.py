@@ -936,7 +936,7 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
         0.5, swarm_bars_y, zorder=-1,color=c,**swarm_bars_kwargs))
 
 def delta_text_plotter(results: object, ax: object, ticks_to_plot: list, delta_text_kwargs: dict, color_col: str, 
-                       swarm_colors: list, is_paired: bool, proportional: bool):
+                       swarm_colors: list, is_paired: bool, proportional: bool, float_contrast: bool):
     """
     Add text to the contrast plot.
 
@@ -956,11 +956,19 @@ def delta_text_plotter(results: object, ax: object, ticks_to_plot: list, delta_t
         List of colors used in the plot.
     is_paired : bool
         Whether the data is paired.
+    proportional : bool
+        Whether the data is proportional.
+    float_contrast : bool
+        Whether the DABEST plot uses Gardner-Altman or Cummings
     """
     
     delta_text_x_location = delta_text_kwargs.get('x_location')
     if delta_text_x_location != 'right' and delta_text_x_location != 'left':
         raise ValueError("delta_text_kwargs['x_location'] must be either 'right' or 'left'.")
+    if float_contrast:
+        delta_text_x_location = 'left'
+        if delta_text_kwargs.get('va') == 'center':
+            delta_text_kwargs["va"] = 'bottom'
     delta_text_kwargs.pop('x_location')
 
     delta_text_colors = [delta_text_kwargs.get('color')]*(max(ticks_to_plot)+1) if delta_text_kwargs.get('color') is not None else ['black']*(max(ticks_to_plot)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
@@ -997,7 +1005,7 @@ def delta_text_plotter(results: object, ax: object, ticks_to_plot: list, delta_t
 
     for x,y,t,tick in zip(delta_text_x_coordinates, delta_text_y_coordinates,Delta_Values,ticks_to_plot):
         Delta_Text = '+'+'{0:.2f}'.format(t) if t > 0 else '{0:.2f}'.format(t)
-        X_Adjust = 0 if not delta_text_x_coordinates_default else 0.53 if delta_text_x_location == 'right' else -0.35
+        X_Adjust = 0 if not delta_text_x_coordinates_default else 0.48 if delta_text_x_location == 'right' else -0.35
         ax.text(x+X_Adjust, y, Delta_Text, color=delta_text_colors[tick],**delta_text_kwargs)
 
 
