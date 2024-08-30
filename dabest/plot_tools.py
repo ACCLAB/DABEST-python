@@ -935,8 +935,9 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
         ax.add_patch(mpatches.Rectangle((swarm_bars_x-0.25,0),
         0.5, swarm_bars_y, zorder=-1,color=c,**swarm_bars_kwargs))
 
-def delta_text_plotter(results: object, ax: object, ticks_to_plot: list, delta_text_kwargs: dict, color_col: str, 
-                       swarm_colors: list, is_paired: bool, proportional: bool, float_contrast: bool):
+def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: object, ticks_to_plot: list, delta_text_kwargs: dict, color_col: str, 
+                       swarm_colors: list, is_paired: bool, proportional: bool, float_contrast: bool,
+                       show_mini_meta: bool, mini_meta_delta: object, show_delta2: bool, delta_delta: object):
     """
     Add text to the contrast plot.
 
@@ -944,8 +945,10 @@ def delta_text_plotter(results: object, ax: object, ticks_to_plot: list, delta_t
     ----------
     results : object (Dataframe)
         Dataframe of contrast object comparisons.
-    ax : object
+    ax_to_plot : object
         Matplotlib axis object to plot on.
+    swarm_plot_ax : object
+        Matplotlib axis object of the swarm plot.
     ticks_to_plot : list
         List of indices of the contrast objects.
     delta_text_kwargs : dict
@@ -960,6 +963,14 @@ def delta_text_plotter(results: object, ax: object, ticks_to_plot: list, delta_t
         Whether the data is proportional.
     float_contrast : bool
         Whether the DABEST plot uses Gardner-Altman or Cummings
+    show_mini_meta : bool
+        Whether to show the mini meta-analysis.
+    mini_meta_delta : object
+        Mini meta-analysis object.
+    show_delta2 : bool
+        Whether to show the delta-delta.
+    delta_delta : object
+        delta-delta object.
     """
     
     delta_text_x_location = delta_text_kwargs.get('x_location')
@@ -967,8 +978,10 @@ def delta_text_plotter(results: object, ax: object, ticks_to_plot: list, delta_t
         raise ValueError("delta_text_kwargs['x_location'] must be either 'right' or 'left'.")
     if float_contrast:
         delta_text_x_location = 'left'
-        if delta_text_kwargs.get('va') == 'center':
+        if results.difference[0] >= 0:
             delta_text_kwargs["va"] = 'bottom'
+        else:
+            delta_text_kwargs["va"] = 'top'
     delta_text_kwargs.pop('x_location')
 
     delta_text_colors = [delta_text_kwargs.get('color')]*(max(ticks_to_plot)+1) if delta_text_kwargs.get('color') is not None else ['black']*(max(ticks_to_plot)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
@@ -1006,8 +1019,18 @@ def delta_text_plotter(results: object, ax: object, ticks_to_plot: list, delta_t
     for x,y,t,tick in zip(delta_text_x_coordinates, delta_text_y_coordinates,Delta_Values,ticks_to_plot):
         Delta_Text = '+'+'{0:.2f}'.format(t) if t > 0 else '{0:.2f}'.format(t)
         X_Adjust = 0 if not delta_text_x_coordinates_default else 0.48 if delta_text_x_location == 'right' else -0.35
-        ax.text(x+X_Adjust, y, Delta_Text, color=delta_text_colors[tick],**delta_text_kwargs)
+        ax_to_plot.text(x+X_Adjust, y, Delta_Text, color=delta_text_colors[tick], **delta_text_kwargs)
 
+
+    if show_mini_meta:
+        delta_text_mini_meta = '+'+'{0:.2f}'.format(mini_meta_delta.difference) if mini_meta_delta.difference > 0 else '{0:.2f}'.format(mini_meta_delta.difference)
+        ax_to_plot.text(max(swarm_plot_ax.get_xticks())+2+X_Adjust, mini_meta_delta.difference, delta_text_mini_meta, color='black',**delta_text_kwargs)
+
+    if show_delta2:
+        delta_text_delta_delta_va = 'bottom' if delta_delta.difference >= 0 else 'top'
+        delta_text_kwargs.pop('va')
+        delta_text_delta_delta = '+'+'{0:.2f}'.format(delta_delta.difference) if delta_delta.difference > 0 else '{0:.2f}'.format(delta_delta.difference)
+        ax_to_plot.text(max(swarm_plot_ax.get_xticks())+2-0.35, delta_delta.difference, delta_text_delta_delta, va=delta_text_delta_delta_va,color='black',**delta_text_kwargs)
 
 # %% ../nbs/API/plot_tools.ipynb 6
 def swarmplot(

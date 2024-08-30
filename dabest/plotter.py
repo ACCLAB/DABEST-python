@@ -1647,8 +1647,10 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         delta_text_kwargs = merge_two_dicts(default_delta_text_kwargs, plot_kwargs["delta_text_kwargs"])
 
     if delta_text:
-        delta_text_plotter(results=results, ax=contrast_axes, ticks_to_plot=ticks_to_plot, delta_text_kwargs=delta_text_kwargs, color_col=color_col, swarm_colors=swarm_colors, 
-                           is_paired=is_paired,proportional=proportional, float_contrast=float_contrast)
+        delta_text_plotter(results=results, ax_to_plot=contrast_axes, swarm_plot_ax=rawdata_axes, ticks_to_plot=ticks_to_plot, delta_text_kwargs=delta_text_kwargs, color_col=color_col, swarm_colors=swarm_colors, 
+                           is_paired=is_paired,proportional=proportional, float_contrast=float_contrast, show_mini_meta=show_mini_meta, 
+                              mini_meta_delta=mini_meta_delta if show_mini_meta else None, show_delta2=show_delta2, 
+                              delta_delta=delta_delta if show_delta2 else None)
 
     ################################################### Delta numbers WIP END
 
