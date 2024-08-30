@@ -1177,11 +1177,11 @@ class EffectSizeDataFrame(object):
         contrast_bars_kwargs : dict, default None
             Pass relevant keyword arguments to the contrast bars. Pass any keyword arguments accepted by 
             matplotlib.patches.Rectangle here, as a string. If None, the following keywords are passed:
-            {"color": None, "alpha": 0.15}
+            {"color": None, "alpha": 0.3}
         swarm_bars_kwargs : dict, default None
             Pass relevant keyword arguments to the swarm bars. Pass any keyword arguments accepted by 
             matplotlib.patches.Rectangle here, as a string. If None, the following keywords are passed:
-            {"color": None, "alpha": 0.1}
+            {"color": None, "alpha": 0.3}
 
         summary_bars : list, default None
             Pass a list of indices of the contrast objects to have summary bars displayed on the plot.

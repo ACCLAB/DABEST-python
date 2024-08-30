@@ -936,7 +936,7 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
         0.5, swarm_bars_y, zorder=-1,color=c,**swarm_bars_kwargs))
 
 def delta_text_plotter(results: object, ax: object, ticks_to_plot: list, delta_text_kwargs: dict, color_col: str, 
-                       swarm_colors: list, is_paired: bool):
+                       swarm_colors: list, is_paired: bool, proportional: bool):
     """
     Add text to the contrast plot.
 

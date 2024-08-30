@@ -1602,7 +1602,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     # Swarm bars WIP
     swarm_bars = plot_kwargs["swarm_bars"]
-    default_swarm_bars_kwargs = {"color": None, "alpha": 0.1}
+    default_swarm_bars_kwargs = {"color": None, "alpha": 0.3}
     if plot_kwargs["swarm_bars_kwargs"] is None:
         swarm_bars_kwargs = default_swarm_bars_kwargs
     else:
@@ -1613,7 +1613,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     # Contrast bars WIP
     contrast_bars = plot_kwargs["contrast_bars"]
-    default_contrast_bars_kwargs = {"color": None, "alpha": 0.15}
+    default_contrast_bars_kwargs = {"color": None, "alpha": 0.3}
     if plot_kwargs["contrast_bars_kwargs"] is None:
         contrast_bars_kwargs = default_contrast_bars_kwargs
     else:
@@ -1648,7 +1648,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     if delta_text:
         delta_text_plotter(results=results, ax=contrast_axes, ticks_to_plot=ticks_to_plot, delta_text_kwargs=delta_text_kwargs, color_col=color_col, swarm_colors=swarm_colors, 
-                           is_paired=is_paired)
+                           is_paired=is_paired,proportional=proportional)
 
     ################################################### Delta numbers WIP END
 
