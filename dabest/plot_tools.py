@@ -1018,7 +1018,7 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
 
     for x,y,t,tick in zip(delta_text_x_coordinates, delta_text_y_coordinates,Delta_Values,ticks_to_plot):
         Delta_Text = '+'+'{0:.2f}'.format(t) if t > 0 else '{0:.2f}'.format(t)
-        X_Adjust = 0 if not delta_text_x_coordinates_default else 0.48 if delta_text_x_location == 'right' else -0.35
+        X_Adjust = 0 if not delta_text_x_coordinates_default else 0.48 if delta_text_x_location == 'right' else -0.38
         ax_to_plot.text(x+X_Adjust, y, Delta_Text, color=delta_text_colors[tick], **delta_text_kwargs)
 
 

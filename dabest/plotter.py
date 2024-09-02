@@ -1618,7 +1618,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         contrast_bars_kwargs = default_contrast_bars_kwargs
     else:
         contrast_bars_kwargs = merge_two_dicts(default_contrast_bars_kwargs, plot_kwargs["contrast_bars_kwargs"])
-    if contrast_bars and not float_contrast:
+    if contrast_bars:
         contrast_bars_plotter(results=results, ax_to_plot=contrast_axes, swarm_plot_ax=rawdata_axes,ticks_to_plot=ticks_to_plot, 
                               contrast_bars_kwargs=contrast_bars_kwargs, color_col=color_col, swarm_colors=swarm_colors, show_mini_meta=show_mini_meta, 
                               mini_meta_delta=mini_meta_delta if show_mini_meta else None, show_delta2=show_delta2, 
