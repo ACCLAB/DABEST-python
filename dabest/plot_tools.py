@@ -6,7 +6,7 @@ from __future__ import annotations
 # %% auto 0
 __all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'width_determine',
            'single_sankey', 'sankeydiag', 'summary_bars_plotter', 'contrast_bars_plotter', 'swarm_bars_plotter',
-           'delta_text_plotter', 'swarmplot', 'SwarmPlot']
+           'delta_text_plotter', 'DeltaDotsPlotter', 'swarmplot', 'SwarmPlot']
 
 # %% ../nbs/API/plot_tools.ipynb 4
 import math
@@ -1028,6 +1028,88 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
     for x,y,t,tick in zip(delta_text_x_coordinates, delta_text_y_coordinates,Delta_Values,ticks_to_plot):
         Delta_Text = np.format_float_positional(t, precision=2, sign=True, trim="k", min_digits=2)
         ax_to_plot.text(x, y, Delta_Text, color=delta_text_colors[tick], zorder=5, **delta_text_kwargs)
+
+
+def DeltaDotsPlotter(plot_data, contrast_axes, delta_id_col, idx, xvar, yvar, is_paired, color_col, float_contrast, plot_palette_raw, delta_dot_kwargs):
+    """
+    Parameters
+    ----------
+    plot_data : object (Dataframe)
+        Dataframe of the plot data.
+    contrast_axes : object
+        Matplotlib axis object to plot on.
+    delta_id_col : str
+        Column name of the delta id column.
+    idx : list
+        List of indices of the contrast objects.
+    xvar : str
+        Column name of the x variable.
+    yvar : str
+        Column name of the y variable.
+    is_paired : bool
+        Whether the data is paired.
+    color_col : str
+        Column name of the color column.
+    float_contrast : bool
+        Whether the DABEST plot uses Gardner-Altman or Cummings
+    plot_palette_raw : list
+        List of colors used in the plot.
+    delta_dot_kwargs : dict
+        Keyword arguments for the delta dots.
+    """
+    
+    # Checks and initializations
+    from .plot_tools import swarmplot
+
+    if color_col is not None:
+        plot_palette_deltapts = plot_palette_raw
+        delta_plot_data = plot_data[[xvar, yvar, delta_id_col, color_col]]
+    else:
+        plot_palette_deltapts = "k"
+        delta_plot_data = plot_data[[xvar, yvar, delta_id_col]]
+
+    # TODO: to make jitter value more accurate and not just a hardcoded eyeball value
+    jitter = 0.6 if float_contrast else 1 
+
+    # Create dataframe of delta values
+    final_deltas = pd.DataFrame()
+    for i in idx:
+        for j in i:
+            if i.index(j) != 0:
+                temp_df_exp = delta_plot_data[
+                    delta_plot_data[xvar].str.contains(j)
+                ].reset_index(drop=True)
+                if is_paired == "baseline":
+                    temp_df_cont = delta_plot_data[
+                        delta_plot_data[xvar].str.contains(i[0])
+                    ].reset_index(drop=True)
+                elif is_paired == "sequential":
+                    temp_df_cont = delta_plot_data[
+                        delta_plot_data[xvar].str.contains(
+                            i[i.index(j) - 1]
+                        )
+                    ].reset_index(drop=True)
+                delta_df = temp_df_exp.copy()
+                delta_df[yvar] = temp_df_exp[yvar] - temp_df_cont[yvar]
+                final_deltas = pd.concat([final_deltas, delta_df])
+
+    # Plot the delta dots
+    swarmplot(
+        data=final_deltas,
+        x=xvar,
+        y=yvar,
+        ax=contrast_axes,
+        order=None,
+        hue=color_col,
+        palette=plot_palette_deltapts,
+        zorder=2,
+        size=3,
+        side="right",
+        jitter=jitter,
+        is_drop_gutter=True,
+        gutter_limit=1,
+        **delta_dot_kwargs)
+    contrast_axes.legend().set_visible(False)
 
 # %% ../nbs/API/plot_tools.ipynb 6
 def swarmplot(

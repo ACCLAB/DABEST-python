@@ -57,6 +57,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         swarm_bars=True, swarm_bars_kwargs=None,
         contrast_bars=True, contrast_bars_kwargs=None,
         delta_text=True, delta_text_kwargs=None,
+        delta_dot=True, delta_dot_kwargs=None,
     """
     from .misc_tools import merge_two_dicts
     from .plot_tools import (
@@ -69,6 +70,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         contrast_bars_plotter,
         summary_bars_plotter,
         delta_text_plotter,
+        DeltaDotsPlotter,
     )
     from ._stats_tools.effsize import (
         _compute_standardizers,
@@ -509,80 +511,20 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
                 x_start = x_start + grp_count
 
+
             ##################### DELTA PTS ON CONTRAST PLOT WIP
+            show_delta_dots = plot_kwargs["delta_dot"]
+            default_delta_dot_kwargs = {"marker": "^", "alpha": 0.5}
+            if plot_kwargs["delta_dot_kwargs"] is None:
+                delta_dot_kwargs = default_delta_dot_kwargs
+            else:
+                delta_dot_kwargs = merge_two_dicts(default_delta_dot_kwargs, plot_kwargs["delta_dot_kwargs"])
 
-            contrast_show_deltas = plot_kwargs["contrast_show_deltas"]
-
-            if is_paired is None:
-                contrast_show_deltas = False
-
-            if contrast_show_deltas:
-                delta_plot_data_temp = plot_data.copy()
-                delta_id_col = dabest_obj.id_col
-                if color_col is not None:
-                    plot_palette_deltapts = plot_palette_raw
-                    delta_plot_data = delta_plot_data_temp[
-                        [xvar, yvar, delta_id_col, color_col]
-                    ]
-                    deltapts_args = {
-                        "marker": "^",
-                        "alpha": 0.5,
-                    }
-
-                else:
-                    plot_palette_deltapts = "k"
-                    delta_plot_data = delta_plot_data_temp[[xvar, yvar, delta_id_col]]
-                    deltapts_args = {"marker": "^", "alpha": 0.5}
-
-                final_deltas = pd.DataFrame()
-                for i in idx:
-                    for j in i:
-                        if i.index(j) != 0:
-                            temp_df_exp = delta_plot_data[
-                                delta_plot_data[xvar].str.contains(j)
-                            ].reset_index(drop=True)
-                            if is_paired == "baseline":
-                                temp_df_cont = delta_plot_data[
-                                    delta_plot_data[xvar].str.contains(i[0])
-                                ].reset_index(drop=True)
-                            elif is_paired == "sequential":
-                                temp_df_cont = delta_plot_data[
-                                    delta_plot_data[xvar].str.contains(
-                                        i[i.index(j) - 1]
-                                    )
-                                ].reset_index(drop=True)
-                            delta_df = temp_df_exp.copy()
-                            delta_df[yvar] = temp_df_exp[yvar] - temp_df_cont[yvar]
-                            final_deltas = pd.concat([final_deltas, delta_df])
-
-                # swarmplot() plots swarms based on current size of ax
-                # Therefore, since the ax size for Gardner-Altman plot changes later on, there has to be decreased jitter
-                # TODO: to make jitter value more accurate and not just a hardcoded eyeball value
-                if float_contrast:
-                    jitter = 0.6
-                else:
-                    jitter = 1
-
-                # Plot the raw data as a swarmplot.
-                deltapts_plot = swarmplot(
-                    data=final_deltas,
-                    x=xvar,
-                    y=yvar,
-                    ax=contrast_axes,
-                    order=None,
-                    hue=color_col,
-                    palette=plot_palette_deltapts,
-                    zorder=2,
-                    size=3,
-                    side="right",
-                    jitter=jitter,
-                    is_drop_gutter=True,
-                    gutter_limit=1,
-                    **deltapts_args
-                )
-                contrast_axes.legend().set_visible(False)
-
-            ##################### DELTA PTS ON CONTRAST PLOT END
+            if show_delta_dots and is_paired is not None:
+                DeltaDotsPlotter(plot_data=plot_data, contrast_axes=contrast_axes, delta_id_col=dabest_obj.id_col, 
+                                 idx=idx, xvar=xvar, yvar=yvar, is_paired=is_paired, color_col=color_col, 
+                                 float_contrast=float_contrast, plot_palette_raw=plot_palette_raw, delta_dot_kwargs=delta_dot_kwargs)
+            ##################### DELTA PTS ON CONTRAST PLOT WIP END
 
             # Set the tick labels, because the slopegraph plotting doesn't.
             rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
