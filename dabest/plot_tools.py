@@ -972,65 +972,62 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
     delta_delta : object
         delta-delta object.
     """
-    
+    # Begin checks
     delta_text_x_location = delta_text_kwargs.get('x_location')
     if delta_text_x_location != 'right' and delta_text_x_location != 'left':
         raise ValueError("delta_text_kwargs['x_location'] must be either 'right' or 'left'.")
     if float_contrast:
         delta_text_x_location = 'left'
-        if results.difference[0] >= 0:
-            delta_text_kwargs["va"] = 'bottom'
-        else:
-            delta_text_kwargs["va"] = 'top'
+        delta_text_kwargs["va"] = 'bottom' if results.difference[0] >= 0 else 'top'
     delta_text_kwargs.pop('x_location')
 
     delta_text_colors = [delta_text_kwargs.get('color')]*(max(ticks_to_plot)+1) if delta_text_kwargs.get('color') is not None else ['black']*(max(ticks_to_plot)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
+    if show_mini_meta or show_delta2: delta_text_colors.append('black')
     delta_text_kwargs.pop('color')
 
+    total_ticks = len(ticks_to_plot) + 1 if show_mini_meta or show_delta2 else len(ticks_to_plot)
+
+    # Collect the Y-values for the delta text
     Delta_Values = []
     for j, tick in enumerate(ticks_to_plot):
         Delta_Values.append(results.difference[j])
+    if show_delta2: Delta_Values.append(delta_delta.difference)
+    if show_mini_meta: Delta_Values.append(mini_meta_delta.difference)
 
+    # Collect the X-coordinates for the delta text
     delta_text_x_coordinates = delta_text_kwargs.get('x_coordinates')
-    delta_text_y_coordinates = delta_text_kwargs.get('y_coordinates')
 
     if delta_text_x_coordinates is not None:
         if not isinstance(delta_text_x_coordinates, list):
             raise TypeError("delta_text_kwargs['x_coordinates'] must be a list of x-coordinates.")
-        if len(delta_text_x_coordinates) != len(ticks_to_plot):
+        if len(delta_text_x_coordinates) != len(total_ticks):
             raise ValueError("delta_text_kwargs['x_coordinates'] must have the same length as the number of ticks to plot.")
-        delta_text_x_coordinates_default = False
-        delta_text_kwargs.pop('x_coordinates')
     else:
         delta_text_x_coordinates = ticks_to_plot
-        delta_text_x_coordinates_default = True
-        delta_text_kwargs.pop('x_coordinates')
+        X_Adjust = 0.48 if delta_text_x_location == 'right' else -0.38
+        delta_text_x_coordinates = [x+X_Adjust for x in delta_text_x_coordinates]
+        if show_mini_meta: delta_text_x_coordinates.append(max(swarm_plot_ax.get_xticks())+2+X_Adjust)
+        if show_delta2: delta_text_x_coordinates.append(max(swarm_plot_ax.get_xticks())+2-0.35)
+        if show_mini_meta or show_delta2: ticks_to_plot.append(max(ticks_to_plot)+1)
+    delta_text_kwargs.pop('x_coordinates')
+
+    # Collect the Y-coordinates for the delta text
+    delta_text_y_coordinates = delta_text_kwargs.get('y_coordinates')
 
     if delta_text_y_coordinates is not None:
         if not isinstance(delta_text_y_coordinates, list):
             raise TypeError("delta_text_kwargs['y_coordinates'] must be a list of y-coordinates.")
-        if len(delta_text_y_coordinates) != len(ticks_to_plot):
+        if len(delta_text_y_coordinates) != len(total_ticks):
             raise ValueError("delta_text_kwargs['y_coordinates'] must have the same length as the number of ticks to plot.")
-        delta_text_kwargs.pop('y_coordinates')
     else:
         delta_text_y_coordinates = Delta_Values
-        delta_text_kwargs.pop('y_coordinates')
 
+    delta_text_kwargs.pop('y_coordinates')
+
+    # Plot the delta text
     for x,y,t,tick in zip(delta_text_x_coordinates, delta_text_y_coordinates,Delta_Values,ticks_to_plot):
-        Delta_Text = '+'+'{0:.2f}'.format(t) if t > 0 else '{0:.2f}'.format(t)
-        X_Adjust = 0 if not delta_text_x_coordinates_default else 0.48 if delta_text_x_location == 'right' else -0.38
-        ax_to_plot.text(x+X_Adjust, y, Delta_Text, color=delta_text_colors[tick], **delta_text_kwargs)
-
-
-    if show_mini_meta:
-        delta_text_mini_meta = '+'+'{0:.2f}'.format(mini_meta_delta.difference) if mini_meta_delta.difference > 0 else '{0:.2f}'.format(mini_meta_delta.difference)
-        ax_to_plot.text(max(swarm_plot_ax.get_xticks())+2+X_Adjust, mini_meta_delta.difference, delta_text_mini_meta, color='black',**delta_text_kwargs)
-
-    if show_delta2:
-        delta_text_delta_delta_va = 'bottom' if delta_delta.difference >= 0 else 'top'
-        delta_text_kwargs.pop('va')
-        delta_text_delta_delta = '+'+'{0:.2f}'.format(delta_delta.difference) if delta_delta.difference > 0 else '{0:.2f}'.format(delta_delta.difference)
-        ax_to_plot.text(max(swarm_plot_ax.get_xticks())+2-0.35, delta_delta.difference, delta_text_delta_delta, va=delta_text_delta_delta_va,color='black',**delta_text_kwargs)
+        Delta_Text = np.format_float_positional(t, precision=2, sign=True, trim="k", min_digits=2)
+        ax_to_plot.text(x, y, Delta_Text, color=delta_text_colors[tick], zorder=5, **delta_text_kwargs)
 
 # %% ../nbs/API/plot_tools.ipynb 6
 def swarmplot(
