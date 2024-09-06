@@ -902,38 +902,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             markersize=es_marker_size,
         )
 
-        ################## SHOW ES ON CONTRAST PLOT WIP
-
-        contrast_show_es = plot_kwargs["contrast_show_es"]
-        es_sf = plot_kwargs["es_sf"]
-        es_fontsize = plot_kwargs["es_fontsize"]
-
-        if gridkey_show_es:
-            contrast_show_es = False
-
-        effsize_for_print = current_effsize
-
-        printed_es = np.format_float_positional(
-            effsize_for_print, precision=es_sf, sign=True, trim="k", min_digits=es_sf
-        )
-        if contrast_show_es:
-            if effsize_for_print < 0:
-                textoffset = 10
-            else:
-                textoffset = 15
-            contrast_axes.annotate(
-                text=printed_es,
-                xy=(tick, effsize_for_print),
-                xytext=(
-                    -textoffset - len(printed_es) * es_fontsize / 2,
-                    -es_fontsize / 2,
-                ),
-                textcoords="offset points",
-                **{"fontsize": es_fontsize}
-            )
-
-        ################## SHOW ES ON CONTRAST PLOT END
-
         # Plot the confidence interval.
         contrast_axes.plot(
             [tick, tick],
