@@ -63,7 +63,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                              get_params,
                              get_kwargs,
                              get_color_palette,
-                             get_fig_size,
+                             initialize_fig,
     )
     from .plot_tools import (
         halfviolin,
@@ -99,20 +99,25 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     plt.rcParams["axes.grid"] = False
     ytick_color = plt.rcParams["ytick.color"]
 
-    # Extract parameters and set default kwargs
-    (face_color, dabest_obj, plot_data, xvar, yvar, is_paired, delta2, mini_meta, effect_size, proportional, all_plot_groups, idx, 
+    # Extract parameters and set kwargs
+    (face_color, dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, idx, 
     show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type) = get_params(effectsize_df=effectsize_df, plot_kwargs=plot_kwargs)
 
     (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs, 
-            reflines_kwargs, legend_kwargs, group_summary_kwargs) = get_kwargs(plot_kwargs=plot_kwargs, ytick_color=ytick_color)
-
-    # Extract parameters and set default kwargs
+            reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, 
+            delta_dot_kwargs) = get_kwargs(plot_kwargs=plot_kwargs, ytick_color=ytick_color)
 
     # We also need to extract the `sankey` and `flow` from the kwargs for plotter.py
     # to use for varying different kinds of paired proportional plots
     # We also don't want to pop the parameter from the kwargs
     sankey = sankey_kwargs["sankey"]
     flow = sankey_kwargs["flow"]
+    one_sankey = (
+        False if is_paired is not None else None
+    )  # Flag to indicate if only one sankey is plotted.
+    two_col_sankey = (
+        True if proportional and not one_sankey and sankey and not flow else False
+    )
 
     ################################################### GRIDKEY WIP - extracting arguments
 
@@ -124,127 +129,24 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     if gridkey_rows is None:
         gridkey_show_Ns = False
         gridkey_show_es = False
+        h_space_cummings = 0.3
+    else:
+        h_space_cummings = 0.1
 
     ################################################### END GRIDKEY WIP - extracting arguments
 
     ################################################### Color palette WIP Start
 
-
-    (color_col, color_groups, bootstraps_color_by_group, names, n_groups, custom_pal, swarm_desat, bar_desat, 
-     contrast_desat, unsat_colors, swarm_colors, plot_palette_raw, bar_color, plot_palette_bar, contrast_colors, 
+    (color_col, bootstraps_color_by_group, n_groups, swarm_colors, plot_palette_raw, bar_color, plot_palette_bar, 
      plot_palette_contrast, plot_palette_sankey) = get_color_palette(plot_kwargs=plot_kwargs, plot_data=plot_data, 
                                                                   xvar=xvar, show_pairs=show_pairs)
     ################################################### Color palette WIP End
 
-
-    ################################################### Fig Size WIP End
-
-    fig_size = get_fig_size(plot_kwargs=plot_kwargs,dabest_obj=dabest_obj,show_delta2=show_delta2,show_mini_meta=show_mini_meta,
-                 is_paired=is_paired,show_pairs=show_pairs,proportional=proportional,float_contrast=float_contrast)
-
-    ################################################### Fig Size WIP End
-
     # Initialise the figure.
-    init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"], tight_layout=True)
-
-    width_ratios_ga = [2.5, 1]
-
-    ###################### GRIDKEY HSPACE ALTERATION
-
-    # Sets hspace for cummings plots if gridkey is shown.
-    if gridkey_rows is not None:
-        h_space_cummings = 0.1
-    else:
-        h_space_cummings = 0.3
-
-    ###################### END GRIDKEY HSPACE ALTERATION
-
-    if plot_kwargs["ax"] is not None:
-        # New in v0.2.6.
-        # Use inset axes to create the estimation plot inside a single axes.
-        # Author: Adam L Nekimken. (PR #73)
-        rawdata_axes = plot_kwargs["ax"]
-        ax_position = rawdata_axes.get_position()  # [[x0, y0], [x1, y1]]
-
-        fig = rawdata_axes.get_figure()
-        fig.patch.set_facecolor(face_color)
-
-        if float_contrast:
-            axins = rawdata_axes.inset_axes(
-                [1, 0, width_ratios_ga[1] / width_ratios_ga[0], 1]
-            )
-            rawdata_axes.set_position(  # [l, b, w, h]
-                [
-                    ax_position.x0,
-                    ax_position.y0,
-                    (ax_position.x1 - ax_position.x0)
-                    * (width_ratios_ga[0] / sum(width_ratios_ga)),
-                    (ax_position.y1 - ax_position.y0),
-                ]
-            )
-
-            contrast_axes = axins
-
-        else:
-            axins = rawdata_axes.inset_axes([0, -1 - h_space_cummings, 1, 1])
-            plot_height = (ax_position.y1 - ax_position.y0) / (2 + h_space_cummings)
-            rawdata_axes.set_position(
-                [
-                    ax_position.x0,
-                    ax_position.y0 + (1 + h_space_cummings) * plot_height,
-                    (ax_position.x1 - ax_position.x0),
-                    plot_height,
-                ]
-            )
-
-        contrast_axes = axins
-        rawdata_axes.contrast_axes = axins
-
-    else:
-        # Here, we hardcode some figure parameters.
-        if float_contrast:
-            fig, axx = plt.subplots(
-                ncols=2,
-                gridspec_kw={"width_ratios": width_ratios_ga, "wspace": 0},
-                **init_fig_kwargs
-            )
-            fig.patch.set_facecolor(face_color)
-
-        else:
-            fig, axx = plt.subplots(
-                nrows=2, gridspec_kw={"hspace": h_space_cummings}, **init_fig_kwargs
-            )
-            fig.patch.set_facecolor(face_color)
-
-        # Title
-        title = plot_kwargs["title"]
-        fontsize_title = plot_kwargs["fontsize_title"]
-        if title is not None:
-            fig.suptitle(title, fontsize=fontsize_title)
-        rawdata_axes = axx[0]
-        contrast_axes = axx[1]
-    rawdata_axes.set_frame_on(False)
-    contrast_axes.set_frame_on(False)
-
-    redraw_axes_kwargs = {
-        "colors": ytick_color,
-        "facecolors": ytick_color,
-        "lw": 1,
-        "zorder": 10,
-        "clip_on": False,
-    }
-
-    swarm_ylim = plot_kwargs["swarm_ylim"]
-
-    if swarm_ylim is not None:
-        rawdata_axes.set_ylim(swarm_ylim)
-
-    one_sankey = (
-        False if is_paired is not None else None
-    )  # Flag to indicate if only one sankey is plotted.
-    two_col_sankey = (
-        True if proportional and not one_sankey and sankey and not flow else False
-    )
+    fig, rawdata_axes, contrast_axes, swarm_ylim = initialize_fig(plot_kwargs=plot_kwargs, dabest_obj=dabest_obj, show_delta2=show_delta2, 
+                                                      show_mini_meta=show_mini_meta, is_paired=is_paired, show_pairs=show_pairs, 
+                                                      proportional=proportional, float_contrast=float_contrast, face_color=face_color, 
+                                                      h_space_cummings=h_space_cummings)
 
     if show_pairs:
         # Determine temp_idx based on is_paired and proportional conditions
@@ -304,16 +206,12 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
             ##################### DELTA PTS ON CONTRAST PLOT WIP
             show_delta_dots = plot_kwargs["delta_dot"]
-            default_delta_dot_kwargs = {"marker": "^", "alpha": 0.5, "zorder": 2, "size": 3, "side": "right"}
-            if plot_kwargs["delta_dot_kwargs"] is None:
-                delta_dot_kwargs = default_delta_dot_kwargs
-            else:
-                delta_dot_kwargs = merge_two_dicts(default_delta_dot_kwargs, plot_kwargs["delta_dot_kwargs"])
 
             if show_delta_dots and is_paired is not None:
                 DeltaDotsPlotter(plot_data=plot_data, contrast_axes=contrast_axes, delta_id_col=dabest_obj.id_col, 
                                  idx=idx, xvar=xvar, yvar=yvar, is_paired=is_paired, color_col=color_col, 
                                  float_contrast=float_contrast, plot_palette_raw=plot_palette_raw, delta_dot_kwargs=delta_dot_kwargs)
+                
             ##################### DELTA PTS ON CONTRAST PLOT WIP END
 
             # Set the tick labels, because the slopegraph plotting doesn't.

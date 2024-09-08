@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['merge_two_dicts', 'unpack_and_add', 'print_greeting', 'get_varname', 'get_params', 'get_kwargs', 'get_color_palette',
-           'get_fig_size']
+           'initialize_fig']
 
 # %% ../nbs/API/misc_tools.ipynb 4
 import datetime as dt
@@ -123,7 +123,7 @@ def get_params(effectsize_df, plot_kwargs):
     else:
         show_pairs = plot_kwargs["show_pairs"]
 
-    return (face_color, dabest_obj, plot_data, xvar, yvar, is_paired, delta2, mini_meta, effect_size, proportional, all_plot_groups, idx, 
+    return (face_color, dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, idx, 
             show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type)
 
 def get_kwargs(plot_kwargs, ytick_color):
@@ -225,8 +225,24 @@ def get_kwargs(plot_kwargs, ytick_color):
             default_group_summary_kwargs, plot_kwargs["group_summary_kwargs"]
         )
 
+    # Redraw axes kwargs.
+    redraw_axes_kwargs = {
+        "colors": ytick_color,
+        "facecolors": ytick_color,
+        "lw": 1,
+        "zorder": 10,
+        "clip_on": False,
+    }
+    
+    # Delta dots kwargs.
+    default_delta_dot_kwargs = {"marker": "^", "alpha": 0.5, "zorder": 2, "size": 3, "side": "right"}
+    if plot_kwargs["delta_dot_kwargs"] is None:
+        delta_dot_kwargs = default_delta_dot_kwargs
+    else:
+        delta_dot_kwargs = merge_two_dicts(default_delta_dot_kwargs, plot_kwargs["delta_dot_kwargs"])
+
     return (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs, 
-            reflines_kwargs, legend_kwargs, group_summary_kwargs)
+            reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, delta_dot_kwargs)
 
 
 def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs):
@@ -302,10 +318,11 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs):
 
         plot_palette_sankey = custom_pal
 
-    return (color_col, color_groups, bootstraps_color_by_group, names, n_groups, custom_pal, swarm_desat, bar_desat, contrast_desat,
-            unsat_colors, swarm_colors, plot_palette_raw, bar_color, plot_palette_bar, contrast_colors, plot_palette_contrast, plot_palette_sankey)
+    return (color_col, bootstraps_color_by_group, n_groups, swarm_colors, plot_palette_raw, 
+            bar_color, plot_palette_bar, plot_palette_contrast, plot_palette_sankey)
 
-def get_fig_size(plot_kwargs,dabest_obj,show_delta2,show_mini_meta,is_paired,show_pairs,proportional,float_contrast):
+def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_paired, show_pairs, proportional,
+                   float_contrast, face_color, h_space_cummings):
     fig_size = plot_kwargs["fig_size"]
     if fig_size is None:
         all_groups_count = np.sum([len(i) for i in dabest_obj.idx])
@@ -325,4 +342,78 @@ def get_fig_size(plot_kwargs,dabest_obj,show_delta2,show_mini_meta,is_paired,sho
 
         width_inches = each_group_width_inches * all_groups_count
         fig_size = (width_inches, height_inches)
-    return fig_size
+
+    init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"], tight_layout=True)
+    width_ratios_ga = [2.5, 1]
+
+    if plot_kwargs["ax"] is not None:
+        # New in v0.2.6.
+        # Use inset axes to create the estimation plot inside a single axes.
+        # Author: Adam L Nekimken. (PR #73)
+        rawdata_axes = plot_kwargs["ax"]
+        ax_position = rawdata_axes.get_position()  # [[x0, y0], [x1, y1]]
+
+        fig = rawdata_axes.get_figure()
+        fig.patch.set_facecolor(face_color)
+
+        if float_contrast:
+            axins = rawdata_axes.inset_axes(
+                [1, 0, width_ratios_ga[1] / width_ratios_ga[0], 1]
+            )
+            rawdata_axes.set_position(  # [l, b, w, h]
+                [
+                    ax_position.x0,
+                    ax_position.y0,
+                    (ax_position.x1 - ax_position.x0)
+                    * (width_ratios_ga[0] / sum(width_ratios_ga)),
+                    (ax_position.y1 - ax_position.y0),
+                ]
+            )
+
+            contrast_axes = axins
+        else:
+            axins = rawdata_axes.inset_axes([0, -1 - h_space_cummings, 1, 1])
+            plot_height = (ax_position.y1 - ax_position.y0) / (2 + h_space_cummings)
+            rawdata_axes.set_position(
+                [
+                    ax_position.x0,
+                    ax_position.y0 + (1 + h_space_cummings) * plot_height,
+                    (ax_position.x1 - ax_position.x0),
+                    plot_height,
+                ]
+            )
+
+        contrast_axes = axins
+        rawdata_axes.contrast_axes = axins
+
+    else:
+        # Here, we hardcode some figure parameters.
+        if float_contrast:
+            fig, axx = plt.subplots(
+                ncols=2,
+                gridspec_kw={"width_ratios": width_ratios_ga, "wspace": 0},
+                **init_fig_kwargs
+            )
+            fig.patch.set_facecolor(face_color)
+
+        else:
+            fig, axx = plt.subplots(
+                nrows=2, gridspec_kw={"hspace": h_space_cummings}, **init_fig_kwargs
+            )
+            fig.patch.set_facecolor(face_color)
+
+        # Title
+        title = plot_kwargs["title"]
+        fontsize_title = plot_kwargs["fontsize_title"]
+        if title is not None:
+            fig.suptitle(title, fontsize=fontsize_title)
+        rawdata_axes = axx[0]
+        contrast_axes = axx[1]
+    rawdata_axes.set_frame_on(False)
+    contrast_axes.set_frame_on(False)
+
+    swarm_ylim = plot_kwargs["swarm_ylim"]
+    if swarm_ylim is not None:
+        rawdata_axes.set_ylim(swarm_ylim)
+
+    return fig, rawdata_axes, contrast_axes, swarm_ylim
