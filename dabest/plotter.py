@@ -514,7 +514,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
             ##################### DELTA PTS ON CONTRAST PLOT WIP
             show_delta_dots = plot_kwargs["delta_dot"]
-            default_delta_dot_kwargs = {"marker": "^", "alpha": 0.5}
+            default_delta_dot_kwargs = {"marker": "^", "alpha": 0.5, "zorder": 2, "size": 3, "side": "right"}
             if plot_kwargs["delta_dot_kwargs"] is None:
                 delta_dot_kwargs = default_delta_dot_kwargs
             else:
