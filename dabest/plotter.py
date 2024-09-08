@@ -62,6 +62,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     from .misc_tools import (merge_two_dicts,
                              get_params,
                              get_kwargs,
+                             get_color_palette,
+                             get_fig_size,
     )
     from .plot_tools import (
         halfviolin,
@@ -125,97 +127,22 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     ################################################### END GRIDKEY WIP - extracting arguments
 
+    ################################################### Color palette WIP Start
 
-    # Create color palette that will be shared across subplots.
-    color_col = plot_kwargs["color_col"]
-    if color_col is None:
-        color_groups = pd.unique(plot_data[xvar])
-        bootstraps_color_by_group = True
-    else:
-        if color_col not in plot_data.columns:
-            raise KeyError("``{}`` is not a column in the data.".format(color_col))
-        color_groups = pd.unique(plot_data[color_col])
-        bootstraps_color_by_group = False
-    if show_pairs:
-        bootstraps_color_by_group = False
 
-    # Handle the color palette.
-    names = color_groups
-    n_groups = len(color_groups)
-    custom_pal = plot_kwargs["custom_palette"]
-    swarm_desat = plot_kwargs["swarm_desat"]
-    bar_desat = plot_kwargs["bar_desat"]
-    contrast_desat = plot_kwargs["halfviolin_desat"]
+    (color_col, color_groups, bootstraps_color_by_group, names, n_groups, custom_pal, swarm_desat, bar_desat, 
+     contrast_desat, unsat_colors, swarm_colors, plot_palette_raw, bar_color, plot_palette_bar, contrast_colors, 
+     plot_palette_contrast, plot_palette_sankey) = get_color_palette(plot_kwargs=plot_kwargs, plot_data=plot_data, 
+                                                                  xvar=xvar, show_pairs=show_pairs)
+    ################################################### Color palette WIP End
 
-    if custom_pal is None:
-        unsat_colors = sns.color_palette(n_colors=n_groups)
-    else:
-        if isinstance(custom_pal, dict):
-            groups_in_palette = {
-                k: v for k, v in custom_pal.items() if k in color_groups
-            }
 
-            names = groups_in_palette.keys()
-            unsat_colors = groups_in_palette.values()
+    ################################################### Fig Size WIP End
 
-        elif isinstance(custom_pal, list):
-            unsat_colors = custom_pal[0:n_groups]
+    fig_size = get_fig_size(plot_kwargs=plot_kwargs,dabest_obj=dabest_obj,show_delta2=show_delta2,show_mini_meta=show_mini_meta,
+                 is_paired=is_paired,show_pairs=show_pairs,proportional=proportional,float_contrast=float_contrast)
 
-        elif isinstance(custom_pal, str):
-            # check it is in the list of matplotlib palettes.
-            if custom_pal in plt.colormaps():
-                unsat_colors = sns.color_palette(custom_pal, n_groups)
-            else:
-                err1 = "The specified `custom_palette` {}".format(custom_pal)
-                err2 = " is not a matplotlib palette. Please check."
-                raise ValueError(err1 + err2)
-
-    if custom_pal is None and color_col is None:
-        swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
-        plot_palette_raw = dict(zip(names.categories, swarm_colors))
-
-        bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
-        plot_palette_bar = dict(zip(names.categories, bar_color))
-
-        contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
-        plot_palette_contrast = dict(zip(names.categories, contrast_colors))
-
-        # For Sankey Diagram plot, no need to worry about the color, each bar will have the same two colors
-        # default color palette will be set to "hls"
-        plot_palette_sankey = None
-
-    else:
-        swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
-        plot_palette_raw = dict(zip(names, swarm_colors))
-
-        bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
-        plot_palette_bar = dict(zip(names, bar_color))
-
-        contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
-        plot_palette_contrast = dict(zip(names, contrast_colors))
-
-        plot_palette_sankey = custom_pal
-
-    # Infer the figsize.
-    fig_size = plot_kwargs["fig_size"]
-    if fig_size is None:
-        all_groups_count = np.sum([len(i) for i in dabest_obj.idx])
-        # Increase the width for delta-delta graph
-        if show_delta2 or show_mini_meta:
-            all_groups_count += 2
-        if is_paired and show_pairs and proportional is False:
-            frac = 0.75
-        else:
-            frac = 1
-        if float_contrast:
-            height_inches = 4
-            each_group_width_inches = 2.5 * frac
-        else:
-            height_inches = 6
-            each_group_width_inches = 1.5 * frac
-
-        width_inches = each_group_width_inches * all_groups_count
-        fig_size = (width_inches, height_inches)
+    ################################################### Fig Size WIP End
 
     # Initialise the figure.
     init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"], tight_layout=True)
