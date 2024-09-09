@@ -76,6 +76,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         summary_bars_plotter,
         delta_text_plotter,
         DeltaDotsPlotter,
+        slopegraph_plotter,
     )
     from ._stats_tools.effsize import (
         _compute_standardizers,
@@ -135,19 +136,19 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     ################################################### END GRIDKEY WIP - extracting arguments
 
-    ################################################### Color palette WIP Start
+    # Extract Color palette
 
     (color_col, bootstraps_color_by_group, n_groups, swarm_colors, plot_palette_raw, bar_color, plot_palette_bar, 
      plot_palette_contrast, plot_palette_sankey) = get_color_palette(plot_kwargs=plot_kwargs, plot_data=plot_data, 
                                                                   xvar=xvar, show_pairs=show_pairs)
-    ################################################### Color palette WIP End
 
     # Initialise the figure.
     fig, rawdata_axes, contrast_axes, swarm_ylim = initialize_fig(plot_kwargs=plot_kwargs, dabest_obj=dabest_obj, show_delta2=show_delta2, 
                                                       show_mini_meta=show_mini_meta, is_paired=is_paired, show_pairs=show_pairs, 
                                                       proportional=proportional, float_contrast=float_contrast, face_color=face_color, 
                                                       h_space_cummings=h_space_cummings)
-
+    
+    # Plotting.
     if show_pairs:
         # Determine temp_idx based on is_paired and proportional conditions
         if is_paired == "baseline":
@@ -169,40 +170,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
         if not proportional:
             # Plot the raw data as a slopegraph.
-            # Pivot the long (melted) data.
-            if color_col is None:
-                pivot_values = [yvar]
-            else:
-                pivot_values = [yvar, color_col]
-            pivoted_plot_data = pd.pivot(
-                data=plot_data,
-                index=dabest_obj.id_col,
-                columns=xvar,
-                values=pivot_values,
-            )
-            x_start = 0
-            for ii, current_tuple in enumerate(temp_idx):
-                current_pair = pivoted_plot_data.loc[
-                    :, pd.MultiIndex.from_product([pivot_values, current_tuple])
-                ].dropna()
-                grp_count = len(current_tuple)
-                # Iterate through the data for the current tuple.
-                for ID, observation in current_pair.iterrows():
-                    x_points = [t for t in range(x_start, x_start + grp_count)]
-                    y_points = observation[yvar].tolist()
-
-                    if color_col is None:
-                        slopegraph_kwargs["color"] = ytick_color
-                    else:
-                        color_key = observation[color_col][0]
-                        if isinstance(color_key, (str, np.int64, np.float64)):
-                            slopegraph_kwargs["color"] = plot_palette_raw[color_key]
-                            slopegraph_kwargs["label"] = color_key
-
-                    rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
-
-                x_start = x_start + grp_count
-
+            slopegraph_plotter(dabest_obj=dabest_obj, plot_data=plot_data, xvar=xvar, yvar=yvar, color_col=color_col, 
+                               plot_palette_raw=plot_palette_raw, slopegraph_kwargs=slopegraph_kwargs, rawdata_axes=rawdata_axes, 
+                               ytick_color=ytick_color, temp_idx=temp_idx)
 
             ##################### DELTA PTS ON CONTRAST PLOT WIP
             show_delta_dots = plot_kwargs["delta_dot"]

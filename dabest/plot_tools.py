@@ -6,7 +6,7 @@ from __future__ import annotations
 # %% auto 0
 __all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'width_determine',
            'single_sankey', 'sankeydiag', 'summary_bars_plotter', 'contrast_bars_plotter', 'swarm_bars_plotter',
-           'delta_text_plotter', 'DeltaDotsPlotter', 'swarmplot', 'SwarmPlot']
+           'delta_text_plotter', 'DeltaDotsPlotter', 'slopegraph_plotter', 'swarmplot', 'SwarmPlot']
 
 # %% ../nbs/API/plot_tools.ipynb 4
 import math
@@ -1107,6 +1107,47 @@ def DeltaDotsPlotter(plot_data, contrast_axes, delta_id_col, idx, xvar, yvar, is
         gutter_limit=1,
         **delta_dot_kwargs)
     contrast_axes.legend().set_visible(False)
+
+
+def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palette_raw, slopegraph_kwargs, rawdata_axes, ytick_color, temp_idx):
+    
+    # Pivot the long (melted) data.
+    if color_col is None:
+        pivot_values = [yvar]
+    else:
+        pivot_values = [yvar, color_col]
+    pivoted_plot_data = pd.pivot(
+        data=plot_data,
+        index=dabest_obj.id_col,
+        columns=xvar,
+        values=pivot_values,
+    )
+
+    x_start = 0
+    for ii, current_tuple in enumerate(temp_idx):
+        current_pair = pivoted_plot_data.loc[
+            :, pd.MultiIndex.from_product([pivot_values, current_tuple])
+        ].dropna()
+        grp_count = len(current_tuple)
+        # Iterate through the data for the current tuple.
+        for ID, observation in current_pair.iterrows():
+            x_points = [t for t in range(x_start, x_start + grp_count)]
+            y_points = observation[yvar].tolist()
+
+            if color_col is None:
+                slopegraph_kwargs["color"] = ytick_color
+            else:
+                color_key = observation[color_col][0]
+                if isinstance(color_key, (str, np.int64, np.float64)):
+                    slopegraph_kwargs["color"] = plot_palette_raw[color_key]
+                    slopegraph_kwargs["label"] = color_key
+
+            rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
+
+        x_start = x_start + grp_count
+
+
+    ...
 
 # %% ../nbs/API/plot_tools.ipynb 6
 def swarmplot(
