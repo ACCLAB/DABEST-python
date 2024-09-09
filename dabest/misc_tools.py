@@ -130,10 +130,20 @@ def get_params(effectsize_df, plot_kwargs):
         show_pairs = False
     else:
         show_pairs = plot_kwargs["show_pairs"]
+
+    # Group summaries
+    group_summaries = plot_kwargs["group_summaries"]
+    if group_summaries is None:
+        group_summaries = "mean_sd"
+
+    # Error bar color
+    err_color = plot_kwargs["err_color"]
+    if err_color is None: 
+        err_color = "black"
         
 
     return (face_color, dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, idx, 
-            show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type)
+            show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type, group_summaries, err_color)
 
 def get_kwargs(plot_kwargs, ytick_color):
     """

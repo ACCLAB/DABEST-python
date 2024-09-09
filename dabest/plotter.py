@@ -101,8 +101,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     ytick_color = plt.rcParams["ytick.color"]
 
     # Extract parameters and set kwargs
-    (face_color, dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, idx, 
-    show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type) = get_params(effectsize_df=effectsize_df, plot_kwargs=plot_kwargs)
+    (face_color, dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, 
+     all_plot_groups, idx, show_delta2, show_mini_meta, float_contrast, show_pairs, 
+     effect_size_type, group_summaries, err_color) = get_params(effectsize_df=effectsize_df, plot_kwargs=plot_kwargs)
 
     (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs, 
     reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, delta_dot_kwargs, 
@@ -137,7 +138,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     ################################################### END GRIDKEY WIP - extracting arguments
 
     # Extract Color palette
-
     (color_col, bootstraps_color_by_group, n_groups, swarm_colors, plot_palette_raw, bar_color, plot_palette_bar, 
      plot_palette_contrast, plot_palette_sankey) = get_color_palette(plot_kwargs=plot_kwargs, plot_data=plot_data, 
                                                                   xvar=xvar, show_pairs=show_pairs)
@@ -174,14 +174,12 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                plot_palette_raw=plot_palette_raw, slopegraph_kwargs=slopegraph_kwargs, rawdata_axes=rawdata_axes, 
                                ytick_color=ytick_color, temp_idx=temp_idx)
 
-            ##################### DELTA PTS ON CONTRAST PLOT WIP
+            # DELTA PTS ON CONTRAST PLOT WIP
             show_delta_dots = plot_kwargs["delta_dot"]
             if show_delta_dots and is_paired is not None:
                 DeltaDotsPlotter(plot_data=plot_data, contrast_axes=contrast_axes, delta_id_col=dabest_obj.id_col, 
                                  idx=idx, xvar=xvar, yvar=yvar, is_paired=is_paired, color_col=color_col, 
                                  float_contrast=float_contrast, plot_palette_raw=plot_palette_raw, delta_dot_kwargs=delta_dot_kwargs)
-                
-            ##################### DELTA PTS ON CONTRAST PLOT WIP END
 
             # Set the tick labels, because the slopegraph plotting doesn't.
             rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
@@ -189,13 +187,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
         else:
             # Plot the raw data as a set of Sankey Diagrams aligned like barplot.
-            group_summaries = plot_kwargs["group_summaries"]
-            if group_summaries is None:
-                group_summaries = "mean_sd"
-            err_color = plot_kwargs["err_color"]
-            if err_color is None:
-                err_color = "black"
-
             if show_pairs:
                 sankey_control_group = []
                 sankey_test_group = []
@@ -320,10 +311,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
         # Plot the gapped line summaries, if this is not a Cumming plot.
         # Also, we will not plot gapped lines for paired plots. For now.
-        group_summaries = plot_kwargs["group_summaries"]
-        if group_summaries is None:
-            group_summaries = "mean_sd"
-
         if group_summaries is not None and not proportional:
             # Create list to gather xspans.
             xspans = []
@@ -366,9 +353,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             )
 
         if group_summaries is not None and proportional:
-            err_color = plot_kwargs["err_color"]
-            if err_color is None:
-                err_color = "black"
             error_bar(
                 plot_data,
                 x=xvar,
