@@ -294,60 +294,52 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 bar.set_x(centre - bar_width / 2.0)
                 bar.set_width(bar_width)
 
-        # Plot the gapped line summaries, if this is not a Cumming plot.
-        # Also, we will not plot gapped lines for paired plots. For now.
-        if group_summaries is not None and not proportional:
-            # Create list to gather xspans.
-            xspans = []
-            line_colors = []
-            for jj, c in enumerate(rawdata_axes.collections):
-                try:
-                    if asymmetric_side == "right":
-                        # currently offset is hardcoded with value of -0.2
-                        x_max_span = -0.2
-                    else:
-                        _, x_max, _, _ = get_swarm_spans(c)
-                        x_max_span = x_max - jj
-                    xspans.append(x_max_span)
-                except TypeError:
-                    # we have got a None, so skip and move on.
-                    pass
+        if group_summaries is not None:
+            if proportional:
+                group_summaries_method = "proportional_error_bar"
+                group_summaries_offset = 0
+                group_summaries_line_color = err_color
+            else:
+                # Create list to gather xspans.
+                xspans = []
+                line_colors = []
+                for jj, c in enumerate(rawdata_axes.collections):
+                    try:
+                        if asymmetric_side == "right":
+                            # currently offset is hardcoded with value of -0.2
+                            x_max_span = -0.2
+                        else:
+                            _, x_max, _, _ = get_swarm_spans(c)
+                            x_max_span = x_max - jj
+                        xspans.append(x_max_span)
+                    except TypeError:
+                        # we have got a None, so skip and move on.
+                        pass
 
-                if bootstraps_color_by_group:
-                    line_colors.append(plot_palette_raw[all_plot_groups[jj]])
+                    if bootstraps_color_by_group:
+                        line_colors.append(plot_palette_raw[all_plot_groups[jj]])
 
-                # Break the loop since hue in Seaborn adds collections to axes and it will result in index out of range
-                if jj >= n_groups - 1 and color_col is None:
-                    break
+                    # Break the loop since hue in Seaborn adds collections to axes and it will result in index out of range
+                    if jj >= n_groups - 1 and color_col is None:
+                        break
 
-            if len(line_colors) != len(all_plot_groups):
-                line_colors = ytick_color
+                if len(line_colors) != len(all_plot_groups):
+                    line_colors = ytick_color
+
+                group_summaries_method = "gapped_lines"
+                group_summaries_offset = xspans + np.array(plot_kwargs["group_summaries_offset"])
+                group_summaries_line_color = line_colors
 
             error_bar(
                 plot_data,
                 x=xvar,
                 y=yvar,
-                # Hardcoded offset...
-                offset=xspans + np.array(plot_kwargs["group_summaries_offset"]),
-                line_color=line_colors,
+                offset=group_summaries_offset,
+                line_color=group_summaries_line_color,
                 gap_width_percent=1.5,
                 type=group_summaries,
                 ax=rawdata_axes,
-                method="gapped_lines",
-                **group_summary_kwargs
-            )
-
-        if group_summaries is not None and proportional:
-            error_bar(
-                plot_data,
-                x=xvar,
-                y=yvar,
-                offset=0,
-                line_color=err_color,
-                gap_width_percent=1.5,
-                type=group_summaries,
-                ax=rawdata_axes,
-                method="proportional_error_bar",
+                method=group_summaries_method,
                 **group_summary_kwargs
             )
 

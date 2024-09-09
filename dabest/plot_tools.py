@@ -1146,9 +1146,6 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
 
         x_start = x_start + grp_count
 
-
-    ...
-
 # %% ../nbs/API/plot_tools.ipynb 6
 def swarmplot(
     data: pd.DataFrame,
