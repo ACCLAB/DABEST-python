@@ -6,7 +6,8 @@ from __future__ import annotations
 # %% auto 0
 __all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'width_determine',
            'single_sankey', 'sankeydiag', 'summary_bars_plotter', 'contrast_bars_plotter', 'swarm_bars_plotter',
-           'delta_text_plotter', 'DeltaDotsPlotter', 'slopegraph_plotter', 'swarmplot', 'SwarmPlot']
+           'delta_text_plotter', 'DeltaDotsPlotter', 'slopegraph_plotter', 'plot_minimeta_or_deltadelta_violins',
+           'swarmplot', 'SwarmPlot']
 
 # %% ../nbs/API/plot_tools.ipynb 4
 import math
@@ -1172,6 +1173,67 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
             rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
 
         x_start = x_start + grp_count
+
+def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, rawdata_axes,
+                                        contrast_axes, violinplot_kwargs, halfviolin_alpha, ytick_color, 
+                                        es_marker_size, group_summary_kwargs, contrast_xtick_labels, effect_size
+                                        ):
+    if show_mini_meta:
+        mini_meta_delta = effectsize_df.mini_meta_delta
+        data = mini_meta_delta.bootstraps_weighted_delta
+        difference = mini_meta_delta.difference
+        if ci_type == "bca":
+            ci_low = mini_meta_delta.bca_low
+            ci_high = mini_meta_delta.bca_high
+        else:
+            ci_low = mini_meta_delta.pct_low
+            ci_high = mini_meta_delta.pct_high
+    else:
+        delta_delta = effectsize_df.delta_delta
+        data = delta_delta.bootstraps_delta_delta
+        difference = delta_delta.difference
+        if ci_type == "bca":
+            ci_low = delta_delta.bca_low
+            ci_high = delta_delta.bca_high
+        else:
+            ci_low = delta_delta.pct_low
+            ci_high = delta_delta.pct_high
+    # Create the violinplot.
+    # New in v0.2.6: drop negative infinities before plotting.
+    position = max(rawdata_axes.get_xticks()) + 2
+    v = contrast_axes.violinplot(
+        data[~np.isinf(data)], positions=[position], **violinplot_kwargs
+    )
+
+    fc = "grey"
+
+    halfviolin(v, fill_color=fc, alpha=halfviolin_alpha)
+
+    # Plot the effect size.
+    contrast_axes.plot(
+        [position],
+        difference,
+        marker="o",
+        color=ytick_color,
+        markersize=es_marker_size,
+    )
+    # Plot the confidence interval.
+    contrast_axes.plot(
+        [position, position],
+        [ci_low, ci_high],
+        linestyle="-",
+        color=ytick_color,
+        linewidth=group_summary_kwargs["lw"],
+    )
+    if show_mini_meta:
+        contrast_xtick_labels.extend(["", "Weighted delta"])
+    elif effect_size == "delta_g":
+        contrast_xtick_labels.extend(["", "deltas' g"])
+    else:
+        contrast_xtick_labels.extend(["", "delta-delta"])
+    
+    return contrast_xtick_labels
+    ...
 
 # %% ../nbs/API/plot_tools.ipynb 6
 def swarmplot(

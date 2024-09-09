@@ -78,6 +78,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         delta_text_plotter,
         DeltaDotsPlotter,
         slopegraph_plotter,
+        plot_minimeta_or_deltadelta_violins,
     )
     from ._stats_tools.effsize import (
         _compute_standardizers,
@@ -440,59 +441,66 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     # Plot mini-meta violin
     if show_mini_meta or show_delta2:
-        if show_mini_meta:
-            mini_meta_delta = effectsize_df.mini_meta_delta
-            data = mini_meta_delta.bootstraps_weighted_delta
-            difference = mini_meta_delta.difference
-            if ci_type == "bca":
-                ci_low = mini_meta_delta.bca_low
-                ci_high = mini_meta_delta.bca_high
-            else:
-                ci_low = mini_meta_delta.pct_low
-                ci_high = mini_meta_delta.pct_high
-        else:
-            delta_delta = effectsize_df.delta_delta
-            data = delta_delta.bootstraps_delta_delta
-            difference = delta_delta.difference
-            if ci_type == "bca":
-                ci_low = delta_delta.bca_low
-                ci_high = delta_delta.bca_high
-            else:
-                ci_low = delta_delta.pct_low
-                ci_high = delta_delta.pct_high
-        # Create the violinplot.
-        # New in v0.2.6: drop negative infinities before plotting.
-        position = max(rawdata_axes.get_xticks()) + 2
-        v = contrast_axes.violinplot(
-            data[~np.isinf(data)], positions=[position], **violinplot_kwargs
-        )
+        contrast_xtick_labels = plot_minimeta_or_deltadelta_violins(show_mini_meta=show_mini_meta, effectsize_df=effectsize_df, 
+                                        ci_type=ci_type, rawdata_axes=rawdata_axes,contrast_axes=contrast_axes, 
+                                        violinplot_kwargs=violinplot_kwargs, halfviolin_alpha=halfviolin_alpha, 
+                                        ytick_color=ytick_color, es_marker_size=es_marker_size, group_summary_kwargs=group_summary_kwargs, 
+                                        contrast_xtick_labels=contrast_xtick_labels, effect_size=effect_size
+                                        )
 
-        fc = "grey"
+        # if show_mini_meta:
+        #     mini_meta_delta = effectsize_df.mini_meta_delta
+        #     data = mini_meta_delta.bootstraps_weighted_delta
+        #     difference = mini_meta_delta.difference
+        #     if ci_type == "bca":
+        #         ci_low = mini_meta_delta.bca_low
+        #         ci_high = mini_meta_delta.bca_high
+        #     else:
+        #         ci_low = mini_meta_delta.pct_low
+        #         ci_high = mini_meta_delta.pct_high
+        # else:
+        #     delta_delta = effectsize_df.delta_delta
+        #     data = delta_delta.bootstraps_delta_delta
+        #     difference = delta_delta.difference
+        #     if ci_type == "bca":
+        #         ci_low = delta_delta.bca_low
+        #         ci_high = delta_delta.bca_high
+        #     else:
+        #         ci_low = delta_delta.pct_low
+        #         ci_high = delta_delta.pct_high
+        # # Create the violinplot.
+        # # New in v0.2.6: drop negative infinities before plotting.
+        # position = max(rawdata_axes.get_xticks()) + 2
+        # v = contrast_axes.violinplot(
+        #     data[~np.isinf(data)], positions=[position], **violinplot_kwargs
+        # )
 
-        halfviolin(v, fill_color=fc, alpha=halfviolin_alpha)
+        # fc = "grey"
 
-        # Plot the effect size.
-        contrast_axes.plot(
-            [position],
-            difference,
-            marker="o",
-            color=ytick_color,
-            markersize=es_marker_size,
-        )
-        # Plot the confidence interval.
-        contrast_axes.plot(
-            [position, position],
-            [ci_low, ci_high],
-            linestyle="-",
-            color=ytick_color,
-            linewidth=group_summary_kwargs["lw"],
-        )
-        if show_mini_meta:
-            contrast_xtick_labels.extend(["", "Weighted delta"])
-        elif effect_size == "delta_g":
-            contrast_xtick_labels.extend(["", "deltas' g"])
-        else:
-            contrast_xtick_labels.extend(["", "delta-delta"])
+        # halfviolin(v, fill_color=fc, alpha=halfviolin_alpha)
+
+        # # Plot the effect size.
+        # contrast_axes.plot(
+        #     [position],
+        #     difference,
+        #     marker="o",
+        #     color=ytick_color,
+        #     markersize=es_marker_size,
+        # )
+        # # Plot the confidence interval.
+        # contrast_axes.plot(
+        #     [position, position],
+        #     [ci_low, ci_high],
+        #     linestyle="-",
+        #     color=ytick_color,
+        #     linewidth=group_summary_kwargs["lw"],
+        # )
+        # if show_mini_meta:
+        #     contrast_xtick_labels.extend(["", "Weighted delta"])
+        # elif effect_size == "delta_g":
+        #     contrast_xtick_labels.extend(["", "deltas' g"])
+        # else:
+        #     contrast_xtick_labels.extend(["", "delta-delta"])
 
     # Make sure the contrast_axes x-lims match the rawdata_axes xlims,
     # and add an extra violinplot tick for delta-delta plot.
@@ -1099,8 +1107,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     if contrast_bars:
         contrast_bars_plotter(results=results, ax_to_plot=contrast_axes, swarm_plot_ax=rawdata_axes,ticks_to_plot=ticks_to_plot, 
                               contrast_bars_kwargs=contrast_bars_kwargs, color_col=color_col, swarm_colors=swarm_colors, show_mini_meta=show_mini_meta, 
-                              mini_meta_delta=mini_meta_delta if show_mini_meta else None, show_delta2=show_delta2, 
-                              delta_delta=delta_delta if show_delta2 else None, proportional=proportional, is_paired=is_paired)
+                              mini_meta_delta=effectsize_df.mini_meta_delta if show_mini_meta else None, show_delta2=show_delta2, 
+                              delta_delta=effectsize_df.delta_delta if show_delta2 else None, proportional=proportional, is_paired=is_paired)
 
     # Summary bars WIP
     summary_bars = plot_kwargs["summary_bars"]
@@ -1113,8 +1121,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     if delta_text: 
         delta_text_plotter(results=results, ax_to_plot=contrast_axes, swarm_plot_ax=rawdata_axes, ticks_to_plot=ticks_to_plot, delta_text_kwargs=delta_text_kwargs, color_col=color_col, swarm_colors=swarm_colors, 
                            is_paired=is_paired,proportional=proportional, float_contrast=float_contrast, show_mini_meta=show_mini_meta, 
-                              mini_meta_delta=mini_meta_delta if show_mini_meta else None, show_delta2=show_delta2, 
-                              delta_delta=delta_delta if show_delta2 else None)
+                              mini_meta_delta=effectsize_df.mini_meta_delta if show_mini_meta else None, show_delta2=show_delta2, 
+                              delta_delta=effectsize_df.delta_delta if show_delta2 else None)
     ################################################### Swarm & Contrast & Summary Bars & Delta text WIP END
 
     # Make sure no stray ticks appear!
