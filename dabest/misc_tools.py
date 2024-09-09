@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['merge_two_dicts', 'unpack_and_add', 'print_greeting', 'get_varname', 'get_params', 'get_kwargs', 'get_color_palette',
-           'initialize_fig']
+           'initialize_fig', 'get_plot_groups']
 
 # %% ../nbs/API/misc_tools.ipynb 4
 import datetime as dt
@@ -473,3 +473,23 @@ def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_pair
         rawdata_axes.set_ylim(swarm_ylim)
 
     return fig, rawdata_axes, contrast_axes, swarm_ylim
+
+def get_plot_groups(is_paired, idx, proportional, all_plot_groups):
+
+    if is_paired == "baseline":
+        idx_pairs = [
+            (control, test)
+            for i in idx
+            for control, test in zip([i[0]] * (len(i) - 1), i[1:])
+        ]
+        temp_idx = idx if not proportional else idx_pairs
+    else:
+        idx_pairs = [
+            (control, test) for i in idx for control, test in zip(i[:-1], i[1:])
+        ]
+        temp_idx = idx if not proportional else idx_pairs
+
+    # Determine temp_all_plot_groups based on proportional condition
+    plot_groups = [item for i in temp_idx for item in i]
+    temp_all_plot_groups = all_plot_groups if not proportional else plot_groups
+    return temp_idx, temp_all_plot_groups

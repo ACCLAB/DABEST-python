@@ -622,8 +622,9 @@ def sankeydiag(
     data: pd.DataFrame,
     xvar: str,  # x column to be plotted.
     yvar: str,  # y column to be plotted.
-    left_idx: str,  # the value in column xvar that is on the left side of each sankey diagram
-    right_idx: str,  # the value in column xvar that is on the right side of each sankey diagram, if len(left_idx) == 1, it will be broadcasted to the same length as right_idx, otherwise it should have the same length as right_idx
+    temp_all_plot_groups: list,
+    idx: list,
+    temp_idx: list,
     left_labels: list = None,  # labels for the left side of the diagram. The diagram will be sorted by these labels.
     right_labels: list = None,  # labels for the right side of the diagram. The diagram will be sorted by these labels.
     palette: str | dict = None,
@@ -668,6 +669,30 @@ def sankeydiag(
 
     if ax is None:
         ax = plt.gca()
+
+    left_idx = []
+    right_idx = []
+    # Design for Sankey Flow Diagram
+    sankey_idx = (
+        [
+            (control, test)
+            for i in idx
+            for control, test in zip(i[:], (i[1:] + (i[0],)))
+        ]
+        if flow
+        else temp_idx
+    )
+    for i in sankey_idx:
+        left_idx.append(i[0])
+        right_idx.append(i[1])
+
+    if len(temp_all_plot_groups) == 2:
+        one_sankey = True
+        left_idx.pop()
+        right_idx.pop()  # Remove the last element from two lists
+
+    # two_col_sankey = True if proportional == True and one_sankey == False and sankey == True and flow == False else False
+
 
     allLabels = pd.Series(np.sort(data[yvar].unique())[::-1]).unique()
 
@@ -779,6 +804,8 @@ def sankeydiag(
         sankey_ticks = [broadcasted_left[0], right_idx[0]]
         ax.set_xticks([0, 1])
         ax.set_xticklabels(sankey_ticks)
+
+    return left_idx, right_idx
 
 def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object,
                  float_contrast: bool,summary_bars_kwargs: dict, ci_type: str,

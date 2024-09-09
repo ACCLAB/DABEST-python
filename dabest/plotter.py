@@ -64,6 +64,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                              get_kwargs,
                              get_color_palette,
                              initialize_fig,
+                             get_plot_groups,
     )
     from .plot_tools import (
         halfviolin,
@@ -150,24 +151,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     
     # Plotting.
     if show_pairs:
-        # Determine temp_idx based on is_paired and proportional conditions
-        if is_paired == "baseline":
-            idx_pairs = [
-                (control, test)
-                for i in idx
-                for control, test in zip([i[0]] * (len(i) - 1), i[1:])
-            ]
-            temp_idx = idx if not proportional else idx_pairs
-        else:
-            idx_pairs = [
-                (control, test) for i in idx for control, test in zip(i[:-1], i[1:])
-            ]
-            temp_idx = idx if not proportional else idx_pairs
-
-        # Determine temp_all_plot_groups based on proportional condition
-        plot_groups = [item for i in temp_idx for item in i]
-        temp_all_plot_groups = all_plot_groups if not proportional else plot_groups
-
+        temp_idx, temp_all_plot_groups = get_plot_groups(is_paired=is_paired, idx=idx, proportional=proportional, 
+                                                         all_plot_groups=all_plot_groups)
         if not proportional:
             # Plot the raw data as a slopegraph.
             slopegraph_plotter(dabest_obj=dabest_obj, plot_data=plot_data, xvar=xvar, yvar=yvar, color_col=color_col, 
@@ -187,42 +172,17 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
         else:
             # Plot the raw data as a set of Sankey Diagrams aligned like barplot.
-            sankey_control_group = []
-            sankey_test_group = []
-            # Design for Sankey Flow Diagram
-            sankey_idx = (
-                [
-                    (control, test)
-                    for i in idx
-                    for control, test in zip(i[:], (i[1:] + (i[0],)))
-                ]
-                if flow
-                else temp_idx
-            )
-            for i in sankey_idx:
-                sankey_control_group.append(i[0])
-                sankey_test_group.append(i[1])
-
-            if len(temp_all_plot_groups) == 2:
-                one_sankey = True
-                sankey_control_group.pop()
-                sankey_test_group.pop()  # Remove the last element from two lists
-
-            # two_col_sankey = True if proportional == True and one_sankey == False and sankey == True and flow == False else False
-
-            # Replace the paired proportional plot with sankey diagram
-            sankeyplot = sankeydiag(
+            sankey_control_group, sankey_test_group = sankeydiag(
                 plot_data,
                 xvar=xvar,
                 yvar=yvar,
-                left_idx=sankey_control_group,
-                right_idx=sankey_test_group,
+                temp_all_plot_groups=temp_all_plot_groups,
+                idx=idx,
+                temp_idx=temp_idx,
                 palette=plot_palette_sankey,
                 ax=rawdata_axes,
-                one_sankey=one_sankey,
                 **sankey_kwargs
             )
-
     else:
         if not proportional:
             # Plot the raw data as a swarmplot.
@@ -294,7 +254,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 bar.set_x(centre - bar_width / 2.0)
                 bar.set_width(bar_width)
 
+        # Plot the error bars.
         if group_summaries is not None:
+
             if proportional:
                 group_summaries_method = "proportional_error_bar"
                 group_summaries_offset = 0
@@ -330,6 +292,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 group_summaries_offset = xspans + np.array(plot_kwargs["group_summaries_offset"])
                 group_summaries_line_color = line_colors
 
+            # Plot
             error_bar(
                 plot_data,
                 x=xvar,
