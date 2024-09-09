@@ -258,8 +258,37 @@ def get_kwargs(plot_kwargs, ytick_color):
     else:
         delta_dot_kwargs = merge_two_dicts(default_delta_dot_kwargs, plot_kwargs["delta_dot_kwargs"])
 
+    # Delta text kwargs.
+    default_delta_text_kwargs = {"color": None, "alpha": 1, "fontsize": 10, "ha": 'center', "va": 'center', "rotation": 0, "x_location": 'right', "x_coordinates": None, "y_coordinates": None}
+    if plot_kwargs["delta_text_kwargs"] is None:
+        delta_text_kwargs = default_delta_text_kwargs
+    else:
+        delta_text_kwargs = merge_two_dicts(default_delta_text_kwargs, plot_kwargs["delta_text_kwargs"])
+
+    # Summary bars kwargs.
+    default_summary_bars_kwargs = {"color": None, "alpha": 0.15}
+    if plot_kwargs["summary_bars_kwargs"] is None:
+        summary_bars_kwargs = default_summary_bars_kwargs
+    else:
+        summary_bars_kwargs = merge_two_dicts(default_summary_bars_kwargs, plot_kwargs["summary_bars_kwargs"])
+
+    # Swarm bars kwargs.
+    default_swarm_bars_kwargs = {"color": None, "alpha": 0.3}
+    if plot_kwargs["swarm_bars_kwargs"] is None:
+        swarm_bars_kwargs = default_swarm_bars_kwargs
+    else:
+        swarm_bars_kwargs = merge_two_dicts(default_swarm_bars_kwargs, plot_kwargs["swarm_bars_kwargs"])
+
+    # Contrast bars kwargs.
+    default_contrast_bars_kwargs = {"color": None, "alpha": 0.3}
+    if plot_kwargs["contrast_bars_kwargs"] is None:
+        contrast_bars_kwargs = default_contrast_bars_kwargs
+    else:
+        contrast_bars_kwargs = merge_two_dicts(default_contrast_bars_kwargs, plot_kwargs["contrast_bars_kwargs"])
+
     return (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs, 
-            reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, delta_dot_kwargs)
+            reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
+            delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs)
 
 
 def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs):

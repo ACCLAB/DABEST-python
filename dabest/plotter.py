@@ -104,8 +104,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type) = get_params(effectsize_df=effectsize_df, plot_kwargs=plot_kwargs)
 
     (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs, 
-            reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, 
-            delta_dot_kwargs) = get_kwargs(plot_kwargs=plot_kwargs, ytick_color=ytick_color)
+    reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, delta_dot_kwargs, 
+    delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs) = get_kwargs(plot_kwargs=plot_kwargs, ytick_color=ytick_color)
 
     # We also need to extract the `sankey` and `flow` from the kwargs for plotter.py
     # to use for varying different kinds of paired proportional plots
@@ -206,7 +206,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
             ##################### DELTA PTS ON CONTRAST PLOT WIP
             show_delta_dots = plot_kwargs["delta_dot"]
-
             if show_delta_dots and is_paired is not None:
                 DeltaDotsPlotter(plot_data=plot_data, contrast_axes=contrast_axes, delta_id_col=dabest_obj.id_col, 
                                  idx=idx, xvar=xvar, yvar=yvar, is_paired=is_paired, color_col=color_col, 
@@ -1194,25 +1193,15 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         contrast_axes.get_xaxis().set_visible(False)
     ####################################################### END GRIDKEY MAIN CODE WIP
     
-    ################################################### Swarm & Contrast & Summary Bars WIP
+    ################################################### Swarm & Contrast & Summary Bars & Delta text WIP
     # Swarm bars WIP
     swarm_bars = plot_kwargs["swarm_bars"]
-    default_swarm_bars_kwargs = {"color": None, "alpha": 0.3}
-    if plot_kwargs["swarm_bars_kwargs"] is None:
-        swarm_bars_kwargs = default_swarm_bars_kwargs
-    else:
-        swarm_bars_kwargs = merge_two_dicts(default_swarm_bars_kwargs, plot_kwargs["swarm_bars_kwargs"])
     if swarm_bars and not proportional:
         swarm_bars_plotter(plot_data=plot_data, xvar=xvar, yvar=yvar, ax=rawdata_axes, swarm_bars_kwargs=swarm_bars_kwargs, 
                           color_col=color_col, swarm_colors=swarm_colors, is_paired=is_paired)
 
     # Contrast bars WIP
     contrast_bars = plot_kwargs["contrast_bars"]
-    default_contrast_bars_kwargs = {"color": None, "alpha": 0.3}
-    if plot_kwargs["contrast_bars_kwargs"] is None:
-        contrast_bars_kwargs = default_contrast_bars_kwargs
-    else:
-        contrast_bars_kwargs = merge_two_dicts(default_contrast_bars_kwargs, plot_kwargs["contrast_bars_kwargs"])
     if contrast_bars:
         contrast_bars_plotter(results=results, ax_to_plot=contrast_axes, swarm_plot_ax=rawdata_axes,ticks_to_plot=ticks_to_plot, 
                               contrast_bars_kwargs=contrast_bars_kwargs, color_col=color_col, swarm_colors=swarm_colors, show_mini_meta=show_mini_meta, 
@@ -1221,31 +1210,18 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     # Summary bars WIP
     summary_bars = plot_kwargs["summary_bars"]
-    default_summary_bars_kwargs = {"color": None, "alpha": 0.15}
-    if plot_kwargs["summary_bars_kwargs"] is None:
-        summary_bars_kwargs = default_summary_bars_kwargs
-    else:
-        summary_bars_kwargs = merge_two_dicts(default_summary_bars_kwargs, plot_kwargs["summary_bars_kwargs"])
     if summary_bars is not None:
         summary_bars_plotter(summary_bars=summary_bars, results=results, ax_to_plot=contrast_axes, float_contrast=float_contrast,
                             summary_bars_kwargs=summary_bars_kwargs, ci_type=ci_type, ticks_to_plot=ticks_to_plot, color_col=color_col,
                             swarm_colors=swarm_colors, proportional=proportional, is_paired=is_paired)
-    ################################################### Swarm & Contrast & Summary Bars WIP END
-
-    ################################################### Delta text WIP START
+    # Delta text WIP
     delta_text = plot_kwargs["delta_text"]
-    default_delta_text_kwargs = {"color": None, "alpha": 1, "fontsize": 10, "ha": 'center', "va": 'center', "rotation": 0, "x_location": 'right', "x_coordinates": None, "y_coordinates": None}
-    if plot_kwargs["delta_text_kwargs"] is None:
-        delta_text_kwargs = default_delta_text_kwargs
-    else:
-        delta_text_kwargs = merge_two_dicts(default_delta_text_kwargs, plot_kwargs["delta_text_kwargs"])
-
-    if delta_text:
+    if delta_text: 
         delta_text_plotter(results=results, ax_to_plot=contrast_axes, swarm_plot_ax=rawdata_axes, ticks_to_plot=ticks_to_plot, delta_text_kwargs=delta_text_kwargs, color_col=color_col, swarm_colors=swarm_colors, 
                            is_paired=is_paired,proportional=proportional, float_contrast=float_contrast, show_mini_meta=show_mini_meta, 
                               mini_meta_delta=mini_meta_delta if show_mini_meta else None, show_delta2=show_delta2, 
                               delta_delta=delta_delta if show_delta2 else None)
-    ################################################### Delta text WIP END
+    ################################################### Swarm & Contrast & Summary Bars & Delta text WIP END
 
     # Make sure no stray ticks appear!
     rawdata_axes.xaxis.set_ticks_position("bottom")
