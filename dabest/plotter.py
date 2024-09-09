@@ -1146,10 +1146,10 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                     ].iloc[0]
                     curr_esval_str = np.format_float_positional(
                         curr_esval,
-                        precision=es_sf,
+                        precision=2,
                         sign=True,
                         trim="k",
-                        min_digits=es_sf,
+                        min_digits=2,
                     )
                     effsize_list.append(curr_esval_str)
                 else:
