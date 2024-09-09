@@ -75,6 +75,14 @@ def get_varname(obj):
     return ""
 
 def get_params(effectsize_df, plot_kwargs):
+    """
+    Parameters
+    ----------
+    effectsize_df : object (Dataframe)
+        A `dabest` EffectSizeDataFrame object.
+    plot_kwargs : dict
+        Kwargs passed to the plot function.
+    """
     face_color = plot_kwargs["face_color"]
 
     if plot_kwargs["face_color"] is None:
@@ -122,11 +130,20 @@ def get_params(effectsize_df, plot_kwargs):
         show_pairs = False
     else:
         show_pairs = plot_kwargs["show_pairs"]
+        
 
     return (face_color, dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, idx, 
             show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type)
 
 def get_kwargs(plot_kwargs, ytick_color):
+    """
+    Parameters
+    ----------
+    plot_kwargs : dict
+        Kwargs passed to the plot function.
+    ytick_color : str
+        Color of the yticks.
+    """
     from .misc_tools import merge_two_dicts
 
     # Swarmplot kwargs
