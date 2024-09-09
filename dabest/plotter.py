@@ -187,22 +187,21 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
         else:
             # Plot the raw data as a set of Sankey Diagrams aligned like barplot.
-            if show_pairs:
-                sankey_control_group = []
-                sankey_test_group = []
-                # Design for Sankey Flow Diagram
-                sankey_idx = (
-                    [
-                        (control, test)
-                        for i in idx
-                        for control, test in zip(i[:], (i[1:] + (i[0],)))
-                    ]
-                    if flow
-                    else temp_idx
-                )
-                for i in sankey_idx:
-                    sankey_control_group.append(i[0])
-                    sankey_test_group.append(i[1])
+            sankey_control_group = []
+            sankey_test_group = []
+            # Design for Sankey Flow Diagram
+            sankey_idx = (
+                [
+                    (control, test)
+                    for i in idx
+                    for control, test in zip(i[:], (i[1:] + (i[0],)))
+                ]
+                if flow
+                else temp_idx
+            )
+            for i in sankey_idx:
+                sankey_control_group.append(i[0])
+                sankey_test_group.append(i[1])
 
             if len(temp_all_plot_groups) == 2:
                 one_sankey = True
@@ -241,14 +240,14 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             else:
                 jitter = 1
 
-            if color_col is None: # Determine the use of hue
-                rawdata_plot = swarmplot(
+            swarmplot_hue = xvar if color_col is None else color_col
+            rawdata_plot = swarmplot(
                     data=plot_data,
                     x=xvar,
                     y=yvar,
                     ax=rawdata_axes,
                     order=all_plot_groups,
-                    hue=xvar,
+                    hue=swarmplot_hue,
                     palette=plot_palette_raw,
                     zorder=1,
                     side=asymmetric_side,
@@ -257,23 +256,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                     gutter_limit=0.45,
                     **swarmplot_kwargs
                 )
+            if color_col is None:
                 rawdata_plot.legend().set_visible(False)
-            else:
-                rawdata_plot = swarmplot(
-                    data=plot_data,
-                    x=xvar,
-                    y=yvar,
-                    ax=rawdata_axes,
-                    order=all_plot_groups,
-                    hue=color_col,
-                    palette=plot_palette_raw,
-                    zorder=1,
-                    side=asymmetric_side,
-                    jitter=jitter,
-                    is_drop_gutter=True,
-                    gutter_limit=0.45,
-                    **swarmplot_kwargs
-                )
+
         else:
             # Plot the raw data as a barplot.
             bar1_df = pd.DataFrame(
