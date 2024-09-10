@@ -59,8 +59,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         delta_text=True, delta_text_kwargs=None,
         delta_dot=True, delta_dot_kwargs=None,
     """
-    from .misc_tools import (merge_two_dicts,
-                             get_params,
+    from .misc_tools import (get_params,
                              get_kwargs,
                              get_color_palette,
                              initialize_fig,
@@ -69,7 +68,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                              extract_contrast_plotting_ticks,
     )
     from .plot_tools import (
-        halfviolin,
         get_swarm_spans,
         error_bar,
         sankeydiag,
@@ -83,6 +81,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         plot_minimeta_or_deltadelta_violins,
         effect_size_curve_plotter,
         grid_key_WIP,
+        barplotter,
     )
     from ._stats_tools.effsize import (
         _compute_standardizers,
@@ -107,13 +106,15 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     ytick_color = plt.rcParams["ytick.color"]
 
     # Extract parameters and set kwargs
-    (face_color, dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, 
-     all_plot_groups, idx, show_delta2, show_mini_meta, float_contrast, show_pairs, 
-     effect_size_type, group_summaries, err_color) = get_params(effectsize_df=effectsize_df, plot_kwargs=plot_kwargs)
+    (face_color, dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, 
+     proportional, all_plot_groups, idx, show_delta2, show_mini_meta, 
+     float_contrast, show_pairs, effect_size_type, group_summaries, err_color) = get_params(effectsize_df=effectsize_df, 
+                                                                                            plot_kwargs=plot_kwargs)
 
-    (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs, 
-    reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, delta_dot_kwargs, 
-    delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs) = get_kwargs(plot_kwargs=plot_kwargs, ytick_color=ytick_color)
+    (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, 
+     slopegraph_kwargs, reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, 
+     delta_dot_kwargs, delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs) = get_kwargs(plot_kwargs=plot_kwargs, 
+                                                                                                                     ytick_color=ytick_color)
 
     # We also need to extract the `sankey` and `flow` from the kwargs for plotter.py
     # to use for varying different kinds of paired proportional plots
@@ -128,32 +129,57 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     )
 
     # Extract Color palette
-    (color_col, bootstraps_color_by_group, n_groups, swarm_colors, plot_palette_raw, bar_color, plot_palette_bar, 
-     plot_palette_contrast, plot_palette_sankey) = get_color_palette(plot_kwargs=plot_kwargs, plot_data=plot_data, 
-                                                                  xvar=xvar, show_pairs=show_pairs)
+    (color_col, bootstraps_color_by_group, n_groups, 
+     swarm_colors, plot_palette_raw, bar_color, 
+     plot_palette_bar, plot_palette_contrast, plot_palette_sankey) = get_color_palette(plot_kwargs=plot_kwargs, 
+                                                                     plot_data=plot_data, 
+                                                                     xvar=xvar, 
+                                                                     show_pairs=show_pairs)
 
     # Initialise the figure.
-    fig, rawdata_axes, contrast_axes, swarm_ylim = initialize_fig(plot_kwargs=plot_kwargs, dabest_obj=dabest_obj, show_delta2=show_delta2, 
-                                                      show_mini_meta=show_mini_meta, is_paired=is_paired, show_pairs=show_pairs, 
-                                                      proportional=proportional, float_contrast=float_contrast, face_color=face_color, 
-                                                        )
+    fig, rawdata_axes, contrast_axes, swarm_ylim = initialize_fig(plot_kwargs=plot_kwargs, 
+                                                                  dabest_obj=dabest_obj, 
+                                                                  show_delta2=show_delta2, 
+                                                                  show_mini_meta=show_mini_meta, 
+                                                                  is_paired=is_paired, 
+                                                                  show_pairs=show_pairs, 
+                                                                  proportional=proportional, 
+                                                                  float_contrast=float_contrast, 
+                                                                  face_color=face_color, 
+                                                                  )
     
     # Plotting the rawdata.
     if show_pairs:
-        temp_idx, temp_all_plot_groups = get_plot_groups(is_paired=is_paired, idx=idx, proportional=proportional, 
-                                                         all_plot_groups=all_plot_groups)
+        temp_idx, temp_all_plot_groups = get_plot_groups(is_paired=is_paired, idx=idx, proportional=proportional, all_plot_groups=all_plot_groups)
         if not proportional:
             # Plot the raw data as a slopegraph.
-            slopegraph_plotter(dabest_obj=dabest_obj, plot_data=plot_data, xvar=xvar, yvar=yvar, color_col=color_col, 
-                               plot_palette_raw=plot_palette_raw, slopegraph_kwargs=slopegraph_kwargs, rawdata_axes=rawdata_axes, 
-                               ytick_color=ytick_color, temp_idx=temp_idx)
+            slopegraph_plotter(dabest_obj=dabest_obj, 
+                               plot_data=plot_data, 
+                               xvar=xvar, 
+                               yvar=yvar, 
+                               color_col=color_col, 
+                               plot_palette_raw=plot_palette_raw, 
+                               slopegraph_kwargs=slopegraph_kwargs, 
+                               rawdata_axes=rawdata_axes, 
+                               ytick_color=ytick_color, 
+                               temp_idx=temp_idx
+                               )
 
             # DELTA PTS ON CONTRAST PLOT WIP
             show_delta_dots = plot_kwargs["delta_dot"]
             if show_delta_dots and is_paired is not None:
-                DeltaDotsPlotter(plot_data=plot_data, contrast_axes=contrast_axes, delta_id_col=dabest_obj.id_col, 
-                                 idx=idx, xvar=xvar, yvar=yvar, is_paired=is_paired, color_col=color_col, 
-                                 float_contrast=float_contrast, plot_palette_raw=plot_palette_raw, delta_dot_kwargs=delta_dot_kwargs)
+                DeltaDotsPlotter(plot_data=plot_data, 
+                                 contrast_axes=contrast_axes, 
+                                 delta_id_col=dabest_obj.id_col, 
+                                 idx=idx, 
+                                 xvar=xvar, 
+                                 yvar=yvar, 
+                                 is_paired=is_paired, 
+                                 color_col=color_col, 
+                                 float_contrast=float_contrast, 
+                                 plot_palette_raw=plot_palette_raw, 
+                                 delta_dot_kwargs=delta_dot_kwargs
+                                )
 
             # Set the tick labels, because the slopegraph plotting doesn't.
             rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
@@ -210,38 +236,16 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
         else:
             # Plot the raw data as a barplot.
-            bar1_df = pd.DataFrame(
-                {xvar: all_plot_groups, "proportion": np.ones(len(all_plot_groups))}
-            )
-            bar1 = sns.barplot(
-                data=bar1_df,
-                x=xvar,
-                y="proportion",
-                ax=rawdata_axes,
-                order=all_plot_groups,
-                linewidth=2,
-                facecolor=(1, 1, 1, 0),
-                edgecolor=bar_color,
-                zorder=1,
-            )
-            bar2 = sns.barplot(
-                data=plot_data,
-                x=xvar,
-                y=yvar,
-                ax=rawdata_axes,
-                order=all_plot_groups,
-                palette=plot_palette_bar,
-                zorder=1,
-                **barplot_kwargs
-            )
-            # adjust the width of bars
-            bar_width = plot_kwargs["bar_width"]
-            for bar in bar1.patches:
-                x = bar.get_x()
-                width = bar.get_width()
-                centre = x + width / 2.0
-                bar.set_x(centre - bar_width / 2.0)
-                bar.set_width(bar_width)
+
+            barplotter(xvar=xvar, 
+                       yvar=yvar, 
+                       all_plot_groups=all_plot_groups, 
+                       rawdata_axes=rawdata_axes, 
+                       plot_data=plot_data, 
+                       bar_color=bar_color, 
+                       plot_palette_bar=plot_palette_bar, 
+                       plot_kwargs=plot_kwargs, 
+                       barplot_kwargs=barplot_kwargs)
 
         # Plot the error bars.
         if group_summaries is not None:
@@ -295,7 +299,12 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             )
 
     # Add the counts to the rawdata axes xticks.
-    add_counts_to_ticks(plot_data=plot_data, xvar=xvar, yvar=yvar, rawdata_axes=rawdata_axes, plot_kwargs=plot_kwargs)
+    add_counts_to_ticks(plot_data=plot_data, 
+                        xvar=xvar, 
+                        yvar=yvar, 
+                        rawdata_axes=rawdata_axes, 
+                        plot_kwargs=plot_kwargs
+                        )
 
     # Save the handles and labels for the legend.
     handles, labels = rawdata_axes.get_legend_handles_labels()
@@ -850,30 +859,67 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     # Swarm bars WIP
     swarm_bars = plot_kwargs["swarm_bars"]
     if swarm_bars and not proportional:
-        swarm_bars_plotter(plot_data=plot_data, xvar=xvar, yvar=yvar, ax=rawdata_axes, swarm_bars_kwargs=swarm_bars_kwargs, 
-                          color_col=color_col, swarm_colors=swarm_colors, is_paired=is_paired)
+        swarm_bars_plotter(plot_data=plot_data, 
+                           xvar=xvar, 
+                           yvar=yvar, 
+                           ax=rawdata_axes, 
+                           swarm_bars_kwargs=swarm_bars_kwargs, 
+                           color_col=color_col, 
+                           swarm_colors=swarm_colors, 
+                           is_paired=is_paired
+                           )
 
     # Contrast bars WIP
     contrast_bars = plot_kwargs["contrast_bars"]
     if contrast_bars:
-        contrast_bars_plotter(results=results, ax_to_plot=contrast_axes, swarm_plot_ax=rawdata_axes,ticks_to_plot=ticks_to_plot, 
-                              contrast_bars_kwargs=contrast_bars_kwargs, color_col=color_col, swarm_colors=swarm_colors, show_mini_meta=show_mini_meta, 
-                              mini_meta_delta=effectsize_df.mini_meta_delta if show_mini_meta else None, show_delta2=show_delta2, 
-                              delta_delta=effectsize_df.delta_delta if show_delta2 else None, proportional=proportional, is_paired=is_paired)
+        contrast_bars_plotter(results=results, 
+                              ax_to_plot=contrast_axes, 
+                              swarm_plot_ax=rawdata_axes,
+                              ticks_to_plot=ticks_to_plot, 
+                              contrast_bars_kwargs=contrast_bars_kwargs, 
+                              color_col=color_col, 
+                              swarm_colors=swarm_colors, 
+                              show_mini_meta=show_mini_meta, 
+                              mini_meta_delta=effectsize_df.mini_meta_delta if show_mini_meta else None, 
+                              show_delta2=show_delta2, 
+                              delta_delta=effectsize_df.delta_delta if show_delta2 else None, 
+                              proportional=proportional, 
+                              is_paired=is_paired
+                              )
 
     # Summary bars WIP
     summary_bars = plot_kwargs["summary_bars"]
     if summary_bars is not None:
-        summary_bars_plotter(summary_bars=summary_bars, results=results, ax_to_plot=contrast_axes, float_contrast=float_contrast,
-                            summary_bars_kwargs=summary_bars_kwargs, ci_type=ci_type, ticks_to_plot=ticks_to_plot, color_col=color_col,
-                            swarm_colors=swarm_colors, proportional=proportional, is_paired=is_paired)
+        summary_bars_plotter(summary_bars=summary_bars, 
+                             results=results, 
+                             ax_to_plot=contrast_axes, 
+                             float_contrast=float_contrast,
+                             summary_bars_kwargs=summary_bars_kwargs, 
+                             ci_type=ci_type, 
+                             ticks_to_plot=ticks_to_plot, 
+                             color_col=color_col,
+                             swarm_colors=swarm_colors, 
+                             proportional=proportional, 
+                             is_paired=is_paired
+                             )
     # Delta text WIP
     delta_text = plot_kwargs["delta_text"]
     if delta_text: 
-        delta_text_plotter(results=results, ax_to_plot=contrast_axes, swarm_plot_ax=rawdata_axes, ticks_to_plot=ticks_to_plot, delta_text_kwargs=delta_text_kwargs, color_col=color_col, swarm_colors=swarm_colors, 
-                           is_paired=is_paired,proportional=proportional, float_contrast=float_contrast, show_mini_meta=show_mini_meta, 
-                              mini_meta_delta=effectsize_df.mini_meta_delta if show_mini_meta else None, show_delta2=show_delta2, 
-                              delta_delta=effectsize_df.delta_delta if show_delta2 else None)
+        delta_text_plotter(results=results, 
+                           ax_to_plot=contrast_axes, 
+                           swarm_plot_ax=rawdata_axes, 
+                           ticks_to_plot=ticks_to_plot, 
+                           delta_text_kwargs=delta_text_kwargs, 
+                           color_col=color_col, 
+                           swarm_colors=swarm_colors, 
+                           is_paired=is_paired,
+                           proportional=proportional, 
+                           float_contrast=float_contrast, 
+                           show_mini_meta=show_mini_meta, 
+                           mini_meta_delta=effectsize_df.mini_meta_delta if show_mini_meta else None, 
+                           show_delta2=show_delta2, 
+                           delta_delta=effectsize_df.delta_delta if show_delta2 else None
+                           )
     ################################################### Swarm & Contrast & Summary Bars & Delta text WIP END
 
     # Make sure no stray ticks appear!

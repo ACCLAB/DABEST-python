@@ -7,7 +7,7 @@ from __future__ import annotations
 __all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'width_determine',
            'single_sankey', 'sankeydiag', 'summary_bars_plotter', 'contrast_bars_plotter', 'swarm_bars_plotter',
            'delta_text_plotter', 'DeltaDotsPlotter', 'slopegraph_plotter', 'plot_minimeta_or_deltadelta_violins',
-           'effect_size_curve_plotter', 'grid_key_WIP', 'swarmplot', 'SwarmPlot']
+           'effect_size_curve_plotter', 'grid_key_WIP', 'barplotter', 'swarmplot', 'SwarmPlot']
 
 # %% ../nbs/API/plot_tools.ipynb 4
 import math
@@ -1422,6 +1422,42 @@ def grid_key_WIP(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes, co
     # turns off both x axes
     rawdata_axes.get_xaxis().set_visible(False)
     contrast_axes.get_xaxis().set_visible(False)
+
+def barplotter(xvar, yvar, all_plot_groups, rawdata_axes, plot_data, bar_color, plot_palette_bar, plot_kwargs, barplot_kwargs):
+    # Plot the raw data as a barplot.
+    bar1_df = pd.DataFrame(
+        {xvar: all_plot_groups, "proportion": np.ones(len(all_plot_groups))}
+    )
+    bar1 = sns.barplot(
+        data=bar1_df,
+        x=xvar,
+        y="proportion",
+        ax=rawdata_axes,
+        order=all_plot_groups,
+        linewidth=2,
+        facecolor=(1, 1, 1, 0),
+        edgecolor=bar_color,
+        zorder=1,
+    )
+    bar2 = sns.barplot(
+        data=plot_data,
+        x=xvar,
+        y=yvar,
+        ax=rawdata_axes,
+        order=all_plot_groups,
+        palette=plot_palette_bar,
+        zorder=1,
+        **barplot_kwargs
+    )
+    # adjust the width of bars
+    bar_width = plot_kwargs["bar_width"]
+    for bar in bar1.patches:
+        x = bar.get_x()
+        width = bar.get_width()
+        centre = x + width / 2.0
+        bar.set_x(centre - bar_width / 2.0)
+        bar.set_width(bar_width)
+    ...
 
 # %% ../nbs/API/plot_tools.ipynb 6
 def swarmplot(
