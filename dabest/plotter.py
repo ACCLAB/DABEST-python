@@ -344,59 +344,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     results = effectsize_df.results
     contrast_xtick_labels = []
 
-    # for j, tick in enumerate(ticks_to_plot):
-    #     current_group = results.test[j]
-    #     current_control = results.control[j]
-    #     current_bootstrap = results.bootstraps[j]
-    #     current_effsize = results.difference[j]
-    #     if ci_type == "bca":
-    #         current_ci_low = results.bca_low[j]
-    #         current_ci_high = results.bca_high[j]
-    #     else:
-    #         current_ci_low = results.pct_low[j]
-    #         current_ci_high = results.pct_high[j]
-
-    #     # Create the violinplot.
-    #     # New in v0.2.6: drop negative infinities before plotting.
-    #     v = contrast_axes.violinplot(
-    #         current_bootstrap[~np.isinf(current_bootstrap)],
-    #         positions=[tick],
-    #         **violinplot_kwargs
-    #     )
-    #     # Turn the violinplot into half, and color it the same as the swarmplot.
-    #     # Do this only if the color column is not specified.
-    #     # Ideally, the alpha (transparency) fo the violin plot should be
-    #     # less than one so the effect size and CIs are visible.
-    #     if bootstraps_color_by_group:
-    #         fc = plot_palette_contrast[current_group]
-    #     else:
-    #         fc = "grey"
-
-    #     halfviolin(v, fill_color=fc, alpha=halfviolin_alpha)
-
-    #     # Plot the effect size.
-    #     contrast_axes.plot(
-    #         [tick],
-    #         current_effsize,
-    #         marker="o",
-    #         color=ytick_color,
-    #         markersize=es_marker_size,
-    #     )
-
-    #     # Plot the confidence interval.
-    #     contrast_axes.plot(
-    #         [tick, tick],
-    #         [current_ci_low, current_ci_high],
-    #         linestyle="-",
-    #         color=ytick_color,
-    #         linewidth=group_summary_kwargs["lw"],
-    #     )
-
-    #     contrast_xtick_labels.append(
-    #         "{}\nminus\n{}".format(current_group, current_control)
-    #     )
-
-
     ##### WIP
     (current_group, current_control, 
      current_effsize) = effect_size_curve_plotter(ticks_to_plot=ticks_to_plot, 
