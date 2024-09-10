@@ -2,7 +2,8 @@
 
 # %% auto 0
 __all__ = ['merge_two_dicts', 'unpack_and_add', 'print_greeting', 'get_varname', 'get_params', 'get_kwargs', 'get_color_palette',
-           'initialize_fig', 'get_plot_groups', 'add_counts_to_ticks', 'extract_contrast_plotting_ticks']
+           'initialize_fig', 'get_plot_groups', 'add_counts_to_ticks', 'extract_contrast_plotting_ticks',
+           'set_xaxis_ticks_and_lims']
 
 # %% ../nbs/API/misc_tools.ipynb 4
 import datetime as dt
@@ -563,4 +564,29 @@ def extract_contrast_plotting_ticks(is_paired, show_pairs, two_col_sankey, plot_
             ]
     
     return ticks_to_skip, ticks_to_plot, ticks_to_skip_contrast, ticks_to_start_twocol_sankey
-    ...
+
+def set_xaxis_ticks_and_lims(show_delta2, show_mini_meta, rawdata_axes, contrast_axes, show_pairs, float_contrast):
+
+    if show_delta2 is False and show_mini_meta is False:
+        contrast_axes.set_xticks(rawdata_axes.get_xticks())
+    else:
+        temp = rawdata_axes.get_xticks()
+        temp = np.append(temp, [max(temp) + 1, max(temp) + 2])
+        contrast_axes.set_xticks(temp)
+
+    if show_pairs:
+        max_x = contrast_axes.get_xlim()[1]
+        rawdata_axes.set_xlim(-0.375, max_x)
+
+    if float_contrast:
+        contrast_axes.set_xlim(0.5, 1.5)
+    elif show_delta2 or show_mini_meta:
+        # Increase the xlim of raw data by 2
+        temp = rawdata_axes.get_xlim()
+        if show_pairs:
+            rawdata_axes.set_xlim(temp[0], temp[1] + 0.25)
+        else:
+            rawdata_axes.set_xlim(temp[0], temp[1] + 2)
+        contrast_axes.set_xlim(rawdata_axes.get_xlim())
+    else:
+        contrast_axes.set_xlim(rawdata_axes.get_xlim())

@@ -66,6 +66,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                              get_plot_groups,
                              add_counts_to_ticks,
                              extract_contrast_plotting_ticks,
+                             set_xaxis_ticks_and_lims,
     )
     from .plot_tools import (
         get_swarm_spans,
@@ -207,26 +208,17 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
             # swarmplot() plots swarms based on current size of ax
             # Therefore, since the ax size for mini_meta and show_delta changes later on, there has to be increased jitter
-            # TODO: to make jitter value more accurate and not just a hardcoded eyeball value
-            if show_mini_meta:
-                jitter = 1.25
-            elif show_delta2:
-                jitter = 1.4
-            else:
-                jitter = 1
-
-            swarmplot_hue = xvar if color_col is None else color_col
             rawdata_plot = swarmplot(
                     data=plot_data,
                     x=xvar,
                     y=yvar,
                     ax=rawdata_axes,
                     order=all_plot_groups,
-                    hue=swarmplot_hue,
+                    hue=xvar if color_col is None else color_col,
                     palette=plot_palette_raw,
                     zorder=1,
                     side=asymmetric_side,
-                    jitter=jitter,
+                    jitter=1.25 if show_mini_meta else 1.4 if show_delta2 else 1, # TODO: to make jitter value more accurate and not just a hardcoded eyeball value
                     is_drop_gutter=True,
                     gutter_limit=0.45,
                     **swarmplot_kwargs
@@ -236,7 +228,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
         else:
             # Plot the raw data as a barplot.
-
             barplotter(xvar=xvar, 
                        yvar=yvar, 
                        all_plot_groups=all_plot_groups, 
@@ -320,38 +311,35 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     # Plot effect sizes and bootstraps.
     plot_groups = temp_all_plot_groups if (is_paired == "baseline" and show_pairs and two_col_sankey) else temp_idx if (two_col_sankey) else all_plot_groups
 
-    (ticks_to_skip, ticks_to_plot, ticks_to_skip_contrast, 
-     ticks_to_start_twocol_sankey) = extract_contrast_plotting_ticks(is_paired=is_paired, 
-                                                                     show_pairs=show_pairs, 
-                                                                     two_col_sankey=two_col_sankey, 
-                                                                     plot_groups=plot_groups,
-                                                                     idx=idx,
-                                                                     sankey_control_group=sankey_control_group if two_col_sankey else None,
-                                                                    )
+    (ticks_to_skip, ticks_to_plot, 
+     ticks_to_skip_contrast, ticks_to_start_twocol_sankey) = extract_contrast_plotting_ticks(is_paired=is_paired, 
+                                                                                            show_pairs=show_pairs, 
+                                                                                            two_col_sankey=two_col_sankey, 
+                                                                                            plot_groups=plot_groups,
+                                                                                            idx=idx,
+                                                                                            sankey_control_group=sankey_control_group if two_col_sankey else None,
+                                                                                            )
 
     # Plot the bootstraps, then the effect sizes and CIs.
     es_marker_size = plot_kwargs["es_marker_size"]
     halfviolin_alpha = plot_kwargs["halfviolin_alpha"]
-
     ci_type = plot_kwargs["ci_type"]
 
     results = effectsize_df.results
-    contrast_xtick_labels = []
 
     (current_group, current_control, 
-     current_effsize) = effect_size_curve_plotter(ticks_to_plot=ticks_to_plot, 
-                                                  results=results, 
-                                                  ci_type=ci_type, 
-                                                  contrast_axes=contrast_axes, 
-                                                  violinplot_kwargs=violinplot_kwargs, 
-                                                  halfviolin_alpha=halfviolin_alpha, 
-                                                  ytick_color=ytick_color, 
-                                                  es_marker_size=es_marker_size, 
-                                                  group_summary_kwargs=group_summary_kwargs, 
-                                                  contrast_xtick_labels=contrast_xtick_labels, 
-                                                  bootstraps_color_by_group=bootstraps_color_by_group,
-                                                  plot_palette_contrast=plot_palette_contrast,
-                                                  )
+     current_effsize, contrast_xtick_labels) = effect_size_curve_plotter(ticks_to_plot=ticks_to_plot, 
+                                                                         results=results, 
+                                                                         ci_type=ci_type, 
+                                                                         contrast_axes=contrast_axes, 
+                                                                         violinplot_kwargs=violinplot_kwargs, 
+                                                                         halfviolin_alpha=halfviolin_alpha, 
+                                                                         ytick_color=ytick_color, 
+                                                                         es_marker_size=es_marker_size, 
+                                                                         group_summary_kwargs=group_summary_kwargs,  
+                                                                         bootstraps_color_by_group=bootstraps_color_by_group,
+                                                                         plot_palette_contrast=plot_palette_contrast,
+                                                                         )
 
     # Plot mini-meta violin
     if show_mini_meta or show_delta2:
@@ -369,32 +357,14 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                                     effect_size=effect_size
                                                                     )
 
-
     # Make sure the contrast_axes x-lims match the rawdata_axes xlims,
     # and add an extra violinplot tick for delta-delta plot.
-    if show_delta2 is False and show_mini_meta is False:
-        contrast_axes.set_xticks(rawdata_axes.get_xticks())
-    else:
-        temp = rawdata_axes.get_xticks()
-        temp = np.append(temp, [max(temp) + 1, max(temp) + 2])
-        contrast_axes.set_xticks(temp)
-
-    if show_pairs:
-        max_x = contrast_axes.get_xlim()[1]
-        rawdata_axes.set_xlim(-0.375, max_x)
-
-    if float_contrast:
-        contrast_axes.set_xlim(0.5, 1.5)
-    elif show_delta2 or show_mini_meta:
-        # Increase the xlim of raw data by 2
-        temp = rawdata_axes.get_xlim()
-        if show_pairs:
-            rawdata_axes.set_xlim(temp[0], temp[1] + 0.25)
-        else:
-            rawdata_axes.set_xlim(temp[0], temp[1] + 2)
-        contrast_axes.set_xlim(rawdata_axes.get_xlim())
-    else:
-        contrast_axes.set_xlim(rawdata_axes.get_xlim())
+    set_xaxis_ticks_and_lims(show_delta2=show_delta2, 
+                             show_mini_meta=show_mini_meta, 
+                             rawdata_axes=rawdata_axes, 
+                             contrast_axes=contrast_axes, 
+                             show_pairs=show_pairs, 
+                             float_contrast=float_contrast)
 
     # Properly label the contrast ticks.
     for t in ticks_to_skip:

@@ -1236,8 +1236,8 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
 
 
 def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, violinplot_kwargs, halfviolin_alpha, 
-                              ytick_color, es_marker_size, group_summary_kwargs, contrast_xtick_labels, 
-                              bootstraps_color_by_group, plot_palette_contrast):
+                              ytick_color, es_marker_size, group_summary_kwargs, bootstraps_color_by_group, plot_palette_contrast):
+    contrast_xtick_labels = []
     for j, tick in enumerate(ticks_to_plot):
         current_group = results.test[j]
         current_control = results.control[j]
@@ -1289,7 +1289,7 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
         contrast_xtick_labels.append(
             "{}\nminus\n{}".format(current_group, current_control)
         )
-    return current_group, current_control, current_effsize
+    return current_group, current_control, current_effsize, contrast_xtick_labels
 
 
 def grid_key_WIP(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes, contrast_axes,
