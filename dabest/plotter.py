@@ -82,6 +82,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         slopegraph_plotter,
         plot_minimeta_or_deltadelta_violins,
         effect_size_curve_plotter,
+        grid_key_WIP,
     )
     from ._stats_tools.effsize import (
         _compute_standardizers,
@@ -126,22 +127,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         True if proportional and not one_sankey and sankey and not flow else False
     )
 
-    ################################################### GRIDKEY WIP - extracting arguments
-
-    gridkey_rows = plot_kwargs["gridkey_rows"]
-    gridkey_merge_pairs = plot_kwargs["gridkey_merge_pairs"]
-    gridkey_show_Ns = plot_kwargs["gridkey_show_Ns"]
-    gridkey_show_es = plot_kwargs["gridkey_show_es"]
-
-    if gridkey_rows is None:
-        gridkey_show_Ns = False
-        gridkey_show_es = False
-        h_space_cummings = 0.3
-    else:
-        h_space_cummings = 0.1
-
-    ################################################### END GRIDKEY WIP - extracting arguments
-
     # Extract Color palette
     (color_col, bootstraps_color_by_group, n_groups, swarm_colors, plot_palette_raw, bar_color, plot_palette_bar, 
      plot_palette_contrast, plot_palette_sankey) = get_color_palette(plot_kwargs=plot_kwargs, plot_data=plot_data, 
@@ -151,7 +136,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     fig, rawdata_axes, contrast_axes, swarm_ylim = initialize_fig(plot_kwargs=plot_kwargs, dabest_obj=dabest_obj, show_delta2=show_delta2, 
                                                       show_mini_meta=show_mini_meta, is_paired=is_paired, show_pairs=show_pairs, 
                                                       proportional=proportional, float_contrast=float_contrast, face_color=face_color, 
-                                                      h_space_cummings=h_space_cummings)
+                                                        )
     
     # Plotting the rawdata.
     if show_pairs:
@@ -344,7 +329,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     results = effectsize_df.results
     contrast_xtick_labels = []
 
-    ##### WIP
     (current_group, current_control, 
      current_effsize) = effect_size_curve_plotter(ticks_to_plot=ticks_to_plot, 
                                                   results=results, 
@@ -360,16 +344,21 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                   plot_palette_contrast=plot_palette_contrast,
                                                   )
 
-    ##### WIP
-
     # Plot mini-meta violin
     if show_mini_meta or show_delta2:
-        contrast_xtick_labels = plot_minimeta_or_deltadelta_violins(show_mini_meta=show_mini_meta, effectsize_df=effectsize_df, 
-                                        ci_type=ci_type, rawdata_axes=rawdata_axes,contrast_axes=contrast_axes, 
-                                        violinplot_kwargs=violinplot_kwargs, halfviolin_alpha=halfviolin_alpha, 
-                                        ytick_color=ytick_color, es_marker_size=es_marker_size, group_summary_kwargs=group_summary_kwargs, 
-                                        contrast_xtick_labels=contrast_xtick_labels, effect_size=effect_size
-                                        )
+        contrast_xtick_labels = plot_minimeta_or_deltadelta_violins(show_mini_meta=show_mini_meta, 
+                                                                    effectsize_df=effectsize_df, 
+                                                                    ci_type=ci_type, 
+                                                                    rawdata_axes=rawdata_axes,
+                                                                    contrast_axes=contrast_axes, 
+                                                                    violinplot_kwargs=violinplot_kwargs, 
+                                                                    halfviolin_alpha=halfviolin_alpha, 
+                                                                    ytick_color=ytick_color, 
+                                                                    es_marker_size=es_marker_size, 
+                                                                    group_summary_kwargs=group_summary_kwargs, 
+                                                                    contrast_xtick_labels=contrast_xtick_labels, 
+                                                                    effect_size=effect_size
+                                                                    )
 
 
     # Make sure the contrast_axes x-lims match the rawdata_axes xlims,
@@ -837,134 +826,26 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             og_xlim_delta[1], og_ylim_delta[0], og_ylim_delta[1], **redraw_axes_kwargs
         )
 
-    ################################################### GRIDKEY MAIN CODE WIP
+    ################################################### GRIDKEY  WIP
     # if gridkey_rows is None, skip everything here
+    gridkey_rows = plot_kwargs["gridkey_rows"]
     if gridkey_rows is not None:
-        # Raise error if there are more than 2 items in any idx and gridkey_merge_pairs is True and is_paired is not None
-        if gridkey_merge_pairs and is_paired is not None:
-            for i in idx:
-                if len(i) > 2:
-                    warnings.warn(
-                        "gridkey_merge_pairs=True only works if all idx in tuples have only two items. gridkey_merge_pairs has automatically been set to False"
-                    )
-                    gridkey_merge_pairs = False
-                    break
-        elif gridkey_merge_pairs and is_paired is None:
-            warnings.warn(
-                "gridkey_merge_pairs=True is only applicable for paired data."
-            )
-            gridkey_merge_pairs = False
+        grid_key_WIP(is_paired=is_paired, 
+                     idx=idx, 
+                     all_plot_groups=all_plot_groups, 
+                     gridkey_rows=gridkey_rows, 
+                     rawdata_axes=rawdata_axes, 
+                     contrast_axes=contrast_axes,
+                     plot_data=plot_data, 
+                     xvar=xvar, 
+                     yvar=yvar, 
+                     results=results, 
+                     show_delta2=show_delta2, 
+                     show_mini_meta=show_mini_meta, 
+                     float_contrast=float_contrast,
+                     plot_kwargs=plot_kwargs,
+                     )
 
-        # Checks for gridkey_merge_pairs and is_paired; if both are true, "merges" the gridkey per pair
-        if gridkey_merge_pairs and is_paired is not None:
-            groups_for_gridkey = []
-            for i in idx:
-                groups_for_gridkey.append(i[1])
-        else:
-            groups_for_gridkey = all_plot_groups
-
-        # raise errors if gridkey_rows is not a list, or if the list is empty
-        if isinstance(gridkey_rows, list) is False:
-            raise TypeError("gridkey_rows must be a list.")
-        elif len(gridkey_rows) == 0:
-            warnings.warn("gridkey_rows is an empty list.")
-
-        # raise Warning if an item in gridkey_rows is not contained in any idx
-        for i in gridkey_rows:
-            in_idx = 0
-            for j in groups_for_gridkey:
-                if i in j:
-                    in_idx += 1
-            if in_idx == 0:
-                if is_paired is not None:
-                    warnings.warn(
-                        i
-                        + " is not in any idx. Please check. Alternatively, merging gridkey pairs may not be suitable for your data; try passing gridkey_merge_pairs=False."
-                    )
-                else:
-                    warnings.warn(i + " is not in any idx. Please check.")
-
-        # Populate table: checks if idx for each column contains rowlabel name
-        # IF so, marks that element as present w black dot, or space if not present
-        table_cellcols = []
-        for i in gridkey_rows:
-            thisrow = []
-            for q in groups_for_gridkey:
-                if str(i) in q:
-                    thisrow.append("\u25CF")
-                else:
-                    thisrow.append("")
-            table_cellcols.append(thisrow)
-
-        # Adds a row for Ns with the Ns values
-        if gridkey_show_Ns:
-            gridkey_rows.append("Ns")
-            list_of_Ns = []
-            for i in groups_for_gridkey:
-                list_of_Ns.append(str(plot_data.groupby(xvar).count()[yvar].loc[i]))
-            table_cellcols.append(list_of_Ns)
-
-        # Adds a row for effectsizes with effectsize values
-        if gridkey_show_es:
-            gridkey_rows.append("\u0394")
-            effsize_list = []
-            results_list = results.test.to_list()
-
-            # get the effect size, append + or -, 2 dec places
-            for i in enumerate(groups_for_gridkey):
-                if i[1] in results_list:
-                    curr_esval = results.loc[results["test"] == i[1]][
-                        "difference"
-                    ].iloc[0]
-                    curr_esval_str = np.format_float_positional(
-                        curr_esval,
-                        precision=2,
-                        sign=True,
-                        trim="k",
-                        min_digits=2,
-                    )
-                    effsize_list.append(curr_esval_str)
-                else:
-                    effsize_list.append("-")
-
-            table_cellcols.append(effsize_list)
-
-        # If Gardner-Altman plot, plot on raw data and not contrast axes
-        if float_contrast:
-            axes_ploton = rawdata_axes
-        else:
-            axes_ploton = contrast_axes
-
-        # Account for extended x axis in case of show_delta2 or show_mini_meta
-        x_groups_for_width = len(groups_for_gridkey)
-        if show_delta2 or show_mini_meta:
-            x_groups_for_width += 2
-        gridkey_width = len(groups_for_gridkey) / x_groups_for_width
-
-        gridkey = axes_ploton.table(
-            cellText=table_cellcols,
-            rowLabels=gridkey_rows,
-            cellLoc="center",
-            bbox=[
-                0,
-                -len(gridkey_rows) * 0.1 - 0.05,
-                gridkey_width,
-                len(gridkey_rows) * 0.1,
-            ],
-            **{"alpha": 0.5}
-        )
-
-        # modifies row label cells
-        for cell in gridkey._cells:
-            if cell[1] == -1:
-                gridkey._cells[cell].visible_edges = "open"
-                gridkey._cells[cell].set_text_props(**{"ha": "right"})
-
-        # turns off both x axes
-        rawdata_axes.get_xaxis().set_visible(False)
-        contrast_axes.get_xaxis().set_visible(False)
-    ####################################################### END GRIDKEY MAIN CODE WIP
-    
     ################################################### Swarm & Contrast & Summary Bars & Delta text WIP
     # Swarm bars WIP
     swarm_bars = plot_kwargs["swarm_bars"]

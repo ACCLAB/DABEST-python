@@ -379,7 +379,7 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs):
             bar_color, plot_palette_bar, plot_palette_contrast, plot_palette_sankey)
 
 def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_paired, show_pairs, proportional,
-                   float_contrast, face_color, h_space_cummings):
+                   float_contrast, face_color):
     fig_size = plot_kwargs["fig_size"]
     if fig_size is None:
         all_groups_count = np.sum([len(i) for i in dabest_obj.idx])
@@ -402,6 +402,8 @@ def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_pair
 
     init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"], tight_layout=True)
     width_ratios_ga = [2.5, 1]
+
+    h_space_cummings = 0.3 if plot_kwargs["gridkey_rows"] == None else 0.1     ##### GRIDKEY WIP addition
 
     if plot_kwargs["ax"] is not None:
         # New in v0.2.6.
