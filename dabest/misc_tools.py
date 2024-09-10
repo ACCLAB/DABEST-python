@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['merge_two_dicts', 'unpack_and_add', 'print_greeting', 'get_varname', 'get_params', 'get_kwargs', 'get_color_palette',
-           'initialize_fig', 'get_plot_groups']
+           'initialize_fig', 'get_plot_groups', 'add_counts_to_ticks', 'extract_contrast_plotting_ticks']
 
 # %% ../nbs/API/misc_tools.ipynb 4
 import datetime as dt
@@ -11,6 +11,7 @@ from numpy import repeat
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import matplotlib
 
 # %% ../nbs/API/misc_tools.ipynb 5
 def merge_two_dicts(
@@ -493,3 +494,71 @@ def get_plot_groups(is_paired, idx, proportional, all_plot_groups):
     plot_groups = [item for i in temp_idx for item in i]
     temp_all_plot_groups = all_plot_groups if not proportional else plot_groups
     return temp_idx, temp_all_plot_groups
+
+
+def add_counts_to_ticks(plot_data, xvar, yvar, rawdata_axes, plot_kwargs):
+    counts = plot_data.groupby(xvar).count()[yvar]
+    ticks_with_counts = []
+    ticks_loc = rawdata_axes.get_xticks()
+    rawdata_axes.xaxis.set_major_locator(matplotlib.ticker.FixedLocator(ticks_loc))
+    for xticklab in rawdata_axes.xaxis.get_ticklabels():
+        t = xticklab.get_text()
+        if t.rfind("\n") != -1:
+            te = t[t.rfind("\n") + len("\n") :]
+            N = str(counts.loc[te])
+            te = t
+        else:
+            te = t
+            N = str(counts.loc[te])
+
+        ticks_with_counts.append("{}\nN = {}".format(te, N))
+
+    if plot_kwargs["fontsize_rawxlabel"] is not None:
+        fontsize_rawxlabel = plot_kwargs["fontsize_rawxlabel"]
+    rawdata_axes.set_xticklabels(ticks_with_counts, fontsize=fontsize_rawxlabel)
+
+
+def extract_contrast_plotting_ticks(is_paired, show_pairs, two_col_sankey, plot_groups, idx, sankey_control_group):
+
+    # Take note of where the `control` groups are.
+    ticks_to_skip_contrast = None
+    ticks_to_start_twocol_sankey = None
+    if is_paired == "baseline" and show_pairs:
+        if two_col_sankey:
+            ticks_to_skip = []
+            ticks_to_plot = np.arange(0, len(plot_groups) / 2).tolist()
+            ticks_to_start_twocol_sankey = np.cumsum([len(i) - 1 for i in idx]).tolist()
+            ticks_to_start_twocol_sankey.pop()
+            ticks_to_start_twocol_sankey.insert(0, 0)
+        else:
+            # ticks_to_skip = np.arange(0, len(temp_all_plot_groups), 2).tolist()
+            # ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist()
+            ticks_to_skip = np.cumsum([len(t) for t in idx])[:-1].tolist()
+            ticks_to_skip.insert(0, 0)
+            # Then obtain the ticks where we have to plot the effect sizes.
+            ticks_to_plot = [
+                t for t in range(0, len(plot_groups)) if t not in ticks_to_skip
+            ]
+            ticks_to_skip_contrast = np.cumsum([(len(t)) for t in idx])[:-1].tolist()
+            ticks_to_skip_contrast.insert(0, 0)
+    else:
+        if two_col_sankey:
+            ticks_to_skip = [len(sankey_control_group)]
+            # Then obtain the ticks where we have to plot the effect sizes.
+            ticks_to_plot = [
+                t for t in range(0, len(plot_groups)) if t not in ticks_to_skip
+            ]
+            ticks_to_skip = []
+            ticks_to_start_twocol_sankey = np.cumsum([len(i) - 1 for i in idx]).tolist()
+            ticks_to_start_twocol_sankey.pop()
+            ticks_to_start_twocol_sankey.insert(0, 0)
+        else:
+            ticks_to_skip = np.cumsum([len(t) for t in idx])[:-1].tolist()
+            ticks_to_skip.insert(0, 0)
+            # Then obtain the ticks where we have to plot the effect sizes.
+            ticks_to_plot = [
+                t for t in range(0, len(plot_groups)) if t not in ticks_to_skip
+            ]
+    
+    return ticks_to_skip, ticks_to_plot, ticks_to_skip_contrast, ticks_to_start_twocol_sankey
+    ...

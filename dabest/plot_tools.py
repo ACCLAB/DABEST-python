@@ -1233,7 +1233,6 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
         contrast_xtick_labels.extend(["", "delta-delta"])
     
     return contrast_xtick_labels
-    ...
 
 # %% ../nbs/API/plot_tools.ipynb 6
 def swarmplot(

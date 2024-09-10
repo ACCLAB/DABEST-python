@@ -65,6 +65,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                              get_color_palette,
                              initialize_fig,
                              get_plot_groups,
+                             add_counts_to_ticks,
+                             extract_contrast_plotting_ticks,
     )
     from .plot_tools import (
         halfviolin,
@@ -150,7 +152,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                       proportional=proportional, float_contrast=float_contrast, face_color=face_color, 
                                                       h_space_cummings=h_space_cummings)
     
-    # Plotting.
+    # Plotting the rawdata.
     if show_pairs:
         temp_idx, temp_all_plot_groups = get_plot_groups(is_paired=is_paired, idx=idx, proportional=proportional, 
                                                          all_plot_groups=all_plot_groups)
@@ -257,7 +259,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
         # Plot the error bars.
         if group_summaries is not None:
-
             if proportional:
                 group_summaries_method = "proportional_error_bar"
                 group_summaries_offset = 0
@@ -308,25 +309,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             )
 
     # Add the counts to the rawdata axes xticks.
-    counts = plot_data.groupby(xvar).count()[yvar]
-    ticks_with_counts = []
-    ticks_loc = rawdata_axes.get_xticks()
-    rawdata_axes.xaxis.set_major_locator(matplotlib.ticker.FixedLocator(ticks_loc))
-    for xticklab in rawdata_axes.xaxis.get_ticklabels():
-        t = xticklab.get_text()
-        if t.rfind("\n") != -1:
-            te = t[t.rfind("\n") + len("\n") :]
-            N = str(counts.loc[te])
-            te = t
-        else:
-            te = t
-            N = str(counts.loc[te])
-
-        ticks_with_counts.append("{}\nN = {}".format(te, N))
-
-    if plot_kwargs["fontsize_rawxlabel"] is not None:
-        fontsize_rawxlabel = plot_kwargs["fontsize_rawxlabel"]
-    rawdata_axes.set_xticklabels(ticks_with_counts, fontsize=fontsize_rawxlabel)
+    add_counts_to_ticks(plot_data=plot_data, xvar=xvar, yvar=yvar, rawdata_axes=rawdata_axes, plot_kwargs=plot_kwargs)
 
     # Save the handles and labels for the legend.
     handles, labels = rawdata_axes.get_legend_handles_labels()
@@ -335,48 +318,21 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     if bootstraps_color_by_group is False:
         rawdata_axes.legend().set_visible(False)
 
-    # Enforce the xtick of rawdata_axes to be 0 and 1 after drawing only one sankey
+    # Enforce the xtick of rawdata_axes to be 0 and 1 after drawing only one sankey ----> Redundant code
     if one_sankey:
         rawdata_axes.set_xticks([0, 1])
 
     # Plot effect sizes and bootstraps.
-    # Take note of where the `control` groups are.
-    if is_paired == "baseline" and show_pairs:
-        if two_col_sankey:
-            ticks_to_skip = []
-            ticks_to_plot = np.arange(0, len(temp_all_plot_groups) / 2).tolist()
-            ticks_to_start_twocol_sankey = np.cumsum([len(i) - 1 for i in idx]).tolist()
-            ticks_to_start_twocol_sankey.pop()
-            ticks_to_start_twocol_sankey.insert(0, 0)
-        else:
-            # ticks_to_skip = np.arange(0, len(temp_all_plot_groups), 2).tolist()
-            # ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist()
-            ticks_to_skip = np.cumsum([len(t) for t in idx])[:-1].tolist()
-            ticks_to_skip.insert(0, 0)
-            # Then obtain the ticks where we have to plot the effect sizes.
-            ticks_to_plot = [
-                t for t in range(0, len(all_plot_groups)) if t not in ticks_to_skip
-            ]
-            ticks_to_skip_contrast = np.cumsum([(len(t)) for t in idx])[:-1].tolist()
-            ticks_to_skip_contrast.insert(0, 0)
-    else:
-        if two_col_sankey:
-            ticks_to_skip = [len(sankey_control_group)]
-            # Then obtain the ticks where we have to plot the effect sizes.
-            ticks_to_plot = [
-                t for t in range(0, len(temp_idx)) if t not in ticks_to_skip
-            ]
-            ticks_to_skip = []
-            ticks_to_start_twocol_sankey = np.cumsum([len(i) - 1 for i in idx]).tolist()
-            ticks_to_start_twocol_sankey.pop()
-            ticks_to_start_twocol_sankey.insert(0, 0)
-        else:
-            ticks_to_skip = np.cumsum([len(t) for t in idx])[:-1].tolist()
-            ticks_to_skip.insert(0, 0)
-            # Then obtain the ticks where we have to plot the effect sizes.
-            ticks_to_plot = [
-                t for t in range(0, len(all_plot_groups)) if t not in ticks_to_skip
-            ]
+    plot_groups = temp_all_plot_groups if (is_paired == "baseline" and show_pairs and two_col_sankey) else temp_idx if (two_col_sankey) else all_plot_groups
+
+    (ticks_to_skip, ticks_to_plot, ticks_to_skip_contrast, 
+     ticks_to_start_twocol_sankey) = extract_contrast_plotting_ticks(is_paired=is_paired, 
+                                                                     show_pairs=show_pairs, 
+                                                                     two_col_sankey=two_col_sankey, 
+                                                                     plot_groups=plot_groups,
+                                                                     idx=idx,
+                                                                     sankey_control_group=sankey_control_group if two_col_sankey else None,
+                                                                    )
 
     # Plot the bootstraps, then the effect sizes and CIs.
     es_marker_size = plot_kwargs["es_marker_size"]
@@ -448,59 +404,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                         contrast_xtick_labels=contrast_xtick_labels, effect_size=effect_size
                                         )
 
-        # if show_mini_meta:
-        #     mini_meta_delta = effectsize_df.mini_meta_delta
-        #     data = mini_meta_delta.bootstraps_weighted_delta
-        #     difference = mini_meta_delta.difference
-        #     if ci_type == "bca":
-        #         ci_low = mini_meta_delta.bca_low
-        #         ci_high = mini_meta_delta.bca_high
-        #     else:
-        #         ci_low = mini_meta_delta.pct_low
-        #         ci_high = mini_meta_delta.pct_high
-        # else:
-        #     delta_delta = effectsize_df.delta_delta
-        #     data = delta_delta.bootstraps_delta_delta
-        #     difference = delta_delta.difference
-        #     if ci_type == "bca":
-        #         ci_low = delta_delta.bca_low
-        #         ci_high = delta_delta.bca_high
-        #     else:
-        #         ci_low = delta_delta.pct_low
-        #         ci_high = delta_delta.pct_high
-        # # Create the violinplot.
-        # # New in v0.2.6: drop negative infinities before plotting.
-        # position = max(rawdata_axes.get_xticks()) + 2
-        # v = contrast_axes.violinplot(
-        #     data[~np.isinf(data)], positions=[position], **violinplot_kwargs
-        # )
-
-        # fc = "grey"
-
-        # halfviolin(v, fill_color=fc, alpha=halfviolin_alpha)
-
-        # # Plot the effect size.
-        # contrast_axes.plot(
-        #     [position],
-        #     difference,
-        #     marker="o",
-        #     color=ytick_color,
-        #     markersize=es_marker_size,
-        # )
-        # # Plot the confidence interval.
-        # contrast_axes.plot(
-        #     [position, position],
-        #     [ci_low, ci_high],
-        #     linestyle="-",
-        #     color=ytick_color,
-        #     linewidth=group_summary_kwargs["lw"],
-        # )
-        # if show_mini_meta:
-        #     contrast_xtick_labels.extend(["", "Weighted delta"])
-        # elif effect_size == "delta_g":
-        #     contrast_xtick_labels.extend(["", "deltas' g"])
-        # else:
-        #     contrast_xtick_labels.extend(["", "delta-delta"])
 
     # Make sure the contrast_axes x-lims match the rawdata_axes xlims,
     # and add an extra violinplot tick for delta-delta plot.
@@ -1031,7 +934,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             gridkey_rows.append("Ns")
             list_of_Ns = []
             for i in groups_for_gridkey:
-                list_of_Ns.append(str(counts.loc[i]))
+                list_of_Ns.append(str(plot_data.groupby(xvar).count()[yvar].loc[i]))
             table_cellcols.append(list_of_Ns)
 
         # Adds a row for effectsizes with effectsize values
