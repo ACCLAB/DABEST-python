@@ -86,11 +86,6 @@ def get_params(effectsize_df, plot_kwargs):
     plot_kwargs : dict
         Kwargs passed to the plot function.
     """
-    face_color = plot_kwargs["face_color"]
-
-    if plot_kwargs["face_color"] is None:
-        face_color = "white"
-
     dabest_obj = effectsize_df.dabest_obj
     plot_data = effectsize_df._plot_data
     xvar = effectsize_df.xvar
@@ -100,7 +95,6 @@ def get_params(effectsize_df, plot_kwargs):
     mini_meta = effectsize_df.mini_meta
     effect_size = effectsize_df.effect_size
     proportional = effectsize_df.proportional
-
     all_plot_groups = dabest_obj._all_plot_groups
     idx = dabest_obj.idx
 
@@ -144,8 +138,7 @@ def get_params(effectsize_df, plot_kwargs):
     if err_color is None: 
         err_color = "black"
         
-
-    return (face_color, dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, idx, 
+    return (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, idx, 
             show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type, group_summaries, err_color)
 
 def get_kwargs(plot_kwargs, ytick_color):
@@ -381,8 +374,13 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs):
             bar_color, plot_palette_bar, plot_palette_contrast, plot_palette_sankey)
 
 def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_paired, show_pairs, proportional,
-                   float_contrast, face_color):
+                   float_contrast):
+    # Params
     fig_size = plot_kwargs["fig_size"]
+    face_color = plot_kwargs["face_color"]
+    if plot_kwargs["face_color"] is None:
+        face_color = "white"
+
     if fig_size is None:
         all_groups_count = np.sum([len(i) for i in dabest_obj.idx])
         # Increase the width for delta-delta graph
@@ -497,6 +495,7 @@ def get_plot_groups(is_paired, idx, proportional, all_plot_groups):
     # Determine temp_all_plot_groups based on proportional condition
     plot_groups = [item for i in temp_idx for item in i]
     temp_all_plot_groups = all_plot_groups if not proportional else plot_groups
+    
     return temp_idx, temp_all_plot_groups
 
 

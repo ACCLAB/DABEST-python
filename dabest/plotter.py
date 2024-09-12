@@ -107,7 +107,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     ytick_color = plt.rcParams["ytick.color"]
 
     # Extract parameters and set kwargs
-    (face_color, dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, 
+    (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, 
      proportional, all_plot_groups, idx, show_delta2, show_mini_meta, 
      float_contrast, show_pairs, effect_size_type, group_summaries, err_color) = get_params(
                                                                                     effectsize_df=effectsize_df, 
@@ -124,13 +124,11 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     # We also need to extract the `sankey` and `flow` from the kwargs for plotter.py
     # to use for varying different kinds of paired proportional plots
     # We also don't want to pop the parameter from the kwargs
-    sankey = sankey_kwargs["sankey"]
-    flow = sankey_kwargs["flow"]
     one_sankey = (
         False if is_paired is not None else None
     )  # Flag to indicate if only one sankey is plotted.
     two_col_sankey = (
-        True if proportional and not one_sankey and sankey and not flow else False
+        True if proportional and not one_sankey and sankey_kwargs["sankey"] and not sankey_kwargs["flow"] else False
     )
 
     # Extract Color palette
@@ -152,8 +150,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                         is_paired=is_paired, 
                                                         show_pairs=show_pairs, 
                                                         proportional=proportional, 
-                                                        float_contrast=float_contrast, 
-                                                        face_color=face_color, 
+                                                        float_contrast=float_contrast,
                                                         )
     
     # Plotting the rawdata.
