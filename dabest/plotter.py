@@ -88,10 +88,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         grid_key_WIP,
         barplotter,
     )
-    from ._stats_tools.effsize import (
-        _compute_standardizers,
-        _compute_hedges_correction_factor,
-    )
 
     warnings.filterwarnings(
         "ignore", "This figure includes Axes that are not compatible with tight_layout"
