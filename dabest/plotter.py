@@ -70,6 +70,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                              show_legend,
                              Gardner_Altman_Plot_Aesthetic_Adjustments,
                              Cumming_Plot_Aesthetic_Adjustments,
+                             General_Plot_Aesthetic_Adjustments,
     )
     from .plot_tools import (
         get_swarm_spans,
@@ -138,7 +139,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
      plot_palette_bar, plot_palette_contrast, plot_palette_sankey) = get_color_palette(plot_kwargs=plot_kwargs, 
                                                                      plot_data=plot_data, 
                                                                      xvar=xvar, 
-                                                                     show_pairs=show_pairs)
+                                                                     show_pairs=show_pairs
+                                                                     )
 
     # Initialise the figure.
     fig, rawdata_axes, contrast_axes, swarm_ylim = initialize_fig(plot_kwargs=plot_kwargs, 
@@ -300,13 +302,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                         plot_kwargs=plot_kwargs
                         )
 
-    # Save the handles and labels for the legend.
-    handles, labels = rawdata_axes.get_legend_handles_labels()
-    legend_labels = [l for l in labels]
-    legend_handles = [h for h in handles]
-    if bootstraps_color_by_group is False:
-        rawdata_axes.legend().set_visible(False)
-
     # Enforce the xtick of rawdata_axes to be 0 and 1 after drawing only one sankey ----> Redundant code
     if one_sankey:
         rawdata_axes.set_xticks([0, 1])
@@ -373,6 +368,12 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                              plot_kwargs=plot_kwargs,
                              )
     # Legend
+    handles, labels = rawdata_axes.get_legend_handles_labels()
+    legend_labels = [l for l in labels]
+    legend_handles = [h for h in handles]
+    if bootstraps_color_by_group is False:
+        rawdata_axes.legend().set_visible(False)
+
     if bootstraps_color_by_group is False:
         show_legend(legend_labels=legend_labels, 
                     legend_handles=legend_handles, 
@@ -383,29 +384,30 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                     legend_kwargs=legend_kwargs
                     )
 
+    # Plot aesthetic adjustments.
     og_ylim_raw = rawdata_axes.get_ylim()
     og_xlim_raw = rawdata_axes.get_xlim()
 
     if float_contrast:
         # For Gardner-Altman plots only.
         Gardner_Altman_Plot_Aesthetic_Adjustments(effect_size_type=effect_size_type, 
-                                             plot_data=plot_data, 
-                                             xvar=xvar, 
-                                             yvar=yvar, 
-                                             current_control=current_control, 
-                                             current_group=current_group,
-                                             rawdata_axes=rawdata_axes, 
-                                             contrast_axes=contrast_axes, 
-                                             results=results, 
-                                             current_effsize=current_effsize, 
-                                             is_paired=is_paired, 
-                                             one_sankey=one_sankey,
-                                             reflines_kwargs=reflines_kwargs, 
-                                             redraw_axes_kwargs=redraw_axes_kwargs, 
-                                             swarm_ylim=swarm_ylim, 
-                                             og_xlim_raw=og_xlim_raw,
-                                             og_ylim_raw=og_ylim_raw
-                                             )
+                                                 plot_data=plot_data, 
+                                                 xvar=xvar, 
+                                                 yvar=yvar, 
+                                                 current_control=current_control, 
+                                                 current_group=current_group,
+                                                 rawdata_axes=rawdata_axes, 
+                                                 contrast_axes=contrast_axes, 
+                                                 results=results, 
+                                                 current_effsize=current_effsize, 
+                                                 is_paired=is_paired, 
+                                                 one_sankey=one_sankey,
+                                                 reflines_kwargs=reflines_kwargs, 
+                                                 redraw_axes_kwargs=redraw_axes_kwargs, 
+                                                 swarm_ylim=swarm_ylim, 
+                                                 og_xlim_raw=og_xlim_raw,
+                                                 og_ylim_raw=og_ylim_raw,
+                                                 )
 
     else:
         # For Cumming Plots only.
@@ -426,110 +428,23 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                            redraw_axes_kwargs=redraw_axes_kwargs,
                                            ticks_to_skip_contrast=ticks_to_skip_contrast,
                                            )
-        
-
-    if show_delta2 or show_mini_meta:
-        ylim = contrast_axes.get_ylim()
-        redraw_axes_kwargs["y"] = ylim[0]
-        x_ticks = contrast_axes.get_xticks()
-        contrast_axes.hlines(xmin=x_ticks[-2], xmax=x_ticks[-1], **redraw_axes_kwargs)
-        del redraw_axes_kwargs["y"]
-
-    # Set raw axes y-label.
-    swarm_label = plot_kwargs["swarm_label"]
-    if swarm_label is None and yvar is None:
-        swarm_label = "value"
-    elif swarm_label is None and yvar is not None:
-        swarm_label = yvar
-
-    bar_label = plot_kwargs["bar_label"]
-    if bar_label is None and effect_size_type != "cohens_h":
-        bar_label = "proportion of success"
-    elif bar_label is None and effect_size_type == "cohens_h":
-        bar_label = "value"
-
-    # Place contrast axes y-label.
-    contrast_label_dict = {
-        "mean_diff": "mean difference",
-        "median_diff": "median difference",
-        "cohens_d": "Cohen's d",
-        "hedges_g": "Hedges' g",
-        "cliffs_delta": "Cliff's delta",
-        "cohens_h": "Cohen's h",
-        "delta_g": "mean difference",
-    }
-
-    if proportional and effect_size_type != "cohens_h":
-        default_contrast_label = "proportion difference"
-    elif effect_size_type == "delta_g":
-        default_contrast_label = "Hedges' g"
-    else:
-        default_contrast_label = contrast_label_dict[effectsize_df.effect_size]
-
-    if plot_kwargs["contrast_label"] is None:
-        if is_paired:
-            contrast_label = "paired\n{}".format(default_contrast_label)
-        else:
-            contrast_label = default_contrast_label
-        contrast_label = contrast_label.capitalize()
-    else:
-        contrast_label = plot_kwargs["contrast_label"]
-
-    if plot_kwargs["fontsize_rawylabel"] is not None:
-        fontsize_rawylabel = plot_kwargs["fontsize_rawylabel"]
-    if plot_kwargs["fontsize_contrastylabel"] is not None:
-        fontsize_contrastylabel = plot_kwargs["fontsize_contrastylabel"]
-    if plot_kwargs["fontsize_delta2label"] is not None:
-        fontsize_delta2label = plot_kwargs["fontsize_delta2label"]
-
-    contrast_axes.set_ylabel(contrast_label, fontsize=fontsize_contrastylabel)
-    if float_contrast:
-        contrast_axes.yaxis.set_label_position("right")
-
-    # Set the rawdata axes labels appropriately
-    if not proportional:
-        rawdata_axes.set_ylabel(swarm_label, fontsize=fontsize_rawylabel)
-    else:
-        rawdata_axes.set_ylabel(bar_label, fontsize=fontsize_rawylabel)
-    rawdata_axes.set_xlabel("")
-
-    # Because we turned the axes frame off, we also need to draw back
-    # the y-spine for both axes.
-    if not float_contrast:
-        rawdata_axes.set_xlim(contrast_axes.get_xlim())
-    og_xlim_raw = rawdata_axes.get_xlim()
-    rawdata_axes.vlines(
-        og_xlim_raw[0], og_ylim_raw[0], og_ylim_raw[1], **redraw_axes_kwargs
-    )
-
-    og_xlim_contrast = contrast_axes.get_xlim()
-
-    if float_contrast:
-        xpos = og_xlim_contrast[1]
-    else:
-        xpos = og_xlim_contrast[0]
-
-    og_ylim_contrast = contrast_axes.get_ylim()
-    contrast_axes.vlines(
-        xpos, og_ylim_contrast[0], og_ylim_contrast[1], **redraw_axes_kwargs
-    )
-
-    if show_delta2:
-        if plot_kwargs["delta2_label"] is not None:
-            delta2_label = plot_kwargs["delta2_label"]
-        elif effect_size == "mean_diff":
-            delta2_label = "delta - delta"
-        else:
-            delta2_label = "deltas' g"
-        delta2_axes = contrast_axes.twinx()
-        delta2_axes.set_frame_on(False)
-        delta2_axes.set_ylabel(delta2_label, fontsize=fontsize_delta2label)
-        og_xlim_delta = contrast_axes.get_xlim()
-        og_ylim_delta = contrast_axes.get_ylim()
-        delta2_axes.set_ylim(og_ylim_delta)
-        delta2_axes.vlines(
-            og_xlim_delta[1], og_ylim_delta[0], og_ylim_delta[1], **redraw_axes_kwargs
-        )
+    
+    # General plotting changes
+    General_Plot_Aesthetic_Adjustments(show_delta2=show_delta2, 
+                                       show_mini_meta=show_mini_meta, 
+                                       contrast_axes=contrast_axes, 
+                                       redraw_axes_kwargs=redraw_axes_kwargs, 
+                                       plot_kwargs=plot_kwargs,
+                                       yvar=yvar, 
+                                       effect_size_type=effect_size_type, 
+                                       proportional=proportional, 
+                                       effectsize_df=effectsize_df, 
+                                       is_paired=is_paired, 
+                                       float_contrast=float_contrast,
+                                       rawdata_axes=rawdata_axes, 
+                                       og_ylim_raw=og_ylim_raw, 
+                                       effect_size=effect_size,
+                                       )
 
     ################################################### GRIDKEY  WIP
     # if gridkey_rows is None, skip everything here

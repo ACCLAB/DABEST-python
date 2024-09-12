@@ -4,7 +4,7 @@
 __all__ = ['merge_two_dicts', 'unpack_and_add', 'print_greeting', 'get_varname', 'get_params', 'get_kwargs', 'get_color_palette',
            'initialize_fig', 'get_plot_groups', 'add_counts_to_ticks', 'extract_contrast_plotting_ticks',
            'set_xaxis_ticks_and_lims', 'show_legend', 'Gardner_Altman_Plot_Aesthetic_Adjustments',
-           'Cumming_Plot_Aesthetic_Adjustments']
+           'Cumming_Plot_Aesthetic_Adjustments', 'General_Plot_Aesthetic_Adjustments']
 
 # %% ../nbs/API/misc_tools.ipynb 4
 import datetime as dt
@@ -389,7 +389,7 @@ def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_pair
         if show_delta2 or show_mini_meta:
             all_groups_count += 2
         if is_paired and show_pairs and proportional is False:
-            frac = 0.75
+            frac = 0.8
         else:
             frac = 1
         if float_contrast:
@@ -617,7 +617,7 @@ def show_legend(legend_labels, legend_handles, rawdata_axes, contrast_axes, floa
         if float_contrast:
             axes_with_legend = contrast_axes
             if show_pairs:
-                bta = (1.75, 1.02)
+                bta = (2.00, 1.02)
             else:
                 bta = (1.5, 1.02)
         else:
@@ -934,4 +934,110 @@ def Cumming_Plot_Aesthetic_Adjustments(plot_kwargs, show_delta2, effect_size_typ
 
             ax.set_ylim(ylim)
             del redraw_axes_kwargs["y"]
-    ...
+
+def General_Plot_Aesthetic_Adjustments(show_delta2, show_mini_meta, contrast_axes, redraw_axes_kwargs, plot_kwargs,
+                               yvar, effect_size_type, proportional, effectsize_df, is_paired, float_contrast,
+                               rawdata_axes, og_ylim_raw, effect_size):
+
+    if show_delta2 or show_mini_meta:
+        ylim = contrast_axes.get_ylim()
+        redraw_axes_kwargs["y"] = ylim[0]
+        x_ticks = contrast_axes.get_xticks()
+        contrast_axes.hlines(xmin=x_ticks[-2], xmax=x_ticks[-1], **redraw_axes_kwargs)
+        del redraw_axes_kwargs["y"]
+
+    # Set raw axes y-label.
+    swarm_label = plot_kwargs["swarm_label"]
+    if swarm_label is None and yvar is None:
+        swarm_label = "value"
+    elif swarm_label is None and yvar is not None:
+        swarm_label = yvar
+
+    bar_label = plot_kwargs["bar_label"]
+    if bar_label is None and effect_size_type != "cohens_h":
+        bar_label = "proportion of success"
+    elif bar_label is None and effect_size_type == "cohens_h":
+        bar_label = "value"
+
+    # Place contrast axes y-label.
+    contrast_label_dict = {
+        "mean_diff": "mean difference",
+        "median_diff": "median difference",
+        "cohens_d": "Cohen's d",
+        "hedges_g": "Hedges' g",
+        "cliffs_delta": "Cliff's delta",
+        "cohens_h": "Cohen's h",
+        "delta_g": "mean difference",
+    }
+
+    if proportional and effect_size_type != "cohens_h":
+        default_contrast_label = "proportion difference"
+    elif effect_size_type == "delta_g":
+        default_contrast_label = "Hedges' g"
+    else:
+        default_contrast_label = contrast_label_dict[effectsize_df.effect_size]
+
+    if plot_kwargs["contrast_label"] is None:
+        if is_paired:
+            contrast_label = "paired\n{}".format(default_contrast_label)
+        else:
+            contrast_label = default_contrast_label
+        contrast_label = contrast_label.capitalize()
+    else:
+        contrast_label = plot_kwargs["contrast_label"]
+
+    if plot_kwargs["fontsize_rawylabel"] is not None:
+        fontsize_rawylabel = plot_kwargs["fontsize_rawylabel"]
+    if plot_kwargs["fontsize_contrastylabel"] is not None:
+        fontsize_contrastylabel = plot_kwargs["fontsize_contrastylabel"]
+    if plot_kwargs["fontsize_delta2label"] is not None:
+        fontsize_delta2label = plot_kwargs["fontsize_delta2label"]
+
+    contrast_axes.set_ylabel(contrast_label, fontsize=fontsize_contrastylabel)
+    if float_contrast:
+        contrast_axes.yaxis.set_label_position("right")
+
+    # Set the rawdata axes labels appropriately
+    if not proportional:
+        rawdata_axes.set_ylabel(swarm_label, fontsize=fontsize_rawylabel)
+    else:
+        rawdata_axes.set_ylabel(bar_label, fontsize=fontsize_rawylabel)
+    rawdata_axes.set_xlabel("")
+
+    # Because we turned the axes frame off, we also need to draw back
+    # the y-spine for both axes.
+    if not float_contrast:
+        rawdata_axes.set_xlim(contrast_axes.get_xlim())
+    og_xlim_raw = rawdata_axes.get_xlim()
+    rawdata_axes.vlines(
+        og_xlim_raw[0], og_ylim_raw[0], og_ylim_raw[1], **redraw_axes_kwargs
+    )
+
+    og_xlim_contrast = contrast_axes.get_xlim()
+
+    if float_contrast:
+        xpos = og_xlim_contrast[1]
+    else:
+        xpos = og_xlim_contrast[0]
+
+    og_ylim_contrast = contrast_axes.get_ylim()
+    contrast_axes.vlines(
+        xpos, og_ylim_contrast[0], og_ylim_contrast[1], **redraw_axes_kwargs
+    )
+
+    if show_delta2:
+        if plot_kwargs["delta2_label"] is not None:
+            delta2_label = plot_kwargs["delta2_label"]
+        elif effect_size == "mean_diff":
+            delta2_label = "delta - delta"
+        else:
+            delta2_label = "deltas' g"
+        delta2_axes = contrast_axes.twinx()
+        delta2_axes.set_frame_on(False)
+        delta2_axes.set_ylabel(delta2_label, fontsize=fontsize_delta2label)
+        og_xlim_delta = contrast_axes.get_xlim()
+        og_ylim_delta = contrast_axes.get_ylim()
+        delta2_axes.set_ylim(og_ylim_delta)
+        delta2_axes.vlines(
+            og_xlim_delta[1], og_ylim_delta[0], og_ylim_delta[1], **redraw_axes_kwargs
+        )
