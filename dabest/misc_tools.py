@@ -3,7 +3,8 @@
 # %% auto 0
 __all__ = ['merge_two_dicts', 'unpack_and_add', 'print_greeting', 'get_varname', 'get_params', 'get_kwargs', 'get_color_palette',
            'initialize_fig', 'get_plot_groups', 'add_counts_to_ticks', 'extract_contrast_plotting_ticks',
-           'set_xaxis_ticks_and_lims']
+           'set_xaxis_ticks_and_lims', 'show_legend', 'Gardner_Altman_Plot_Aesthetic_Adjustments',
+           'Cumming_Plot_Aesthetic_Adjustments']
 
 # %% ../nbs/API/misc_tools.ipynb 4
 import datetime as dt
@@ -565,7 +566,8 @@ def extract_contrast_plotting_ticks(is_paired, show_pairs, two_col_sankey, plot_
     
     return ticks_to_skip, ticks_to_plot, ticks_to_skip_contrast, ticks_to_start_twocol_sankey
 
-def set_xaxis_ticks_and_lims(show_delta2, show_mini_meta, rawdata_axes, contrast_axes, show_pairs, float_contrast):
+def set_xaxis_ticks_and_lims(show_delta2, show_mini_meta, rawdata_axes, contrast_axes, show_pairs, float_contrast,
+                             ticks_to_skip, contrast_xtick_labels, plot_kwargs):
 
     if show_delta2 is False and show_mini_meta is False:
         contrast_axes.set_xticks(rawdata_axes.get_xticks())
@@ -590,3 +592,346 @@ def set_xaxis_ticks_and_lims(show_delta2, show_mini_meta, rawdata_axes, contrast
         contrast_axes.set_xlim(rawdata_axes.get_xlim())
     else:
         contrast_axes.set_xlim(rawdata_axes.get_xlim())
+
+    # Properly label the contrast ticks.
+    for t in ticks_to_skip:
+        contrast_xtick_labels.insert(t, "")
+
+    if plot_kwargs["fontsize_contrastxlabel"] is not None:
+        fontsize_contrastxlabel = plot_kwargs["fontsize_contrastxlabel"]
+
+    contrast_axes.set_xticklabels(
+        contrast_xtick_labels, fontsize=fontsize_contrastxlabel
+    )
+
+
+def show_legend(legend_labels, legend_handles, rawdata_axes, contrast_axes, float_contrast, show_pairs, legend_kwargs):
+
+    legend_labels_unique = np.unique(legend_labels)
+    unique_idx = np.unique(legend_labels, return_index=True)[1]
+    legend_handles_unique = (
+        pd.Series(legend_handles, dtype="object").loc[unique_idx]
+    ).tolist()
+
+    if len(legend_handles_unique) > 0:
+        if float_contrast:
+            axes_with_legend = contrast_axes
+            if show_pairs:
+                bta = (1.75, 1.02)
+            else:
+                bta = (1.5, 1.02)
+        else:
+            axes_with_legend = rawdata_axes
+            if show_pairs:
+                bta = (1.02, 1.0)
+            else:
+                bta = (1.0, 1.0)
+        leg = axes_with_legend.legend(
+            legend_handles_unique,
+            legend_labels_unique,
+            bbox_to_anchor=bta,
+            **legend_kwargs
+        )
+        if show_pairs:
+            for line in leg.get_lines():
+                line.set_linewidth(3.0)
+    
+def Gardner_Altman_Plot_Aesthetic_Adjustments(effect_size_type, plot_data, xvar, yvar, current_control, current_group,
+                                         rawdata_axes, contrast_axes, results, current_effsize, is_paired, one_sankey,
+                                         reflines_kwargs, redraw_axes_kwargs, swarm_ylim, og_xlim_raw, og_ylim_raw):
+    from ._stats_tools.effsize import (
+        _compute_standardizers,
+        _compute_hedges_correction_factor,
+    )
+    # Normalize ylims and despine the floating contrast axes.
+    # Check that the effect size is within the swarm ylims.
+    if effect_size_type in ["mean_diff", "cohens_d", "hedges_g", "cohens_h"]:
+        control_group_summary = (
+            plot_data.groupby(xvar)
+            .mean(numeric_only=True)
+            .loc[current_control, yvar]
+        )
+        test_group_summary = (
+            plot_data.groupby(xvar).mean(numeric_only=True).loc[current_group, yvar]
+        )
+    elif effect_size_type == "median_diff":
+        control_group_summary = (
+            plot_data.groupby(xvar).median().loc[current_control, yvar]
+        )
+        test_group_summary = (
+            plot_data.groupby(xvar).median().loc[current_group, yvar]
+        )
+
+    if swarm_ylim is None:
+        swarm_ylim = rawdata_axes.get_ylim()
+
+    _, contrast_xlim_max = contrast_axes.get_xlim()
+
+    difference = float(results.difference[0])
+
+    if effect_size_type in ["mean_diff", "median_diff"]:
+        # Align 0 of contrast_axes to reference group mean of rawdata_axes.
+        # If the effect size is positive, shift the contrast axis up.
+        rawdata_ylims = np.array(rawdata_axes.get_ylim())
+        if current_effsize > 0:
+            rightmin, rightmax = rawdata_ylims - current_effsize
+        # If the effect size is negative, shift the contrast axis down.
+        elif current_effsize < 0:
+            rightmin, rightmax = rawdata_ylims + current_effsize
+        else:
+            rightmin, rightmax = rawdata_ylims
+
+        contrast_axes.set_ylim(rightmin, rightmax)
+
+        og_ylim_contrast = rawdata_axes.get_ylim() - np.array(control_group_summary)
+
+        contrast_axes.set_ylim(og_ylim_contrast)
+        contrast_axes.set_xlim(contrast_xlim_max - 1, contrast_xlim_max)
+
+    elif effect_size_type in ["cohens_d", "hedges_g", "cohens_h"]:
+        if is_paired:
+            which_std = 1
+        else:
+            which_std = 0
+        temp_control = plot_data[plot_data[xvar] == current_control][yvar]
+        temp_test = plot_data[plot_data[xvar] == current_group][yvar]
+
+        stds = _compute_standardizers(temp_control, temp_test)
+        if is_paired:
+            pooled_sd = stds[1]
+        else:
+            pooled_sd = stds[0]
+
+        if effect_size_type == "hedges_g":
+            gby_count = plot_data.groupby(xvar).count()
+            len_control = gby_count.loc[current_control, yvar]
+            len_test = gby_count.loc[current_group, yvar]
+
+            hg_correction_factor = _compute_hedges_correction_factor(
+                len_control, len_test
+            )
+
+            ylim_scale_factor = pooled_sd / hg_correction_factor
+
+        elif effect_size_type == "cohens_h":
+            ylim_scale_factor = (
+                np.mean(temp_test) - np.mean(temp_control)
+            ) / difference
+
+        else:
+            ylim_scale_factor = pooled_sd
+
+        scaled_ylim = (
+            (rawdata_axes.get_ylim() - control_group_summary) / ylim_scale_factor
+        ).tolist()
+
+        contrast_axes.set_ylim(scaled_ylim)
+        og_ylim_contrast = scaled_ylim
+
+        contrast_axes.set_xlim(contrast_xlim_max - 1, contrast_xlim_max)
+
+    if one_sankey is None:
+        # Draw summary lines for control and test groups..
+        for jj, axx in enumerate([rawdata_axes, contrast_axes]):
+            # Draw effect size line.
+            if jj == 0:
+                ref = control_group_summary
+                diff = test_group_summary
+                effsize_line_start = 1
+
+            elif jj == 1:
+                ref = 0
+                diff = ref + difference
+                effsize_line_start = contrast_xlim_max - 1.1
+
+            xlimlow, xlimhigh = axx.get_xlim()
+
+            # Draw reference line.
+            axx.hlines(
+                ref,  # y-coordinates
+                0,
+                xlimhigh,  # x-coordinates, start and end.
+                **reflines_kwargs
+            )
+
+            # Draw effect size line.
+            axx.hlines(diff, effsize_line_start, xlimhigh, **reflines_kwargs)
+    else:
+        ref = 0
+        diff = ref + difference
+        effsize_line_start = contrast_xlim_max - 0.9
+        xlimlow, xlimhigh = contrast_axes.get_xlim()
+        # Draw reference line.
+        contrast_axes.hlines(
+            ref,  # y-coordinates
+            effsize_line_start,
+            xlimhigh,  # x-coordinates, start and end.
+            **reflines_kwargs
+        )
+
+        # Draw effect size line.
+        contrast_axes.hlines(diff, effsize_line_start, xlimhigh, **reflines_kwargs)
+    rawdata_axes.set_xlim(og_xlim_raw)  # to align the axis
+    # Despine appropriately.
+    sns.despine(ax=rawdata_axes, bottom=True)
+    sns.despine(ax=contrast_axes, left=True, right=False)
+
+    # Insert break between the rawdata axes and the contrast axes
+    # by re-drawing the x-spine.
+    rawdata_axes.hlines(
+        og_ylim_raw[0],  # yindex
+        rawdata_axes.get_xlim()[0],
+        1.3,  # xmin, xmax
+        **redraw_axes_kwargs
+    )
+    rawdata_axes.set_ylim(og_ylim_raw)
+
+    contrast_axes.hlines(
+        contrast_axes.get_ylim()[0],
+        contrast_xlim_max - 0.8,
+        contrast_xlim_max,
+        **redraw_axes_kwargs
+    )
+
+
+def Cumming_Plot_Aesthetic_Adjustments(plot_kwargs, show_delta2, effect_size_type, contrast_axes, reflines_kwargs, 
+                                       is_paired, show_pairs, two_col_sankey, idx, ticks_to_start_twocol_sankey,
+                                       proportional, ticks_to_skip, temp_idx, rawdata_axes, redraw_axes_kwargs,
+                                       ticks_to_skip_contrast):
+    # Set custom contrast_ylim, if it was specified.
+    if plot_kwargs["contrast_ylim"] is not None or (
+        plot_kwargs["delta2_ylim"] is not None and show_delta2
+    ):
+        if plot_kwargs["contrast_ylim"] is not None:
+            custom_contrast_ylim = plot_kwargs["contrast_ylim"]
+            if plot_kwargs["delta2_ylim"] is not None and show_delta2:
+                custom_delta2_ylim = plot_kwargs["delta2_ylim"]
+                if custom_contrast_ylim != custom_delta2_ylim:
+                    err1 = "Please check if `contrast_ylim` and `delta2_ylim` are assigned"
+                    err2 = "with same values."
+                    raise ValueError(err1 + err2)
+        else:
+            custom_delta2_ylim = plot_kwargs["delta2_ylim"]
+            custom_contrast_ylim = custom_delta2_ylim
+
+        if len(custom_contrast_ylim) != 2:
+            err1 = "Please check `contrast_ylim` consists of "
+            err2 = "exactly two numbers."
+            raise ValueError(err1 + err2)
+
+        if effect_size_type == "cliffs_delta":
+            # Ensure the ylims for a cliffs_delta plot never exceed [-1, 1].
+            l = plot_kwargs["contrast_ylim"][0]
+            h = plot_kwargs["contrast_ylim"][1]
+            low = -1 if l < -1 else l
+            high = 1 if h > 1 else h
+            contrast_axes.set_ylim(low, high)
+        else:
+            contrast_axes.set_ylim(custom_contrast_ylim)
+
+
+    # If 0 lies within the ylim of the contrast axes,
+    # draw a zero reference line.
+    contrast_axes_ylim = contrast_axes.get_ylim()
+    if contrast_axes_ylim[0] < contrast_axes_ylim[1]:
+        contrast_ylim_low, contrast_ylim_high = contrast_axes_ylim
+    else:
+        contrast_ylim_high, contrast_ylim_low = contrast_axes_ylim
+    if contrast_ylim_low < 0 < contrast_ylim_high:
+        contrast_axes.axhline(y=0, **reflines_kwargs)
+
+    if is_paired == "baseline" and show_pairs:
+                if two_col_sankey:
+                    rightend_ticks_raw = np.array([len(i) - 2 for i in idx]) + np.array(
+                        ticks_to_start_twocol_sankey
+                    )
+                elif proportional and is_paired is not None:
+                    rightend_ticks_raw = np.array([len(i) - 1 for i in idx]) + np.array(
+                        ticks_to_skip
+                    )
+                else:
+                    rightend_ticks_raw = np.array(
+                        [len(i) - 1 for i in temp_idx]
+                    ) + np.array(ticks_to_skip)
+                for ax in [rawdata_axes]:
+                    sns.despine(ax=ax, bottom=True)
+
+                    ylim = ax.get_ylim()
+                    xlim = ax.get_xlim()
+                    redraw_axes_kwargs["y"] = ylim[0]
+
+                    if two_col_sankey:
+                        for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
+                            end_tick = rightend_ticks_raw[k]
+                            ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
+                    else:
+                        for k, start_tick in enumerate(ticks_to_skip):
+                            end_tick = rightend_ticks_raw[k]
+                            ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
+                    ax.set_ylim(ylim)
+                    del redraw_axes_kwargs["y"]
+
+                if not proportional:
+                    temp_length = [(len(i) - 1) for i in idx]
+                else:
+                    temp_length = [(len(i) - 1) * 2 - 1 for i in idx]
+                if two_col_sankey:
+                    rightend_ticks_contrast = np.array(
+                        [len(i) - 2 for i in idx]
+                    ) + np.array(ticks_to_start_twocol_sankey)
+                elif proportional and is_paired is not None:
+                    rightend_ticks_contrast = np.array(
+                        [len(i) - 1 for i in idx]
+                    ) + np.array(ticks_to_skip)
+                else:
+                    rightend_ticks_contrast = np.array(temp_length) + np.array(
+                        ticks_to_skip_contrast
+                    )
+                for ax in [contrast_axes]:
+                    sns.despine(ax=ax, bottom=True)
+
+                    ylim = ax.get_ylim()
+                    xlim = ax.get_xlim()
+                    redraw_axes_kwargs["y"] = ylim[0]
+
+                    if two_col_sankey:
+                        for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
+                            end_tick = rightend_ticks_contrast[k]
+                            ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
+                    else:
+                        for k, start_tick in enumerate(ticks_to_skip_contrast):
+                            end_tick = rightend_ticks_contrast[k]
+                            ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
+
+                    ax.set_ylim(ylim)
+                    del redraw_axes_kwargs["y"]
+    else:
+        # Compute the end of each x-axes line.
+        if two_col_sankey:
+            rightend_ticks = np.array([len(i) - 2 for i in idx]) + np.array(
+                ticks_to_start_twocol_sankey
+            )
+        else:
+            rightend_ticks = np.array([len(i) - 1 for i in idx]) + np.array(
+                ticks_to_skip
+            )
+
+        for ax in [rawdata_axes, contrast_axes]:
+            sns.despine(ax=ax, bottom=True)
+
+            ylim = ax.get_ylim()
+            xlim = ax.get_xlim()
+            redraw_axes_kwargs["y"] = ylim[0]
+
+            if two_col_sankey:
+                for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
+                    end_tick = rightend_ticks[k]
+                    ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
+            else:
+                for k, start_tick in enumerate(ticks_to_skip):
+                    end_tick = rightend_ticks[k]
+                    ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
+
+            ax.set_ylim(ylim)
+            del redraw_axes_kwargs["y"]
+    ...
