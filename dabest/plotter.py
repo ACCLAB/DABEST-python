@@ -9,6 +9,7 @@ import seaborn as sns
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from matplotlib.lines import Line2D
 import pandas as pd
 import warnings
 import logging
@@ -219,21 +220,21 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
             # swarmplot() plots swarms based on current size of ax
             # Therefore, since the ax size for mini_meta and show_delta changes later on, there has to be increased jitter
-            rawdata_plot = swarmplot(
-                    data=plot_data,
-                    x=xvar,
-                    y=yvar,
-                    ax=rawdata_axes,
-                    order=all_plot_groups,
-                    hue=xvar if color_col is None else color_col,
-                    palette=plot_palette_raw,
-                    zorder=1,
-                    side=asymmetric_side,
-                    jitter=1.25 if show_mini_meta else 1.4 if show_delta2 else 1, # TODO: to make jitter value more accurate and not just a hardcoded eyeball value
-                    is_drop_gutter=True,
-                    gutter_limit=0.45,
-                    **swarmplot_kwargs
-                    )
+            rawdata_plot, swarm_legend_kwargs = swarmplot(
+                                                    data=plot_data,
+                                                    x=xvar,
+                                                    y=yvar,
+                                                    ax=rawdata_axes,
+                                                    order=all_plot_groups,
+                                                    hue=xvar if color_col is None else color_col,
+                                                    palette=plot_palette_raw,
+                                                    zorder=1,
+                                                    side=asymmetric_side,
+                                                    jitter=1.25 if show_mini_meta else 1.4 if show_delta2 else 1, # TODO: to make jitter value more accurate and not just a hardcoded eyeball value
+                                                    is_drop_gutter=True,
+                                                    gutter_limit=0.45,
+                                                    **swarmplot_kwargs
+                                                    )
             if color_col is None:
                 rawdata_plot.legend().set_visible(False)
 
@@ -384,10 +385,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     handles, labels = rawdata_axes.get_legend_handles_labels()
     legend_labels = [l for l in labels]
     legend_handles = [h for h in handles]
-    if bootstraps_color_by_group is False:
-        rawdata_axes.legend().set_visible(False)
 
     if bootstraps_color_by_group is False:
+        rawdata_axes.legend().set_visible(False)
         show_legend(
             legend_labels=legend_labels, 
             legend_handles=legend_handles, 
@@ -397,6 +397,17 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             show_pairs=show_pairs, 
             legend_kwargs=legend_kwargs
             )
+
+    ########## WIP LEGENDS
+    if not show_pairs and not proportional and color_col is not None and not show_delta2:
+        if len(np.unique(swarm_legend_kwargs['index'])) > 1:
+            legend_elements = []
+            for color, label in zip(swarm_legend_kwargs['colors'], swarm_legend_kwargs['labels']):
+                legend_elements.append(Line2D([0], [0], marker='o', color='w', label=label,
+                                                markerfacecolor=color, markersize=10))
+            rawdata_axes.legend(handles=legend_elements, frameon=False)
+
+    ########## WIP LEGENDS
 
     # Plot aesthetic adjustments.
     og_ylim_raw = rawdata_axes.get_ylim()

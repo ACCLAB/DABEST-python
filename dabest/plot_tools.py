@@ -1989,6 +1989,10 @@ class SwarmPlot:
                 cmap = []
                 for cmap_group_i in cmap_values:
                     cmap.append(self.__palette[cmap_group_i])
+
+                # WIP: legend for swarm plot
+                swarm_legend_kwargs = {'colors':cmap, 'labels':cmap_values, 'index':index}
+
                 cmap = ListedColormap(cmap)
                 ax.scatter(
                     values_i["x_new"],
@@ -2000,6 +2004,7 @@ class SwarmPlot:
                     edgecolor="face",
                     **kwargs,
                 )
+
             else:
                 # color swarms based on `x` column
                 ax.scatter(
@@ -2015,4 +2020,4 @@ class SwarmPlot:
         ax.get_xaxis().set_ticks(np.arange(x_position))
         ax.get_xaxis().set_ticklabels(x_tick_tabels)
 
-        return ax
+        return ax, swarm_legend_kwargs if self.__hue is not None else None
