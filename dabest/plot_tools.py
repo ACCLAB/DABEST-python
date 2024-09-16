@@ -1136,9 +1136,10 @@ class SwarmPlot:
             raise ValueError("`dsize` must be a scalar or float.")
 
         # Sorting algorithm based off of: https://github.com/mgymrek/pybeeswarm
-        points_data = pd.DataFrame(
-            {"y": [yval * 1.0 / dsize for yval in values], "x": [0] * len(values)}
-        )
+        points_data = pd.DataFrame({
+            "y": [yval * 1.0 / dsize for yval in values],
+            "x": np.zeros(len(values), dtype=float)  # Initialize with float zeros
+        })
         for i in range(1, points_data.shape[0]):
             y_i = points_data["y"].values[i]
             points_placed = points_data[0:i]
@@ -1271,7 +1272,7 @@ class SwarmPlot:
             0  # x-coordinate of center of each individual swarm of the swarm plot
         )
         x_tick_tabels = []
-        for group_i, values_i in self.__data_copy.groupby(self.__x):
+        for group_i, values_i in self.__data_copy.groupby(self.__x, observed=False):
             x_new = []
             values_i_y = values_i[self.__y]
             x_offset = self._swarm(

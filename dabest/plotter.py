@@ -54,7 +54,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         fontsize_contrastxlabel=12, fontsize_contrastylabel=12,
         fontsize_delta2label=12
     """
-    from .misc_tools import merge_two_dicts
+    from .misc_tools import merge_two_dicts, get_unique_categories
     from .plot_tools import (
         halfviolin,
         get_swarm_spans,
@@ -298,14 +298,16 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 raise ValueError(err1 + err2)
 
     if custom_pal is None and color_col is None:
+        categories = get_unique_categories(names)
+        
         swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
-        plot_palette_raw = dict(zip(names.categories, swarm_colors))
-
         bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
-        plot_palette_bar = dict(zip(names.categories, bar_color))
-
         contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
-        plot_palette_contrast = dict(zip(names.categories, contrast_colors))
+
+        
+        plot_palette_raw = dict(zip(categories, swarm_colors))
+        plot_palette_bar = dict(zip(categories, bar_color))
+        plot_palette_contrast = dict(zip(categories, contrast_colors))
 
         # For Sankey Diagram plot, no need to worry about the color, each bar will have the same two colors
         # default color palette will be set to "hls"
@@ -1081,10 +1083,10 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             )
         elif effect_size_type == "median_diff":
             control_group_summary = (
-                plot_data.groupby(xvar).median().loc[current_control, yvar]
+                plot_data.groupby(xvar).median(numeric_only=True).loc[current_control, yvar]
             )
             test_group_summary = (
-                plot_data.groupby(xvar).median().loc[current_group, yvar]
+                plot_data.groupby(xvar).median(numeric_only=True).loc[current_group, yvar]
             )
 
         if swarm_ylim is None:
