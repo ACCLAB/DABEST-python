@@ -398,7 +398,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             legend_kwargs=legend_kwargs
             )
 
-    ########## WIP LEGENDS
+    # Add legend for swarmplot
     if not show_pairs and not proportional and color_col is not None and not show_delta2:
         if len(np.unique(swarm_legend_kwargs['index'])) > 1:
             legend_elements = []
@@ -406,8 +406,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 legend_elements.append(Line2D([0], [0], marker='o', color='w', label=label,
                                                 markerfacecolor=color, markersize=10))
             rawdata_axes.legend(handles=legend_elements, frameon=False)
-
-    ########## WIP LEGENDS
 
     # Plot aesthetic adjustments.
     og_ylim_raw = rawdata_axes.get_ylim()
