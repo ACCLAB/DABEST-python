@@ -1457,7 +1457,6 @@ def barplotter(xvar, yvar, all_plot_groups, rawdata_axes, plot_data, bar_color, 
         centre = x + width / 2.0
         bar.set_x(centre - bar_width / 2.0)
         bar.set_width(bar_width)
-    ...
 
 # %% ../nbs/API/plot_tools.ipynb 6
 def swarmplot(
