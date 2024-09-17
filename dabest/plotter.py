@@ -780,7 +780,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             )
 
     # Add the counts to the rawdata axes xticks.
-    counts = plot_data.groupby(xvar).count()[yvar]
+    counts = plot_data.groupby(xvar, observed=False).count()[yvar]
     ticks_with_counts = []
     ticks_loc = rawdata_axes.get_xticks()
     rawdata_axes.xaxis.set_major_locator(matplotlib.ticker.FixedLocator(ticks_loc))
@@ -1076,19 +1076,19 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         # Check that the effect size is within the swarm ylims.
         if effect_size_type in ["mean_diff", "cohens_d", "hedges_g", "cohens_h"]:
             control_group_summary = (
-                plot_data.groupby(xvar)
+                plot_data.groupby(xvar, observed=False)
                 .mean(numeric_only=True)
                 .loc[current_control, yvar]
             )
             test_group_summary = (
-                plot_data.groupby(xvar).mean(numeric_only=True).loc[current_group, yvar]
+                plot_data.groupby(xvar, observed=False).mean(numeric_only=True).loc[current_group, yvar]
             )
         elif effect_size_type == "median_diff":
             control_group_summary = (
-                plot_data.groupby(xvar).median(numeric_only=True).loc[current_control, yvar]
+                plot_data.groupby(xvar, observed=False).median(numeric_only=True).loc[current_control, yvar]
             )
             test_group_summary = (
-                plot_data.groupby(xvar).median(numeric_only=True).loc[current_group, yvar]
+                plot_data.groupby(xvar, observed=False).median(numeric_only=True).loc[current_group, yvar]
             )
 
         if swarm_ylim is None:
@@ -1132,7 +1132,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 pooled_sd = stds[0]
 
             if effect_size_type == "hedges_g":
-                gby_count = plot_data.groupby(xvar).count()
+                gby_count = plot_data.groupby(xvar, observed=False).count()
                 len_control = gby_count.loc[current_control, yvar]
                 len_test = gby_count.loc[current_group, yvar]
 

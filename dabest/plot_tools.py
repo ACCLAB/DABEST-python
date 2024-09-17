@@ -117,15 +117,15 @@ def error_bar(
     else:
         group_order = pd.unique(data[x])
 
-    means = data.groupby(x)[y].mean().reindex(index=group_order)
+    means = data.groupby(x, observed=False)[y].mean().reindex(index=group_order)
 
     if method in ["proportional_error_bar", "sankey_error_bar"]:
         g = lambda x: np.sqrt(
             (np.sum(x) * (len(x) - np.sum(x))) / (len(x) * len(x) * len(x))
         )
-        sd = data.groupby(x)[y].apply(g)
+        sd = data.groupby(x, observed=False)[y].apply(g)
     else:
-        sd = data.groupby(x)[y].std().reindex(index=group_order)
+        sd = data.groupby(x, observed=False)[y].std().reindex(index=group_order)
 
     lower_sd = means - sd
     upper_sd = means + sd
@@ -133,9 +133,9 @@ def error_bar(
     if (lower_sd < ax_ylims[0]).any() or (upper_sd > ax_ylims[1]).any():
         kwargs["clip_on"] = True
 
-    medians = data.groupby(x)[y].median().reindex(index=group_order)
+    medians = data.groupby(x, observed=False)[y].median().reindex(index=group_order)
     quantiles = (
-        data.groupby(x)[y].quantile([0.25, 0.75]).unstack().reindex(index=group_order)
+        data.groupby(x, observed=False)[y].quantile([0.25, 0.75]).unstack().reindex(index=group_order)
     )
     lower_quartiles = quantiles[0.25]
     upper_quartiles = quantiles[0.75]
