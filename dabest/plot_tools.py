@@ -356,7 +356,7 @@ def single_sankey(
     strip_on: bool = True,  # if True, draw strip for each group comparison
     one_sankey: bool = False,  # if True, only draw one sankey diagram
     right_color: bool = False,  # if True, each strip of the diagram will be colored according to the corresponding left labels
-    align: bool = "center",  # if 'center', the diagram will be centered on each xtick,  if 'edge', the diagram will be aligned with the left edge of each xtick
+    align: str = "center",  # if 'center', the diagram will be centered on each xtick,  if 'edge', the diagram will be aligned with the left edge of each xtick
 ):
     """
     Make a single Sankey diagram showing proportion flow from left to right
@@ -437,6 +437,7 @@ def single_sankey(
     if align not in ("center", "edge"):
         err = "{} assigned for `align` is not valid.".format(align)
         raise ValueError(err)
+    
     if align == "center":
         try:
             leftpos = xpos - width / 2
