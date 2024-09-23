@@ -40,21 +40,20 @@ default_forestplot_kwargs = {
     "contrasts": dummy_contrasts,  # Ensure this is a list of contrast objects.
     "selected_indices": None,  # Valid as None or a list of integers.
     "contrast_type": "delta2",  # Ensure it's a string and one of the allowed contrast types.
-    "xticklabels": None,  # Valid as None or a list of strings.
     "effect_size": "mean_diff",  # Ensure it's a string.
     "contrast_labels": ["Drug1"],  # This should be a list of strings.
     "ylabel": "Effect Size",  # Ensure it's a string.
-    "plot_elements_to_extract": None,  # No specific checks needed based on your tests.
-    "title": "ΔΔ Forest Plot",  # Ensure it's a string.
+    #"plot_elements_to_extract": None,  # No specific checks needed based on your tests.
+    #"title": "ΔΔ Forest Plot",  # Ensure it's a string.
     "custom_palette": None,  # Valid as None, a dictionary, list, or string.
     "fontsize": 20,  # Ensure it's an integer or float.
     "violin_kwargs": None,  # No specific checks needed based on your tests.
     "marker_size": 20,  # Ensure it's a positive integer or float.
     "ci_line_width": 2.5,  # Ensure it's a positive integer or float.
-    "zero_line_width": 1,  # Ensure it's a positive integer or float.
     "remove_spines": True,  # Ensure it's a boolean.
     "additional_plotting_kwargs": None,  # No specific checks needed based on your tests.
     "rotation_for_xlabels": 45,  # Ensure it's an integer or float between 0 and 360.
-    "alpha_violin_plot": 0.4,  # Ensure it's a float between 0 and 1.
+    "alpha_violin_plot": 0.8,  # Ensure it's a float between 0 and 1.
     "horizontal": False,  # Ensure it's a boolean.
 }
+
