@@ -246,7 +246,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             if color_col is None:
                 rawdata_plot.legend().set_visible(False)
 
-
         else:
             # Plot the raw data as a barplot.
             barplotter(
@@ -589,5 +588,4 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         plt.rcParams[parameter] = original_rcParams[parameter]
 
     # Return the figure.
-    fig.show()
     return fig

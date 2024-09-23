@@ -542,10 +542,8 @@ def get_plot_groups(is_paired, idx, proportional, all_plot_groups):
 def add_counts_to_ticks(plot_data, xvar, yvar, rawdata_axes, plot_kwargs):
     # Add the counts to the rawdata axes xticks.
     counts = plot_data.groupby(xvar).count()[yvar]
-    ticks_with_counts = []
-    ticks_loc = rawdata_axes.get_xticks()
-    rawdata_axes.xaxis.set_major_locator(matplotlib.ticker.FixedLocator(ticks_loc))
-    def lookup_value(text, counts):
+    
+    def lookup_value(text):
         try:
             return str(counts.loc[text])
         except KeyError:
@@ -553,29 +551,23 @@ def add_counts_to_ticks(plot_data, xvar, yvar, rawdata_axes, plot_kwargs):
                 numeric_key = pd.to_numeric(text, errors='coerce')
                 if pd.notnull(numeric_key):
                     return str(counts.loc[numeric_key])
-                else:
-                    raise ValueError
             except (ValueError, KeyError):
-                print(f"Key '{text}' not found in counts.")
-                return "N/A"
-    for xticklab in rawdata_axes.xaxis.get_ticklabels():
+                pass
+        print(f"Key '{text}' not found in counts.")
+        return "N/A"
+
+    ticks_with_counts = []
+    for xticklab in rawdata_axes.get_xticklabels():
         t = xticklab.get_text()
-        # Extract the text after the last newline, if present
-        if t.rfind("\n") != -1:
-            te = t[t.rfind("\n") + len("\n"):]
-            value = lookup_value(te, counts)
-            te = t
-        else:
-            te = t
-            value = lookup_value(te, counts)
+        te = t.split('\n')[-1]  # Get the last line of the label
+        value = lookup_value(te)
+        ticks_with_counts.append(f"{t}\nN = {value}")
 
-        # Append the modified tick label with the count to the list
-        ticks_with_counts.append(f"{te}\nN = {value}")
-
-
-    if plot_kwargs["fontsize_rawxlabel"] is not None:
-        fontsize_rawxlabel = plot_kwargs["fontsize_rawxlabel"]
+    fontsize_rawxlabel = plot_kwargs.get("fontsize_rawxlabel")
     rawdata_axes.set_xticklabels(ticks_with_counts, fontsize=fontsize_rawxlabel)
+
+    # Ensure ticks are at the correct locations
+    rawdata_axes.xaxis.set_major_locator(plt.FixedLocator(rawdata_axes.get_xticks()))
 
 
 def extract_contrast_plotting_ticks(is_paired, show_pairs, two_col_sankey, plot_groups, idx, sankey_control_group):
