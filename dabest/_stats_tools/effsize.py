@@ -223,7 +223,7 @@ def cohens_h(control:list|tuple|np.ndarray,
             )->float:
     '''
     Computes Cohen's h for test v.s. control.
-    See [here](https://en.wikipedia.org/wiki/Cohen%27s_h for reference.)
+    See [here](https://en.wikipedia.org/wiki/Cohen%27s_h) for reference.
     
     `Notes`:
     
