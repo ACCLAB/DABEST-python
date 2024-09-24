@@ -143,7 +143,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                                                 plot_data=plot_data, 
                                                                                 xvar=xvar, 
                                                                                 show_pairs=show_pairs,
-                                                                                idx=idx
+                                                                                idx=idx,
+                                                                                all_plot_groups=all_plot_groups
                                                                                 )
 
     # Initialise the figure.
@@ -551,7 +552,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                         ci_type=ci_type, 
                         ticks_to_plot=ticks_to_plot, 
                         color_col=color_col,
-                        swarm_colors=swarm_colors, 
+                        plot_palette_raw=plot_palette_raw, 
                         proportional=proportional, 
                         is_paired=is_paired
                         )
@@ -565,7 +566,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                     ticks_to_plot=ticks_to_plot, 
                     delta_text_kwargs=delta_text_kwargs, 
                     color_col=color_col, 
-                    swarm_colors=swarm_colors, 
+                    plot_palette_raw=plot_palette_raw, 
                     is_paired=is_paired,
                     proportional=proportional, 
                     float_contrast=float_contrast, 

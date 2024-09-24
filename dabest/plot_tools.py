@@ -820,7 +820,7 @@ def sankeydiag(
 
 def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object,
                  float_contrast: bool,summary_bars_kwargs: dict, ci_type: str,
-                 ticks_to_plot: list, color_col: str, swarm_colors: list, 
+                 ticks_to_plot: list, color_col: str, plot_palette_raw: dict, 
                  proportional: bool, is_paired: bool):
     """
     Add summary bars to the contrast plot.
@@ -843,8 +843,8 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
         List of indices of the contrast objects.
     color_col : str
         Column name of the color column.
-    swarm_colors : list
-        List of colors used in the plot.
+    plot_palette_raw : dict
+        Dictionary of colors used in the plot.
     proportional : bool
         Whether the data is proportional.
     is_paired : bool
@@ -862,7 +862,13 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
 # End checks
     else:
         summary_xmin, summary_xmax = ax_to_plot.get_xlim()
-        summary_bars_colors = [summary_bars_kwargs.get('color')]*(max(summary_bars)+1) if summary_bars_kwargs.get('color') is not None else ['black']*(max(summary_bars)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
+        summary_bars_colors = (
+            [summary_bars_kwargs.get('color')]*(max(summary_bars)+1)
+            if summary_bars_kwargs.get('color') is not None
+            else ['black']*(max(summary_bars)+1)
+            if color_col is not None or (proportional and is_paired) or is_paired 
+            else list(plot_palette_raw.values())
+        )
         summary_bars_kwargs.pop('color')
         for summary_index in summary_bars:
             if ci_type == "bca":
@@ -973,7 +979,6 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
         swarm_bars_order = pd.unique(plot_data[xvar])
 
     swarm_means = plot_data.groupby(xvar)[yvar].mean().reindex(index=swarm_bars_order)
-    # swarm_bars_colors = [swarm_bars_kwargs.get('color')]*(max(swarm_bars_order)+1) if swarm_bars_kwargs.get('color') is not None else ['black']*(len(swarm_bars_order)+1) if color_col is not None or is_paired else swarm_colors
     swarm_bars_colors = (
         [swarm_bars_kwargs.get('color')] * (max(swarm_bars_order) + 1) 
         if swarm_bars_kwargs.get('color') is not None 
@@ -987,7 +992,7 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
         0.5, swarm_bars_y, zorder=-1,color=c,**swarm_bars_kwargs))
 
 def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: object, ticks_to_plot: list, delta_text_kwargs: dict, color_col: str, 
-                       swarm_colors: list, is_paired: bool, proportional: bool, float_contrast: bool,
+                       plot_palette_raw: dict, is_paired: bool, proportional: bool, float_contrast: bool,
                        show_mini_meta: bool, mini_meta_delta: object, show_delta2: bool, delta_delta: object):
     """
     Add text to the contrast plot.
@@ -1006,8 +1011,8 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
         Keyword arguments for the delta text.
     color_col : str
         Column name of the color column.
-    swarm_colors : list
-        List of colors used in the plot.
+    plot_palette_raw : dict
+        Dictionary of colors used in the plot.
     is_paired : bool
         Whether the data is paired.
     proportional : bool
@@ -1032,7 +1037,13 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
         delta_text_kwargs["va"] = 'bottom' if results.difference[0] >= 0 else 'top'
     delta_text_kwargs.pop('x_location')
 
-    delta_text_colors = [delta_text_kwargs.get('color')]*(max(ticks_to_plot)+1) if delta_text_kwargs.get('color') is not None else ['black']*(max(ticks_to_plot)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
+    delta_text_colors = (
+        [delta_text_kwargs.get('color')]*(max(ticks_to_plot)+1)
+        if delta_text_kwargs.get('color') is not None
+        else ['black']*(max(ticks_to_plot)+1)
+        if color_col is not None or (proportional and is_paired) or is_paired
+        else list(plot_palette_raw.values())
+    )
     if show_mini_meta or show_delta2: delta_text_colors.append('black')
     delta_text_kwargs.pop('color')
 

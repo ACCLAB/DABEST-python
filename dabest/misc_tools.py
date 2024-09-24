@@ -299,7 +299,7 @@ def get_kwargs(plot_kwargs, ytick_color):
             delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs)
 
 
-def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx):
+def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_groups):
 
     # Create color palette that will be shared across subplots.
     color_col = plot_kwargs["color_col"]
@@ -350,7 +350,7 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx):
     else:
         if isinstance(custom_pal, dict):
             groups_in_palette = {
-                k: v for k, v in custom_pal.items() if k in color_groups
+                k: custom_pal[k] for k in all_plot_groups if k in color_groups
             }
 
             names = groups_in_palette.keys()

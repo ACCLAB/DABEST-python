@@ -9,6 +9,7 @@ import matplotlib as mpl
 mpl.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as Ticker
+import seaborn as sns
 
 from dabest._api import load
 
@@ -146,6 +147,32 @@ unpaired_delta_delta = load(
 unpaired_mini_meta = load(df, idx=(("Control 1", "Test 1"), ("Control 2", "Test 2"), ("Control 3", "Test 3")),
                     mini_meta=True)
 
+multi_groups_change_idx_original = load(
+    df,
+    idx=(
+        ("Control 1", "Test 1", "Test 2"),
+        ("Control 2", "Test 3", "Test 4"),
+        ("Control 3", "Test 5", "Test 6"),
+    ),
+)
+multi_groups_change_idx_new = load(
+    df,
+    idx=(
+        ("Control 1", "Control 2", "Control 3"),
+        ("Test 1", "Test 3", "Test 5"),
+        ("Test 2", "Test 4", "Test 6"),
+    ),
+)
+palette = {"Control 1": sns.color_palette("magma")[5],
+           "Test 1": sns.color_palette("magma")[3],
+           "Test 2": sns.color_palette("magma")[1],
+           "Control 2": sns.color_palette("magma")[5],
+           "Test 3": sns.color_palette("magma")[3],
+           "Test 4": sns.color_palette("magma")[1],
+           "Control 3": sns.color_palette("magma")[5],
+           "Test 5": sns.color_palette("magma")[3],
+           "Test 6": sns.color_palette("magma")[1]}
+
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_207_gardner_altman_meandiff_empty_circle():
     return two_groups_unpaired.mean_diff.plot(empty_circle=True);
@@ -173,3 +200,11 @@ def test_212_cummings_unpaired_delta_delta_meandiff_empty_circle():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_213_cummings_unpaired_mini_meta_meandiff_empty_circle():
     return unpaired_mini_meta.mean_diff.plot(empty_circle=True);
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_214_change_idx_order_custom_palette_original():
+    return multi_groups_change_idx_original.mean_diff.plot(custom_palette=palette);
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_215_change_idx_order_custom_palette_new():
+    return multi_groups_change_idx_new.mean_diff.plot(custom_palette=palette);
