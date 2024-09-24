@@ -49,19 +49,15 @@ and includes performance improvements.
 
 <!-- TOC depthFrom:1 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
 
-- [DABEST-Python](#dabest-python)
-  - [Recent Version Update](#recent-version-update)
-  - [Contents](#contents)
-  - [About](#about)
-  - [Installation](#installation)
-  - [Usage](#usage)
-  - [How to cite](#how-to-cite)
-  - [Bugs](#bugs)
-  - [Contributing](#contributing)
-    - [A wish list for new features](#a-wish-list-for-new-features)
-  - [Acknowledgements](#acknowledgements)
-  - [Testing](#testing)
-  - [DABEST in other languages](#dabest-in-other-languages)
+- [About](#about)
+- [Installation](#installation)
+- [Usage](#usage)
+- [How to cite](#how-to-cite)
+- [Bugs](#bugs)
+- [Contributing](#contributing)
+- [Acknowledgements](#acknowledgements)
+- [Testing](#testing)
+- [DABEST in other languages](#dabest-in-other-languages)
 
 <!-- /TOC -->
 
