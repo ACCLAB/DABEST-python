@@ -178,7 +178,8 @@ def error_bar(
 
     kwargs["zorder"] = kwargs["zorder"]
 
-    for xpos, central_measure in enumerate(central_measures):
+    for xpos, val in enumerate(central_measures.index):
+        central_measure = central_measures[val]
         kwargs["color"] = custom_palette[xpos]
 
         if method == "sankey_error_bar":
@@ -186,8 +187,14 @@ def error_bar(
         else:
             _xpos = xpos + offset[xpos]
 
-        low = lows[xpos]
-        high = highs[xpos]
+        # Fix for the non-string x-axis issue #108
+        if central_measures.index.dtype.name == "category":
+            low = lows[xpos]
+            high = highs[xpos]
+        else: 
+            low = lows[val]
+            high = highs[val]
+
         if low == high == central_measure:
             low_to_mean = mlines.Line2D(
                 [_xpos, _xpos], [low, central_measure], **kwargs
@@ -813,7 +820,7 @@ def sankeydiag(
 
 def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object,
                  float_contrast: bool,summary_bars_kwargs: dict, ci_type: str,
-                 ticks_to_plot: list, color_col: str, swarm_colors: list, 
+                 ticks_to_plot: list, color_col: str, plot_palette_raw: dict, 
                  proportional: bool, is_paired: bool):
     """
     Add summary bars to the contrast plot.
@@ -836,8 +843,8 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
         List of indices of the contrast objects.
     color_col : str
         Column name of the color column.
-    swarm_colors : list
-        List of colors used in the plot.
+    plot_palette_raw : dict
+        Dictionary of colors used in the plot.
     proportional : bool
         Whether the data is proportional.
     is_paired : bool
@@ -855,7 +862,13 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
 # End checks
     else:
         summary_xmin, summary_xmax = ax_to_plot.get_xlim()
-        summary_bars_colors = [summary_bars_kwargs.get('color')]*(max(summary_bars)+1) if summary_bars_kwargs.get('color') is not None else ['black']*(max(summary_bars)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
+        summary_bars_colors = (
+            [summary_bars_kwargs.get('color')]*(max(summary_bars)+1)
+            if summary_bars_kwargs.get('color') is not None
+            else ['black']*(max(summary_bars)+1)
+            if color_col is not None or (proportional and is_paired) or is_paired 
+            else list(plot_palette_raw.values())
+        )
         summary_bars_kwargs.pop('color')
         for summary_index in summary_bars:
             if ci_type == "bca":
@@ -873,7 +886,7 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
 
 def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: object,
                           ticks_to_plot: list, contrast_bars_kwargs: dict, color_col: str, 
-                          swarm_colors: list, show_mini_meta: bool, mini_meta_delta: object, 
+                          plot_palette_raw: dict, show_mini_meta: bool, mini_meta_delta: object, 
                           show_delta2: bool, delta_delta: object, proportional: bool, is_paired: bool):
     """
     Add contrast bars to the contrast plot.
@@ -892,8 +905,8 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
         Keyword arguments for the contrast bars.
     color_col : str
         Column name of the color column.
-    swarm_colors : list 
-        List of colors used in the plot.
+    plot_palette_raw : dict
+        Dictionary of colors used in the plot.
     show_mini_meta : bool   
         Whether to show the mini meta-analysis.
     mini_meta_delta : object    
@@ -911,7 +924,13 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
     for j, tick in enumerate(ticks_to_plot):
         contrast_means.append(results.difference[j])
 
-    contrast_bars_colors = [contrast_bars_kwargs.get('color')]*(max(ticks_to_plot)+1) if contrast_bars_kwargs.get('color') is not None else ['black']*(max(ticks_to_plot)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
+    contrast_bars_colors = (
+        [contrast_bars_kwargs.get('color')] * (max(ticks_to_plot) + 1) 
+        if contrast_bars_kwargs.get('color') is not None 
+        else ['black'] * (max(ticks_to_plot) + 1) 
+        if color_col is not None or (proportional and is_paired) or is_paired 
+        else list(plot_palette_raw.values())
+    )
     contrast_bars_kwargs.pop('color')
     for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
         ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25,0),0.5, contrast_bars_y, zorder=-1, color=contrast_bars_colors[contrast_bars_x], **contrast_bars_kwargs))
@@ -923,7 +942,7 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
         ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25,0),0.5, delta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
 
 def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
-                       swarm_bars_kwargs: dict, color_col: str, swarm_colors: list, is_paired: bool):
+                       swarm_bars_kwargs: dict, color_col: str, plot_palette_raw: dict, is_paired: bool):
     """
     Add bars to the raw data plot.
 
@@ -941,8 +960,8 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
         Keyword arguments for the swarm bars.
     color_col : str
         Column name of the color column.
-    swarm_colors : list
-        List of colors used in the plot.
+    plot_palette_raw : dict
+        Dictionary of colors used in the plot.
     is_paired : bool
         Whether the data is paired.
     """
@@ -960,14 +979,20 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
         swarm_bars_order = pd.unique(plot_data[xvar])
 
     swarm_means = plot_data.groupby(xvar)[yvar].mean().reindex(index=swarm_bars_order)
-    swarm_bars_colors = [swarm_bars_kwargs.get('color')]*(max(swarm_bars_order)+1) if swarm_bars_kwargs.get('color') is not None else ['black']*(len(swarm_bars_order)+1) if color_col is not None or is_paired else swarm_colors
+    swarm_bars_colors = (
+        [swarm_bars_kwargs.get('color')] * (max(swarm_bars_order) + 1) 
+        if swarm_bars_kwargs.get('color') is not None 
+        else ['black']*(len(swarm_bars_order)+1)
+        if color_col is not None or is_paired
+        else list(plot_palette_raw.values())
+    )
     swarm_bars_kwargs.pop('color')
     for swarm_bars_x,swarm_bars_y,c in zip(np.arange(0,len(swarm_bars_order)+1,1), swarm_means, swarm_bars_colors):
         ax.add_patch(mpatches.Rectangle((swarm_bars_x-0.25,0),
         0.5, swarm_bars_y, zorder=-1,color=c,**swarm_bars_kwargs))
 
 def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: object, ticks_to_plot: list, delta_text_kwargs: dict, color_col: str, 
-                       swarm_colors: list, is_paired: bool, proportional: bool, float_contrast: bool,
+                       plot_palette_raw: dict, is_paired: bool, proportional: bool, float_contrast: bool,
                        show_mini_meta: bool, mini_meta_delta: object, show_delta2: bool, delta_delta: object):
     """
     Add text to the contrast plot.
@@ -986,8 +1011,8 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
         Keyword arguments for the delta text.
     color_col : str
         Column name of the color column.
-    swarm_colors : list
-        List of colors used in the plot.
+    plot_palette_raw : dict
+        Dictionary of colors used in the plot.
     is_paired : bool
         Whether the data is paired.
     proportional : bool
@@ -1012,7 +1037,13 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
         delta_text_kwargs["va"] = 'bottom' if results.difference[0] >= 0 else 'top'
     delta_text_kwargs.pop('x_location')
 
-    delta_text_colors = [delta_text_kwargs.get('color')]*(max(ticks_to_plot)+1) if delta_text_kwargs.get('color') is not None else ['black']*(max(ticks_to_plot)+1) if color_col is not None or (proportional and is_paired) or is_paired else swarm_colors
+    delta_text_colors = (
+        [delta_text_kwargs.get('color')]*(max(ticks_to_plot)+1)
+        if delta_text_kwargs.get('color') is not None
+        else ['black']*(max(ticks_to_plot)+1)
+        if color_col is not None or (proportional and is_paired) or is_paired
+        else list(plot_palette_raw.values())
+    )
     if show_mini_meta or show_delta2: delta_text_colors.append('black')
     delta_text_kwargs.pop('color')
 
@@ -1083,8 +1114,8 @@ def DeltaDotsPlotter(plot_data, contrast_axes, delta_id_col, idx, xvar, yvar, is
         Column name of the color column.
     float_contrast : bool
         Whether the DABEST plot uses Gardner-Altman or Cummings
-    plot_palette_raw : list
-        List of colors used in the plot.
+    plot_palette_raw : dict
+        Dictionary of colors used in the plot.
     delta_dot_kwargs : dict
         Keyword arguments for the delta dots.
     """
@@ -1474,6 +1505,7 @@ def swarmplot(
     size: float = 5,
     side: str = "center",
     jitter: float = 1,
+    filled: Union[bool, List, Tuple] = True,
     is_drop_gutter: bool = True,
     gutter_limit: float = 0.5,
     **kwargs,
@@ -1506,6 +1538,11 @@ def swarmplot(
         The side on which points are swarmed ("center", "left", or "right"). Default is "center".
     jitter : int | float
         Determines the distance between points. Default is 1.
+    filled : bool | List | Tuple
+        Determines whether the dots in the swarmplot are filled or not. If set to False,
+        dots are not filled. If provided as a List or Tuple, it should contain boolean values,
+        each corresponding to a swarm group in order, indicating whether the dot should be
+        filled or not.
     is_drop_gutter : bool
         If True, drop points that hit the gutters; otherwise, readjust them.
     gutter_limit : int | float
@@ -1519,7 +1556,7 @@ def swarmplot(
         Matplotlib AxesSubplot object for which the swarm plot has been drawn on.
     """
     s = SwarmPlot(data, x, y, ax, order, hue, palette, zorder, size, side, jitter)
-    ax = s.plot(is_drop_gutter, gutter_limit, ax, **kwargs)
+    ax = s.plot(is_drop_gutter, gutter_limit, ax, filled, **kwargs)
     return ax
 
 
@@ -1679,7 +1716,9 @@ class SwarmPlot:
         if not isinstance(self.__jitter, (int, float)):
             raise ValueError("`jitter` must be a scalar or float.")
         if not isinstance(self.__palette, (str, Iterable)):
-            raise ValueError("`palette` must be either a string indicating a color name or an Iterable.")
+            raise ValueError(
+                "`palette` must be either a string indicating a color name or an Iterable."
+            )
         if self.__hue is not None and not isinstance(self.__hue, str):
             raise ValueError("`hue` must be either a string or None.")
         if self.__order is not None and not isinstance(self.__order, Iterable):
@@ -1709,7 +1748,6 @@ class SwarmPlot:
             err = "`palette` cannot be an empty string. It must be either a string indicating a color name or an Iterable."
             raise ValueError(err)
         if isinstance(self.__palette, dict):
-            # TODO: to add detection of when dict length is less than size of unique_items
             for group_i, color_i in self.__palette.items():
                 if group_i not in pd.unique(data[color_col]):
                     err = (
@@ -1719,8 +1757,10 @@ class SwarmPlot:
                     )
                     raise IndexError(err)
                 if isinstance(color_i, str) and color_i.strip() == "":
-                    err = "The color mapping for {0} in `palette` is an empty string. It must contain a color name.".format(group_i)
-                    raise ValueError(err) 
+                    err = "The color mapping for {0} in `palette` is an empty string. It must contain a color name.".format(
+                        group_i
+                    )
+                    raise ValueError(err)
 
         if side.lower() not in ["center", "right", "left"]:
             raise ValueError(
@@ -1922,7 +1962,12 @@ class SwarmPlot:
         return points_data
 
     def plot(
-        self, is_drop_gutter: bool, gutter_limit: float, ax: axes.Subplot, **kwargs
+        self,
+        is_drop_gutter: bool,
+        gutter_limit: float,
+        ax: axes.Subplot,
+        filled: Union[bool, List, Tuple],
+        **kwargs,
     ) -> axes.Subplot:
         """
         Generate a swarm plot.
@@ -1935,6 +1980,11 @@ class SwarmPlot:
             The limit for points hitting the gutters.
         ax : axes.Subplot
             The matplotlib figure object to which the swarm plot will be added.
+        filled : bool | List | Tuple
+            Determines whether the dots in the swarmplot are filled or not. If set to False,
+            dots are not filled. If provided as a List or Tuple, it should contain boolean values,
+            each corresponding to a swarm group in order, indicating whether the dot should be
+            filled or not.
         **kwargs:
             Additional keyword arguments to be passed to the scatter plot.
 
@@ -1948,12 +1998,28 @@ class SwarmPlot:
             raise ValueError("`is_drop_gutter` must be a boolean.")
         if not isinstance(gutter_limit, (int, float)):
             raise ValueError("`gutter_limit` must be a scalar or float.")
+        if not isinstance(filled, (bool, list, tuple)):
+            raise ValueError("`filled` must be a boolean, list or tuple.")
+
+        # More thorough input validation checks
+        if isinstance(filled, (list, tuple)):
+            if len(filled) != len(self.__order):
+                err = (
+                    "There are {0} unique values in `x` column in `data` "
+                    "but `filled` has a length of {1}. If `filled` is a list "
+                    "or a tuple, it must have the same length as the number of "
+                    "unique values/groups in the `x` column of data."
+                ).format(len(self.__order), len(filled))
+                raise ValueError(err)
+            if not all(isinstance(_, bool) for _ in filled):
+                raise ValueError("All values in `filled` must be a boolean.")
 
         # Assumptions are that self.__data_copy is already sorted according to self.__order
         x_position = (
             0  # x-coordinate of center of each individual swarm of the swarm plot
         )
         x_tick_tabels = []
+
         for group_i, values_i in self.__data_copy.groupby(self.__x):
             x_new = []
             values_i_y = values_i[self.__y]
@@ -2009,15 +2075,38 @@ class SwarmPlot:
 
             else:
                 # color swarms based on `x` column
+                if not isinstance(filled, bool):
+                    facecolor = (
+                        "none"
+                        if not filled[x_position - 1]
+                        else self.__palette[group_i]
+                    )
+                else:
+                    facecolor = "none" if not filled else self.__palette[group_i]
+
                 ax.scatter(
                     values_i["x_new"],
                     values_i[self.__y],
                     s=self.__size,
-                    c=self.__palette[group_i],
                     zorder=self.__zorder,
-                    edgecolor="face",
+                    facecolor=facecolor,
+                    edgecolor=self.__palette[group_i],
+                    label=group_i,
                     **kwargs,
                 )
+
+        # Handling of legends
+        # This is currently a workaround because c and cmap is unable to map the labels when calling scatter()
+        # labels has to be used to designate legend labels and handles in scatter() due to the potential calling of ax.get_legend_handles_labels()
+        if self.__hue is not None:
+            for cmap_group_i in self.__palette:
+                ax.scatter(
+                    [],
+                    [],
+                    c=self.__palette[cmap_group_i],
+                    label=cmap_group_i,
+                )
+            handles, labels = ax.get_legend_handles_labels()
 
         ax.get_xaxis().set_ticks(np.arange(x_position))
         ax.get_xaxis().set_ticklabels(x_tick_tabels)

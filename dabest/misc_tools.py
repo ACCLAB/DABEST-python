@@ -299,7 +299,7 @@ def get_kwargs(plot_kwargs, ytick_color):
             delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs)
 
 
-def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs):
+def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_groups):
 
     # Create color palette that will be shared across subplots.
     color_col = plot_kwargs["color_col"]
@@ -313,9 +313,30 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs):
         bootstraps_color_by_group = False
     if show_pairs:
         bootstraps_color_by_group = False
-
     # Handle the color palette.
-    names = color_groups
+    filled = True
+    empty_circle = plot_kwargs["empty_circle"]
+    color_by_subgroups = (
+        True if empty_circle else False
+    )  # boolean flag to determine if colour is being grouped by subgroup or the default
+    if empty_circle:
+        # Handling color_by_subgroups
+        # For now, color_by_subgroups can only be True for multi-2-group and 2-group comparison
+        if isinstance(idx[0], str):
+            if len(idx) > 2:
+                color_by_subgroups = False
+        else:
+            for group_i in idx:
+                if len(group_i) > 2:
+                    color_by_subgroups = False
+
+        # filled is now a list, which determines the which group in idx has their dots filled for the swarmplot
+        filled = []
+        for i in range(len(idx)):
+            filled.append(False)
+            filled.extend([True] * (len(idx[i]) - 1))
+
+    names = color_groups if not color_by_subgroups else idx
     n_groups = len(color_groups)
     custom_pal = plot_kwargs["custom_palette"]
     swarm_desat = plot_kwargs["swarm_desat"]
@@ -324,10 +345,12 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs):
 
     if custom_pal is None:
         unsat_colors = sns.color_palette(n_colors=n_groups)
+        if empty_circle and not color_by_subgroups:
+            unsat_colors = [sns.color_palette("gray")[3]] + unsat_colors
     else:
         if isinstance(custom_pal, dict):
             groups_in_palette = {
-                k: v for k, v in custom_pal.items() if k in color_groups
+                k: custom_pal[k] for k in all_plot_groups if k in color_groups
             }
 
             names = groups_in_palette.keys()
@@ -344,17 +367,24 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs):
                 err1 = "The specified `custom_palette` {}".format(custom_pal)
                 err2 = " is not a matplotlib palette. Please check."
                 raise ValueError(err1 + err2)
-            
 
     if custom_pal is None and color_col is None:
         swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
-        plot_palette_raw = dict(zip(names.categories, swarm_colors))
-
-        bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
-        plot_palette_bar = dict(zip(names.categories, bar_color))
-
         contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
-        plot_palette_contrast = dict(zip(names.categories, contrast_colors))
+        bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
+        if color_by_subgroups:
+            plot_palette_raw = dict()
+            plot_palette_contrast = dict()
+            # plot_palette_bar set to None because currently there is no empty_circle toggle for proportion plots
+            plot_palette_bar = None
+            for i in range(len(idx)):
+                for names_i in idx[i]:
+                    plot_palette_raw[names_i] = swarm_colors[i]
+                    plot_palette_contrast[names_i] = contrast_colors[i]
+        else:
+            plot_palette_raw = dict(zip(names.categories, swarm_colors))
+            plot_palette_contrast = dict(zip(names.categories, contrast_colors))
+            plot_palette_bar = dict(zip(names.categories, bar_color))
 
         # For Sankey Diagram plot, no need to worry about the color, each bar will have the same two colors
         # default color palette will be set to "hls"
@@ -362,17 +392,25 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs):
 
     else:
         swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
-        plot_palette_raw = dict(zip(names, swarm_colors))
-
-        bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
-        plot_palette_bar = dict(zip(names, bar_color))
-
         contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
-        plot_palette_contrast = dict(zip(names, contrast_colors))
+        bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
+        if color_by_subgroups:
+            plot_palette_raw = dict()
+            plot_palette_contrast = dict()
+            # plot_palette_bar set to None because currently there is no empty_circle toggle for proportion plots
+            plot_palette_bar = None
+            for i in range(len(idx)):
+                for names_i in idx[i]:
+                    plot_palette_raw[names_i] = swarm_colors[i]
+                    plot_palette_contrast[names_i] = contrast_colors[i]
+        else:
+            plot_palette_raw = dict(zip(names, swarm_colors))
+            plot_palette_contrast = dict(zip(names, contrast_colors))
+            plot_palette_bar = dict(zip(names, bar_color))
 
         plot_palette_sankey = custom_pal
 
-    return (color_col, bootstraps_color_by_group, n_groups, swarm_colors, plot_palette_raw, 
+    return (color_col, bootstraps_color_by_group, n_groups, filled, swarm_colors, plot_palette_raw, 
             bar_color, plot_palette_bar, plot_palette_contrast, plot_palette_sankey)
 
 def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_paired, show_pairs, proportional,
@@ -502,25 +540,34 @@ def get_plot_groups(is_paired, idx, proportional, all_plot_groups):
 
 
 def add_counts_to_ticks(plot_data, xvar, yvar, rawdata_axes, plot_kwargs):
+    # Add the counts to the rawdata axes xticks.
     counts = plot_data.groupby(xvar).count()[yvar]
+    
+    def lookup_value(text):
+        try:
+            return str(counts.loc[text])
+        except KeyError:
+            try:
+                numeric_key = pd.to_numeric(text, errors='coerce')
+                if pd.notnull(numeric_key):
+                    return str(counts.loc[numeric_key])
+            except (ValueError, KeyError):
+                pass
+        print(f"Key '{text}' not found in counts.")
+        return "N/A"
+
     ticks_with_counts = []
-    ticks_loc = rawdata_axes.get_xticks()
-    rawdata_axes.xaxis.set_major_locator(matplotlib.ticker.FixedLocator(ticks_loc))
-    for xticklab in rawdata_axes.xaxis.get_ticklabels():
+    for xticklab in rawdata_axes.get_xticklabels():
         t = xticklab.get_text()
-        if t.rfind("\n") != -1:
-            te = t[t.rfind("\n") + len("\n") :]
-            N = str(counts.loc[te])
-            te = t
-        else:
-            te = t
-            N = str(counts.loc[te])
+        te = t.split('\n')[-1]  # Get the last line of the label
+        value = lookup_value(te)
+        ticks_with_counts.append(f"{t}\nN = {value}")
 
-        ticks_with_counts.append("{}\nN = {}".format(te, N))
-
-    if plot_kwargs["fontsize_rawxlabel"] is not None:
-        fontsize_rawxlabel = plot_kwargs["fontsize_rawxlabel"]
+    fontsize_rawxlabel = plot_kwargs.get("fontsize_rawxlabel")
     rawdata_axes.set_xticklabels(ticks_with_counts, fontsize=fontsize_rawxlabel)
+
+    # Ensure ticks are at the correct locations
+    rawdata_axes.xaxis.set_major_locator(plt.FixedLocator(rawdata_axes.get_xticks()))
 
 
 def extract_contrast_plotting_ticks(is_paired, show_pairs, two_col_sankey, plot_groups, idx, sankey_control_group):
