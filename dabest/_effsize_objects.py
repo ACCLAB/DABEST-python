@@ -973,6 +973,7 @@ class EffectSizeDataFrame(object):
         contrast_ylim=None,
         delta2_ylim=None,
         swarm_side=None,
+        empty_circle=False,
         custom_palette=None,
         swarm_desat=0.5,
         halfviolin_desat=1,
@@ -1073,6 +1074,12 @@ class EffectSizeDataFrame(object):
             https://seaborn.pydata.org/generated/seaborn.cubehelix_palette.html
             The named colors of matplotlib can be found here:
             https://matplotlib.org/examples/color/named_colors.html
+        swarm_side: string, default None
+            The side on which points are swarmed for swarmplots ("center", "left", or "right").
+        empty_circle: boolean, default False
+            Boolean value determining if empty circles will be used for plotting of
+            swarmplot for control groups. Color of each individual swarm is also now
+            dependent on the comparison group.
         swarm_desat : float, default 1
             Decreases the saturation of the colors in the swarmplot by the
             desired proportion. Uses `seaborn.desaturate()` to acheive this.
@@ -1221,7 +1228,7 @@ class EffectSizeDataFrame(object):
         if hasattr(self, "results") is False:
             self.__pre_calc()
 
-        if self.__delta2:
+        if self.__delta2 and not empty_circle:
             color_col = self.__x2
 
         # if self.__proportional:

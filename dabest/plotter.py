@@ -136,13 +136,15 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     )
 
     # Extract Color palette
-    (color_col, bootstraps_color_by_group, n_groups, 
+    (color_col, bootstraps_color_by_group, n_groups, filled,
      swarm_colors, plot_palette_raw, bar_color, 
      plot_palette_bar, plot_palette_contrast, plot_palette_sankey) = get_color_palette(
                                                                                 plot_kwargs=plot_kwargs, 
                                                                                 plot_data=plot_data, 
                                                                                 xvar=xvar, 
-                                                                                show_pairs=show_pairs
+                                                                                show_pairs=show_pairs,
+                                                                                idx=idx,
+                                                                                all_plot_groups=all_plot_groups
                                                                                 )
 
     # Initialise the figure.
@@ -218,7 +220,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         if not proportional:
             # Plot the raw data as a swarmplot.
             asymmetric_side = (
-                plot_kwargs["swarm_side"] if plot_kwargs["swarm_side"] is not None else "right"
+                plot_kwargs["swarm_side"]
+                if plot_kwargs["swarm_side"] is not None
+                else "right"
             )  # Default asymmetric side is right
 
             # swarmplot() plots swarms based on current size of ax
@@ -229,11 +233,13 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                     y=yvar,
                                                     ax=rawdata_axes,
                                                     order=all_plot_groups,
-                                                    hue=xvar if color_col is None else color_col,
+                                                    # hue=xvar if color_col is None else color_col,
+                                                    hue=color_col,
                                                     palette=plot_palette_raw,
                                                     zorder=1,
                                                     side=asymmetric_side,
                                                     jitter=1.25 if show_mini_meta else 1.4 if show_delta2 else 1, # TODO: to make jitter value more accurate and not just a hardcoded eyeball value
+                                                    filled=filled,
                                                     is_drop_gutter=True,
                                                     gutter_limit=0.45,
                                                     **swarmplot_kwargs
@@ -287,6 +293,10 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
                 if len(line_colors) != len(all_plot_groups):
                     line_colors = ytick_color
+                    
+                # hue in swarmplot would add collections to axes which will result in len(xspans) = len(all_plot_groups) + len(unique groups in hue)
+                if len(xspans) > len(all_plot_groups):
+                    xspans = xspans[:len(all_plot_groups)]
 
                 group_summaries_method = "gapped_lines"
                 group_summaries_offset = xspans + np.array(plot_kwargs["group_summaries_offset"])
@@ -507,7 +517,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                     ax=rawdata_axes, 
                     swarm_bars_kwargs=swarm_bars_kwargs, 
                     color_col=color_col, 
-                    swarm_colors=swarm_colors, 
+                    plot_palette_raw=plot_palette_raw,
                     is_paired=is_paired
                     )
 
@@ -521,7 +531,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                         ticks_to_plot=ticks_to_plot, 
                         contrast_bars_kwargs=contrast_bars_kwargs, 
                         color_col=color_col, 
-                        swarm_colors=swarm_colors, 
+                        plot_palette_raw=plot_palette_raw, 
                         show_mini_meta=show_mini_meta, 
                         mini_meta_delta=effectsize_df.mini_meta_delta if show_mini_meta else None, 
                         show_delta2=show_delta2, 
@@ -542,7 +552,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                         ci_type=ci_type, 
                         ticks_to_plot=ticks_to_plot, 
                         color_col=color_col,
-                        swarm_colors=swarm_colors, 
+                        plot_palette_raw=plot_palette_raw, 
                         proportional=proportional, 
                         is_paired=is_paired
                         )
@@ -556,7 +566,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                     ticks_to_plot=ticks_to_plot, 
                     delta_text_kwargs=delta_text_kwargs, 
                     color_col=color_col, 
-                    swarm_colors=swarm_colors, 
+                    plot_palette_raw=plot_palette_raw, 
                     is_paired=is_paired,
                     proportional=proportional, 
                     float_contrast=float_contrast, 
@@ -580,4 +590,3 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     # Return the figure.
     return fig
-
