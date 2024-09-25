@@ -8,6 +8,7 @@ __all__ = ['Dabest']
 # %% ../nbs/API/dabest_object.ipynb 4
 # Import standard data science libraries
 from numpy import array, repeat, random, issubdtype, number
+import numpy as np
 import pandas as pd
 from scipy.stats import norm
 from scipy.stats import randint
@@ -479,7 +480,7 @@ class Dabest(object):
 
             # Handling str type condition
             if is_str_condition_met:
-                if len(pd.unique(idx).tolist()) != 2:
+                if len(np.unique(idx).tolist()) != 2:
                     err0 = "`mini_meta` is True, but `idx` ({})".format(idx)
                     err1 = "does not contain exactly 2 unique columns."
                     raise ValueError(err0 + err1)
@@ -667,7 +668,7 @@ class Dabest(object):
                 all_plot_groups, ordered=True, inplace=True
             )
         else:
-            plot_data.loc[:, self.__xvar] = pd.Categorical(
+            plot_data[self.__xvar] = pd.Categorical(
                 plot_data[self.__xvar], categories=all_plot_groups, ordered=True
             )
 

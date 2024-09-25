@@ -84,7 +84,7 @@ def test_check_data_matches_labels():
     ("data", None, "`data` must be a Pandas Dataframe.", ValueError),
     ("x", None, "`x` must be a string.", ValueError),
     ("y", None, "`y` must be a string.", ValueError),
-    ("ax", None, "`ax` must be a Matplotlib AxesSubplot. The current `ax` is a <class 'NoneType'>", ValueError),
+    ("ax", None, "`ax` must be a Matplotlib axes.Axes. The current `ax` is a <class 'NoneType'>", ValueError),
     ("order", 5, "`order` must be either an Iterable or None.", ValueError),
     ("hue", 5, "`hue` must be either a string or None.", ValueError),
     ("palette", None, "`palette` must be either a string indicating a color name or an Iterable.", ValueError),

@@ -120,15 +120,15 @@ def error_bar(
     else:
         group_order = pd.unique(data[x])
 
-    means = data.groupby(x)[y].mean().reindex(index=group_order)
+    means = data.groupby(x, observed=False)[y].mean().reindex(index=group_order)
 
     if method in ["proportional_error_bar", "sankey_error_bar"]:
         g = lambda x: np.sqrt(
             (np.sum(x) * (len(x) - np.sum(x))) / (len(x) * len(x) * len(x))
         )
-        sd = data.groupby(x)[y].apply(g)
+        sd = data.groupby(x, observed=False)[y].apply(g)
     else:
-        sd = data.groupby(x)[y].std().reindex(index=group_order)
+        sd = data.groupby(x, observed=False)[y].std().reindex(index=group_order)
 
     lower_sd = means - sd
     upper_sd = means + sd
@@ -136,9 +136,9 @@ def error_bar(
     if (lower_sd < ax_ylims[0]).any() or (upper_sd > ax_ylims[1]).any():
         kwargs["clip_on"] = True
 
-    medians = data.groupby(x)[y].median().reindex(index=group_order)
+    medians = data.groupby(x, observed=False)[y].median().reindex(index=group_order)
     quantiles = (
-        data.groupby(x)[y].quantile([0.25, 0.75]).unstack().reindex(index=group_order)
+        data.groupby(x, observed=False)[y].quantile([0.25, 0.75]).unstack().reindex(index=group_order)
     )
     lower_quartiles = quantiles[0.25]
     upper_quartiles = quantiles[0.75]
@@ -978,7 +978,7 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
     else:
         swarm_bars_order = pd.unique(plot_data[xvar])
 
-    swarm_means = plot_data.groupby(xvar)[yvar].mean().reindex(index=swarm_bars_order)
+    swarm_means = plot_data.groupby(xvar, observed=False)[yvar].mean().reindex(index=swarm_bars_order)
     swarm_bars_colors = (
         [swarm_bars_kwargs.get('color')] * (max(swarm_bars_order) + 1) 
         if swarm_bars_kwargs.get('color') is not None 
@@ -1199,7 +1199,7 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
             if color_col is None:
                 slopegraph_kwargs["color"] = ytick_color
             else:
-                color_key = observation[color_col][0]
+                color_key = observation[color_col].iloc[0]
                 if isinstance(color_key, (str, np.int64, np.float64)):
                     slopegraph_kwargs["color"] = plot_palette_raw[color_key]
                     slopegraph_kwargs["label"] = color_key
@@ -1497,7 +1497,7 @@ def swarmplot(
     data: pd.DataFrame,
     x: str,
     y: str,
-    ax: axes.Subplot,
+    ax: axes.Axes,
     order: List = None,
     hue: str = None,
     palette: Union[Iterable, str] = "black",
@@ -1521,8 +1521,8 @@ def swarmplot(
         The column in the DataFrame to be used as the x-axis.
     y : str
         The column in the DataFrame to be used as the y-axis.
-    ax : axes._subplots.Subplot | axes._axes.Axes
-        Matplotlib AxesSubplot object for which the plot would be drawn on. Default is None.
+    ax : axes.Axes
+        Matplotlib axes.Axes object for which the plot would be drawn on. Default is None.
     order : List
         The order in which x-axis categories should be displayed. Default is None.
     hue : str
@@ -1552,8 +1552,8 @@ def swarmplot(
 
     Returns
     -------
-    axes._subplots.Subplot | axes._axes.Axes
-        Matplotlib AxesSubplot object for which the swarm plot has been drawn on.
+    axes.Axes
+        Matplotlib axes.Axes object for which the swarm plot has been drawn on.
     """
     s = SwarmPlot(data, x, y, ax, order, hue, palette, zorder, size, side, jitter)
     ax = s.plot(is_drop_gutter, gutter_limit, ax, filled, **kwargs)
@@ -1566,7 +1566,7 @@ class SwarmPlot:
         data: pd.DataFrame,
         x: str,
         y: str,
-        ax: axes.Subplot,
+        ax: axes.Axes,
         order: List = None,
         hue: str = None,
         palette: Union[Iterable, str] = "black",
@@ -1586,8 +1586,8 @@ class SwarmPlot:
             The column in the DataFrame to be used as the x-axis.
         y : str
             The column in the DataFrame to be used as the y-axis.
-        ax : axes.Subplot
-            Matplotlib AxesSubplot object for which the plot would be drawn on.
+        ax : axes.Axes
+            Matplotlib axes.Axes object for which the plot would be drawn on.
         order : List
             The order in which x-axis categories should be displayed. Default is None.
         hue : str
@@ -1674,7 +1674,7 @@ class SwarmPlot:
         self.__dsize = dsize
 
     def _check_errors(
-        self, data: pd.DataFrame, ax: axes.Subplot, size: float, side: str
+        self, data: pd.DataFrame, ax: axes.Axes, size: float, side: str
     ) -> None:
         """
         Check the validity of input parameters. Raises exceptions if detected.
@@ -1683,8 +1683,8 @@ class SwarmPlot:
         ----------
         data : pd.Dataframe
             Input data used for generation of the swarmplot.
-        ax : axes.Subplot
-            Matplotlib AxesSubplot object for which the plot would be drawn on.
+        ax : axes.Axes
+            Matplotlib axes.Axes object for which the plot would be drawn on.
         size : int | float
             scalar value determining size of dots of the swarmplot.
         side: str
@@ -1697,9 +1697,9 @@ class SwarmPlot:
         # Type enforcement
         if not isinstance(data, pd.DataFrame):
             raise ValueError("`data` must be a Pandas Dataframe.")
-        if not isinstance(ax, (axes._subplots.Subplot, axes._axes.Axes)):
+        if not isinstance(ax, axes.Axes):
             raise ValueError(
-                f"`ax` must be a Matplotlib AxesSubplot. The current `ax` is a {type(ax)}"
+                f"`ax` must be a Matplotlib axes.Axes. The current `ax` is a {type(ax)}"
             )
         if not isinstance(size, (int, float)):
             raise ValueError("`size` must be a scalar or float.")
@@ -1859,9 +1859,10 @@ class SwarmPlot:
             raise ValueError("`dsize` must be a scalar or float.")
 
         # Sorting algorithm based off of: https://github.com/mgymrek/pybeeswarm
-        points_data = pd.DataFrame(
-            {"y": [yval * 1.0 / dsize for yval in values], "x": [0] * len(values)}
-        )
+        points_data = pd.DataFrame({
+            "y": [yval * 1.0 / dsize for yval in values],
+            "x": np.zeros(len(values), dtype=float)  # Initialize with float zeros
+        })
         for i in range(1, points_data.shape[0]):
             y_i = points_data["y"].values[i]
             points_placed = points_data[0:i]
@@ -1968,7 +1969,7 @@ class SwarmPlot:
         ax: axes.Subplot,
         filled: Union[bool, List, Tuple],
         **kwargs,
-    ) -> axes.Subplot:
+    ) -> axes.Axes:
         """
         Generate a swarm plot.
 
@@ -1978,7 +1979,7 @@ class SwarmPlot:
             If True, drop points that hit the gutters; otherwise, readjust them.
         gutter_limit : int | float
             The limit for points hitting the gutters.
-        ax : axes.Subplot
+        ax : axes.Axes
             The matplotlib figure object to which the swarm plot will be added.
         filled : bool | List | Tuple
             Determines whether the dots in the swarmplot are filled or not. If set to False,
@@ -1990,8 +1991,8 @@ class SwarmPlot:
 
         Returns
         -------
-        axes.Subplot:
-            The matplotlib figure containing the swarm plot.
+        axes.Axes:
+            The matplotlib axes containing the swarm plot.
         """
         # Input validation
         if not isinstance(is_drop_gutter, bool):
@@ -2019,8 +2020,7 @@ class SwarmPlot:
             0  # x-coordinate of center of each individual swarm of the swarm plot
         )
         x_tick_tabels = []
-
-        for group_i, values_i in self.__data_copy.groupby(self.__x):
+        for group_i, values_i in self.__data_copy.groupby(self.__x, observed=False):
             x_new = []
             values_i_y = values_i[self.__y]
             x_offset = self._swarm(
