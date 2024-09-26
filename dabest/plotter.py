@@ -615,6 +615,7 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
         set_xaxis_ticks_and_lims,
         show_legend,
         Cumming_Plot_Aesthetic_Adjustments,
+        General_Plot_Aesthetic_Adjustments,
 
     )
     from .plot_tools import (
@@ -637,6 +638,8 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
     # tries to get from slopegraph.
     logging.disable(logging.WARNING)
 
+
+
     # Save rcParams that I will alter, so I can reset back.
     original_rcParams = {}
     _changed_rcParams = ["axes.grid"]
@@ -653,7 +656,8 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
                                                                                     effectsize_df=effectsize_df, 
                                                                                     plot_kwargs=plot_kwargs
                                                                                     )
-    
+    if plot_kwargs['horizontal']:
+        float_contrast = False
     
     (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, 
      slopegraph_kwargs, reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, 
@@ -1010,18 +1014,30 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
                             horizontal=True,
                             )
 
-
-
-
-
-
-
-    if swarm_ylim is None:
-        swarm_ylim = rawdata_axes.get_ylim()
-    rawdata_axes.set_ylim(swarm_ylim[1], swarm_ylim[0])
-    if plot_kwargs['contrast_ylim'] is None:
-        contrast_ylim = contrast_axes.get_ylim()
-    contrast_axes.set_ylim(contrast_ylim[1], contrast_ylim[0])
+    # General plotting changes
+    General_Plot_Aesthetic_Adjustments(
+                                show_delta2=show_delta2, 
+                                show_mini_meta=show_mini_meta, 
+                                contrast_axes=contrast_axes, 
+                                redraw_axes_kwargs=redraw_axes_kwargs, 
+                                plot_kwargs=plot_kwargs,
+                                yvar=yvar, 
+                                effect_size_type=effect_size_type, 
+                                proportional=proportional, 
+                                effectsize_df=effectsize_df, 
+                                is_paired=is_paired, 
+                                float_contrast=float_contrast,
+                                rawdata_axes=rawdata_axes, 
+                                og_ylim_raw=og_xlim_raw if plot_kwargs['horizontal'] else og_ylim_raw, 
+                                effect_size=effect_size,
+                                horizontal=True,
+                                )
+    # if swarm_ylim is None:
+    #     swarm_ylim = rawdata_axes.get_ylim()
+    # rawdata_axes.set_ylim(swarm_ylim[1], swarm_ylim[0])
+    # if plot_kwargs['contrast_ylim'] is None:
+    #     contrast_ylim = contrast_axes.get_ylim()
+    # contrast_axes.set_ylim(contrast_ylim[1], contrast_ylim[0])
 
 
     # Make sure no stray ticks appear!

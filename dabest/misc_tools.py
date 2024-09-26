@@ -1029,43 +1029,7 @@ def Cumming_Plot_Aesthetic_Adjustments(plot_kwargs, show_delta2, effect_size_typ
                                 end_tick = rightend_ticks_raw[k]
                                 ax.vlines(ymin=start_tick, ymax=end_tick, **redraw_axes_kwargs)
                         ax.set_xlim(xlim)
-                        del redraw_axes_kwargs["x"]      
-
-
-                    if not proportional:
-                        temp_length = [(len(i) - 1) for i in idx]
-                    else:
-                        temp_length = [(len(i) - 1) * 2 - 1 for i in idx]
-                    if two_col_sankey:
-                        rightend_ticks_contrast = np.array(
-                            [len(i) - 2 for i in idx]
-                        ) + np.array(ticks_to_start_twocol_sankey)
-                    elif proportional and is_paired is not None:
-                        rightend_ticks_contrast = np.array(
-                            [len(i) - 1 for i in idx]
-                        ) + np.array(ticks_to_skip)
-                    else:
-                        rightend_ticks_contrast = np.array(temp_length) + np.array(
-                            ticks_to_skip_contrast
-                        )      
-
-                    for ax in [contrast_axes]:
-                        sns.despine(ax=ax, left=True)
-                        ylim = ax.get_ylim()
-                        xlim = ax.get_xlim()
-                        redraw_axes_kwargs["x"] = xlim[0]
-
-                        if two_col_sankey:
-                            for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
-                                end_tick = rightend_ticks_contrast[k]
-                                ax.vlines(ymin=start_tick, ymax=end_tick, **redraw_axes_kwargs)
-                        else:
-                            for k, start_tick in enumerate(ticks_to_skip_contrast):
-                                end_tick = rightend_ticks_contrast[k]
-                                ax.vlines(ymin=start_tick, ymax=end_tick, **redraw_axes_kwargs)
-
-                        ax.set_xlim(xlim)
-                        del redraw_axes_kwargs["x"] 
+                        del redraw_axes_kwargs["x"]       
         else:
             # Compute the end of each x-axes line.
             if two_col_sankey:
@@ -1077,7 +1041,7 @@ def Cumming_Plot_Aesthetic_Adjustments(plot_kwargs, show_delta2, effect_size_typ
                     ticks_to_skip
                 )
 
-            for ax in [rawdata_axes, contrast_axes]:
+            for ax in [rawdata_axes]:
                 sns.despine(ax=ax, left=True)
 
                 ylim = ax.get_ylim()
@@ -1095,6 +1059,12 @@ def Cumming_Plot_Aesthetic_Adjustments(plot_kwargs, show_delta2, effect_size_typ
 
                 ax.set_xlim(xlim)
                 del redraw_axes_kwargs["x"]
+
+        # Remove y ticks and labels from the contrast axes.
+        sns.despine(ax=contrast_axes, left=True)
+        contrast_axes.set_yticks([])
+        contrast_axes.set_yticklabels([])
+
     else:
         contrast_axes_ylim = contrast_axes.get_ylim()
         if contrast_axes_ylim[0] < contrast_axes_ylim[1]:
@@ -1201,9 +1171,10 @@ def Cumming_Plot_Aesthetic_Adjustments(plot_kwargs, show_delta2, effect_size_typ
 
 def General_Plot_Aesthetic_Adjustments(show_delta2, show_mini_meta, contrast_axes, redraw_axes_kwargs, plot_kwargs,
                                yvar, effect_size_type, proportional, effectsize_df, is_paired, float_contrast,
-                               rawdata_axes, og_ylim_raw, effect_size):
+                               rawdata_axes, og_ylim_raw, effect_size, horizontal=False):
 
-    if show_delta2 or show_mini_meta:
+
+    if (show_delta2 or show_mini_meta) and not horizontal:
         ylim = contrast_axes.get_ylim()
         redraw_axes_kwargs["y"] = ylim[0]
         x_ticks = contrast_axes.get_xticks()
@@ -1257,51 +1228,97 @@ def General_Plot_Aesthetic_Adjustments(show_delta2, show_mini_meta, contrast_axe
     if plot_kwargs["fontsize_delta2label"] is not None:
         fontsize_delta2label = plot_kwargs["fontsize_delta2label"]
 
-    contrast_axes.set_ylabel(contrast_label, fontsize=fontsize_contrastylabel)
-    if float_contrast:
-        contrast_axes.yaxis.set_label_position("right")
-
-    # Set the rawdata axes labels appropriately
-    if not proportional:
-        rawdata_axes.set_ylabel(swarm_label, fontsize=fontsize_rawylabel)
-    else:
-        rawdata_axes.set_ylabel(bar_label, fontsize=fontsize_rawylabel)
-    rawdata_axes.set_xlabel("")
-
-    # Because we turned the axes frame off, we also need to draw back
-    # the y-spine for both axes.
-    if not float_contrast:
-        rawdata_axes.set_xlim(contrast_axes.get_xlim())
-    og_xlim_raw = rawdata_axes.get_xlim()
-    rawdata_axes.vlines(
-        og_xlim_raw[0], og_ylim_raw[0], og_ylim_raw[1], **redraw_axes_kwargs
-    )
-
-    og_xlim_contrast = contrast_axes.get_xlim()
-
-    if float_contrast:
-        xpos = og_xlim_contrast[1]
-    else:
-        xpos = og_xlim_contrast[0]
-
-    og_ylim_contrast = contrast_axes.get_ylim()
-    contrast_axes.vlines(
-        xpos, og_ylim_contrast[0], og_ylim_contrast[1], **redraw_axes_kwargs
-    )
-
-    if show_delta2:
-        if plot_kwargs["delta2_label"] is not None:
-            delta2_label = plot_kwargs["delta2_label"]
-        elif effect_size == "mean_diff":
-            delta2_label = "delta - delta"
+    if horizontal:
+        
+        contrast_axes.set_xlabel(contrast_label, fontsize=fontsize_contrastylabel)
+        # Set the rawdata axes labels appropriately
+        if not proportional:
+            rawdata_axes.set_xlabel(swarm_label, fontsize=fontsize_rawylabel)
         else:
-            delta2_label = "deltas' g"
-        delta2_axes = contrast_axes.twinx()
-        delta2_axes.set_frame_on(False)
-        delta2_axes.set_ylabel(delta2_label, fontsize=fontsize_delta2label)
-        og_xlim_delta = contrast_axes.get_xlim()
-        og_ylim_delta = contrast_axes.get_ylim()
-        delta2_axes.set_ylim(og_ylim_delta)
-        delta2_axes.vlines(
-            og_xlim_delta[1], og_ylim_delta[0], og_ylim_delta[1], **redraw_axes_kwargs
+            rawdata_axes.set_xlabel(bar_label, fontsize=fontsize_rawylabel)
+        rawdata_axes.set_ylabel("")
+
+        # Because we turned the axes frame off, we also need to draw back
+        # the x-spine for both axes.
+        rawdata_axes.set_ylim(contrast_axes.get_ylim())
+        og_xlim_raw = og_ylim_raw
+        new_ylim_raw = rawdata_axes.get_ylim()
+
+        rawdata_axes.hlines(
+            new_ylim_raw[1], og_xlim_raw[0], og_xlim_raw[1], **redraw_axes_kwargs
         )
+
+        og_ylim_contrast = contrast_axes.get_ylim()
+        ypos = og_ylim_contrast[1]
+
+        og_xlim_contrast = contrast_axes.get_xlim()
+        contrast_axes.hlines(
+            ypos, og_xlim_contrast[0], og_xlim_contrast[1], **redraw_axes_kwargs
+        )
+
+        if show_delta2:
+            if plot_kwargs["delta2_label"] is not None:
+                delta2_label = plot_kwargs["delta2_label"]
+            elif effect_size == "mean_diff":
+                delta2_label = "delta - delta"
+            else:
+                delta2_label = "deltas' g"
+            raise NotImplementedError("Delta2 is not yet supported for horizontal plots.")
+        
+        swarm_ylim = plot_kwargs["swarm_ylim"]
+        contrast_ylim = plot_kwargs["contrast_ylim"]
+        if swarm_ylim is None:
+            swarm_ylim = rawdata_axes.get_ylim()
+        rawdata_axes.set_ylim(swarm_ylim[1], swarm_ylim[0])
+        if plot_kwargs['contrast_ylim'] is None:
+            contrast_ylim = contrast_axes.get_ylim()
+        contrast_axes.set_ylim(contrast_ylim[1], contrast_ylim[0])
+
+    else:
+        contrast_axes.set_ylabel(contrast_label, fontsize=fontsize_contrastylabel)
+        if float_contrast:
+            contrast_axes.yaxis.set_label_position("right")
+        # Set the rawdata axes labels appropriately
+        if not proportional:
+            rawdata_axes.set_ylabel(swarm_label, fontsize=fontsize_rawylabel)
+        else:
+            rawdata_axes.set_ylabel(bar_label, fontsize=fontsize_rawylabel)
+        rawdata_axes.set_xlabel("")
+
+        # Because we turned the axes frame off, we also need to draw back
+        # the y-spine for both axes.
+        if not float_contrast:
+            rawdata_axes.set_xlim(contrast_axes.get_xlim())
+        og_xlim_raw = rawdata_axes.get_xlim()
+        rawdata_axes.vlines(
+            og_xlim_raw[0], og_ylim_raw[0], og_ylim_raw[1], **redraw_axes_kwargs
+        )
+
+        og_xlim_contrast = contrast_axes.get_xlim()
+
+        if float_contrast:
+            xpos = og_xlim_contrast[1]
+        else:
+            xpos = og_xlim_contrast[0]
+
+        og_ylim_contrast = contrast_axes.get_ylim()
+        contrast_axes.vlines(
+            xpos, og_ylim_contrast[0], og_ylim_contrast[1], **redraw_axes_kwargs
+        )
+
+        if show_delta2:
+            if plot_kwargs["delta2_label"] is not None:
+                delta2_label = plot_kwargs["delta2_label"]
+            elif effect_size == "mean_diff":
+                delta2_label = "delta - delta"
+            else:
+                delta2_label = "deltas' g"
+            delta2_axes = contrast_axes.twinx()
+            delta2_axes.set_frame_on(False)
+            delta2_axes.set_ylabel(delta2_label, fontsize=fontsize_delta2label)
+            og_xlim_delta = contrast_axes.get_xlim()
+            og_ylim_delta = contrast_axes.get_ylim()
+            delta2_axes.set_ylim(og_ylim_delta)
+            delta2_axes.vlines(
+                og_xlim_delta[1], og_ylim_delta[0], og_ylim_delta[1], **redraw_axes_kwargs
+            )
