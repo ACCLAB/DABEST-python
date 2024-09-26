@@ -1290,7 +1290,8 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
 
 
 def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, violinplot_kwargs, halfviolin_alpha, 
-                              ytick_color, es_marker_size, group_summary_kwargs, bootstraps_color_by_group, plot_palette_contrast):
+                              ytick_color, es_marker_size, group_summary_kwargs, bootstraps_color_by_group, plot_palette_contrast,
+                              horizontal=False):
     contrast_xtick_labels = []
     for j, tick in enumerate(ticks_to_plot):
         current_group = results.test[j]
@@ -1306,11 +1307,32 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
 
         # Create the violinplot.
         # New in v0.2.6: drop negative infinities before plotting.
-        v = contrast_axes.violinplot(
-            current_bootstrap[~np.isinf(current_bootstrap)],
-            positions=[tick],
-            **violinplot_kwargs
-        )
+
+        if horizontal:  
+            violinplot_kwargs.update({'vert': False, 'widths': 1})
+            v = contrast_axes.violinplot(
+                current_bootstrap[~np.isinf(current_bootstrap)],
+                positions=[tick],
+                **violinplot_kwargs
+            )
+            half = "bottom"
+            effsize_y = [tick]
+            ci_y = [tick, tick]
+            effsize_x = current_effsize
+            ci_x = [current_ci_low, current_ci_high]
+
+        else:
+            v = contrast_axes.violinplot(
+                current_bootstrap[~np.isinf(current_bootstrap)],
+                positions=[tick],
+                **violinplot_kwargs
+            )
+            half = "right"
+            effsize_x = [tick]
+            ci_x = [tick, tick]
+            effsize_y = current_effsize
+            ci_y = [current_ci_low, current_ci_high]
+
         # Turn the violinplot into half, and color it the same as the swarmplot.
         # Do this only if the color column is not specified.
         # Ideally, the alpha (transparency) fo the violin plot should be
@@ -1320,12 +1342,12 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
         else:
             fc = "grey"
 
-        halfviolin(v, fill_color=fc, alpha=halfviolin_alpha)
+        halfviolin(v, fill_color=fc, alpha=halfviolin_alpha, half=half)
 
         # Plot the effect size.
         contrast_axes.plot(
-            [tick],
-            current_effsize,
+            effsize_x,
+            effsize_y,
             marker="o",
             color=ytick_color,
             markersize=es_marker_size,
@@ -1333,8 +1355,8 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
 
         # Plot the confidence interval.
         contrast_axes.plot(
-            [tick, tick],
-            [current_ci_low, current_ci_high],
+            ci_x,
+            ci_y,
             linestyle="-",
             color=ytick_color,
             linewidth=group_summary_kwargs["lw"],

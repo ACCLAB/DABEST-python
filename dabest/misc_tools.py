@@ -592,7 +592,7 @@ def get_plot_groups(is_paired, idx, proportional, all_plot_groups):
     return temp_idx, temp_all_plot_groups
 
 
-def add_counts_to_ticks(plot_data, xvar, yvar, rawdata_axes, plot_kwargs):
+def add_counts_to_ticks(plot_data, xvar, yvar, rawdata_axes, plot_kwargs, horizontal=False):
     # Add the counts to the rawdata axes xticks.
     counts = plot_data.groupby(xvar, observed=False).count()[yvar]
     
@@ -610,17 +610,30 @@ def add_counts_to_ticks(plot_data, xvar, yvar, rawdata_axes, plot_kwargs):
         return "N/A"
 
     ticks_with_counts = []
-    for xticklab in rawdata_axes.get_xticklabels():
-        t = xticklab.get_text()
-        te = t.split('\n')[-1]  # Get the last line of the label
-        value = lookup_value(te)
-        ticks_with_counts.append(f"{t}\nN = {value}")
+    if horizontal:
+        for yticklab in rawdata_axes.get_yticklabels():
+            t = yticklab.get_text()
+            te = t.split('\n')[-1]  # Get the last line of the label
+            value = lookup_value(te)
+            ticks_with_counts.append(f"{t}\nN = {value}")
 
-    fontsize_rawxlabel = plot_kwargs.get("fontsize_rawxlabel")
-    rawdata_axes.set_xticklabels(ticks_with_counts, fontsize=fontsize_rawxlabel)
+        fontsize_rawxlabel = plot_kwargs.get("fontsize_rawxlabel")
+        rawdata_axes.set_yticklabels(ticks_with_counts, fontsize=fontsize_rawxlabel)
 
-    # Ensure ticks are at the correct locations
-    rawdata_axes.xaxis.set_major_locator(plt.FixedLocator(rawdata_axes.get_xticks()))
+        # Ensure ticks are at the correct locations
+        rawdata_axes.yaxis.set_major_locator(plt.FixedLocator(rawdata_axes.get_yticks()))
+    else:
+        for xticklab in rawdata_axes.get_xticklabels():
+            t = xticklab.get_text()
+            te = t.split('\n')[-1]  # Get the last line of the label
+            value = lookup_value(te)
+            ticks_with_counts.append(f"{t}\nN = {value}")
+
+        fontsize_rawxlabel = plot_kwargs.get("fontsize_rawxlabel")
+        rawdata_axes.set_xticklabels(ticks_with_counts, fontsize=fontsize_rawxlabel)
+
+        # Ensure ticks are at the correct locations
+        rawdata_axes.xaxis.set_major_locator(plt.FixedLocator(rawdata_axes.get_xticks()))
 
 
 def extract_contrast_plotting_ticks(is_paired, show_pairs, two_col_sankey, plot_groups, idx, sankey_control_group):
@@ -668,42 +681,77 @@ def extract_contrast_plotting_ticks(is_paired, show_pairs, two_col_sankey, plot_
     return ticks_to_skip, ticks_to_plot, ticks_to_skip_contrast, ticks_to_start_twocol_sankey
 
 def set_xaxis_ticks_and_lims(show_delta2, show_mini_meta, rawdata_axes, contrast_axes, show_pairs, float_contrast,
-                             ticks_to_skip, contrast_xtick_labels, plot_kwargs):
+                             ticks_to_skip, contrast_xtick_labels, plot_kwargs, horizontal=False):
 
-    if show_delta2 is False and show_mini_meta is False:
-        contrast_axes.set_xticks(rawdata_axes.get_xticks())
-    else:
-        temp = rawdata_axes.get_xticks()
-        temp = np.append(temp, [max(temp) + 1, max(temp) + 2])
-        contrast_axes.set_xticks(temp)
-
-    if show_pairs:
-        max_x = contrast_axes.get_xlim()[1]
-        rawdata_axes.set_xlim(-0.375, max_x)
-
-    if float_contrast:
-        contrast_axes.set_xlim(0.5, 1.5)
-    elif show_delta2 or show_mini_meta:
-        # Increase the xlim of raw data by 2
-        temp = rawdata_axes.get_xlim()
-        if show_pairs:
-            rawdata_axes.set_xlim(temp[0], temp[1] + 0.25)
+    if horizontal:
+        if show_delta2 is False and show_mini_meta is False:
+            contrast_axes.set_yticks(rawdata_axes.get_yticks())
         else:
-            rawdata_axes.set_xlim(temp[0], temp[1] + 2)
-        contrast_axes.set_xlim(rawdata_axes.get_xlim())
+            temp = rawdata_axes.get_yticks()
+            temp = np.append(temp, [max(temp) + 1, max(temp) + 2])
+            contrast_axes.set_yticks(temp)       
+
+        if show_pairs:
+            max_x = contrast_axes.get_ylim()[1]
+            rawdata_axes.set_ylim(-0.375, max_x)
+
+        if show_delta2 or show_mini_meta:
+            # Increase the xlim of raw data by 2
+            temp = rawdata_axes.get_ylim()
+            if show_pairs:
+                rawdata_axes.set_ylim(temp[0], temp[1] + 0.25)
+            else:
+                rawdata_axes.set_ylim(temp[0], temp[1] + 2)
+            contrast_axes.set_ylim(rawdata_axes.get_ylim())
+        else:
+            contrast_axes.set_ylim(rawdata_axes.get_ylim())
+
+        # Properly label the contrast ticks.
+        # for t in ticks_to_skip:
+        #     contrast_xtick_labels.insert(t, "")
+
+        # if plot_kwargs["fontsize_contrastxlabel"] is not None:
+        #     fontsize_contrastxlabel = plot_kwargs["fontsize_contrastxlabel"]
+
+        # contrast_axes.set_yticklabels(
+        #     contrast_xtick_labels, fontsize=fontsize_contrastxlabel
+        # )
+
     else:
-        contrast_axes.set_xlim(rawdata_axes.get_xlim())
+        if show_delta2 is False and show_mini_meta is False:
+            contrast_axes.set_xticks(rawdata_axes.get_xticks())
+        else:
+            temp = rawdata_axes.get_xticks()
+            temp = np.append(temp, [max(temp) + 1, max(temp) + 2])
+            contrast_axes.set_xticks(temp)
 
-    # Properly label the contrast ticks.
-    for t in ticks_to_skip:
-        contrast_xtick_labels.insert(t, "")
+        if show_pairs:
+            max_x = contrast_axes.get_xlim()[1]
+            rawdata_axes.set_xlim(-0.375, max_x)
 
-    if plot_kwargs["fontsize_contrastxlabel"] is not None:
-        fontsize_contrastxlabel = plot_kwargs["fontsize_contrastxlabel"]
+        if float_contrast:
+            contrast_axes.set_xlim(0.5, 1.5)
+        elif show_delta2 or show_mini_meta:
+            # Increase the xlim of raw data by 2
+            temp = rawdata_axes.get_xlim()
+            if show_pairs:
+                rawdata_axes.set_xlim(temp[0], temp[1] + 0.25)
+            else:
+                rawdata_axes.set_xlim(temp[0], temp[1] + 2)
+            contrast_axes.set_xlim(rawdata_axes.get_xlim())
+        else:
+            contrast_axes.set_xlim(rawdata_axes.get_xlim())
 
-    contrast_axes.set_xticklabels(
-        contrast_xtick_labels, fontsize=fontsize_contrastxlabel
-    )
+        # Properly label the contrast ticks.
+        for t in ticks_to_skip:
+            contrast_xtick_labels.insert(t, "")
+
+        if plot_kwargs["fontsize_contrastxlabel"] is not None:
+            fontsize_contrastxlabel = plot_kwargs["fontsize_contrastxlabel"]
+
+        contrast_axes.set_xticklabels(
+            contrast_xtick_labels, fontsize=fontsize_contrastxlabel
+        )
 
 
 def show_legend(legend_labels, legend_handles, rawdata_axes, contrast_axes, float_contrast, show_pairs, legend_kwargs):
@@ -898,7 +946,7 @@ def Gardner_Altman_Plot_Aesthetic_Adjustments(effect_size_type, plot_data, xvar,
 def Cumming_Plot_Aesthetic_Adjustments(plot_kwargs, show_delta2, effect_size_type, contrast_axes, reflines_kwargs, 
                                        is_paired, show_pairs, two_col_sankey, idx, ticks_to_start_twocol_sankey,
                                        proportional, ticks_to_skip, temp_idx, rawdata_axes, redraw_axes_kwargs,
-                                       ticks_to_skip_contrast):
+                                       ticks_to_skip_contrast, horizontal=False):
     # Set custom contrast_ylim, if it was specified.
     if plot_kwargs["contrast_ylim"] is not None or (
         plot_kwargs["delta2_ylim"] is not None and show_delta2
@@ -926,115 +974,230 @@ def Cumming_Plot_Aesthetic_Adjustments(plot_kwargs, show_delta2, effect_size_typ
             h = plot_kwargs["contrast_ylim"][1]
             low = -1 if l < -1 else l
             high = 1 if h > 1 else h
-            contrast_axes.set_ylim(low, high)
+            if horizontal:
+                contrast_axes.set_xlim(low, high)
+            else:
+                contrast_axes.set_ylim(low, high)
         else:
-            contrast_axes.set_ylim(custom_contrast_ylim)
+            if horizontal:
+                contrast_axes.set_xlim(custom_contrast_ylim)
+            else:
+                contrast_axes.set_ylim(custom_contrast_ylim)
 
 
     # If 0 lies within the ylim of the contrast axes,
     # draw a zero reference line.
-    contrast_axes_ylim = contrast_axes.get_ylim()
-    if contrast_axes_ylim[0] < contrast_axes_ylim[1]:
-        contrast_ylim_low, contrast_ylim_high = contrast_axes_ylim
-    else:
-        contrast_ylim_high, contrast_ylim_low = contrast_axes_ylim
-    if contrast_ylim_low < 0 < contrast_ylim_high:
-        contrast_axes.axhline(y=0, **reflines_kwargs)
 
-    if is_paired == "baseline" and show_pairs:
-                if two_col_sankey:
-                    rightend_ticks_raw = np.array([len(i) - 2 for i in idx]) + np.array(
-                        ticks_to_start_twocol_sankey
-                    )
-                elif proportional and is_paired is not None:
-                    rightend_ticks_raw = np.array([len(i) - 1 for i in idx]) + np.array(
-                        ticks_to_skip
-                    )
-                else:
-                    rightend_ticks_raw = np.array(
-                        [len(i) - 1 for i in temp_idx]
-                    ) + np.array(ticks_to_skip)
-                for ax in [rawdata_axes]:
-                    sns.despine(ax=ax, bottom=True)
-
-                    ylim = ax.get_ylim()
-                    xlim = ax.get_xlim()
-                    redraw_axes_kwargs["y"] = ylim[0]
-
-                    if two_col_sankey:
-                        for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
-                            end_tick = rightend_ticks_raw[k]
-                            ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
-                    else:
-                        for k, start_tick in enumerate(ticks_to_skip):
-                            end_tick = rightend_ticks_raw[k]
-                            ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
-                    ax.set_ylim(ylim)
-                    del redraw_axes_kwargs["y"]
-
-                if not proportional:
-                    temp_length = [(len(i) - 1) for i in idx]
-                else:
-                    temp_length = [(len(i) - 1) * 2 - 1 for i in idx]
-                if two_col_sankey:
-                    rightend_ticks_contrast = np.array(
-                        [len(i) - 2 for i in idx]
-                    ) + np.array(ticks_to_start_twocol_sankey)
-                elif proportional and is_paired is not None:
-                    rightend_ticks_contrast = np.array(
-                        [len(i) - 1 for i in idx]
-                    ) + np.array(ticks_to_skip)
-                else:
-                    rightend_ticks_contrast = np.array(temp_length) + np.array(
-                        ticks_to_skip_contrast
-                    )
-                for ax in [contrast_axes]:
-                    sns.despine(ax=ax, bottom=True)
-
-                    ylim = ax.get_ylim()
-                    xlim = ax.get_xlim()
-                    redraw_axes_kwargs["y"] = ylim[0]
-
-                    if two_col_sankey:
-                        for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
-                            end_tick = rightend_ticks_contrast[k]
-                            ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
-                    else:
-                        for k, start_tick in enumerate(ticks_to_skip_contrast):
-                            end_tick = rightend_ticks_contrast[k]
-                            ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
-
-                    ax.set_ylim(ylim)
-                    del redraw_axes_kwargs["y"]
-    else:
-        # Compute the end of each x-axes line.
-        if two_col_sankey:
-            rightend_ticks = np.array([len(i) - 2 for i in idx]) + np.array(
-                ticks_to_start_twocol_sankey
-            )
+    if horizontal:
+        contrast_axes_xlim = contrast_axes.get_xlim()
+        if contrast_axes_xlim[0] < contrast_axes_xlim[1]:
+            contrast_xlim_low, contrast_xlim_high = contrast_axes_xlim
         else:
-            rightend_ticks = np.array([len(i) - 1 for i in idx]) + np.array(
-                ticks_to_skip
-            )
+            contrast_xlim_high, contrast_xlim_low = contrast_axes_xlim
+        if contrast_xlim_low < 0 < contrast_xlim_high:
+            contrast_axes.axvline(x=0, **reflines_kwargs)
 
-        for ax in [rawdata_axes, contrast_axes]:
-            sns.despine(ax=ax, bottom=True)
 
-            ylim = ax.get_ylim()
-            xlim = ax.get_xlim()
-            redraw_axes_kwargs["y"] = ylim[0]
 
+        if is_paired == "baseline" and show_pairs:
+                    if two_col_sankey:
+                        rightend_ticks_raw = np.array([len(i) - 2 for i in idx]) + np.array(
+                            ticks_to_start_twocol_sankey
+                        )
+                    elif proportional and is_paired is not None:
+                        rightend_ticks_raw = np.array([len(i) - 1 for i in idx]) + np.array(
+                            ticks_to_skip
+                        )
+                    else:
+                        rightend_ticks_raw = np.array(
+                            [len(i) - 1 for i in temp_idx]
+                        ) + np.array(ticks_to_skip)
+
+                    for ax in [rawdata_axes]:
+                        sns.despine(ax=ax, left=True)
+
+                        ylim = ax.get_ylim()
+                        xlim = ax.get_xlim()
+                        redraw_axes_kwargs["x"] = xlim[0]
+
+                        if two_col_sankey:
+                            for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
+                                end_tick = rightend_ticks_raw[k]
+                                ax.vlines(ymin=start_tick, ymax=end_tick, **redraw_axes_kwargs)
+                        else:
+                            for k, start_tick in enumerate(ticks_to_skip):
+                                end_tick = rightend_ticks_raw[k]
+                                ax.vlines(ymin=start_tick, ymax=end_tick, **redraw_axes_kwargs)
+                        ax.set_xlim(xlim)
+                        del redraw_axes_kwargs["x"]      
+
+
+                    if not proportional:
+                        temp_length = [(len(i) - 1) for i in idx]
+                    else:
+                        temp_length = [(len(i) - 1) * 2 - 1 for i in idx]
+                    if two_col_sankey:
+                        rightend_ticks_contrast = np.array(
+                            [len(i) - 2 for i in idx]
+                        ) + np.array(ticks_to_start_twocol_sankey)
+                    elif proportional and is_paired is not None:
+                        rightend_ticks_contrast = np.array(
+                            [len(i) - 1 for i in idx]
+                        ) + np.array(ticks_to_skip)
+                    else:
+                        rightend_ticks_contrast = np.array(temp_length) + np.array(
+                            ticks_to_skip_contrast
+                        )      
+
+                    for ax in [contrast_axes]:
+                        sns.despine(ax=ax, left=True)
+                        ylim = ax.get_ylim()
+                        xlim = ax.get_xlim()
+                        redraw_axes_kwargs["x"] = xlim[0]
+
+                        if two_col_sankey:
+                            for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
+                                end_tick = rightend_ticks_contrast[k]
+                                ax.vlines(ymin=start_tick, ymax=end_tick, **redraw_axes_kwargs)
+                        else:
+                            for k, start_tick in enumerate(ticks_to_skip_contrast):
+                                end_tick = rightend_ticks_contrast[k]
+                                ax.vlines(ymin=start_tick, ymax=end_tick, **redraw_axes_kwargs)
+
+                        ax.set_xlim(xlim)
+                        del redraw_axes_kwargs["x"] 
+        else:
+            # Compute the end of each x-axes line.
             if two_col_sankey:
-                for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
-                    end_tick = rightend_ticks[k]
-                    ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
+                rightend_ticks = np.array([len(i) - 2 for i in idx]) + np.array(
+                    ticks_to_start_twocol_sankey
+                )
             else:
-                for k, start_tick in enumerate(ticks_to_skip):
-                    end_tick = rightend_ticks[k]
-                    ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
+                rightend_ticks = np.array([len(i) - 1 for i in idx]) + np.array(
+                    ticks_to_skip
+                )
 
-            ax.set_ylim(ylim)
-            del redraw_axes_kwargs["y"]
+            for ax in [rawdata_axes, contrast_axes]:
+                sns.despine(ax=ax, left=True)
+
+                ylim = ax.get_ylim()
+                xlim = ax.get_xlim()
+                redraw_axes_kwargs["x"] = xlim[0]
+
+                if two_col_sankey:
+                    for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
+                        end_tick = rightend_ticks[k]
+                        ax.vlines(ymin=start_tick, ymax=end_tick, **redraw_axes_kwargs)
+                else:
+                    for k, start_tick in enumerate(ticks_to_skip):
+                        end_tick = rightend_ticks[k]
+                        ax.vlines(ymin=start_tick, ymax=end_tick, **redraw_axes_kwargs)
+
+                ax.set_xlim(xlim)
+                del redraw_axes_kwargs["x"]
+    else:
+        contrast_axes_ylim = contrast_axes.get_ylim()
+        if contrast_axes_ylim[0] < contrast_axes_ylim[1]:
+            contrast_ylim_low, contrast_ylim_high = contrast_axes_ylim
+        else:
+            contrast_ylim_high, contrast_ylim_low = contrast_axes_ylim
+        if contrast_ylim_low < 0 < contrast_ylim_high:
+            contrast_axes.axhline(y=0, **reflines_kwargs)
+
+        if is_paired == "baseline" and show_pairs:
+                    if two_col_sankey:
+                        rightend_ticks_raw = np.array([len(i) - 2 for i in idx]) + np.array(
+                            ticks_to_start_twocol_sankey
+                        )
+                    elif proportional and is_paired is not None:
+                        rightend_ticks_raw = np.array([len(i) - 1 for i in idx]) + np.array(
+                            ticks_to_skip
+                        )
+                    else:
+                        rightend_ticks_raw = np.array(
+                            [len(i) - 1 for i in temp_idx]
+                        ) + np.array(ticks_to_skip)
+                    for ax in [rawdata_axes]:
+                        sns.despine(ax=ax, bottom=True)
+
+                        ylim = ax.get_ylim()
+                        xlim = ax.get_xlim()
+                        redraw_axes_kwargs["y"] = ylim[0]
+
+                        if two_col_sankey:
+                            for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
+                                end_tick = rightend_ticks_raw[k]
+                                ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
+                        else:
+                            for k, start_tick in enumerate(ticks_to_skip):
+                                end_tick = rightend_ticks_raw[k]
+                                ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
+                        ax.set_ylim(ylim)
+                        del redraw_axes_kwargs["y"]
+
+                    if not proportional:
+                        temp_length = [(len(i) - 1) for i in idx]
+                    else:
+                        temp_length = [(len(i) - 1) * 2 - 1 for i in idx]
+                    if two_col_sankey:
+                        rightend_ticks_contrast = np.array(
+                            [len(i) - 2 for i in idx]
+                        ) + np.array(ticks_to_start_twocol_sankey)
+                    elif proportional and is_paired is not None:
+                        rightend_ticks_contrast = np.array(
+                            [len(i) - 1 for i in idx]
+                        ) + np.array(ticks_to_skip)
+                    else:
+                        rightend_ticks_contrast = np.array(temp_length) + np.array(
+                            ticks_to_skip_contrast
+                        )
+                    for ax in [contrast_axes]:
+                        sns.despine(ax=ax, bottom=True)
+
+                        ylim = ax.get_ylim()
+                        xlim = ax.get_xlim()
+                        redraw_axes_kwargs["y"] = ylim[0]
+
+                        if two_col_sankey:
+                            for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
+                                end_tick = rightend_ticks_contrast[k]
+                                ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
+                        else:
+                            for k, start_tick in enumerate(ticks_to_skip_contrast):
+                                end_tick = rightend_ticks_contrast[k]
+                                ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
+
+                        ax.set_ylim(ylim)
+                        del redraw_axes_kwargs["y"]
+        else:
+            # Compute the end of each x-axes line.
+            if two_col_sankey:
+                rightend_ticks = np.array([len(i) - 2 for i in idx]) + np.array(
+                    ticks_to_start_twocol_sankey
+                )
+            else:
+                rightend_ticks = np.array([len(i) - 1 for i in idx]) + np.array(
+                    ticks_to_skip
+                )
+
+            for ax in [rawdata_axes, contrast_axes]:
+                sns.despine(ax=ax, bottom=True)
+
+                ylim = ax.get_ylim()
+                xlim = ax.get_xlim()
+                redraw_axes_kwargs["y"] = ylim[0]
+
+                if two_col_sankey:
+                    for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
+                        end_tick = rightend_ticks[k]
+                        ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
+                else:
+                    for k, start_tick in enumerate(ticks_to_skip):
+                        end_tick = rightend_ticks[k]
+                        ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
+
+                ax.set_ylim(ylim)
+                del redraw_axes_kwargs["y"]
 
 def General_Plot_Aesthetic_Adjustments(show_delta2, show_mini_meta, contrast_axes, redraw_axes_kwargs, plot_kwargs,
                                yvar, effect_size_type, proportional, effectsize_df, is_paired, float_contrast,

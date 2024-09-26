@@ -610,6 +610,11 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
         get_color_palette,
         initialize_fig,
         get_plot_groups,
+        add_counts_to_ticks,
+        extract_contrast_plotting_ticks,
+        set_xaxis_ticks_and_lims,
+        show_legend,
+        Cumming_Plot_Aesthetic_Adjustments,
 
     )
     from .plot_tools import (
@@ -619,6 +624,9 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
         swarmplot,
         barplotter,
         error_bar,
+        get_swarm_spans,
+        effect_size_curve_plotter,
+        plot_minimeta_or_deltadelta_violins
     )
                     
     warnings.filterwarnings(
@@ -744,17 +752,17 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
         else:
             # Plot the raw data as a set of Sankey Diagrams aligned like barplot.
             raise NotImplementedError("Sankey Diagrams for horizontal plots are not implemented yet.")
-            # sankey_control_group, sankey_test_group = sankeydiag(
-            #                                                 plot_data,
-            #                                                 xvar=xvar,
-            #                                                 yvar=yvar,
-            #                                                 temp_all_plot_groups=temp_all_plot_groups,
-            #                                                 idx=idx,
-            #                                                 temp_idx=temp_idx,
-            #                                                 palette=plot_palette_sankey,
-            #                                                 ax=rawdata_axes,
-            #                                                 **sankey_kwargs
-            #                                                 )
+            sankey_control_group, sankey_test_group = sankeydiag(
+                                                            plot_data,
+                                                            xvar=xvar,
+                                                            yvar=yvar,
+                                                            temp_all_plot_groups=temp_all_plot_groups,
+                                                            idx=idx,
+                                                            temp_idx=temp_idx,
+                                                            palette=plot_palette_sankey,
+                                                            ax=rawdata_axes,
+                                                            **sankey_kwargs
+                                                            )
 
     else:
         if not proportional:
@@ -762,7 +770,8 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
             asymmetric_side = (
                 plot_kwargs["swarm_side"]
                 if plot_kwargs["swarm_side"] is not None
-                else "right"
+                else "right" if not plot_kwargs["horizontal"] 
+                else "left"
             )  # Default asymmetric side is right
 
             # swarmplot() plots swarms based on current size of ax
@@ -820,8 +829,9 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
                             # currently offset is hardcoded with value of -0.2
                             x_max_span = -0.2
                         else:
-                            _, x_max, _, _ = get_swarm_spans(c)
-                            x_max_span = x_max - jj
+                            # _, x_max, _, _ = get_swarm_spans(c)
+                            # x_max_span = x_max - jj
+                            x_max_span = 0.1 # currently offset is hardcoded with value of 0.1
                         xspans.append(x_max_span)
                     except TypeError:
                         # we have got a None, so skip and move on.
@@ -859,6 +869,151 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
                 horizontal=True,
                 **group_summary_kwargs
                 )
+
+
+    # # Add the counts to the rawdata axes xticks.
+    # add_counts_to_ticks(
+    #         plot_data=plot_data, 
+    #         xvar=xvar, 
+    #         yvar=yvar, 
+    #         rawdata_axes=rawdata_axes, 
+    #         plot_kwargs=plot_kwargs,
+    #         horizontal=True,
+    #         )
+
+    # Enforce the xtick of rawdata_axes to be 0 and 1 after drawing only one sankey ----> Redundant code
+    if one_sankey:
+        rawdata_axes.set_xticks([0, 1])
+
+
+    # Plot effect sizes and bootstraps.
+    plot_groups = temp_all_plot_groups if (is_paired == "baseline" and show_pairs and two_col_sankey) else temp_idx if (two_col_sankey) else all_plot_groups
+
+    (ticks_to_skip, ticks_to_plot, 
+     ticks_to_skip_contrast, ticks_to_start_twocol_sankey) = extract_contrast_plotting_ticks(
+                                                                                    is_paired=is_paired, 
+                                                                                    show_pairs=show_pairs, 
+                                                                                    two_col_sankey=two_col_sankey, 
+                                                                                    plot_groups=plot_groups,
+                                                                                    idx=idx,
+                                                                                    sankey_control_group=sankey_control_group if two_col_sankey else None,
+                                                                                    )
+
+    # Plot the bootstraps, then the effect sizes and CIs.
+    es_marker_size = plot_kwargs["es_marker_size"]
+    halfviolin_alpha = plot_kwargs["halfviolin_alpha"]
+    ci_type = plot_kwargs["ci_type"]
+
+    results = effectsize_df.results
+
+
+
+    (current_group, current_control, 
+     current_effsize, contrast_xtick_labels) = effect_size_curve_plotter(
+                                                                    ticks_to_plot=ticks_to_plot, 
+                                                                    results=results, 
+                                                                    ci_type=ci_type, 
+                                                                    contrast_axes=contrast_axes, 
+                                                                    violinplot_kwargs=violinplot_kwargs, 
+                                                                    halfviolin_alpha=halfviolin_alpha, 
+                                                                    ytick_color=ytick_color, 
+                                                                    es_marker_size=es_marker_size, 
+                                                                    group_summary_kwargs=group_summary_kwargs,  
+                                                                    bootstraps_color_by_group=bootstraps_color_by_group,
+                                                                    plot_palette_contrast=plot_palette_contrast,
+                                                                    horizontal=True,
+                                                                    )
+
+
+    # Plot mini-meta violin
+    if show_mini_meta or show_delta2:
+        contrast_xtick_labels = plot_minimeta_or_deltadelta_violins(
+                                                                show_mini_meta=show_mini_meta, 
+                                                                effectsize_df=effectsize_df, 
+                                                                ci_type=ci_type, 
+                                                                rawdata_axes=rawdata_axes,
+                                                                contrast_axes=contrast_axes, 
+                                                                violinplot_kwargs=violinplot_kwargs, 
+                                                                halfviolin_alpha=halfviolin_alpha, 
+                                                                ytick_color=ytick_color, 
+                                                                es_marker_size=es_marker_size, 
+                                                                group_summary_kwargs=group_summary_kwargs, 
+                                                                contrast_xtick_labels=contrast_xtick_labels, 
+                                                                effect_size=effect_size
+                                                                )
+
+
+    # Make sure the contrast_axes y-lims match the rawdata_axes ylims,
+    # and add an extra violinplot tick for delta-delta plot.
+    # Name is xaxis but it is actually y-axis for horizontal plots
+    set_xaxis_ticks_and_lims(
+                        show_delta2=show_delta2, 
+                        show_mini_meta=show_mini_meta, 
+                        rawdata_axes=rawdata_axes, 
+                        contrast_axes=contrast_axes, 
+                        show_pairs=show_pairs, 
+                        float_contrast=float_contrast,
+                        ticks_to_skip=ticks_to_skip, 
+                        contrast_xtick_labels=contrast_xtick_labels, 
+                        plot_kwargs=plot_kwargs,
+                        horizontal=True,
+                        )
+    
+
+    # Legend
+    handles, labels = rawdata_axes.get_legend_handles_labels()
+    legend_labels = [l for l in labels]
+    legend_handles = [h for h in handles]
+
+    if bootstraps_color_by_group is False:
+        rawdata_axes.legend().set_visible(False)
+        show_legend(
+            legend_labels=legend_labels, 
+            legend_handles=legend_handles, 
+            rawdata_axes=rawdata_axes, 
+            contrast_axes=contrast_axes, 
+            float_contrast=float_contrast, 
+            show_pairs=show_pairs, 
+            legend_kwargs=legend_kwargs
+            )
+
+    # Add legend for swarmplot
+    if not show_pairs and not proportional and color_col is not None and not show_delta2:
+        if len(np.unique(swarm_legend_kwargs['index'])) > 1:
+            legend_elements = []
+            for color, label in zip(swarm_legend_kwargs['colors'], swarm_legend_kwargs['labels']):
+                legend_elements.append(Line2D([0], [0], marker='o', color='w', label=label,
+                                                markerfacecolor=color, markersize=10))
+            rawdata_axes.legend(handles=legend_elements, frameon=False)
+    
+    # Plot aesthetic adjustments.
+    og_ylim_raw = rawdata_axes.get_ylim()
+    og_xlim_raw = rawdata_axes.get_xlim()
+
+    Cumming_Plot_Aesthetic_Adjustments(
+                            plot_kwargs=plot_kwargs, 
+                            show_delta2=show_delta2, 
+                            effect_size_type=effect_size_type, 
+                            contrast_axes=contrast_axes, 
+                            reflines_kwargs=reflines_kwargs, 
+                            is_paired=is_paired, 
+                            show_pairs=show_pairs, 
+                            two_col_sankey=two_col_sankey, 
+                            idx=idx, 
+                            ticks_to_start_twocol_sankey=ticks_to_start_twocol_sankey,
+                            proportional=proportional, 
+                            ticks_to_skip=ticks_to_skip, 
+                            temp_idx=temp_idx if is_paired == "baseline" and show_pairs else None, 
+                            rawdata_axes=rawdata_axes, 
+                            redraw_axes_kwargs=redraw_axes_kwargs,
+                            ticks_to_skip_contrast=ticks_to_skip_contrast,
+                            horizontal=True,
+                            )
+
+
+
+
+
 
 
     if swarm_ylim is None:
