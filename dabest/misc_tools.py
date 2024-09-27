@@ -306,9 +306,17 @@ def get_kwargs(plot_kwargs, ytick_color):
     else:
         contrast_bars_kwargs = merge_two_dicts(default_contrast_bars_kwargs, plot_kwargs["contrast_bars_kwargs"])
 
+    # Table axes for horizontal plot kwargs.
+    default_table_kwargs = {'color' : 'yellow','alpha' :0.2,'fontsize' : 12,'text_color' : 'black', 'text_units' : None,'paired_gap_dashes' : False,
+                            'fontsize_label': 12}
+    if plot_kwargs["horizontal_table_kwargs"] is None:
+        table_kwargs = default_table_kwargs
+    else:
+        table_kwargs = merge_two_dicts(default_table_kwargs, plot_kwargs["horizontal_table_kwargs"])
+
     return (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs, 
             reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
-            delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs)
+            delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs)
 
 
 def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_groups):
@@ -987,7 +995,6 @@ def Cumming_Plot_Aesthetic_Adjustments(plot_kwargs, show_delta2, effect_size_typ
 
     # If 0 lies within the ylim of the contrast axes,
     # draw a zero reference line.
-
     if horizontal:
         contrast_axes_xlim = contrast_axes.get_xlim()
         if contrast_axes_xlim[0] < contrast_axes_xlim[1]:
@@ -1029,7 +1036,7 @@ def Cumming_Plot_Aesthetic_Adjustments(plot_kwargs, show_delta2, effect_size_typ
                                 end_tick = rightend_ticks_raw[k]
                                 ax.vlines(ymin=start_tick, ymax=end_tick, **redraw_axes_kwargs)
                         ax.set_xlim(xlim)
-                        del redraw_axes_kwargs["x"]       
+                        del redraw_axes_kwargs["x"] 
         else:
             # Compute the end of each x-axes line.
             if two_col_sankey:
@@ -1040,7 +1047,6 @@ def Cumming_Plot_Aesthetic_Adjustments(plot_kwargs, show_delta2, effect_size_typ
                 rightend_ticks = np.array([len(i) - 1 for i in idx]) + np.array(
                     ticks_to_skip
                 )
-
             for ax in [rawdata_axes]:
                 sns.despine(ax=ax, left=True)
 
@@ -1058,6 +1064,7 @@ def Cumming_Plot_Aesthetic_Adjustments(plot_kwargs, show_delta2, effect_size_typ
                         ax.vlines(ymin=start_tick, ymax=end_tick, **redraw_axes_kwargs)
 
                 ax.set_xlim(xlim)
+                ax.set_ylim(ylim)
                 del redraw_axes_kwargs["x"]
 
         # Remove y ticks and labels from the contrast axes.
@@ -1240,21 +1247,21 @@ def General_Plot_Aesthetic_Adjustments(show_delta2, show_mini_meta, contrast_axe
 
         # Because we turned the axes frame off, we also need to draw back
         # the x-spine for both axes.
-        rawdata_axes.set_ylim(contrast_axes.get_ylim())
-        og_xlim_raw = og_ylim_raw
-        new_ylim_raw = rawdata_axes.get_ylim()
+        # rawdata_axes.set_ylim(contrast_axes.get_ylim())
+        # og_xlim_raw = og_ylim_raw
+        # new_ylim_raw = rawdata_axes.get_ylim()
 
-        rawdata_axes.hlines(
-            new_ylim_raw[1], og_xlim_raw[0], og_xlim_raw[1], **redraw_axes_kwargs
-        )
+        # spine_ylim = 1 if not proportional else 0
+        # rawdata_axes.hlines(
+        #     new_ylim_raw[spine_ylim], og_xlim_raw[0], og_xlim_raw[1], **redraw_axes_kwargs
+        # )
+        # og_ylim_contrast = contrast_axes.get_ylim()
+        # ypos = og_ylim_contrast[spine_ylim]
 
-        og_ylim_contrast = contrast_axes.get_ylim()
-        ypos = og_ylim_contrast[1]
-
-        og_xlim_contrast = contrast_axes.get_xlim()
-        contrast_axes.hlines(
-            ypos, og_xlim_contrast[0], og_xlim_contrast[1], **redraw_axes_kwargs
-        )
+        # og_xlim_contrast = contrast_axes.get_xlim()
+        # contrast_axes.hlines(
+        #     ypos, og_xlim_contrast[0], og_xlim_contrast[1], **redraw_axes_kwargs
+        # )
 
         if show_delta2:
             if plot_kwargs["delta2_label"] is not None:
@@ -1265,14 +1272,16 @@ def General_Plot_Aesthetic_Adjustments(show_delta2, show_mini_meta, contrast_axe
                 delta2_label = "deltas' g"
             raise NotImplementedError("Delta2 is not yet supported for horizontal plots.")
         
+        # Set custom ylims, if they were specified.
         swarm_ylim = plot_kwargs["swarm_ylim"]
         contrast_ylim = plot_kwargs["contrast_ylim"]
-        if swarm_ylim is None:
-            swarm_ylim = rawdata_axes.get_ylim()
-        rawdata_axes.set_ylim(swarm_ylim[1], swarm_ylim[0])
-        if plot_kwargs['contrast_ylim'] is None:
-            contrast_ylim = contrast_axes.get_ylim()
-        contrast_axes.set_ylim(contrast_ylim[1], contrast_ylim[0])
+        if not proportional:
+            if swarm_ylim is None:
+                swarm_ylim = rawdata_axes.get_ylim()
+            rawdata_axes.set_ylim(swarm_ylim[1], swarm_ylim[0])
+            if plot_kwargs['contrast_ylim'] is None:
+                contrast_ylim = contrast_axes.get_ylim()
+            contrast_axes.set_ylim(contrast_ylim[1], contrast_ylim[0])
 
     else:
         contrast_axes.set_ylabel(contrast_label, fontsize=fontsize_contrastylabel)

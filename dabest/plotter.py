@@ -116,9 +116,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                                                     plot_kwargs=plot_kwargs
                                                                                     )
 
-    (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, 
-     slopegraph_kwargs, reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, 
-     delta_dot_kwargs, delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs) = get_kwargs(
+    (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs,
+     reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
+     delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs) = get_kwargs(
                                                                                                                 plot_kwargs=plot_kwargs, 
                                                                                                                 ytick_color=ytick_color
                                                                                                                 )
@@ -627,7 +627,9 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
         error_bar,
         get_swarm_spans,
         effect_size_curve_plotter,
-        plot_minimeta_or_deltadelta_violins
+        plot_minimeta_or_deltadelta_violins,
+        contrast_bars_plotter,
+        table_for_horizontal_plots,
     )
                     
     warnings.filterwarnings(
@@ -637,7 +639,6 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
     # Have to disable logging of warning when get_legend_handles_labels()
     # tries to get from slopegraph.
     logging.disable(logging.WARNING)
-
 
 
     # Save rcParams that I will alter, so I can reset back.
@@ -659,13 +660,19 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
     if plot_kwargs['horizontal']:
         float_contrast = False
     
-    (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, 
-     slopegraph_kwargs, reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, 
-     delta_dot_kwargs, delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs) = get_kwargs(
+    (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs,
+     reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
+     delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs) = get_kwargs(
                                                                                                                 plot_kwargs=plot_kwargs, 
                                                                                                                 ytick_color=ytick_color
                                                                                                                 )
     
+    # # Things to be added:
+    # if proportional:
+    #     raise NotImplementedError('Proportional plots have yet to be added in a horizontal format')
+    # if show_delta2 or show_mini_meta:
+    #     raise NotImplementedError('delta-delta or mini-meta plots have yet to be added in a horizontal format')
+
 
     # We also need to extract the `sankey` and `flow` from the kwargs for plotter.py
     # to use for varying different kinds of paired proportional plots
@@ -705,7 +712,6 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
 
 
     # Plotting the rawdata.
-                
     if show_pairs:
         temp_idx, temp_all_plot_groups = get_plot_groups(
                                                     is_paired=is_paired, 
@@ -803,18 +809,18 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
 
         else:
             # Plot the raw data as a barplot.
-            raise NotImplementedError("Barplots for horizontal plots are not implemented yet.")
-            # barplotter(
-            #     xvar=xvar, 
-            #     yvar=yvar, 
-            #     all_plot_groups=all_plot_groups, 
-            #     rawdata_axes=rawdata_axes, 
-            #     plot_data=plot_data, 
-            #     bar_color=bar_color, 
-            #     plot_palette_bar=plot_palette_bar, 
-            #     plot_kwargs=plot_kwargs, 
-            #     barplot_kwargs=barplot_kwargs
-            #     )
+            barplotter(
+                xvar=xvar, 
+                yvar=yvar, 
+                all_plot_groups=all_plot_groups, 
+                rawdata_axes=rawdata_axes, 
+                plot_data=plot_data, 
+                bar_color=bar_color, 
+                plot_palette_bar=plot_palette_bar, 
+                plot_kwargs=plot_kwargs, 
+                barplot_kwargs=barplot_kwargs,
+                horizontal=True,
+                )
 
 
         # Plot the error bars.
@@ -962,7 +968,6 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
                         plot_kwargs=plot_kwargs,
                         horizontal=True,
                         )
-    
 
     # Legend
     handles, labels = rawdata_axes.get_legend_handles_labels()
@@ -1032,13 +1037,40 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
                                 effect_size=effect_size,
                                 horizontal=True,
                                 )
-    # if swarm_ylim is None:
-    #     swarm_ylim = rawdata_axes.get_ylim()
-    # rawdata_axes.set_ylim(swarm_ylim[1], swarm_ylim[0])
-    # if plot_kwargs['contrast_ylim'] is None:
-    #     contrast_ylim = contrast_axes.get_ylim()
-    # contrast_axes.set_ylim(contrast_ylim[1], contrast_ylim[0])
+    
+    ################################################### Swarm & Contrast & Summary Bars & Delta text WIP
+    # Contrast bars WIP
+    contrast_bars = plot_kwargs["contrast_bars"]
+    if contrast_bars:
+        contrast_bars_plotter(
+                        results=results, 
+                        ax_to_plot=contrast_axes, 
+                        swarm_plot_ax=rawdata_axes,
+                        ticks_to_plot=ticks_to_plot, 
+                        contrast_bars_kwargs=contrast_bars_kwargs, 
+                        color_col=color_col, 
+                        plot_palette_raw=plot_palette_raw, 
+                        show_mini_meta=show_mini_meta, 
+                        mini_meta_delta=effectsize_df.mini_meta_delta if show_mini_meta else None, 
+                        show_delta2=show_delta2, 
+                        delta_delta=effectsize_df.delta_delta if show_delta2 else None, 
+                        proportional=proportional, 
+                        is_paired=is_paired,
+                        horizontal=True
+                        )
+    
 
+    # Table Axes for horizontal plots
+    table_for_horizontal_plots(
+                        effectsize_df=effectsize_df,
+                        ax = table_axes,
+                        contrast_axes=contrast_axes,
+                        ticks_to_plot=ticks_to_plot, 
+                        show_mini_meta=show_mini_meta,
+                        show_delta2=show_delta2,
+                        table_kwargs=table_kwargs,
+                        )
+    
 
     # Make sure no stray ticks appear!
     rawdata_axes.xaxis.set_ticks_position("bottom")

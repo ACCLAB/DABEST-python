@@ -1028,6 +1028,7 @@ class EffectSizeDataFrame(object):
 
         # Horizontal Plots
         horizontal=False,
+        horizontal_table_kwargs=None,
     ):
         """
         Creates an estimation plot for the effect size of interest.
@@ -1212,6 +1213,9 @@ class EffectSizeDataFrame(object):
 
         horizontal : boolean, default False
             Whether or not to plot the effect size plot in a horizontal format.
+        horizontal_table_kwargs : dict, default None
+            Pass relevant keyword arguments to the horizontal table. If None, the following keywords are passed:
+            {'color' : 'yellow', 'alpha' :0.2, 'fontsize' : 12, 'text_color' : 'black', 'text_units' : None, 'paired_gap_dashes' : False, 'fontsize_label': 12}
 
         Returns
         -------

@@ -7,7 +7,8 @@ from __future__ import annotations
 __all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'width_determine',
            'single_sankey', 'sankeydiag', 'summary_bars_plotter', 'contrast_bars_plotter', 'swarm_bars_plotter',
            'delta_text_plotter', 'DeltaDotsPlotter', 'slopegraph_plotter', 'plot_minimeta_or_deltadelta_violins',
-           'effect_size_curve_plotter', 'grid_key_WIP', 'barplotter', 'swarmplot', 'SwarmPlot']
+           'effect_size_curve_plotter', 'grid_key_WIP', 'barplotter', 'table_for_horizontal_plots', 'swarmplot',
+           'SwarmPlot']
 
 # %% ../nbs/API/plot_tools.ipynb 4
 import math
@@ -100,7 +101,11 @@ def error_bar(
 
     if ax is None:
         ax = plt.gca()
-    ax_ylims = ax.get_ylim()
+
+    if horizontal:
+        ax_ylims = ax.get_xlim()
+    else:
+        ax_ylims = ax.get_ylim()
     ax_yspan = np.abs(ax_ylims[1] - ax_ylims[0])
     gap_width = ax_yspan * gap_width_percent / 100
 
@@ -898,7 +903,8 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
 def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: object,
                           ticks_to_plot: list, contrast_bars_kwargs: dict, color_col: str, 
                           plot_palette_raw: dict, show_mini_meta: bool, mini_meta_delta: object, 
-                          show_delta2: bool, delta_delta: object, proportional: bool, is_paired: bool):
+                          show_delta2: bool, delta_delta: object, proportional: bool, is_paired: bool,
+                          horizontal: bool = False):
     """
     Add contrast bars to the contrast plot.
 
@@ -930,6 +936,8 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
         Whether the data is proportional.
     is_paired : bool
         Whether the data is paired.
+    horizontal : bool
+        Whether the plot is horizontal.
     """
     contrast_means = []
     for j, tick in enumerate(ticks_to_plot):
@@ -943,14 +951,26 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
         else list(plot_palette_raw.values())
     )
     contrast_bars_kwargs.pop('color')
-    for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
-        ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25,0),0.5, contrast_bars_y, zorder=-1, color=contrast_bars_colors[contrast_bars_x], **contrast_bars_kwargs))
 
-    if show_mini_meta:
-        ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25,0),0.5, mini_meta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
+    if horizontal:
+        for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
+            ax_to_plot.add_patch(mpatches.Rectangle((0,contrast_bars_x-0.5),contrast_bars_y, 0.5, zorder=-10, color=contrast_bars_colors[contrast_bars_x], **contrast_bars_kwargs))
 
-    if show_delta2:
-        ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25,0),0.5, delta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
+        if show_mini_meta:
+            ax_to_plot.add_patch(mpatches.Rectangle((0, max(swarm_plot_ax.get_yticks())+2-0.5), mini_meta_delta.difference, 0.5, zorder=-10, color='black', **contrast_bars_kwargs))
+
+        if show_delta2:
+            ax_to_plot.add_patch(mpatches.Rectangle((0, max(swarm_plot_ax.get_yticks())+2-0.5), delta_delta.difference, 0.5, zorder=-10, color='black', **contrast_bars_kwargs))
+
+    else:
+        for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
+            ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25,0),0.5, contrast_bars_y, zorder=-1, color=contrast_bars_colors[contrast_bars_x], **contrast_bars_kwargs))
+
+        if show_mini_meta:
+            ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25,0),0.5, mini_meta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
+
+        if show_delta2:
+            ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25,0),0.5, delta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
 
 def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
                        swarm_bars_kwargs: dict, color_col: str, plot_palette_raw: dict, is_paired: bool):
@@ -1499,40 +1519,132 @@ def grid_key_WIP(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes, co
     rawdata_axes.get_xaxis().set_visible(False)
     contrast_axes.get_xaxis().set_visible(False)
 
-def barplotter(xvar, yvar, all_plot_groups, rawdata_axes, plot_data, bar_color, plot_palette_bar, plot_kwargs, barplot_kwargs):
-    # Plot the raw data as a barplot.
-    bar1_df = pd.DataFrame(
-        {xvar: all_plot_groups, "proportion": np.ones(len(all_plot_groups))}
-    )
-    bar1 = sns.barplot(
-        data=bar1_df,
-        x=xvar,
-        y="proportion",
-        ax=rawdata_axes,
-        order=all_plot_groups,
-        linewidth=2,
-        facecolor=(1, 1, 1, 0),
-        edgecolor=bar_color,
-        zorder=1,
-    )
-    bar2 = sns.barplot(
-        data=plot_data,
-        x=xvar,
-        y=yvar,
-        ax=rawdata_axes,
-        order=all_plot_groups,
-        palette=plot_palette_bar,
-        zorder=1,
-        **barplot_kwargs
-    )
-    # adjust the width of bars
-    bar_width = plot_kwargs["bar_width"]
-    for bar in bar1.patches:
-        x = bar.get_x()
-        width = bar.get_width()
-        centre = x + width / 2.0
-        bar.set_x(centre - bar_width / 2.0)
-        bar.set_width(bar_width)
+def barplotter(xvar, yvar, all_plot_groups, rawdata_axes, plot_data, bar_color, plot_palette_bar, 
+               plot_kwargs, barplot_kwargs, horizontal=False):
+    
+    if horizontal:
+        # Plot the raw data as a barplot.
+        bar1_df = pd.DataFrame(
+            {xvar: np.ones(len(all_plot_groups)), "proportion": all_plot_groups}
+        )
+        bar1 = sns.barplot(
+            data=bar1_df,
+            x=xvar,
+            y="proportion",
+            ax=rawdata_axes,
+            order=all_plot_groups,
+            linewidth=2,
+            facecolor=(1, 1, 1, 0),
+            edgecolor=bar_color,
+            zorder=1,
+            orient="h",
+        )
+        bar2 = sns.barplot(
+            data=plot_data,
+            x=yvar,
+            y=xvar,
+            ax=rawdata_axes,
+            order=all_plot_groups,
+            palette=plot_palette_bar,
+            zorder=1,
+            orient="h",
+            **barplot_kwargs
+        )
+        # adjust the width of bars
+        bar_width = plot_kwargs["bar_width"]
+        for bar in bar1.patches:
+            y = bar.get_y()
+            height = bar.get_height()
+            centre = y + height / 2.0
+            bar.set_y(centre - bar_width / 2.0)
+            bar.set_height(bar_width)
+    else:
+        # Plot the raw data as a barplot.
+        bar1_df = pd.DataFrame(
+            {xvar: all_plot_groups, "proportion": np.ones(len(all_plot_groups))}
+        )
+        bar1 = sns.barplot(
+            data=bar1_df,
+            x=xvar,
+            y="proportion",
+            ax=rawdata_axes,
+            order=all_plot_groups,
+            linewidth=2,
+            facecolor=(1, 1, 1, 0),
+            edgecolor=bar_color,
+            zorder=1,
+        )
+        bar2 = sns.barplot(
+            data=plot_data,
+            x=xvar,
+            y=yvar,
+            ax=rawdata_axes,
+            order=all_plot_groups,
+            palette=plot_palette_bar,
+            zorder=1,
+            **barplot_kwargs
+        )
+        # adjust the width of bars
+        bar_width = plot_kwargs["bar_width"]
+        for bar in bar1.patches:
+            x = bar.get_x()
+            width = bar.get_width()
+            centre = x + width / 2.0
+            bar.set_x(centre - bar_width / 2.0)
+            bar.set_width(bar_width)
+
+def table_for_horizontal_plots(effectsize_df, ax, contrast_axes, ticks_to_plot, show_mini_meta, show_delta2, table_kwargs):
+    table_color = table_kwargs['color']
+    table_alpha = table_kwargs['alpha']
+    table_font_size = table_kwargs['fontsize'] if table_kwargs['text_units'] == None else table_kwargs['fontsize']-2
+    table_text_color = table_kwargs['text_color']
+    text_units = '' if table_kwargs['text_units'] == None else table_kwargs['text_units']
+    table_gap_dashes = table_kwargs['paired_gap_dashes']
+    fontsize_label = table_kwargs['fontsize_label']
+
+    ### Create a table of deltas
+    cols=['Δ','N']
+    lst = []
+    for n in np.arange(0, len(effectsize_df.results.difference), 1):
+        lst.append([effectsize_df.results.difference[n],0])
+    if show_mini_meta:
+        lst.append([effectsize_df.mini_meta_delta.difference,0])
+    elif show_delta2:
+        lst.append([effectsize_df.delta_delta.difference,0])
+    tab = pd.DataFrame(lst, columns=cols)
+
+
+    ### Plot the text
+    for i,loc in zip(tab.index, ticks_to_plot):
+        if show_mini_meta or show_delta2:
+            loc_new = loc if loc != 0.25 else loc+0.25
+            ax.text(0.5, loc_new, "{:+.2f}".format(tab.iloc[i,0])+text_units,ha="center", va="center", color=table_text_color,size=table_font_size)
+        else:
+            ax.text(0.5, loc, "{:+.2f}".format(tab.iloc[i,0])+text_units,ha="center", va="center", color=table_text_color,size=table_font_size)
+
+    # ### Plot the dashes
+    # if show_mini_meta or show_delta2:
+    #     no_contrast_positions = list(set([int(x-0.5) for x in ticks_to_plot[:-1]]) ^ set(np.arange(2,Num_Exps+2,1)))
+    # else:
+    #     no_contrast_positions = list(set([int(x-0.5) for x in ypos]) ^ set(np.arange(0,Num_Exps,1)))
+
+    # if table_gap_dashes or not is_paired or multi_paired_control:
+    #     if not (mini_meta or delta2):
+    #         for i in no_contrast_positions:
+    #             rawdata_axes.table_axes.text(0.5, i+1, "—",ha="center", va="center", color=table_text_color,size=table_font_size)
+
+
+    ### Parameters for table
+    ax.axvspan(0, 1, facecolor=table_color, alpha=table_alpha)  #### Plot the background color
+    ax.set_xticks([0.5])
+    ax.set_xticklabels([])
+    ax.set_ylim(contrast_axes.get_ylim())
+    ax.set_yticks([])
+    ax.set_yticklabels([])
+    ax.tick_params(left=False, bottom=False)
+    ax.set_xlabel('Δ', fontsize=fontsize_label) # Set the x-axis label - hardcoded for now
+    sns.despine(ax=ax, left=True, bottom=True)
+    ...
 
 # %% ../nbs/API/plot_tools.ipynb 6
 def swarmplot(
