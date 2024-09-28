@@ -382,6 +382,7 @@ def single_sankey(
     one_sankey: bool = False,  # if True, only draw one sankey diagram
     right_color: bool = False,  # if True, each strip of the diagram will be colored according to the corresponding left labels
     align: str = "center",  # if 'center', the diagram will be centered on each xtick,  if 'edge', the diagram will be aligned with the left edge of each xtick
+    horizontal: bool = False,  # if True, the horizontal format for the sankey diagram will be used
 ):
     """
     Make a single Sankey diagram showing proportion flow from left to right
@@ -542,16 +543,24 @@ def single_sankey(
 
     # Plot vertical bars for each label
     for left_label in left_labels:
-        ax.fill_between(
-            [leftpos + (-(bar_width) * xMax * 0.5), leftpos + (bar_width * xMax * 0.5)],
-            2 * [leftWidths_norm[left_label]["bottom"]],
-            2 * [leftWidths_norm[left_label]["top"]],
-            color=colorDict[left_label],
-            alpha=0.99,
-        )
+        if horizontal:
+            fill_method = ax.fill_betweenx
+        else:
+            fill_method = ax.fill_between
+        fill_method(
+                [leftpos + (-(bar_width) * xMax * 0.5), leftpos + (bar_width * xMax * 0.5)],
+                2 * [leftWidths_norm[left_label]["bottom"]],
+                2 * [leftWidths_norm[left_label]["top"]],
+                color=colorDict[left_label],
+                alpha=0.99,
+            )
     if (not flow and sankey) or one_sankey:
         for right_label in right_labels:
-            ax.fill_between(
+            if horizontal:
+                fill_method = ax.fill_betweenx
+            else:
+                fill_method = ax.fill_between
+            fill_method(
                 [
                     xMax + leftpos + (-bar_width * xMax * 0.5),
                     leftpos + xMax + (bar_width * xMax * 0.5),
@@ -564,16 +573,29 @@ def single_sankey(
 
     # Plot error bars
     if error_bar_on and strip_on:
-        error_bar(
-            concatenated_df,
-            x="groups",
-            y="values",
-            ax=ax,
-            offset=0,
-            gap_width_percent=2,
-            method="sankey_error_bar",
-            pos=[leftpos, leftpos + xMax],
-        )
+        if horizontal:
+            error_bar(
+                concatenated_df,
+                x="groups",
+                y="values",
+                ax=ax,
+                offset=0,
+                gap_width_percent=2,
+                method="sankey_error_bar",
+                pos=[leftpos, leftpos + xMax],
+                horizontal=True,
+            )
+        else:
+            error_bar(
+                concatenated_df,
+                x="groups",
+                y="values",
+                ax=ax,
+                offset=0,
+                gap_width_percent=2,
+                method="sankey_error_bar",
+                pos=[leftpos, leftpos + xMax],
+            )
 
     # Determine widths of individual strips, all widths are normalized to 1
     ns_l = defaultdict()
@@ -631,7 +653,11 @@ def single_sankey(
                 rightWidths_norm[right_label]["bottom"] += ns_r_norm[left_label][
                     right_label
                 ]
-                ax.fill_between(
+                if horizontal:
+                    fill_method = ax.fill_betweenx
+                else:
+                    fill_method = ax.fill_between
+                fill_method(
                     np.linspace(
                         leftpos + (bar_width * xMax * 0.5),
                         leftpos + xMax - (bar_width * xMax * 0.5),
@@ -643,7 +669,6 @@ def single_sankey(
                     color=colorDict[labelColor],
                     edgecolor="none",
                 )
-
 
 def sankeydiag(
     data: pd.DataFrame,
@@ -663,6 +688,7 @@ def sankeydiag(
     right_color: bool = False,  # if True, each strip of the diagram will be colored according to the corresponding left labels
     align: str = "center",  # the alignment of each sankey diagram, can be 'center' or 'left'
     alpha: float = 0.65,  # the transparency of each strip
+    horizontal: bool = False,  # if True, the horizontal format for the sankey diagram will be used
     **kwargs,
 ):
     """
@@ -790,6 +816,7 @@ def sankeydiag(
                 flow=flow,
                 align=align,
                 alpha=alpha,
+                horizontal=horizontal,
             )
             xpos += 1
         else:
@@ -813,6 +840,7 @@ def sankeydiag(
                 flow=False,
                 align="edge",
                 alpha=alpha,
+                horizontal=horizontal,
             )
 
     # Now only draw vs xticks for two-column sankey diagram
@@ -825,12 +853,20 @@ def sankeydiag(
                 for left, right in zip(broadcasted_left, right_idx)
             ]
         )
-        ax.get_xaxis().set_ticks(np.arange(len(right_idx)))
-        ax.get_xaxis().set_ticklabels(sankey_ticks)
+        if horizontal:
+            ax.get_yaxis().set_ticks(np.arange(len(right_idx)))
+            ax.get_yaxis().set_ticklabels(sankey_ticks)
+        else:
+            ax.get_xaxis().set_ticks(np.arange(len(right_idx)))
+            ax.get_xaxis().set_ticklabels(sankey_ticks)
     else:
         sankey_ticks = [broadcasted_left[0], right_idx[0]]
-        ax.set_xticks([0, 1])
-        ax.set_xticklabels(sankey_ticks)
+        if horizontal:
+            ax.set_yticks([0, 1])
+            ax.set_yticklabels(sankey_ticks)        
+        else:
+            ax.set_xticks([0, 1])
+            ax.set_xticklabels(sankey_ticks)
 
     return left_idx, right_idx
 

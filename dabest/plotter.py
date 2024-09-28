@@ -771,6 +771,7 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
                                                             temp_idx=temp_idx,
                                                             palette=plot_palette_sankey,
                                                             ax=rawdata_axes,
+                                                            horizontal=True,
                                                             **sankey_kwargs
                                                             )
 
