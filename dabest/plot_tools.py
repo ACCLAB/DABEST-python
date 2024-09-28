@@ -957,10 +957,10 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
             ax_to_plot.add_patch(mpatches.Rectangle((0,contrast_bars_x-0.5),contrast_bars_y, 0.5, zorder=-10, color=contrast_bars_colors[contrast_bars_x], **contrast_bars_kwargs))
 
         if show_mini_meta:
-            ax_to_plot.add_patch(mpatches.Rectangle((0, max(swarm_plot_ax.get_yticks())+2-0.5), mini_meta_delta.difference, 0.5, zorder=-10, color='black', **contrast_bars_kwargs))
+            ax_to_plot.add_patch(mpatches.Rectangle((0, max(swarm_plot_ax.get_yticks())-0.5), mini_meta_delta.difference, 0.5, zorder=-10, color='black', **contrast_bars_kwargs))
 
         if show_delta2:
-            ax_to_plot.add_patch(mpatches.Rectangle((0, max(swarm_plot_ax.get_yticks())+2-0.5), delta_delta.difference, 0.5, zorder=-10, color='black', **contrast_bars_kwargs))
+            ax_to_plot.add_patch(mpatches.Rectangle((0, max(swarm_plot_ax.get_yticks())-0.5), delta_delta.difference, 0.5, zorder=-10, color='black', **contrast_bars_kwargs))
 
     else:
         for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
@@ -1250,7 +1250,8 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
 
 def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, rawdata_axes,
                                         contrast_axes, violinplot_kwargs, halfviolin_alpha, ytick_color, 
-                                        es_marker_size, group_summary_kwargs, contrast_xtick_labels, effect_size
+                                        es_marker_size, group_summary_kwargs, contrast_xtick_labels, effect_size,
+                                        horizontal=False
                                         ):
     if show_mini_meta:
         mini_meta_delta = effectsize_df.mini_meta_delta
@@ -1272,39 +1273,73 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
         else:
             ci_low = delta_delta.pct_low
             ci_high = delta_delta.pct_high
-    # Create the violinplot.
-    # New in v0.2.6: drop negative infinities before plotting.
-    position = max(rawdata_axes.get_xticks()) + 2
-    v = contrast_axes.violinplot(
-        data[~np.isinf(data)], positions=[position], **violinplot_kwargs
-    )
 
+    
     fc = "grey"
 
-    halfviolin(v, fill_color=fc, alpha=halfviolin_alpha)
+    if horizontal:  
+        position = max(rawdata_axes.get_yticks()) + 2
+        violinplot_kwargs.update({'vert': False, 'widths': 1})
+        v = contrast_axes.violinplot(
+            data[~np.isinf(data)], positions=[position], **violinplot_kwargs
+        )
+        half = "bottom"
+        effsize_y = [position]
+        ci_y = [position, position]
+        effsize_x = difference
+        ci_x = [ci_low, ci_high]
+
+    else:
+        position = max(rawdata_axes.get_xticks()) + 2
+        v = contrast_axes.violinplot(
+            data[~np.isinf(data)], positions=[position], **violinplot_kwargs
+        )
+        half = "right"
+        effsize_x = [position]
+        ci_x = [position, position]
+        effsize_y = difference
+        ci_y = [ci_low, ci_high]
+
+    halfviolin(v, fill_color=fc, alpha=halfviolin_alpha, half=half)
 
     # Plot the effect size.
     contrast_axes.plot(
-        [position],
-        difference,
+        effsize_x,
+        effsize_y,
         marker="o",
         color=ytick_color,
         markersize=es_marker_size,
     )
     # Plot the confidence interval.
     contrast_axes.plot(
-        [position, position],
-        [ci_low, ci_high],
+        ci_x,
+        ci_y,
         linestyle="-",
         color=ytick_color,
         linewidth=group_summary_kwargs["lw"],
     )
-    if show_mini_meta:
-        contrast_xtick_labels.extend(["", "Weighted delta"])
-    elif effect_size == "delta_g":
-        contrast_xtick_labels.extend(["", "deltas' g"])
+
+    if horizontal:
+        current_yticks = rawdata_axes.get_yticks()
+        current_yticks = np.append(current_yticks, position)
+        current_ylabels = rawdata_axes.get_yticklabels()
+        if show_mini_meta:
+            current_ylabels.extend(["Weighted delta"])
+        elif effect_size == "delta_g":
+            current_ylabels.extend(["deltas' g"])
+        else:
+            current_ylabels.extend(["delta-delta"])
+
+        rawdata_axes.set_yticks(current_yticks)
+        rawdata_axes.set_yticklabels(current_ylabels)
+
     else:
-        contrast_xtick_labels.extend(["", "delta-delta"])
+        if show_mini_meta:
+            contrast_xtick_labels.extend(["", "Weighted delta"])
+        elif effect_size == "delta_g":
+            contrast_xtick_labels.extend(["", "deltas' g"])
+        else:
+            contrast_xtick_labels.extend(["", "delta-delta"])
     
     return contrast_xtick_labels
 
@@ -1615,12 +1650,17 @@ def table_for_horizontal_plots(effectsize_df, ax, contrast_axes, ticks_to_plot, 
 
 
     ### Plot the text
-    for i,loc in zip(tab.index, ticks_to_plot):
-        if show_mini_meta or show_delta2:
-            loc_new = loc if loc != 0.25 else loc+0.25
-            ax.text(0.5, loc_new, "{:+.2f}".format(tab.iloc[i,0])+text_units,ha="center", va="center", color=table_text_color,size=table_font_size)
-        else:
-            ax.text(0.5, loc, "{:+.2f}".format(tab.iloc[i,0])+text_units,ha="center", va="center", color=table_text_color,size=table_font_size)
+    if show_mini_meta or show_delta2:
+        new_ticks = ticks_to_plot + [max(ticks_to_plot)+2]
+    else:
+        new_ticks = ticks_to_plot.copy()
+    for i,loc in zip(tab.index, new_ticks):
+        ax.text(0.5, loc, "{:+.2f}".format(tab.iloc[i,0])+text_units,ha="center", va="center", color=table_text_color,size=table_font_size)
+        # if show_mini_meta or show_delta2:
+        #     loc_new = loc if loc != 0.25 else loc+0.25
+        #     ax.text(0.5, loc_new, "{:+.2f}".format(tab.iloc[i,0])+text_units,ha="center", va="center", color=table_text_color,size=table_font_size)
+        # else:
+        #     ax.text(0.5, loc, "{:+.2f}".format(tab.iloc[i,0])+text_units,ha="center", va="center", color=table_text_color,size=table_font_size)
 
     # ### Plot the dashes
     # if show_mini_meta or show_delta2:

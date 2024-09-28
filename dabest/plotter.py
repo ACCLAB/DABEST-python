@@ -481,6 +481,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                 rawdata_axes=rawdata_axes, 
                                 og_ylim_raw=og_ylim_raw, 
                                 effect_size=effect_size,
+                                show_pairs=show_pairs,
                                 )
 
     ################################################### GRIDKEY  WIP
@@ -657,6 +658,7 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
                                                                                     effectsize_df=effectsize_df, 
                                                                                     plot_kwargs=plot_kwargs
                                                                                     )
+    
     if plot_kwargs['horizontal']:
         float_contrast = False
     
@@ -757,11 +759,9 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
             rawdata_axes.set_yticks(np.arange(0, len(temp_all_plot_groups)))
             rawdata_axes.set_yticklabels(temp_all_plot_groups)
 
-            # rawdata_axes.set_yticklabels(temp_all_plot_groups[::-1])
-
         else:
             # Plot the raw data as a set of Sankey Diagrams aligned like barplot.
-            raise NotImplementedError("Sankey Diagrams for horizontal plots are not implemented yet.")
+            # raise NotImplementedError("Sankey Diagrams for horizontal plots are not implemented yet.")
             sankey_control_group, sankey_test_group = sankeydiag(
                                                             plot_data,
                                                             xvar=xvar,
@@ -949,7 +949,8 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
                                                                 es_marker_size=es_marker_size, 
                                                                 group_summary_kwargs=group_summary_kwargs, 
                                                                 contrast_xtick_labels=contrast_xtick_labels, 
-                                                                effect_size=effect_size
+                                                                effect_size=effect_size,
+                                                                horizontal=True
                                                                 )
 
 
@@ -1035,6 +1036,7 @@ def effectsize_df_plotter_horizontal(effectsize_df, **plot_kwargs):
                                 rawdata_axes=rawdata_axes, 
                                 og_ylim_raw=og_xlim_raw if plot_kwargs['horizontal'] else og_ylim_raw, 
                                 effect_size=effect_size,
+                                show_pairs=show_pairs,
                                 horizontal=True,
                                 )
     

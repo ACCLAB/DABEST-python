@@ -696,7 +696,7 @@ def set_xaxis_ticks_and_lims(show_delta2, show_mini_meta, rawdata_axes, contrast
             contrast_axes.set_yticks(rawdata_axes.get_yticks())
         else:
             temp = rawdata_axes.get_yticks()
-            temp = np.append(temp, [max(temp) + 1, max(temp) + 2])
+            temp = np.append(temp, [max(temp) + 0, max(temp) + 1])
             contrast_axes.set_yticks(temp)       
 
         if show_pairs:
@@ -707,23 +707,12 @@ def set_xaxis_ticks_and_lims(show_delta2, show_mini_meta, rawdata_axes, contrast
             # Increase the xlim of raw data by 2
             temp = rawdata_axes.get_ylim()
             if show_pairs:
-                rawdata_axes.set_ylim(temp[0], temp[1] + 0.25)
+                rawdata_axes.set_ylim(temp[0], temp[1] + 0.00)
             else:
-                rawdata_axes.set_ylim(temp[0], temp[1] + 2)
+                rawdata_axes.set_ylim(temp[0], temp[1] + 1)
             contrast_axes.set_ylim(rawdata_axes.get_ylim())
         else:
             contrast_axes.set_ylim(rawdata_axes.get_ylim())
-
-        # Properly label the contrast ticks.
-        # for t in ticks_to_skip:
-        #     contrast_xtick_labels.insert(t, "")
-
-        # if plot_kwargs["fontsize_contrastxlabel"] is not None:
-        #     fontsize_contrastxlabel = plot_kwargs["fontsize_contrastxlabel"]
-
-        # contrast_axes.set_yticklabels(
-        #     contrast_xtick_labels, fontsize=fontsize_contrastxlabel
-        # )
 
     else:
         if show_delta2 is False and show_mini_meta is False:
@@ -1178,7 +1167,7 @@ def Cumming_Plot_Aesthetic_Adjustments(plot_kwargs, show_delta2, effect_size_typ
 
 def General_Plot_Aesthetic_Adjustments(show_delta2, show_mini_meta, contrast_axes, redraw_axes_kwargs, plot_kwargs,
                                yvar, effect_size_type, proportional, effectsize_df, is_paired, float_contrast,
-                               rawdata_axes, og_ylim_raw, effect_size, horizontal=False):
+                               rawdata_axes, og_ylim_raw, effect_size, show_pairs, horizontal=False):
 
 
     if (show_delta2 or show_mini_meta) and not horizontal:
@@ -1270,12 +1259,12 @@ def General_Plot_Aesthetic_Adjustments(show_delta2, show_mini_meta, contrast_axe
                 delta2_label = "delta - delta"
             else:
                 delta2_label = "deltas' g"
-            raise NotImplementedError("Delta2 is not yet supported for horizontal plots.")
         
         # Set custom ylims, if they were specified.
         swarm_ylim = plot_kwargs["swarm_ylim"]
         contrast_ylim = plot_kwargs["contrast_ylim"]
-        if not proportional:
+
+        if not proportional or (proportional and show_pairs):
             if swarm_ylim is None:
                 swarm_ylim = rawdata_axes.get_ylim()
             rawdata_axes.set_ylim(swarm_ylim[1], swarm_ylim[0])
