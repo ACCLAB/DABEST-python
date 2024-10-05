@@ -1203,8 +1203,9 @@ class EffectSizeDataFrame(object):
             Pass relevant keyword arguments to the delta text. Pass any keyword arguments accepted by
             matplotlib.text.Text here, as a string. If None, the following keywords are passed:
             {"color": None, "alpha": 1, "fontsize": 10, "ha": 'center', "va": 'center', "rotation": 0, 
-            "x_location": 'right', "x_coordinates": None, "y_coordinates": None}
-            Use "x_coordinates" and "y_coordinates" if you would like to specify the text locations manually.
+            "x_location": 'right', "x_coordinates": None, "y_coordinates": None, "x_adjust": 0}
+            Use "x_coordinates" and "y_coordinates" if you would like to specify the text locations manually. 
+            Use "x_adjust" to adjust the x location of all the texts (positive moves right, negative left).
         delta_dot : boolean, default True
             Whether or not to display the delta dots on paired or repeated measure plots.
         delta_dot_kwargs : dict, default None
@@ -1215,7 +1216,8 @@ class EffectSizeDataFrame(object):
             Whether or not to plot the effect size plot in a horizontal format.
         horizontal_table_kwargs : dict, default None
             Pass relevant keyword arguments to the horizontal table. If None, the following keywords are passed:
-            {'color' : 'yellow', 'alpha' :0.2, 'fontsize' : 12, 'text_color' : 'black', 'text_units' : None, 'paired_gap_dashes' : False, 'fontsize_label': 12}
+            {'color' : 'yellow', 'alpha' :0.2, 'fontsize' : 12, 'text_color' : 'black', 'text_units' : None, 
+            'paired_gap_dashes' : False, 'fontsize_label': 12, 'label': 'Δ'}
 
         Returns
         -------

@@ -1062,7 +1062,7 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
                        plot_palette_raw: dict, is_paired: bool, proportional: bool, float_contrast: bool,
                        show_mini_meta: bool, mini_meta_delta: object, show_delta2: bool, delta_delta: object):
     """
-    Add text to the contrast plot.
+    Add delta text to the contrast plot.
 
     Parameters
     ----------
@@ -1125,6 +1125,7 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
 
     # Collect the X-coordinates for the delta text
     delta_text_x_coordinates = delta_text_kwargs.get('x_coordinates')
+    delta_text_x_adjustment = delta_text_kwargs.get('x_adjust')
 
     if delta_text_x_coordinates is not None:
         if not isinstance(delta_text_x_coordinates, list):
@@ -1134,11 +1135,13 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
     else:
         delta_text_x_coordinates = ticks_to_plot
         X_Adjust = 0.48 if delta_text_x_location == 'right' else -0.38
+        X_Adjust += delta_text_x_adjustment
         delta_text_x_coordinates = [x+X_Adjust for x in delta_text_x_coordinates]
         if show_mini_meta: delta_text_x_coordinates.append(max(swarm_plot_ax.get_xticks())+2+X_Adjust)
         if show_delta2: delta_text_x_coordinates.append(max(swarm_plot_ax.get_xticks())+2-0.35)
         if show_mini_meta or show_delta2: ticks_to_plot.append(max(ticks_to_plot)+1)
     delta_text_kwargs.pop('x_coordinates')
+    delta_text_kwargs.pop('x_adjust')
 
     # Collect the Y-coordinates for the delta text
     delta_text_y_coordinates = delta_text_kwargs.get('y_coordinates')
@@ -1160,7 +1163,7 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
 
 
 def DeltaDotsPlotter(plot_data, contrast_axes, delta_id_col, idx, xvar, yvar, is_paired, color_col, float_contrast, 
-                     plot_palette_raw, delta_dot_kwargs, horizontal=False):
+                     plot_palette_raw, delta_dot_kwargs, horizontal):
     """
     Parameters
     ----------
@@ -1246,8 +1249,9 @@ def DeltaDotsPlotter(plot_data, contrast_axes, delta_id_col, idx, xvar, yvar, is
 
 
 def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palette_raw, slopegraph_kwargs, 
-                       rawdata_axes, ytick_color, temp_idx, horizontal=False):
+                       rawdata_axes, ytick_color, temp_idx, horizontal):
     """
+    Add slopegraph to the rawdata axes.
 
     Parameters
     ----------
@@ -1314,7 +1318,7 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
 def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, rawdata_axes,
                                         contrast_axes, violinplot_kwargs, halfviolin_alpha, ytick_color, 
                                         es_marker_size, group_summary_kwargs, contrast_xtick_labels, effect_size,
-                                        show_delta2, plot_kwargs, redraw_axes_kwargs, horizontal=False):
+                                        show_delta2, plot_kwargs, redraw_axes_kwargs, horizontal):
     """
     Add mini meta-analysis or delta-delta violin plots to the contrast plot.
 
@@ -1373,22 +1377,20 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
     fc = "grey"
 
     if horizontal:  
-        position = max(rawdata_axes.get_yticks()) + 2
         violinplot_kwargs.update({'vert': False, 'widths': 1})
-        v = contrast_axes.violinplot(
-            data[~np.isinf(data)], positions=[position], **violinplot_kwargs
-        )
+        position = max(rawdata_axes.get_yticks()) + 2
         half = "bottom"
         effsize_x, effsize_y = difference, [position]
         ci_x, ci_y = [ci_low, ci_high], [position, position]
     else:
         position = max(rawdata_axes.get_xticks()) + 2
-        v = contrast_axes.violinplot(
-            data[~np.isinf(data)], positions=[position], **violinplot_kwargs
-        )
         half = "right"
         effsize_x, effsize_y = [position], difference
         ci_x, ci_y = [position, position], [ci_low, ci_high]
+
+    v = contrast_axes.violinplot(
+        data[~np.isinf(data)], positions=[position], **violinplot_kwargs
+        )
 
     halfviolin(v, fill_color=fc, alpha=halfviolin_alpha, half=half)
 
@@ -1431,7 +1433,6 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
         else:
             contrast_xtick_labels.extend(["", "delta-delta"])
 
-
     # Create delta2 axis and label.
     if show_delta2 and not horizontal:
         if plot_kwargs["delta2_label"] is not None:
@@ -1458,7 +1459,7 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
 
 def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, violinplot_kwargs, halfviolin_alpha, 
                               ytick_color, es_marker_size, group_summary_kwargs, bootstraps_color_by_group, plot_palette_contrast,
-                              horizontal=False):
+                              horizontal):
     """
     Add effect size curves to the contrast plot.
 
@@ -1505,32 +1506,27 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
 
         # Create the violinplot.
         # New in v0.2.6: drop negative infinities before plotting.
-
         if horizontal:  
             violinplot_kwargs.update({'vert': False, 'widths': 1})
-            v = contrast_axes.violinplot(
-                current_bootstrap[~np.isinf(current_bootstrap)],
-                positions=[tick],
-                **violinplot_kwargs
-            )
-            half = "bottom"
-            effsize_x, effsize_y = current_effsize, [tick]
-            ci_x, ci_y = [current_ci_low, current_ci_high], [tick, tick]
 
-        else:
-            v = contrast_axes.violinplot(
-                current_bootstrap[~np.isinf(current_bootstrap)],
-                positions=[tick],
-                **violinplot_kwargs
-            )
-            half = "right"
-            effsize_x, effsize_y = [tick], current_effsize
-            ci_x, ci_y = [tick, tick], [current_ci_low, current_ci_high]
+        v = contrast_axes.violinplot(
+            current_bootstrap[~np.isinf(current_bootstrap)],
+            positions=[tick],
+            **violinplot_kwargs
+        )
 
         # Turn the violinplot into half, and color it the same as the swarmplot.
         # Do this only if the color column is not specified.
         # Ideally, the alpha (transparency) fo the violin plot should be
         # less than one so the effect size and CIs are visible.
+        if horizontal:  
+            half = "bottom"
+            effsize_x, effsize_y = current_effsize, [tick]
+            ci_x, ci_y = [current_ci_low, current_ci_high], [tick, tick]
+        else:
+            half = "right"
+            effsize_x, effsize_y = [tick], current_effsize
+            ci_x, ci_y = [tick, tick], [current_ci_low, current_ci_high]
 
         fc = plot_palette_contrast[current_group] if bootstraps_color_by_group else "grey"
         halfviolin(v, fill_color=fc, alpha=halfviolin_alpha, half=half)
@@ -1691,40 +1687,70 @@ def grid_key_WIP(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes, co
     contrast_axes.get_xaxis().set_visible(False)
 
 def barplotter(xvar, yvar, all_plot_groups, rawdata_axes, plot_data, bar_color, plot_palette_bar, 
-               plot_kwargs, barplot_kwargs, horizontal=False):
+               plot_kwargs, barplot_kwargs, horizontal):
+    """
+    Add bars to the raw data plot.
+
+    Parameters
+    ----------
+    xvar : str
+        Column name of the x variable.
+    yvar : str
+        Column name of the y variable.
+    all_plot_groups : list
+        List of all plot groups.
+    rawdata_axes : object
+        Matplotlib axis object to plot on.
+    plot_data : object (Dataframe)
+        Dataframe of the plot data.
+    bar_color : str
+        Color of the bar.
+    plot_palette_bar : dict
+        Dictionary of colors used in the bar plot.
+    plot_kwargs : dict
+        Keyword arguments for the plot.
+    barplot_kwargs : dict
+        Keyword arguments for the barplot.
+    horizontal : bool
+        If the plot is horizontal.
+    """
     
     x_label, y_label = rawdata_axes.get_xlabel(), rawdata_axes.get_ylabel()
-    
+
     if horizontal:
-        # Plot the raw data as a barplot.
-        bar1_df = pd.DataFrame(
-            {xvar: np.ones(len(all_plot_groups)), "proportion": all_plot_groups}
-        )
-        bar1 = sns.barplot(
-            data=bar1_df,
-            x=xvar,
-            y="proportion",
-            ax=rawdata_axes,
-            order=all_plot_groups,
-            linewidth=2,
-            facecolor=(1, 1, 1, 0),
-            edgecolor=bar_color,
-            zorder=1,
-            orient="h",
-        )
-        bar2 = sns.barplot(
-            data=plot_data,
-            x=yvar,
-            y=xvar,
-            ax=rawdata_axes,
-            order=all_plot_groups,
-            palette=plot_palette_bar,
-            zorder=1,
-            orient="h",
-            **barplot_kwargs
-        )
-        # adjust the width of bars
-        bar_width = plot_kwargs["bar_width"]
+        x_var, y_var, orient = np.ones(len(all_plot_groups)), all_plot_groups, "h"
+    else:
+        x_var, y_var, orient = all_plot_groups, np.ones(len(all_plot_groups)), "v"
+
+    bar1_df = pd.DataFrame({xvar: x_var, "proportion": y_var})
+
+    bar1 = sns.barplot(
+        data=bar1_df,
+        x=xvar,
+        y="proportion",
+        ax=rawdata_axes,
+        order=all_plot_groups,
+        linewidth=2,
+        facecolor=(1, 1, 1, 0),
+        edgecolor=bar_color,
+        zorder=1,
+        orient=orient,
+    )
+    bar2 = sns.barplot(
+        data=plot_data,
+        x=yvar if horizontal else xvar,
+        y=xvar if horizontal else yvar,
+        ax=rawdata_axes,
+        order=all_plot_groups,
+        palette=plot_palette_bar,
+        zorder=1,
+        orient=orient,
+        **barplot_kwargs
+    )
+
+    # adjust the width of bars
+    bar_width = plot_kwargs["bar_width"]
+    if horizontal:
         for bar in bar1.patches:
             y = bar.get_y()
             height = bar.get_height()
@@ -1732,45 +1758,39 @@ def barplotter(xvar, yvar, all_plot_groups, rawdata_axes, plot_data, bar_color, 
             bar.set_y(centre - bar_width / 2.0)
             bar.set_height(bar_width)
     else:
-        # Plot the raw data as a barplot.
-        bar1_df = pd.DataFrame(
-            {xvar: all_plot_groups, "proportion": np.ones(len(all_plot_groups))}
-        )
-        bar1 = sns.barplot(
-            data=bar1_df,
-            x=xvar,
-            y="proportion",
-            ax=rawdata_axes,
-            order=all_plot_groups,
-            linewidth=2,
-            facecolor=(1, 1, 1, 0),
-            edgecolor=bar_color,
-            zorder=1,
-        )
-        bar2 = sns.barplot(
-            data=plot_data,
-            x=xvar,
-            y=yvar,
-            ax=rawdata_axes,
-            order=all_plot_groups,
-            palette=plot_palette_bar,
-            zorder=1,
-            **barplot_kwargs
-        )
-        # adjust the width of bars
-        bar_width = plot_kwargs["bar_width"]
         for bar in bar1.patches:
             x = bar.get_x()
             width = bar.get_width()
             centre = x + width / 2.0
             bar.set_x(centre - bar_width / 2.0)
             bar.set_width(bar_width)
-
+    
     # reset the x and y labels
     rawdata_axes.set_xlabel(x_label)
     rawdata_axes.set_ylabel(y_label)
 
 def table_for_horizontal_plots(effectsize_df, ax, contrast_axes, ticks_to_plot, show_mini_meta, show_delta2, table_kwargs):
+    """
+    Add table axes for showing the deltas for horizontal plots.
+
+    Parameters
+    ----------
+    effectsize_df : object
+        Dataframe of effect sizes.
+    ax : object
+        Matplotlib axis object to plot the table axes.
+    contrast_axes : object
+        Matplotlib axis object to plot the contrast axes.
+    ticks_to_plot : list
+        List of indices of the contrast objects.
+    show_mini_meta : bool
+        Whether to show the mini meta-analysis.
+    show_delta2 : bool
+        Whether to show the delta-delta.
+    table_kwargs : dict
+        Keyword arguments for the table.
+    """
+
     table_color = table_kwargs['color']
     table_alpha = table_kwargs['alpha']
     table_font_size = table_kwargs['fontsize'] if table_kwargs['text_units'] == None else table_kwargs['fontsize']-2
@@ -1778,6 +1798,7 @@ def table_for_horizontal_plots(effectsize_df, ax, contrast_axes, ticks_to_plot, 
     text_units = '' if table_kwargs['text_units'] == None else table_kwargs['text_units']
     table_gap_dashes = table_kwargs['paired_gap_dashes']
     fontsize_label = table_kwargs['fontsize_label']
+    label = table_kwargs['label']
 
     ### Create a table of deltas
     cols=['Δ','N']
@@ -1789,7 +1810,6 @@ def table_for_horizontal_plots(effectsize_df, ax, contrast_axes, ticks_to_plot, 
     elif show_delta2:
         lst.append([effectsize_df.delta_delta.difference,0])
     tab = pd.DataFrame(lst, columns=cols)
-
 
     ### Plot the text
     if show_mini_meta or show_delta2:
@@ -1819,9 +1839,8 @@ def table_for_horizontal_plots(effectsize_df, ax, contrast_axes, ticks_to_plot, 
     ax.set_yticks([])
     ax.set_yticklabels([])
     ax.tick_params(left=False, bottom=False)
-    ax.set_xlabel('Δ', fontsize=fontsize_label) # Set the x-axis label - hardcoded for now
+    ax.set_xlabel(label, fontsize=fontsize_label) # Set the x-axis label - hardcoded for now
     sns.despine(ax=ax, left=True, bottom=True)
-    ...
 
 # %% ../nbs/API/plot_tools.ipynb 6
 def swarmplot(
