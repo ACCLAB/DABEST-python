@@ -362,6 +362,10 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                                                     sankey_control_group=sankey_control_group if two_col_sankey else None,
                                                                                     )
 
+    # Adjust contrast tick locations to account for different plotting styles in horizontal plots
+    if (horizontal and proportional and not show_pairs) or (horizontal and plot_kwargs["swarm_side"] == "right"):
+        ticks_to_plot = [x+0.25 for x in ticks_to_plot]
+
     # Plot the bootstraps, then the effect sizes and CIs.
     es_marker_size = plot_kwargs["es_marker_size"]
     halfviolin_alpha = plot_kwargs["halfviolin_alpha"]

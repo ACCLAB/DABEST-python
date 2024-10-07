@@ -875,7 +875,7 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
                  ticks_to_plot: list, color_col: str, plot_palette_raw: dict, 
                  proportional: bool, is_paired: bool):
     """
-    Add summary bars to the contrast plot.
+    Add summary bars to the contrast plot. Currently only functional for Vertical plots.
 
     Parameters
     ----------
@@ -940,7 +940,7 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
                           ticks_to_plot: list, contrast_bars_kwargs: dict, color_col: str, 
                           plot_palette_raw: dict, show_mini_meta: bool, mini_meta_delta: object, 
                           show_delta2: bool, delta_delta: object, proportional: bool, is_paired: bool,
-                          horizontal: bool = False):
+                          horizontal: bool):
     """
     Add contrast bars to the contrast plot.
 
@@ -990,7 +990,7 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
 
     if horizontal:
         for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
-            ax_to_plot.add_patch(mpatches.Rectangle((0,contrast_bars_x-0.5),contrast_bars_y, 0.5, zorder=-10, color=contrast_bars_colors[contrast_bars_x], **contrast_bars_kwargs))
+            ax_to_plot.add_patch(mpatches.Rectangle((0,contrast_bars_x-0.5),contrast_bars_y, 0.5, zorder=-10, color=contrast_bars_colors[int(contrast_bars_x)], **contrast_bars_kwargs))
 
         if show_mini_meta:
             ax_to_plot.add_patch(mpatches.Rectangle((0, max(swarm_plot_ax.get_yticks())-0.5), mini_meta_delta.difference, 0.5, zorder=-10, color='black', **contrast_bars_kwargs))
@@ -1000,7 +1000,7 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
 
     else:
         for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
-            ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25,0),0.5, contrast_bars_y, zorder=-1, color=contrast_bars_colors[contrast_bars_x], **contrast_bars_kwargs))
+            ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25,0),0.5, contrast_bars_y, zorder=-1, color=contrast_bars_colors[int(contrast_bars_x)], **contrast_bars_kwargs))
 
         if show_mini_meta:
             ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25,0),0.5, mini_meta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
@@ -1011,7 +1011,7 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
 def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
                        swarm_bars_kwargs: dict, color_col: str, plot_palette_raw: dict, is_paired: bool):
     """
-    Add bars to the raw data plot.
+    Add bars to the raw data plot. Currently only for vertical plots.
 
     Parameters
     ----------
@@ -1032,13 +1032,6 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
     is_paired : bool
         Whether the data is paired.
     """
-
-    # if is_paired:
-    #     swarm_bar_xlocs_adjustleft = {'right': -0.2, 'left': -0.2, 'center': -0.2}
-    #     swarm_bar_xlocs_adjustright = {'right': -0.1, 'left': -0.1, 'center': -0.1}            
-    # else:
-    #     swarm_bar_xlocs_adjustleft = {'right': 0, 'left': -0.4, 'center': -0.2}
-    #     swarm_bar_xlocs_adjustright = {'right': -0.1, 'left': -0.1, 'center': -0.1}
 
     if isinstance(plot_data[xvar].dtype, pd.CategoricalDtype):
         swarm_bars_order = pd.unique(plot_data[xvar]).categories
@@ -1159,7 +1152,7 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
     # Plot the delta text
     for x,y,t,tick in zip(delta_text_x_coordinates, delta_text_y_coordinates,Delta_Values,ticks_to_plot):
         Delta_Text = np.format_float_positional(t, precision=2, sign=True, trim="k", min_digits=2)
-        ax_to_plot.text(x, y, Delta_Text, color=delta_text_colors[tick], zorder=5, **delta_text_kwargs)
+        ax_to_plot.text(x, y, Delta_Text, color=delta_text_colors[int(tick)], zorder=5, **delta_text_kwargs)
 
 
 def DeltaDotsPlotter(plot_data, contrast_axes, delta_id_col, idx, xvar, yvar, is_paired, color_col, float_contrast, 
