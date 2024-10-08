@@ -1468,6 +1468,7 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
             og_ylim_delta[1], 
             **redraw_axes_kwargs
         )
+        contrast_axes.set_xlim(og_xlim_delta)
     
     return contrast_xtick_labels
 
