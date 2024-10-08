@@ -231,7 +231,7 @@ def get_kwargs(plot_kwargs, ytick_color):
     # Slopegraph kwargs.
     default_slopegraph_kwargs = {
         "linewidth": 1, 
-        "alpha": 0.5
+        "alpha": 0.5,
     }
     if plot_kwargs["slopegraph_kwargs"] is None:
         slopegraph_kwargs = default_slopegraph_kwargs
@@ -1481,3 +1481,6 @@ def Redraw_Spines(rawdata_axes, contrast_axes, redraw_axes_kwargs, float_contras
             og_ylim_contrast[1], 
             **redraw_axes_kwargs
         )
+    for ax, xlim, ylim in zip([rawdata_axes, contrast_axes], [og_xlim_raw, og_xlim_contrast], [og_ylim_raw, og_ylim_contrast]):
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)

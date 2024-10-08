@@ -975,6 +975,8 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
     horizontal : bool
         Whether the plot is horizontal.
     """
+    og_xlim, og_ylim = ax_to_plot.get_xlim(), ax_to_plot.get_ylim()
+
     contrast_means = []
     for j, tick in enumerate(ticks_to_plot):
         contrast_means.append(results.difference[j])
@@ -1008,6 +1010,9 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
         if show_delta2:
             ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25,0),0.5, delta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
 
+    ax_to_plot.set_xlim(og_xlim)
+    ax_to_plot.set_ylim(og_ylim)
+
 def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
                        swarm_bars_kwargs: dict, color_col: str, plot_palette_raw: dict, is_paired: bool):
     """
@@ -1032,6 +1037,7 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
     is_paired : bool
         Whether the data is paired.
     """
+    og_xlim, og_ylim = ax.get_xlim(), ax.get_ylim()
 
     if isinstance(plot_data[xvar].dtype, pd.CategoricalDtype):
         swarm_bars_order = pd.unique(plot_data[xvar]).categories
@@ -1050,6 +1056,9 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
     for swarm_bars_x,swarm_bars_y,c in zip(np.arange(0,len(swarm_bars_order)+1,1), swarm_means, swarm_bars_colors):
         ax.add_patch(mpatches.Rectangle((swarm_bars_x-0.25,0),
         0.5, swarm_bars_y, zorder=-1,color=c,**swarm_bars_kwargs))
+
+    ax.set_xlim(og_xlim)
+    ax.set_ylim(og_ylim)
 
 def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: object, ticks_to_plot: list, delta_text_kwargs: dict, color_col: str, 
                        plot_palette_raw: dict, is_paired: bool, proportional: bool, float_contrast: bool,
