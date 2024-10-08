@@ -1280,7 +1280,17 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
     horizontal : bool
         If the plotting will be in horizontal format.
     """
-    
+    # Jitter Kwargs
+    jitter = slopegraph_kwargs["jitter"]
+    if jitter >= 1:
+        err0 = "Jitter value is too high. Defaulting to 1."
+        warnings.warn(err0)
+        jitter = 1
+    rng = np.random.default_rng(slopegraph_kwargs["jitter_seed"])
+    for key in ["jitter", "jitter_seed"]:
+        if key in slopegraph_kwargs:
+            slopegraph_kwargs.pop(key)
+
     # Pivot the long (melted) data.
     if color_col is None:
         pivot_values = [yvar]
@@ -1301,7 +1311,10 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
         grp_count = len(current_tuple)
         # Iterate through the data for the current tuple.
         for ID, observation in current_pair.iterrows():
-            x_points = [t for t in range(x_start, x_start + grp_count)]
+            # x_points = [t for t in range(x_start, x_start + grp_count)]
+            # y_points = observation[yvar].tolist()
+
+            x_points = [t + 0.15*jitter*rng.standard_t(df=6, size=None) for t in range(x_start, x_start + grp_count)]
             y_points = observation[yvar].tolist()
 
             if color_col is None:

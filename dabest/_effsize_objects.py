@@ -1135,7 +1135,7 @@ class EffectSizeDataFrame(object):
             of observations when `show_pairs=True`. Pass any keyword arguments
             accepted by matplotlib `plot()` function here, as a dict.
             If None, the following keywords are
-            passed to plot() : {'linewidth':1, 'alpha':0.5}.
+            passed to plot() : {'linewidth':1, 'alpha':0.5, 'jitter':0, 'jitter_seed':9876543210}.
         sankey_kwargs: dict, default None
             Whis will change the appearance of the sankey diagram used to depict
             paired proportional data when `show_pairs=True` and `proportional=True`.

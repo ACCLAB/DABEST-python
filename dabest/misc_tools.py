@@ -232,6 +232,8 @@ def get_kwargs(plot_kwargs, ytick_color):
     default_slopegraph_kwargs = {
         "linewidth": 1, 
         "alpha": 0.5,
+        'jitter': 0, 
+        'jitter_seed': 9876543210
     }
     if plot_kwargs["slopegraph_kwargs"] is None:
         slopegraph_kwargs = default_slopegraph_kwargs
