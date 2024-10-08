@@ -1414,7 +1414,7 @@ def Cumming_Plot_Aesthetic_Adjustments(contrast_axes, reflines_kwargs, is_paired
             ax.set_ylim(ylim)
             del redraw_axes_kwargs["y"]
 
-    # Add spine line for delta2/mini meta.
+    # Add x-spine line for delta2/mini meta.
     if (show_delta2 or show_mini_meta) and not horizontal:
         ylim = contrast_axes.get_ylim()
         redraw_axes_kwargs["y"] = ylim[0]
