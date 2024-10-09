@@ -1282,7 +1282,8 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
     horizontal : bool
         If the plotting will be in horizontal format.
     """
-    # Jitter Kwargs
+    # Jitter Kwargs 
+    # With help from devMJBL
     jitter = slopegraph_kwargs["jitter"]
     if jitter >= 1:
         err0 = "Jitter value is too high. Defaulting to 1."
@@ -1313,10 +1314,7 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
         grp_count = len(current_tuple)
         # Iterate through the data for the current tuple.
         for ID, observation in current_pair.iterrows():
-            # x_points = [t for t in range(x_start, x_start + grp_count)]
-            # y_points = observation[yvar].tolist()
-
-            x_points = [t + 0.15*jitter*rng.standard_t(df=6, size=None) for t in range(x_start, x_start + grp_count)]
+            x_points = [t + 0.15*jitter*rng.standard_t(df=6, size=None) for t in range(x_start, x_start + grp_count)] # devMJBL
             y_points = observation[yvar].tolist()
 
             if color_col is None:
@@ -1814,7 +1812,7 @@ def table_for_horizontal_plots(effectsize_df, ax, contrast_axes, ticks_to_plot, 
     table_font_size = table_kwargs['fontsize'] if table_kwargs['text_units'] == None else table_kwargs['fontsize']-2
     table_text_color = table_kwargs['text_color']
     text_units = '' if table_kwargs['text_units'] == None else table_kwargs['text_units']
-    table_gap_dashes = table_kwargs['paired_gap_dashes']
+    table_gap_dashes = table_kwargs['paired_gap_dashes']   # Currently unused
     fontsize_label = table_kwargs['fontsize_label']
     label = table_kwargs['label']
 

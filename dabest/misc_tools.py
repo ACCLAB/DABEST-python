@@ -6,7 +6,8 @@
 __all__ = ['merge_two_dicts', 'unpack_and_add', 'print_greeting', 'get_varname', 'get_unique_categories', 'get_params',
            'get_kwargs', 'get_color_palette', 'initialize_fig', 'get_plot_groups', 'add_counts_to_ticks',
            'extract_contrast_plotting_ticks', 'set_xaxis_ticks_and_lims', 'show_legend',
-           'Gardner_Altman_Plot_Aesthetic_Adjustments', 'Cumming_Plot_Aesthetic_Adjustments', 'Redraw_Spines']
+           'Gardner_Altman_Plot_Aesthetic_Adjustments', 'Cumming_Plot_Aesthetic_Adjustments', 'Redraw_Spines',
+           'extract_group_summaries']
 
 # %% ../nbs/API/misc_tools.ipynb 4
 import datetime as dt
@@ -103,7 +104,6 @@ def get_params(effectsize_df, plot_kwargs):
     plot_kwargs : dict
         Kwargs passed to the plot function.
     """
-    dabest_obj = effectsize_df.dabest_obj
     plot_data = effectsize_df._plot_data
     xvar = effectsize_df.xvar
     yvar = effectsize_df.yvar
@@ -112,8 +112,11 @@ def get_params(effectsize_df, plot_kwargs):
     mini_meta = effectsize_df.mini_meta
     effect_size = effectsize_df.effect_size
     proportional = effectsize_df.proportional
+    results = effectsize_df.results
+    dabest_obj = effectsize_df.dabest_obj
     all_plot_groups = dabest_obj._all_plot_groups
     idx = dabest_obj.idx
+    
 
     if effect_size not in ["mean_diff", "delta_g"] or not delta2:
         show_delta2 = False
@@ -159,9 +162,15 @@ def get_params(effectsize_df, plot_kwargs):
     horizontal = plot_kwargs["horizontal"]
     if horizontal:
         float_contrast = False
+
+    # Contrast Axes kwargs
+    es_marker_size = plot_kwargs["es_marker_size"]
+    halfviolin_alpha = plot_kwargs["halfviolin_alpha"]
+    ci_type = plot_kwargs["ci_type"]
         
     return (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, idx, 
-            show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type, group_summaries, err_color, horizontal)
+            show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type, group_summaries, err_color, horizontal,
+            results, es_marker_size, halfviolin_alpha, ci_type)
 
 def get_kwargs(plot_kwargs, ytick_color):
     """
@@ -1328,7 +1337,6 @@ def Cumming_Plot_Aesthetic_Adjustments(contrast_axes, reflines_kwargs, is_paired
         A boolean flag to determine if the plot is for horizontal plotting.
     """
 
-    
     # If 0 lies within the ylim of the contrast axes, draw a zero reference line.
     if horizontal:
         contrast_axes_lim = contrast_axes.get_xlim()
@@ -1488,3 +1496,54 @@ def Redraw_Spines(rawdata_axes, contrast_axes, redraw_axes_kwargs, float_contras
     for ax, xlim, ylim in zip([rawdata_axes, contrast_axes], [og_xlim_raw, og_xlim_contrast], [og_ylim_raw, og_ylim_contrast]):
         ax.set_xlim(xlim)
         ax.set_ylim(ylim)
+
+    
+def extract_group_summaries(proportional, err_color, rawdata_axes, asymmetric_side, horizontal, 
+                            bootstraps_color_by_group, plot_palette_raw, all_plot_groups,
+                            n_groups, color_col, ytick_color, plot_kwargs):
+    
+    from .plot_tools import get_swarm_spans
+
+    if proportional:
+        group_summaries_method = "proportional_error_bar"
+        group_summaries_offset = 0
+        group_summaries_line_color = err_color
+    else:
+        # Create list to gather xspans.
+        xspans = []
+        line_colors = []
+        for jj, c in enumerate(rawdata_axes.collections):
+            try:
+                if asymmetric_side == "right":
+                    # currently offset is hardcoded with value of -0.2
+                    x_max_span = -0.2
+                else:
+                    if horizontal:
+                        x_max_span = 0.1 # currently offset is hardcoded with value of 0.1
+                    else:
+                        _, x_max, _, _ = get_swarm_spans(c)
+                        x_max_span = x_max - jj
+                xspans.append(x_max_span)
+            except TypeError:
+                # we have got a None, so skip and move on.
+                pass
+
+            if bootstraps_color_by_group:
+                line_colors.append(plot_palette_raw[all_plot_groups[jj]])
+
+            # Break the loop since hue in Seaborn adds collections to axes and it will result in index out of range
+            if jj >= n_groups - 1 and color_col is None:
+                break
+
+        if len(line_colors) != len(all_plot_groups):
+            line_colors = ytick_color
+            
+        # hue in swarmplot would add collections to axes which will result in len(xspans) = len(all_plot_groups) + len(unique groups in hue)
+        if len(xspans) > len(all_plot_groups):
+            xspans = xspans[:len(all_plot_groups)]
+
+        group_summaries_method = "gapped_lines"
+        group_summaries_offset = xspans + np.array(plot_kwargs["group_summaries_offset"])
+        group_summaries_line_color = line_colors
+
+    return group_summaries_method, group_summaries_offset, group_summaries_line_color

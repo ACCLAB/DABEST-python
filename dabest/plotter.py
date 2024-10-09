@@ -61,7 +61,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         contrast_bars=True, contrast_bars_kwargs=None,
         delta_text=True, delta_text_kwargs=None,
         delta_dot=True, delta_dot_kwargs=None,
-
         horizontal=False, horizontal_table_kwargs=None,
     """
     from .misc_tools import (
@@ -77,9 +76,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         Gardner_Altman_Plot_Aesthetic_Adjustments,
         Cumming_Plot_Aesthetic_Adjustments,
         Redraw_Spines,
+        extract_group_summaries
     )
     from .plot_tools import (
-        get_swarm_spans,
         error_bar,
         sankeydiag,
         swarmplot,
@@ -114,11 +113,12 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     ytick_color = plt.rcParams["ytick.color"]
 
     # Extract parameters and set kwargs
-    (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional,
-     all_plot_groups, idx, show_delta2, show_mini_meta, float_contrast,
-     show_pairs, effect_size_type, group_summaries, err_color, horizontal) = get_params(
+    (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, 
+     proportional, all_plot_groups, idx, show_delta2, show_mini_meta, 
+     float_contrast, show_pairs, effect_size_type, group_summaries, 
+     err_color, horizontal, results, es_marker_size, halfviolin_alpha, ci_type) = get_params(
                                                                                     effectsize_df=effectsize_df, 
-                                                                                    plot_kwargs=plot_kwargs
+                                                                                    plot_kwargs=plot_kwargs,
                                                                                     )
 
     (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs,
@@ -279,48 +279,21 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             
         # Plot the error bars.
         if group_summaries is not None:
-            if proportional:
-                group_summaries_method = "proportional_error_bar"
-                group_summaries_offset = 0
-                group_summaries_line_color = err_color
-            else:
-                # Create list to gather xspans.
-                xspans = []
-                line_colors = []
-                for jj, c in enumerate(rawdata_axes.collections):
-                    try:
-                        if asymmetric_side == "right":
-                            # currently offset is hardcoded with value of -0.2
-                            x_max_span = -0.2
-                        else:
-                            if horizontal:
-                                x_max_span = 0.1 # currently offset is hardcoded with value of 0.1
-                            else:
-                                _, x_max, _, _ = get_swarm_spans(c)
-                                x_max_span = x_max - jj
-                        xspans.append(x_max_span)
-                    except TypeError:
-                        # we have got a None, so skip and move on.
-                        pass
-
-                    if bootstraps_color_by_group:
-                        line_colors.append(plot_palette_raw[all_plot_groups[jj]])
-
-                    # Break the loop since hue in Seaborn adds collections to axes and it will result in index out of range
-                    if jj >= n_groups - 1 and color_col is None:
-                        break
-
-                if len(line_colors) != len(all_plot_groups):
-                    line_colors = ytick_color
-                    
-                # hue in swarmplot would add collections to axes which will result in len(xspans) = len(all_plot_groups) + len(unique groups in hue)
-                if len(xspans) > len(all_plot_groups):
-                    xspans = xspans[:len(all_plot_groups)]
-
-                group_summaries_method = "gapped_lines"
-                group_summaries_offset = xspans + np.array(plot_kwargs["group_summaries_offset"])
-                group_summaries_line_color = line_colors
-
+            (group_summaries_method, 
+             group_summaries_offset, group_summaries_line_color) = extract_group_summaries(
+                                                                                    proportional=proportional, 
+                                                                                    err_color=err_color, 
+                                                                                    rawdata_axes=rawdata_axes, 
+                                                                                    asymmetric_side=asymmetric_side if not proportional else None, 
+                                                                                    horizontal=horizontal, 
+                                                                                    bootstraps_color_by_group=bootstraps_color_by_group, 
+                                                                                    plot_palette_raw=plot_palette_raw, 
+                                                                                    all_plot_groups=all_plot_groups,
+                                                                                    n_groups=n_groups, 
+                                                                                    color_col=color_col, 
+                                                                                    ytick_color=ytick_color, 
+                                                                                    plot_kwargs=plot_kwargs
+                                                                                    )
             # Plot
             error_bar(
                 plot_data,
@@ -337,7 +310,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 )
 
     # Add the counts to the rawdata axes xticks.
-    # if not horizontal:
     add_counts_to_ticks(
             plot_data=plot_data, 
             xvar=xvar, 
@@ -347,12 +319,11 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             horizontal=horizontal,
             )
 
-    # Enforce the xtick of rawdata_axes to be 0 and 1 after drawing only one sankey ----> Redundant code
-    # if one_sankey:
-    #     rawdata_axes.set_xticks([0, 1])
-
     # Plot effect sizes and bootstraps.
-    plot_groups = temp_all_plot_groups if (is_paired == "baseline" and show_pairs and two_col_sankey) else temp_idx if (two_col_sankey) else all_plot_groups
+    plot_groups = (temp_all_plot_groups if (is_paired == "baseline" and show_pairs and two_col_sankey) 
+                   else temp_idx if two_col_sankey 
+                   else all_plot_groups
+                   )
 
     (ticks_to_skip, ticks_to_plot, 
      ticks_to_skip_contrast, ticks_to_start_twocol_sankey) = extract_contrast_plotting_ticks(
@@ -365,15 +336,11 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                                                     )
 
     # Adjust contrast tick locations to account for different plotting styles in horizontal plots
+    table_axes_ticks_to_plot = ticks_to_plot
     if (horizontal and proportional and not show_pairs) or (horizontal and plot_kwargs["swarm_side"] == "right"):
         ticks_to_plot = [x+0.25 for x in ticks_to_plot]
 
     # Plot the bootstraps, then the effect sizes and CIs.
-    es_marker_size = plot_kwargs["es_marker_size"]
-    halfviolin_alpha = plot_kwargs["halfviolin_alpha"]
-    ci_type = plot_kwargs["ci_type"]
-    results = effectsize_df.results
-
     (current_group, current_control, 
      current_effsize, contrast_xtick_labels) = effect_size_curve_plotter(
                                                                     ticks_to_plot=ticks_to_plot, 
@@ -463,7 +430,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                             reflines_kwargs=reflines_kwargs, 
                                             redraw_axes_kwargs=redraw_axes_kwargs, 
                                             )
-
     else:
         # For Cumming Plots only.
         Cumming_Plot_Aesthetic_Adjustments(
@@ -494,8 +460,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         horizontal=horizontal
         )
 
-
-    ################################################### GRIDKEY  WIP
+    # GRIDKEY  WIP
     # if gridkey_rows is None, skip everything here
     gridkey_rows = plot_kwargs["gridkey_rows"]
     if gridkey_rows is not None and not horizontal:
@@ -592,7 +557,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                             effectsize_df=effectsize_df,
                             ax = table_axes,
                             contrast_axes=contrast_axes,
-                            ticks_to_plot=ticks_to_plot, 
+                            ticks_to_plot=table_axes_ticks_to_plot, 
                             show_mini_meta=show_mini_meta,
                             show_delta2=show_delta2,
                             table_kwargs=table_kwargs,
