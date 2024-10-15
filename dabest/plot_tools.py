@@ -917,9 +917,9 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
     else:
         summary_xmin, summary_xmax = ax_to_plot.get_xlim()
         summary_bars_colors = (
-            [summary_bars_kwargs.get('color')]*(max(summary_bars)+1)
+            [summary_bars_kwargs.get('color')]*(max(ticks_to_plot)+1)
             if summary_bars_kwargs.get('color') is not None
-            else ['black']*(max(summary_bars)+1)
+            else ['black']*(max(ticks_to_plot)+1)
             if color_col is not None or (proportional and is_paired) or is_paired 
             else list(plot_palette_raw.values())
         )
@@ -1048,7 +1048,7 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
 
     swarm_means = plot_data.groupby(xvar, observed=False)[yvar].mean().reindex(index=swarm_bars_order)
     swarm_bars_colors = (
-        [swarm_bars_kwargs.get('color')] * (max(swarm_bars_order) + 1) 
+        [swarm_bars_kwargs.get('color')] * (len(swarm_bars_order) + 1) 
         if swarm_bars_kwargs.get('color') is not None 
         else ['black']*(len(swarm_bars_order)+1)
         if color_col is not None or is_paired
@@ -1132,9 +1132,9 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
     delta_text_x_adjustment = delta_text_kwargs.get('x_adjust')
 
     if delta_text_x_coordinates is not None:
-        if not isinstance(delta_text_x_coordinates, list):
+        if not isinstance(delta_text_x_coordinates, (list, tuple)) or not all(isinstance(x, (int, float)) for x in delta_text_x_coordinates):
             raise TypeError("delta_text_kwargs['x_coordinates'] must be a list of x-coordinates.")
-        if len(delta_text_x_coordinates) != len(total_ticks):
+        if len(delta_text_x_coordinates) != total_ticks:
             raise ValueError("delta_text_kwargs['x_coordinates'] must have the same length as the number of ticks to plot.")
     else:
         delta_text_x_coordinates = ticks_to_plot
@@ -1151,9 +1151,9 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
     delta_text_y_coordinates = delta_text_kwargs.get('y_coordinates')
 
     if delta_text_y_coordinates is not None:
-        if not isinstance(delta_text_y_coordinates, list):
+        if not isinstance(delta_text_y_coordinates, (list, tuple)) or not all(isinstance(y, (int, float)) for y in delta_text_y_coordinates):
             raise TypeError("delta_text_kwargs['y_coordinates'] must be a list of y-coordinates.")
-        if len(delta_text_y_coordinates) != len(total_ticks):
+        if len(delta_text_y_coordinates) != total_ticks:
             raise ValueError("delta_text_kwargs['y_coordinates'] must have the same length as the number of ticks to plot.")
     else:
         delta_text_y_coordinates = Delta_Values
