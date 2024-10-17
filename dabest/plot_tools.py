@@ -987,7 +987,7 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
         [contrast_bars_kwargs.get('color')] * (max(ticks_to_plot) + 1) 
         if contrast_bars_kwargs.get('color') is not None 
         else ['black'] * (max(ticks_to_plot) + 1) 
-        if color_col is not None or (proportional and is_paired) or is_paired 
+        if color_col is not None or is_paired 
         else list(plot_palette_raw.values())
     )
     contrast_bars_kwargs.pop('color')
