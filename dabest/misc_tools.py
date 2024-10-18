@@ -1296,7 +1296,7 @@ def Gardner_Altman_Plot_Aesthetic_Adjustments(effect_size_type, plot_data, xvar,
 
 def Cumming_Plot_Aesthetic_Adjustments(contrast_axes, reflines_kwargs, is_paired, show_pairs, two_col_sankey, idx, ticks_to_start_twocol_sankey,
                                        proportional, ticks_to_skip, temp_idx, rawdata_axes, redraw_axes_kwargs, ticks_to_skip_contrast, 
-                                       show_delta2, show_mini_meta, horizontal):
+                                       show_delta2, show_mini_meta, horizontal, skip_redraw_lines):
     
     """
     Aesthetic adjustments for the Cumming plot.
@@ -1335,6 +1335,8 @@ def Cumming_Plot_Aesthetic_Adjustments(contrast_axes, reflines_kwargs, is_paired
         A boolean flag to determine if the plot will have a mini-meta effect size.
     horizontal : bool
         A boolean flag to determine if the plot is for horizontal plotting.
+    skip_redraw_lines : bool
+        A boolean flag to skip adding spines back if True (for gridkey purposes).
     """
 
     # If 0 lies within the ylim of the contrast axes, draw a zero reference line.
@@ -1354,75 +1356,76 @@ def Cumming_Plot_Aesthetic_Adjustments(contrast_axes, reflines_kwargs, is_paired
         method(0, **reflines_kwargs)
 
     # Add axes spine lines to link the relevant groups in the plot. (re-add as we removed spines)
-    if horizontal:
-        if two_col_sankey:
-            rightend_ticks = np.array([len(i) - 2 for i in idx]) + np.array(ticks_to_start_twocol_sankey)
-            starting_ticks = ticks_to_start_twocol_sankey.copy()
-        else:
-            if is_paired == "baseline" and show_pairs:
-                if proportional and is_paired is not None:
+    if not skip_redraw_lines:
+        if horizontal:
+            if two_col_sankey:
+                rightend_ticks = np.array([len(i) - 2 for i in idx]) + np.array(ticks_to_start_twocol_sankey)
+                starting_ticks = ticks_to_start_twocol_sankey.copy()
+            else:
+                if is_paired == "baseline" and show_pairs:
+                    if proportional and is_paired is not None:
+                        rightend_ticks = np.array([len(i) - 1 for i in idx]) + np.array(ticks_to_skip)
+                    else:
+                        rightend_ticks = np.array([len(i) - 1 for i in temp_idx]) + np.array(ticks_to_skip)
+                else:
                     rightend_ticks = np.array([len(i) - 1 for i in idx]) + np.array(ticks_to_skip)
-                else:
-                    rightend_ticks = np.array([len(i) - 1 for i in temp_idx]) + np.array(ticks_to_skip)
+                starting_ticks = ticks_to_skip.copy()
+
+            for ax in [rawdata_axes]:
+                sns.despine(ax=ax, left=True)
+                xlim, ylim = ax.get_xlim(), ax.get_ylim()
+                redraw_axes_kwargs["x"] = xlim[0]
+                for k, start_tick in enumerate(starting_ticks):
+                    end_tick = rightend_ticks[k]
+                    ax.vlines(
+                        ymin=start_tick, 
+                        ymax=end_tick, 
+                        **redraw_axes_kwargs
+                        )
+                ax.set_xlim(xlim)
+                ax.set_ylim(ylim)
+                del redraw_axes_kwargs["x"] 
+
+            # Remove y ticks and labels from the contrast axes.
+            sns.despine(ax=contrast_axes, left=True)
+            contrast_axes.set_yticks([])
+            contrast_axes.set_yticklabels([])
+
+        else: # Add spine lines to link the relevant groups in the plot. (re-add as we removed spines) - Vertical plots
+            if two_col_sankey:
+                rightend_ticks_raw = rightend_ticks_contrast = np.array([len(i) - 2 for i in idx]) + np.array(ticks_to_start_twocol_sankey)
+                starting_ticks_raw = starting_ticks_contrast = ticks_to_start_twocol_sankey
             else:
-                rightend_ticks = np.array([len(i) - 1 for i in idx]) + np.array(ticks_to_skip)
-            starting_ticks = ticks_to_skip.copy()
-
-        for ax in [rawdata_axes]:
-            sns.despine(ax=ax, left=True)
-            xlim, ylim = ax.get_xlim(), ax.get_ylim()
-            redraw_axes_kwargs["x"] = xlim[0]
-            for k, start_tick in enumerate(starting_ticks):
-                end_tick = rightend_ticks[k]
-                ax.vlines(
-                    ymin=start_tick, 
-                    ymax=end_tick, 
-                    **redraw_axes_kwargs
-                    )
-            ax.set_xlim(xlim)
-            ax.set_ylim(ylim)
-            del redraw_axes_kwargs["x"] 
-
-        # Remove y ticks and labels from the contrast axes.
-        sns.despine(ax=contrast_axes, left=True)
-        contrast_axes.set_yticks([])
-        contrast_axes.set_yticklabels([])
-
-    else: # Add spine lines to link the relevant groups in the plot. (re-add as we removed spines) - Vertical plots
-        if two_col_sankey:
-            rightend_ticks_raw = rightend_ticks_contrast = np.array([len(i) - 2 for i in idx]) + np.array(ticks_to_start_twocol_sankey)
-            starting_ticks_raw = starting_ticks_contrast = ticks_to_start_twocol_sankey
-        else:
-            if is_paired == "baseline" and show_pairs:
-                if proportional and is_paired is not None:
+                if is_paired == "baseline" and show_pairs:
+                    if proportional and is_paired is not None:
+                        rightend_ticks_raw = rightend_ticks_contrast = np.array([len(i) - 1 for i in idx]) + np.array(ticks_to_skip)
+                    else:
+                        rightend_ticks_raw = np.array([len(i) - 1 for i in temp_idx]) + np.array(ticks_to_skip)
+                        temp_length = [(len(i) - 1) * 2 - 1 for i in idx] if proportional else [(len(i) - 1) for i in idx]
+                        rightend_ticks_contrast = np.array(temp_length) + np.array(ticks_to_skip_contrast)
+                    starting_ticks_raw, starting_ticks_contrast = ticks_to_skip, ticks_to_skip_contrast
+                else:
                     rightend_ticks_raw = rightend_ticks_contrast = np.array([len(i) - 1 for i in idx]) + np.array(ticks_to_skip)
-                else:
-                    rightend_ticks_raw = np.array([len(i) - 1 for i in temp_idx]) + np.array(ticks_to_skip)
-                    temp_length = [(len(i) - 1) * 2 - 1 for i in idx] if proportional else [(len(i) - 1) for i in idx]
-                    rightend_ticks_contrast = np.array(temp_length) + np.array(ticks_to_skip_contrast)
-                starting_ticks_raw, starting_ticks_contrast = ticks_to_skip, ticks_to_skip_contrast
-            else:
-                rightend_ticks_raw = rightend_ticks_contrast = np.array([len(i) - 1 for i in idx]) + np.array(ticks_to_skip)
-                starting_ticks_raw = starting_ticks_contrast = ticks_to_skip
+                    starting_ticks_raw = starting_ticks_contrast = ticks_to_skip
 
-        for ax, starting_ticks_current, rightend_ticks_current in zip(
-                [rawdata_axes, contrast_axes],
-                [starting_ticks_raw, starting_ticks_contrast],
-                [rightend_ticks_raw, rightend_ticks_contrast],
-            ):
-            sns.despine(ax=ax, bottom=True)
-            xlim, ylim = ax.get_xlim(), ax.get_ylim()
-            redraw_axes_kwargs["y"] = ylim[0]
-            for k, start_tick in enumerate(starting_ticks_current):
-                end_tick = rightend_ticks_current[k]
-                ax.hlines(
-                    xmin=start_tick, 
-                    xmax=end_tick, 
-                    **redraw_axes_kwargs
-                    )
-            ax.set_xlim(xlim)
-            ax.set_ylim(ylim)
-            del redraw_axes_kwargs["y"]
+            for ax, starting_ticks_current, rightend_ticks_current in zip(
+                    [rawdata_axes, contrast_axes],
+                    [starting_ticks_raw, starting_ticks_contrast],
+                    [rightend_ticks_raw, rightend_ticks_contrast],
+                ):
+                sns.despine(ax=ax, bottom=True)
+                xlim, ylim = ax.get_xlim(), ax.get_ylim()
+                redraw_axes_kwargs["y"] = ylim[0]
+                for k, start_tick in enumerate(starting_ticks_current):
+                    end_tick = rightend_ticks_current[k]
+                    ax.hlines(
+                        xmin=start_tick, 
+                        xmax=end_tick, 
+                        **redraw_axes_kwargs
+                        )
+                ax.set_xlim(xlim)
+                ax.set_ylim(ylim)
+                del redraw_axes_kwargs["y"]
 
     # Add x-spine line for delta2/mini meta.
     if (show_delta2 or show_mini_meta) and not horizontal:

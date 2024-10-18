@@ -377,7 +377,29 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                                 redraw_axes_kwargs=redraw_axes_kwargs,
                                                                 horizontal=horizontal,
                                                                 )
-
+        
+    # GRIDKEY  WIP
+    skip_redraw_lines = False
+    gridkey_rows = plot_kwargs["gridkey_rows"]
+    if gridkey_rows is not None and not horizontal:
+        grid_key_WIP(
+                is_paired=is_paired, 
+                idx=idx, 
+                all_plot_groups=all_plot_groups, 
+                gridkey_rows=gridkey_rows, 
+                rawdata_axes=rawdata_axes, 
+                contrast_axes=contrast_axes,
+                plot_data=plot_data, 
+                xvar=xvar, 
+                yvar=yvar, 
+                results=results, 
+                show_delta2=show_delta2, 
+                show_mini_meta=show_mini_meta, 
+                float_contrast=float_contrast,
+                plot_kwargs=plot_kwargs,
+                )
+        skip_redraw_lines = True
+    
     # Make sure the contrast_axes x-lims match the rawdata_axes xlims,
     # and add an extra violinplot tick for delta-delta plot.
     # Name is xaxis but it is actually y-axis for horizontal plots
@@ -449,6 +471,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                     show_delta2 = show_delta2,
                                     show_mini_meta = show_mini_meta,
                                     horizontal=horizontal,
+                                    skip_redraw_lines=skip_redraw_lines,
                                     )
     
     # Add the dependent axes spines back in.
@@ -459,27 +482,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         float_contrast=float_contrast, 
         horizontal=horizontal
         )
-
-    # GRIDKEY  WIP
-    # if gridkey_rows is None, skip everything here
-    gridkey_rows = plot_kwargs["gridkey_rows"]
-    if gridkey_rows is not None and not horizontal:
-        grid_key_WIP(
-                is_paired=is_paired, 
-                idx=idx, 
-                all_plot_groups=all_plot_groups, 
-                gridkey_rows=gridkey_rows, 
-                rawdata_axes=rawdata_axes, 
-                contrast_axes=contrast_axes,
-                plot_data=plot_data, 
-                xvar=xvar, 
-                yvar=yvar, 
-                results=results, 
-                show_delta2=show_delta2, 
-                show_mini_meta=show_mini_meta, 
-                float_contrast=float_contrast,
-                plot_kwargs=plot_kwargs,
-                )
 
     # Swarm bars WIP
     swarm_bars = plot_kwargs["swarm_bars"]

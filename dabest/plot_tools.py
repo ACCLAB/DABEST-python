@@ -1604,7 +1604,9 @@ def grid_key_WIP(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes, co
     # raise errors if gridkey_rows is not a list, or if the list is empty
     if isinstance(gridkey_rows, list) is False:
         raise TypeError("gridkey_rows must be a list.")
-    elif len(gridkey_rows) == 0:
+    if any(isinstance(i, str) is False for i in gridkey_rows):
+        raise TypeError("gridkey_rows must contain only strings.")
+    if len(gridkey_rows) == 0:
         warnings.warn("gridkey_rows is an empty list.")
 
     # raise Warning if an item in gridkey_rows is not contained in any idx
@@ -1639,7 +1641,7 @@ def grid_key_WIP(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes, co
         gridkey_rows.append("Ns")
         list_of_Ns = []
         for i in groups_for_gridkey:
-            list_of_Ns.append(str(plot_data.groupby(xvar).count()[yvar].loc[i]))
+            list_of_Ns.append(str(plot_data.groupby(xvar, observed=False).count()[yvar].loc[i]))
         table_cellcols.append(list_of_Ns)
 
     # Adds a row for effectsizes with effectsize values
