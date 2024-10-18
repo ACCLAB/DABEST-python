@@ -1438,7 +1438,12 @@ def Cumming_Plot_Aesthetic_Adjustments(contrast_axes, reflines_kwargs, is_paired
             swarm_ylim, contrast_ylim = rawdata_axes.get_ylim(), contrast_axes.get_ylim()
             rawdata_axes.set_ylim(swarm_ylim[1], swarm_ylim[0])
             contrast_axes.set_ylim(contrast_ylim[1], contrast_ylim[0])
-
+        # Modify the ylim to reduce whitespace in specific plots.
+        if show_delta2 or show_mini_meta or (proportional and show_pairs):
+            swarm_ylim, contrast_ylim = rawdata_axes.get_ylim(), contrast_axes.get_ylim()
+            rawdata_axes.set_ylim(swarm_ylim[0]-0.5, swarm_ylim[1])
+            contrast_axes.set_ylim(contrast_ylim[0]-0.5, contrast_ylim[1])
+            
 def Redraw_Spines(rawdata_axes, contrast_axes, redraw_axes_kwargs, float_contrast, horizontal):
     """
     Aesthetic general adjustments across both GA and Cumming plots.
