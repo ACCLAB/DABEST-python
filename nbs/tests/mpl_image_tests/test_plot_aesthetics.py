@@ -208,3 +208,11 @@ def test_214_change_idx_order_custom_palette_original():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_215_change_idx_order_custom_palette_new():
     return multi_groups_change_idx_new.mean_diff.plot(custom_palette=palette);
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_216_cummings_multi_groups_meandiff_show_baseline_ec():
+    return multi_groups.mean_diff.plot(show_baseline_ec=True);
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_217_cummings_multi_2_group_meandiff_show_baseline_ec():
+    return multi_2group.mean_diff.plot(show_baseline_ec=True);
