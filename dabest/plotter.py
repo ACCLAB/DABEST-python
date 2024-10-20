@@ -113,10 +113,11 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     ytick_color = plt.rcParams["ytick.color"]
 
     # Extract parameters and set kwargs
-    (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, 
-     proportional, all_plot_groups, idx, show_delta2, show_mini_meta, 
-     float_contrast, show_pairs, effect_size_type, group_summaries, 
-     err_color, horizontal, results, es_marker_size, halfviolin_alpha, ci_type) = get_params(
+    (dabest_obj, plot_data, xvar, yvar, is_paired, 
+     effect_size, proportional, all_plot_groups, idx, show_delta2, 
+     show_mini_meta, float_contrast, show_pairs, effect_size_type, 
+     group_summaries, err_color, horizontal, results, 
+     es_marker_size, halfviolin_alpha, ci_type, x1_level, experiment_label) = get_params(
                                                                                     effectsize_df=effectsize_df, 
                                                                                     plot_kwargs=plot_kwargs,
                                                                                     )
@@ -397,6 +398,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 show_mini_meta=show_mini_meta, 
                 float_contrast=float_contrast,
                 plot_kwargs=plot_kwargs,
+                x1_level=x1_level,
+                experiment_label=experiment_label,
                 )
         skip_redraw_lines = True
     

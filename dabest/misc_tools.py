@@ -116,6 +116,8 @@ def get_params(effectsize_df, plot_kwargs):
     dabest_obj = effectsize_df.dabest_obj
     all_plot_groups = dabest_obj._all_plot_groups
     idx = dabest_obj.idx
+    x1_level = dabest_obj.x1_level
+    experiment_label = dabest_obj.experiment_label
     
 
     if effect_size not in ["mean_diff", "delta_g"] or not delta2:
@@ -170,7 +172,7 @@ def get_params(effectsize_df, plot_kwargs):
         
     return (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, idx, 
             show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type, group_summaries, err_color, horizontal,
-            results, es_marker_size, halfviolin_alpha, ci_type)
+            results, es_marker_size, halfviolin_alpha, ci_type, x1_level, experiment_label)
 
 def get_kwargs(plot_kwargs, ytick_color):
     """

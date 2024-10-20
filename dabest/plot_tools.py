@@ -1572,7 +1572,21 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
 
 
 def grid_key_WIP(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes, contrast_axes,
-                 plot_data, xvar, yvar, results, show_delta2, show_mini_meta, float_contrast, plot_kwargs,):
+                 plot_data, xvar, yvar, results, show_delta2, show_mini_meta, float_contrast, 
+                 plot_kwargs, x1_level, experiment_label):
+    
+    gridkey_delimiters=plot_kwargs["gridkey_delimiters"] # Auto parser for gridkey - implemented by SangyuXu
+    if gridkey_rows == "auto":
+        if experiment_label is not None:
+            gridkey_rows = list(np.concatenate([experiment_label, x1_level]))
+        else:
+            temp_groups = ";".join(all_plot_groups)
+            for delimiter in gridkey_delimiters:
+                temp_groups = temp_groups.replace(delimiter, ";")
+            temp_groups = [i.strip() for i in temp_groups.split(';')]
+            unique_groups = list(set(temp_groups))
+            rank = [sum([temp_groups.index(i) for i in temp_groups if(j in i)]) for j in unique_groups]
+            gridkey_rows = [x for _,x in sorted(zip(rank,unique_groups))]
     
     gridkey_show_Ns=plot_kwargs["gridkey_show_Ns"]
     gridkey_show_es=plot_kwargs["gridkey_show_es"]

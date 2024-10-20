@@ -1001,6 +1001,7 @@ class EffectSizeDataFrame(object):
         gridkey_merge_pairs=False,
         gridkey_show_Ns=True,
         gridkey_show_es=True,
+        gridkey_delimiters=[';', '>', '_'],
         swarmplot_kwargs=None,
         barplot_kwargs=None,
         violinplot_kwargs=None,
@@ -1122,7 +1123,18 @@ class EffectSizeDataFrame(object):
         gridkey_rows : list, default None
             Provide a list of row labels for the gridkey. The supplied idx is
             checked against the row labels to determine whether the corresponding
-            cell should be populated or not.
+            cell should be populated or not. 
+            This can also be set to "auto", which will attempt to auto populate the table.
+        gridkey_merge_pairs : boolean, default False
+            If True, the gridkey will merge the pairs of groups into a single
+            cell. This is useful for when the groups are paired.
+        gridkey_show_Ns : boolean, default True
+            If True, the gridkey will show the number of observations in each
+            group.
+        gridkey_show_es : boolean, default True
+            If True, the gridkey will show the effect size of each comparison.
+        gridkey_delimiters : list, default [';', '>', '_']
+            The delimiters used to separate the group names in the gridkey.
         swarmplot_kwargs : dict, default None
             Pass any keyword arguments accepted by the seaborn `swarmplot`
             command here, as a dict. If None, the following keywords are
@@ -1179,7 +1191,6 @@ class EffectSizeDataFrame(object):
             Font size for the contrast axes ylabel.
         fontsize_delta2label : float, default 12
             Font size for the delta-delta axes ylabel.
-            
             
         contrast_bars : boolean, default True
             Whether or not to display the contrast bars.
