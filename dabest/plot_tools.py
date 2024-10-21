@@ -1292,15 +1292,6 @@ def effect_size_curve_plotter(ticks_to_plot, ticks_for_baseline_ec, results, ci_
         fc = plot_palette_contrast[group] if bootstraps_color_by_group else "grey"
         halfviolin(v, fill_color=fc, alpha=halfviolin_alpha)
 
-        # Plot the effect size
-        contrast_axes.plot(
-            [tick],
-            effsize,
-            marker="o",
-            color=ytick_color,
-            markersize=es_marker_size,
-        )
-
         # Plot the confidence interval
         contrast_axes.plot(
             [tick, tick],
@@ -1320,21 +1311,41 @@ def effect_size_curve_plotter(ticks_to_plot, ticks_for_baseline_ec, results, ci_
         current_effsize = results.difference[j]
         current_ci_low = results.bca_low[j] if ci_type == "bca" else results.pct_low[j]
         current_ci_high = results.bca_high[j] if ci_type == "bca" else results.pct_high[j]
+        
+        # Plot the effect size
+        contrast_axes.plot(
+            [tick],
+            current_effsize,
+            marker="o",
+            color=ytick_color,
+            markersize=es_marker_size,
+        )
 
         label = plot_effect_size(tick, current_group, current_control, current_bootstrap, 
                                  current_effsize, current_ci_low, current_ci_high)
         contrast_xtick_labels.append(label)
         
-    if show_baseline_ec:
-        for j, tick in enumerate(ticks_for_baseline_ec):
-            bec_group = results.control[j]
-            bec_control = results.control[j]
-            bec_bootstrap = results.bec_bootstraps[j]
-            bec_effsize = results.bec_difference[j]
-            bec_ci_low = results.bec_bca_low[j] if ci_type == "bca" else results.bec_pct_low[j]
-            bec_ci_high = results.bec_bca_high[j] if ci_type == "bca" else results.bec_pct_high[j]
 
-            bec_label = plot_effect_size(tick, bec_group, bec_control, bec_bootstrap, 
+    bec_results = results.drop_duplicates(subset='control', keep='first').reset_index(drop=True)
+    for j, tick in enumerate(ticks_for_baseline_ec):
+        bec_group = bec_results.control[j]
+        bec_control = bec_results.control[j]
+        bec_bootstrap = bec_results.bec_bootstraps[j]
+        bec_effsize = bec_results.bec_difference[j]
+        bec_ci_low = bec_results.bec_bca_low[j] if ci_type == "bca" else bec_results.bec_pct_low[j]
+        bec_ci_high = bec_results.bec_bca_high[j] if ci_type == "bca" else bec_results.bec_pct_high[j]
+        
+        # Plot the effect size no matter show_baseline
+        contrast_axes.plot(
+            [tick],
+            bec_effsize,
+            marker="o",
+            color=ytick_color,
+            markersize=es_marker_size,
+        )
+        
+        if show_baseline_ec:
+            _ = plot_effect_size(tick, bec_group, bec_control, bec_bootstrap, 
                                      bec_effsize, bec_ci_low, bec_ci_high)
             # Baseline Curve don't need ticks text
     
