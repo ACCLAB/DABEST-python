@@ -941,8 +941,8 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
 def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: object,
                           ticks_to_plot: list, contrast_bars_kwargs: dict, color_col: str, 
                           plot_palette_raw: dict, show_mini_meta: bool, mini_meta_delta: object, 
-                          show_delta2: bool, delta_delta: object, proportional: bool, is_paired: bool,
-                          horizontal: bool):
+                          show_delta2: bool, delta_delta: object, is_paired: bool,
+                          horizontal: bool, idx: list):
     """
     Add contrast bars to the contrast plot.
 
@@ -970,12 +970,12 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
         Whether to show the delta-delta.
     delta_delta : object
         delta-delta object.
-    proportional : bool
-        Whether the data is proportional.
     is_paired : bool
         Whether the data is paired.
     horizontal : bool
         Whether the plot is horizontal.
+    idx : list
+        List of indices of the raw groups.
     """
     og_xlim, og_ylim = ax_to_plot.get_xlim(), ax_to_plot.get_ylim()
 
@@ -983,18 +983,25 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
     for j, tick in enumerate(ticks_to_plot):
         contrast_means.append(results.difference[j])
 
+    unpacked_idx = [element for innerList in idx for element in innerList] 
+
     contrast_bars_colors = (
         [contrast_bars_kwargs.get('color')] * (max(ticks_to_plot) + 1) 
         if contrast_bars_kwargs.get('color') is not None 
         else ['black'] * (max(ticks_to_plot) + 1) 
         if color_col is not None or is_paired 
-        else list(plot_palette_raw.values())
+        else plot_palette_raw
     )
     contrast_bars_kwargs.pop('color')
 
     if horizontal:
         for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
-            ax_to_plot.add_patch(mpatches.Rectangle((0,contrast_bars_x-0.5),contrast_bars_y, 0.5, zorder=-10, color=contrast_bars_colors[int(contrast_bars_x)], **contrast_bars_kwargs))
+            idx_selector = (
+                int(contrast_bars_x) 
+                if type(contrast_bars_colors) == list 
+                else unpacked_idx[int(contrast_bars_x)]
+            )
+            ax_to_plot.add_patch(mpatches.Rectangle((0,contrast_bars_x-0.5),contrast_bars_y, 0.5, zorder=-10, color=contrast_bars_colors[idx_selector], **contrast_bars_kwargs))
 
         if show_mini_meta:
             ax_to_plot.add_patch(mpatches.Rectangle((0, max(swarm_plot_ax.get_yticks())-0.5), mini_meta_delta.difference, 0.5, zorder=-10, color='black', **contrast_bars_kwargs))
@@ -1004,7 +1011,12 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
 
     else:
         for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
-            ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25,0),0.5, contrast_bars_y, zorder=-1, color=contrast_bars_colors[int(contrast_bars_x)], **contrast_bars_kwargs))
+            idx_selector = (
+                int(contrast_bars_x) 
+                if type(contrast_bars_colors) == list 
+                else unpacked_idx[int(contrast_bars_x)]
+            )
+            ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25,0),0.5, contrast_bars_y, zorder=-1, color=contrast_bars_colors[idx_selector], **contrast_bars_kwargs))
 
         if show_mini_meta:
             ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25,0),0.5, mini_meta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
@@ -1016,7 +1028,8 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
     ax_to_plot.set_ylim(og_ylim)
 
 def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
-                       swarm_bars_kwargs: dict, color_col: str, plot_palette_raw: dict, is_paired: bool):
+                       swarm_bars_kwargs: dict, color_col: str, plot_palette_raw: dict, 
+                       is_paired: bool, idx: list):
     """
     Add bars to the raw data plot. Currently only for vertical plots.
 
@@ -1038,6 +1051,8 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
         Dictionary of colors used in the plot.
     is_paired : bool
         Whether the data is paired.
+    idx : list
+        List of indices of the raw groups.
     """
     og_xlim, og_ylim = ax.get_xlim(), ax.get_ylim()
 
@@ -1047,24 +1062,34 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
         swarm_bars_order = pd.unique(plot_data[xvar])
 
     swarm_means = plot_data.groupby(xvar, observed=False)[yvar].mean().reindex(index=swarm_bars_order)
+
+    unpacked_idx = [element for innerList in idx for element in innerList] 
+
     swarm_bars_colors = (
         [swarm_bars_kwargs.get('color')] * (len(swarm_bars_order) + 1) 
         if swarm_bars_kwargs.get('color') is not None 
         else ['black']*(len(swarm_bars_order)+1)
         if color_col is not None or is_paired
-        else list(plot_palette_raw.values())
-    )
+        else plot_palette_raw
+        )
     swarm_bars_kwargs.pop('color')
-    for swarm_bars_x,swarm_bars_y,c in zip(np.arange(0,len(swarm_bars_order)+1,1), swarm_means, swarm_bars_colors):
-        ax.add_patch(mpatches.Rectangle((swarm_bars_x-0.25,0),
-        0.5, swarm_bars_y, zorder=-1,color=c,**swarm_bars_kwargs))
+
+    for swarm_bars_x,swarm_bars_y in zip(np.arange(0,len(swarm_bars_order)+1,1), swarm_means):
+        idx_selector = (
+            swarm_bars_x
+            if type(swarm_bars_colors) == list 
+            else unpacked_idx[swarm_bars_x]
+            )
+        ax.add_patch(mpatches.Rectangle((swarm_bars_x-0.25,0), 0.5, swarm_bars_y, 
+                                        zorder=-1,color=swarm_bars_colors[idx_selector],**swarm_bars_kwargs))
 
     ax.set_xlim(og_xlim)
     ax.set_ylim(og_ylim)
 
 def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: object, ticks_to_plot: list, delta_text_kwargs: dict, color_col: str, 
                        plot_palette_raw: dict, is_paired: bool, proportional: bool, float_contrast: bool,
-                       show_mini_meta: bool, mini_meta_delta: object, show_delta2: bool, delta_delta: object):
+                       show_mini_meta: bool, mini_meta_delta: object, show_delta2: bool, delta_delta: object,
+                       idx: list):
     """
     Add delta text to the contrast plot.
 
@@ -1098,6 +1123,8 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
         Whether to show the delta-delta.
     delta_delta : object
         delta-delta object.
+    idx : list
+        List of indices of the raw groups.
     """
     # Begin checks
     delta_text_x_location = delta_text_kwargs.get('x_location')
@@ -1113,9 +1140,15 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
         if delta_text_kwargs.get('color') is not None
         else ['black']*(max(ticks_to_plot)+1)
         if color_col is not None or (proportional and is_paired) or is_paired
-        else list(plot_palette_raw.values())
+        else plot_palette_raw
     )
-    if show_mini_meta or show_delta2: delta_text_colors.append('black')
+    unpacked_idx = [element for innerList in idx for element in innerList] 
+    if show_mini_meta or show_delta2: 
+        unpacked_idx.append('extra_delta')
+        if type(delta_text_colors) == list:
+            delta_text_colors.append('black')
+        else:
+            delta_text_colors['extra_delta'] = 'black'
     delta_text_kwargs.pop('color')
 
     total_ticks = len(ticks_to_plot) + 1 if show_mini_meta or show_delta2 else len(ticks_to_plot)
@@ -1163,7 +1196,12 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
     # Plot the delta text
     for x,y,t,tick in zip(delta_text_x_coordinates, delta_text_y_coordinates,Delta_Values,ticks_to_plot):
         Delta_Text = np.format_float_positional(t, precision=2, sign=True, trim="k", min_digits=2)
-        ax_to_plot.text(x, y, Delta_Text, color=delta_text_colors[int(tick)], zorder=5, **delta_text_kwargs)
+        idx_selector = (
+            tick
+            if type(delta_text_colors) == list 
+            else unpacked_idx[tick]
+            )
+        ax_to_plot.text(x, y, Delta_Text, color=delta_text_colors[idx_selector], zorder=5, **delta_text_kwargs)
 
 
 def DeltaDotsPlotter(plot_data, contrast_axes, delta_id_col, idx, xvar, yvar, is_paired, color_col, float_contrast, 
@@ -1617,7 +1655,7 @@ def grid_key_WIP(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes, co
 
     # raise errors if gridkey_rows is not a list, or if the list is empty
     if isinstance(gridkey_rows, list) is False:
-        raise TypeError("gridkey_rows must be a list.")
+        raise TypeError("gridkey_rows must be a list (or a string 'auto').")
     if any(isinstance(i, str) is False for i in gridkey_rows):
         raise TypeError("gridkey_rows must contain only strings.")
     if len(gridkey_rows) == 0:

@@ -497,7 +497,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                     swarm_bars_kwargs=swarm_bars_kwargs, 
                     color_col=color_col, 
                     plot_palette_raw=plot_palette_raw,
-                    is_paired=is_paired
+                    is_paired=is_paired,
+                    idx = idx,
                     )
 
     # Contrast bars WIP
@@ -515,9 +516,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                         mini_meta_delta=effectsize_df.mini_meta_delta if show_mini_meta else None, 
                         show_delta2=show_delta2, 
                         delta_delta=effectsize_df.delta_delta if show_delta2 else None, 
-                        proportional=proportional, 
                         is_paired=is_paired,
                         horizontal=horizontal,
+                        idx=idx
                         )
 
     # Summary bars WIP
@@ -553,7 +554,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                     show_mini_meta=show_mini_meta, 
                     mini_meta_delta=effectsize_df.mini_meta_delta if show_mini_meta else None, 
                     show_delta2=show_delta2, 
-                    delta_delta=effectsize_df.delta_delta if show_delta2 else None
+                    delta_delta=effectsize_df.delta_delta if show_delta2 else None,
+                    idx=idx
                     )
 
     # Table Axes for horizontal plots
