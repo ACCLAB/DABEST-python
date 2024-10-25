@@ -663,9 +663,9 @@ class Dabest(object):
 
 
         if isinstance(plot_data[self.__xvar].dtype, pd.CategoricalDtype):
-            plot_data[self.__xvar].cat.remove_unused_categories(inplace=True)
+            plot_data[self.__xvar].cat.remove_unused_categories()
             plot_data[self.__xvar].cat.reorder_categories(
-                all_plot_groups, ordered=True, inplace=True
+                all_plot_groups, ordered=True
             )
         else:
             plot_data[self.__xvar] = pd.Categorical(
