@@ -390,6 +390,7 @@ def get_kwargs(plot_kwargs, ytick_color):
     else:
         table_kwargs = merge_two_dicts(default_table_kwargs, plot_kwargs["horizontal_table_kwargs"])
 
+    # Return the kwargs.
     return (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs, 
             reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
             delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs)
@@ -593,7 +594,8 @@ def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_pair
     init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"], tight_layout=True)
 
     width_ratios_ga = [2.5, 1]
-    h_space_cummings = 0.3 if plot_kwargs["gridkey_rows"] == None else 0.1     ##### GRIDKEY WIP addition
+    h_space_cummings = (0.1 if plot_kwargs["gridkey_rows"] is not None
+                        else 0.3)
 
     if plot_kwargs["ax"] is not None:
         # New in v0.2.6.
@@ -1430,7 +1432,7 @@ def Cumming_Plot_Aesthetic_Adjustments(contrast_axes, reflines_kwargs, is_paired
                 del redraw_axes_kwargs["y"]
 
     # Add x-spine line for delta2/mini meta.
-    if (show_delta2 or show_mini_meta) and not horizontal:
+    if (show_delta2 or show_mini_meta) and not horizontal and not skip_redraw_lines:
         ylim = contrast_axes.get_ylim()
         redraw_axes_kwargs["y"] = ylim[0]
         x_ticks = contrast_axes.get_xticks()

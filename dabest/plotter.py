@@ -90,7 +90,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         slopegraph_plotter,
         plot_minimeta_or_deltadelta_violins,
         effect_size_curve_plotter,
-        grid_key_WIP,
+        gridkey_plotter,
         barplotter,
         table_for_horizontal_plots,
     )
@@ -378,30 +378,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                                 redraw_axes_kwargs=redraw_axes_kwargs,
                                                                 horizontal=horizontal,
                                                                 )
-        
-    # GRIDKEY  WIP
-    skip_redraw_lines = False
-    gridkey_rows = plot_kwargs["gridkey_rows"]
-    if gridkey_rows is not None and not horizontal:
-        grid_key_WIP(
-                is_paired=is_paired, 
-                idx=idx, 
-                all_plot_groups=all_plot_groups, 
-                gridkey_rows=gridkey_rows, 
-                rawdata_axes=rawdata_axes, 
-                contrast_axes=contrast_axes,
-                plot_data=plot_data, 
-                xvar=xvar, 
-                yvar=yvar, 
-                results=results, 
-                show_delta2=show_delta2, 
-                show_mini_meta=show_mini_meta, 
-                float_contrast=float_contrast,
-                plot_kwargs=plot_kwargs,
-                x1_level=x1_level,
-                experiment_label=experiment_label,
-                )
-        skip_redraw_lines = True
     
     # Make sure the contrast_axes x-lims match the rawdata_axes xlims,
     # and add an extra violinplot tick for delta-delta plot.
@@ -457,6 +433,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                             )
     else:
         # For Cumming Plots only.
+        # skip_redraw_lines = True if plot_kwargs["gridkey_rows"] is not None and not any([show_mini_meta, show_delta2]) else False
+        skip_redraw_lines = True if plot_kwargs["gridkey_rows"] is not None else False
         Cumming_Plot_Aesthetic_Adjustments(
                                     contrast_axes=contrast_axes, 
                                     reflines_kwargs=reflines_kwargs, 
@@ -569,6 +547,35 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                             show_delta2=show_delta2,
                             table_kwargs=table_kwargs,
                             )
+        
+
+    # GRIDKEY  WIP
+    gridkey_rows = plot_kwargs["gridkey_rows"]
+    # if gridkey_rows is not None and not any([show_mini_meta, show_delta2]):
+    if gridkey_rows is not None:
+        gridkey_plotter(
+                is_paired=is_paired, 
+                idx=idx, 
+                all_plot_groups=all_plot_groups, 
+                gridkey_rows=gridkey_rows, 
+                rawdata_axes = rawdata_axes,
+                contrast_axes = contrast_axes,
+                plot_data=plot_data, 
+                xvar=xvar, 
+                yvar=yvar, 
+                results=results, 
+                show_delta2=show_delta2, 
+                show_mini_meta=show_mini_meta, 
+                plot_kwargs=plot_kwargs,
+                x1_level=x1_level,
+                experiment_label=experiment_label,
+                float_contrast=float_contrast,
+                horizontal=horizontal,
+                delta_delta = effectsize_df.delta_delta if show_delta2 else None,
+                mini_meta_delta = effectsize_df.mini_meta_delta if show_mini_meta else None,
+                effect_size = effect_size,
+                )
+
 
     # Make sure no stray ticks appear!
     rawdata_axes.xaxis.set_ticks_position("bottom")

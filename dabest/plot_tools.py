@@ -9,7 +9,7 @@ from __future__ import annotations
 __all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'width_determine',
            'single_sankey', 'sankeydiag', 'summary_bars_plotter', 'contrast_bars_plotter', 'swarm_bars_plotter',
            'delta_text_plotter', 'DeltaDotsPlotter', 'slopegraph_plotter', 'plot_minimeta_or_deltadelta_violins',
-           'effect_size_curve_plotter', 'grid_key_WIP', 'barplotter', 'table_for_horizontal_plots', 'swarmplot',
+           'effect_size_curve_plotter', 'gridkey_plotter', 'barplotter', 'table_for_horizontal_plots', 'swarmplot',
            'SwarmPlot']
 
 # %% ../nbs/API/plot_tools.ipynb 4
@@ -1609,9 +1609,10 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
     return current_group, current_control, current_effsize, contrast_xtick_labels
 
 
-def grid_key_WIP(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes, contrast_axes,
-                 plot_data, xvar, yvar, results, show_delta2, show_mini_meta, float_contrast, 
-                 plot_kwargs, x1_level, experiment_label):
+def gridkey_plotter(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes, contrast_axes, 
+                 plot_data, xvar, yvar, results, show_delta2, show_mini_meta, 
+                 plot_kwargs, x1_level, experiment_label, float_contrast, horizontal,
+                 delta_delta, mini_meta_delta, effect_size):
     
     gridkey_delimiters=plot_kwargs["gridkey_delimiters"] # Auto parser for gridkey - implemented by SangyuXu
     if gridkey_rows == "auto":
@@ -1697,7 +1698,7 @@ def grid_key_WIP(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes, co
         table_cellcols.append(list_of_Ns)
 
     # Adds a row for effectsizes with effectsize values
-    if gridkey_show_es:
+    if gridkey_show_es and not horizontal:
         gridkey_rows.append("\u0394")
         effsize_list = []
         results_list = results.test.to_list()
@@ -1721,40 +1722,102 @@ def grid_key_WIP(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes, co
 
         table_cellcols.append(effsize_list)
 
-    # If Gardner-Altman plot, plot on raw data and not contrast axes
-    if float_contrast:
-        axes_ploton = rawdata_axes
+    # Set the axes to plot on
+    if float_contrast or horizontal:
+        ax_to_plot = rawdata_axes
     else:
-        axes_ploton = contrast_axes
+        ax_to_plot = contrast_axes
 
-    # Account for extended x axis in case of show_delta2 or show_mini_meta
-    x_groups_for_width = len(groups_for_gridkey)
-    if show_delta2 or show_mini_meta:
-        x_groups_for_width += 2
-    gridkey_width = len(groups_for_gridkey) / x_groups_for_width
+    # Add delta-delta or mini_meta details to the table
+    if show_mini_meta or show_delta2:
+        if show_delta2:
+            added_group_name = ["deltas' g"] if effect_size == "delta_g" else ["delta-delta"]
+        else:
+            added_group_name = ["Weighted delta"]
+        gridkey_rows = added_group_name + gridkey_rows
+        table_cellcols = [[""]*len(table_cellcols[0])] + table_cellcols
 
-    gridkey = axes_ploton.table(
-        cellText=table_cellcols,
-        rowLabels=gridkey_rows,
-        cellLoc="center",
-        bbox=[
-            0,
-            -len(gridkey_rows) * 0.1 - 0.05,
-            gridkey_width,
-            len(gridkey_rows) * 0.1,
-        ],
-        **{"alpha": 0.5}
-    )
+        for group_idx, group_vals in enumerate(table_cellcols):
+            if group_idx == 0:
+                added_group = ['', "\u25CF"]
+            elif gridkey_show_es and (group_idx == len(table_cellcols)-1) and not horizontal:
+                added_delta_effectsize = delta_delta.difference if show_delta2 else mini_meta_delta.difference
+                added_delta_effectsize_str = np.format_float_positional(
+                                                                        added_delta_effectsize,
+                                                                        precision=2,
+                                                                        sign=True,
+                                                                        trim="k",
+                                                                        min_digits=2,
+                                                                    )
+                added_group = ['-', added_delta_effectsize_str]
+            else:
+                added_group = ['', '']
+            for n in added_group:
+                group_vals.append(n)
 
-    # modifies row label cells
-    for cell in gridkey._cells:
-        if cell[1] == -1:
-            gridkey._cells[cell].visible_edges = "open"
-            gridkey._cells[cell].set_text_props(**{"ha": "right"})
+    # Create the table object
+    if horizontal:
+        # Convert the cells format for horizontal table plotting
+        converted_list = []
+        for j in range(0, len(table_cellcols[0])):
+            temp_list = []
+            for i in table_cellcols:
+                temp_list.append(i[j])
+            converted_list.append(temp_list)
+
+        # Plot the table for horizontal format
+        gridkey = ax_to_plot.table(
+            cellText=converted_list,
+            cellLoc="center",
+            bbox=[
+                -len(gridkey_rows) * 0.2, 
+                0, 
+                len(gridkey_rows) * 0.2, 
+                1
+            ],
+            **{"alpha": 0.5, "zorder": 5}
+            )
+        
+        # Add the column labels as text below the table
+        text_locs = np.arange((-len(gridkey_rows)*0.2) +0.1, 0, 0.2)
+        for loc, txt in zip(text_locs, gridkey_rows):
+            ax_to_plot.text(
+                        loc+0.04, 
+                        -0.01, 
+                        txt, 
+                        transform=ax_to_plot.transAxes, 
+                        fontsize=10,
+                        ha='right',
+                        rotation=45,
+                        va='top'
+                    )
+    else:
+        # Plot the table for vertical format
+        gridkey = ax_to_plot.table(
+            cellText=table_cellcols,
+            rowLabels=gridkey_rows,
+            cellLoc="center",
+            bbox=[
+                0,
+                -len(gridkey_rows) * 0.1 - 0.05,
+                1,
+                len(gridkey_rows) * 0.1,
+            ],
+            **{"alpha": 0.5}
+        )
+        # modifies row label cells
+        for cell in gridkey._cells:
+            if cell[1] == -1:
+                gridkey._cells[cell].visible_edges = "open"
+                gridkey._cells[cell].set_text_props(**{"ha": "right"})
 
     # turns off both x axes
-    rawdata_axes.get_xaxis().set_visible(False)
-    contrast_axes.get_xaxis().set_visible(False)
+    if horizontal:
+        rawdata_axes.get_yaxis().set_visible(False)
+        contrast_axes.get_yaxis().set_visible(False)
+    else:
+        rawdata_axes.get_xaxis().set_visible(False)
+        contrast_axes.get_xaxis().set_visible(False)
 
 def barplotter(xvar, yvar, all_plot_groups, rawdata_axes, plot_data, bar_color, plot_palette_bar, 
                plot_kwargs, barplot_kwargs, horizontal):
