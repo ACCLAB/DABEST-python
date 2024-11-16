@@ -1371,7 +1371,7 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
 def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, rawdata_axes,
                                         contrast_axes, violinplot_kwargs, halfviolin_alpha, ytick_color, 
                                         es_marker_size, group_summary_kwargs, contrast_xtick_labels, effect_size,
-                                        show_delta2, plot_kwargs, redraw_axes_kwargs, horizontal):
+                                        show_delta2, plot_kwargs, horizontal):
     """
     Add mini meta-analysis or delta-delta violin plots to the contrast plot.
 
@@ -1405,8 +1405,6 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
         Whether to show the delta-delta.
     plot_kwargs : dict
         Keyword arguments for the plot.
-    redraw_axes_kwargs : dict
-        Keyword arguments for the redraw axes.
     horizontal : bool
         If the plot is horizontal.
     """
@@ -1486,7 +1484,7 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
         else:
             contrast_xtick_labels.extend(["", "delta-delta"])
 
-    # Create delta2 axis and label.
+    # Create the delta-delta axes.
     if show_delta2 and not horizontal:
         if plot_kwargs["delta2_label"] is not None:
             delta2_label = plot_kwargs["delta2_label"]
@@ -1500,15 +1498,10 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
         delta2_axes.set_ylabel(delta2_label, fontsize=fontsize_delta2label)
         og_xlim_delta, og_ylim_delta = contrast_axes.get_xlim(), contrast_axes.get_ylim()
         delta2_axes.set_ylim(og_ylim_delta)
-        delta2_axes.vlines(
-            og_xlim_delta[1], 
-            og_ylim_delta[0], 
-            og_ylim_delta[1], 
-            **redraw_axes_kwargs
-        )
-        contrast_axes.set_xlim(og_xlim_delta)
-    
-    return contrast_xtick_labels
+    else:
+        delta2_axes = None
+
+    return delta2_axes, contrast_xtick_labels
 
 
 def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, violinplot_kwargs, halfviolin_alpha, 
@@ -1608,11 +1601,56 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
         )
     return current_group, current_control, current_effsize, contrast_xtick_labels
 
-
 def gridkey_plotter(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes, contrast_axes, 
                  plot_data, xvar, yvar, results, show_delta2, show_mini_meta, 
                  plot_kwargs, x1_level, experiment_label, float_contrast, horizontal,
                  delta_delta, mini_meta_delta, effect_size):
+    """
+    Add gridkey to the contrast plot.
+
+    Parameters
+    ----------
+    is_paired : bool
+        Whether the data is paired.
+    idx : list
+        List of indices of the contrast objects.
+    all_plot_groups : list
+        List of all plot groups.
+    gridkey_rows : list
+        List of gridkey rows.
+    rawdata_axes : object
+        Matplotlib axis object for the raw data.
+    contrast_axes : object
+        Matplotlib axis object for the contrast data.
+    plot_data : object (Dataframe)
+        Dataframe of the plot data.
+    xvar : str
+        Column name of the x variable.
+    yvar : str
+        Column name of the y variable.
+    results : object (Dataframe)
+        Dataframe of contrast object comparisons.
+    show_delta2 : bool
+        Whether to show the delta-delta.
+    show_mini_meta : bool
+        Whether to show the mini meta-analysis.
+    plot_kwargs : dict
+        Keyword arguments for the plot.
+    x1_level : list
+        List of x1 levels.
+    experiment_label : list
+        List of experiment labels.
+    float_contrast : bool
+        Whether the DABEST plot uses Gardner-Altman or Cummings
+    horizontal : bool
+        If the plot is horizontal.
+    delta_delta : object
+        delta-delta object.
+    mini_meta_delta : object
+        Mini meta-analysis object.
+    effect_size : str
+        Type of effect size to plot
+    """
     
     gridkey_delimiters=plot_kwargs["gridkey_delimiters"] # Auto parser for gridkey - implemented by SangyuXu
     if gridkey_rows == "auto":

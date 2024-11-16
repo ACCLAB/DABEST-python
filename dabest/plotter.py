@@ -140,8 +140,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     )
 
     # Extract Color palette
-    (color_col, bootstraps_color_by_group, n_groups, filled,
-     swarm_colors, plot_palette_raw, bar_color, 
+    (color_col, bootstraps_color_by_group, n_groups, 
+     filled, swarm_colors, plot_palette_raw, bar_color, 
      plot_palette_bar, plot_palette_contrast, plot_palette_sankey) = get_color_palette(
                                                                                 plot_kwargs=plot_kwargs, 
                                                                                 plot_data=plot_data, 
@@ -359,8 +359,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                                     )
 
     # Plot mini-meta or delta-delta violin
+    delta2_axes = None
     if show_mini_meta or show_delta2:
-        contrast_xtick_labels = plot_minimeta_or_deltadelta_violins(
+        delta2_axes, contrast_xtick_labels = plot_minimeta_or_deltadelta_violins(
                                                                 show_mini_meta=show_mini_meta, 
                                                                 effectsize_df=effectsize_df, 
                                                                 ci_type=ci_type, 
@@ -373,9 +374,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                                 group_summary_kwargs=group_summary_kwargs, 
                                                                 contrast_xtick_labels=contrast_xtick_labels, 
                                                                 effect_size=effect_size,
-                                                                show_delta2=show_delta2,
-                                                                plot_kwargs=plot_kwargs,
-                                                                redraw_axes_kwargs=redraw_axes_kwargs,
+                                                                show_delta2=show_delta2, 
+                                                                plot_kwargs=plot_kwargs, 
                                                                 horizontal=horizontal,
                                                                 )
     
@@ -433,7 +433,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                             )
     else:
         # For Cumming Plots only.
-        # skip_redraw_lines = True if plot_kwargs["gridkey_rows"] is not None and not any([show_mini_meta, show_delta2]) else False
         skip_redraw_lines = True if plot_kwargs["gridkey_rows"] is not None else False
         Cumming_Plot_Aesthetic_Adjustments(
                                     contrast_axes=contrast_axes, 
@@ -461,7 +460,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         contrast_axes=contrast_axes, 
         redraw_axes_kwargs=redraw_axes_kwargs, 
         float_contrast=float_contrast, 
-        horizontal=horizontal
+        horizontal=horizontal,
+        show_delta2=show_delta2, 
+        delta2_axes=delta2_axes
         )
 
     # Swarm bars WIP
@@ -503,79 +504,76 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     summary_bars = plot_kwargs["summary_bars"]
     if summary_bars is not None and not horizontal:
         summary_bars_plotter(
-                        summary_bars=summary_bars, 
-                        results=results, 
-                        ax_to_plot=contrast_axes, 
-                        float_contrast=float_contrast,
-                        summary_bars_kwargs=summary_bars_kwargs, 
-                        ci_type=ci_type, 
-                        ticks_to_plot=ticks_to_plot, 
-                        color_col=color_col,
-                        plot_palette_raw=plot_palette_raw, 
-                        proportional=proportional, 
-                        is_paired=is_paired
+                        summary_bars = summary_bars, 
+                        results = results, 
+                        ax_to_plot = contrast_axes, 
+                        float_contrast = float_contrast,
+                        summary_bars_kwargs = summary_bars_kwargs, 
+                        ci_type = ci_type, 
+                        ticks_to_plot = ticks_to_plot, 
+                        color_col = color_col,
+                        plot_palette_raw = plot_palette_raw, 
+                        proportional = proportional, 
+                        is_paired = is_paired
                         )
     # Delta text WIP
     delta_text = plot_kwargs["delta_text"]
     if delta_text and not horizontal: 
         delta_text_plotter(
-                    results=results, 
-                    ax_to_plot=contrast_axes, 
-                    swarm_plot_ax=rawdata_axes, 
-                    ticks_to_plot=ticks_to_plot, 
-                    delta_text_kwargs=delta_text_kwargs, 
-                    color_col=color_col, 
-                    plot_palette_raw=plot_palette_raw, 
-                    is_paired=is_paired,
-                    proportional=proportional, 
-                    float_contrast=float_contrast, 
-                    show_mini_meta=show_mini_meta, 
-                    mini_meta_delta=effectsize_df.mini_meta_delta if show_mini_meta else None, 
-                    show_delta2=show_delta2, 
-                    delta_delta=effectsize_df.delta_delta if show_delta2 else None,
-                    idx=idx
+                    results = results, 
+                    ax_to_plot = contrast_axes, 
+                    swarm_plot_ax = rawdata_axes, 
+                    ticks_to_plot = ticks_to_plot, 
+                    delta_text_kwargs = delta_text_kwargs, 
+                    color_col = color_col, 
+                    plot_palette_raw = plot_palette_raw, 
+                    is_paired = is_paired,
+                    proportional = proportional, 
+                    float_contrast = float_contrast, 
+                    show_mini_meta = show_mini_meta, 
+                    mini_meta_delta = effectsize_df.mini_meta_delta if show_mini_meta else None, 
+                    show_delta2 = show_delta2, 
+                    delta_delta = effectsize_df.delta_delta if show_delta2 else None,
+                    idx = idx
                     )
 
     # Table Axes for horizontal plots
     if horizontal:
         table_for_horizontal_plots(
-                            effectsize_df=effectsize_df,
+                            effectsize_df = effectsize_df,
                             ax = table_axes,
-                            contrast_axes=contrast_axes,
-                            ticks_to_plot=table_axes_ticks_to_plot, 
-                            show_mini_meta=show_mini_meta,
-                            show_delta2=show_delta2,
-                            table_kwargs=table_kwargs,
+                            contrast_axes = contrast_axes,
+                            ticks_to_plot = table_axes_ticks_to_plot, 
+                            show_mini_meta = show_mini_meta,
+                            show_delta2 = show_delta2,
+                            table_kwargs = table_kwargs,
                             )
-        
 
-    # GRIDKEY  WIP
+    # GRIDKEY
     gridkey_rows = plot_kwargs["gridkey_rows"]
-    # if gridkey_rows is not None and not any([show_mini_meta, show_delta2]):
     if gridkey_rows is not None:
         gridkey_plotter(
-                is_paired=is_paired, 
-                idx=idx, 
-                all_plot_groups=all_plot_groups, 
-                gridkey_rows=gridkey_rows, 
+                is_paired = is_paired, 
+                idx = idx, 
+                all_plot_groups = all_plot_groups, 
+                gridkey_rows = gridkey_rows, 
                 rawdata_axes = rawdata_axes,
                 contrast_axes = contrast_axes,
-                plot_data=plot_data, 
-                xvar=xvar, 
-                yvar=yvar, 
-                results=results, 
-                show_delta2=show_delta2, 
-                show_mini_meta=show_mini_meta, 
-                plot_kwargs=plot_kwargs,
-                x1_level=x1_level,
-                experiment_label=experiment_label,
-                float_contrast=float_contrast,
-                horizontal=horizontal,
+                plot_data = plot_data, 
+                xvar = xvar, 
+                yvar = yvar, 
+                results = results, 
+                show_delta2 = show_delta2, 
+                show_mini_meta = show_mini_meta, 
+                plot_kwargs = plot_kwargs,
+                x1_level = x1_level,
+                experiment_label = experiment_label,
+                float_contrast = float_contrast,
+                horizontal = horizontal,
                 delta_delta = effectsize_df.delta_delta if show_delta2 else None,
                 mini_meta_delta = effectsize_df.mini_meta_delta if show_mini_meta else None,
                 effect_size = effect_size,
                 )
-
 
     # Make sure no stray ticks appear!
     rawdata_axes.xaxis.set_ticks_position("bottom")

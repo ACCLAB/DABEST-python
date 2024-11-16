@@ -920,8 +920,6 @@ def extract_contrast_plotting_ticks(is_paired, show_pairs, two_col_sankey, plot_
             ticks_to_start_twocol_sankey.pop()
             ticks_to_start_twocol_sankey.insert(0, 0)
         else:
-            # ticks_to_skip = np.arange(0, len(temp_all_plot_groups), 2).tolist()
-            # ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist()
             ticks_to_skip = np.cumsum([len(t) for t in idx])[:-1].tolist()
             ticks_to_skip.insert(0, 0)
             # Then obtain the ticks where we have to plot the effect sizes.
@@ -1004,7 +1002,7 @@ def set_xaxis_ticks_and_lims(show_delta2, show_mini_meta, rawdata_axes, contrast
             contrast_axes.set_ylim(rawdata_axes.get_ylim())
         else:
             contrast_axes.set_ylim(rawdata_axes.get_ylim())
-
+    # Vertical
     else:
         # Ticks
         if show_delta2 is False and show_mini_meta is False:
@@ -1025,7 +1023,7 @@ def set_xaxis_ticks_and_lims(show_delta2, show_mini_meta, rawdata_axes, contrast
             # Increase the xlim of raw data by 2
             temp = rawdata_axes.get_xlim()
             if show_pairs:
-                rawdata_axes.set_xlim(temp[0], temp[1] + 0.25)
+                rawdata_axes.set_xlim(temp[0], temp[1] + 0.5)
             else:
                 rawdata_axes.set_xlim(temp[0], temp[1] + 2)
             contrast_axes.set_xlim(rawdata_axes.get_xlim())
@@ -1451,7 +1449,8 @@ def Cumming_Plot_Aesthetic_Adjustments(contrast_axes, reflines_kwargs, is_paired
             rawdata_axes.set_ylim(swarm_ylim[0]-0.5, swarm_ylim[1])
             contrast_axes.set_ylim(contrast_ylim[0]-0.5, contrast_ylim[1])
             
-def Redraw_Spines(rawdata_axes, contrast_axes, redraw_axes_kwargs, float_contrast, horizontal):
+def Redraw_Spines(rawdata_axes, contrast_axes, redraw_axes_kwargs, float_contrast, horizontal,
+                  show_delta2, delta2_axes):
     """
     Aesthetic general adjustments across both GA and Cumming plots.
 
@@ -1469,6 +1468,10 @@ def Redraw_Spines(rawdata_axes, contrast_axes, redraw_axes_kwargs, float_contras
         A boolean flag to determine if the plot is GA or Cum
     horizontal : bool
         A boolean flag to determine if the plot is for horizontal plotting.
+    show_delta2 : bool
+        A boolean flag to determine if the plot will have a delta-delta effect size.
+    delta2_axes : object (Axes)
+        The delta2 axes.
     """
 
     # Because we turned the axes frame off, we also need to draw back the x-spine for both axes.
@@ -1505,11 +1508,22 @@ def Redraw_Spines(rawdata_axes, contrast_axes, redraw_axes_kwargs, float_contras
             og_ylim_contrast[1], 
             **redraw_axes_kwargs
         )
+
+        if show_delta2:
+            og_xlim_delta, og_ylim_delta = contrast_axes.get_xlim(), contrast_axes.get_ylim()
+            delta2_axes.set_ylim(og_ylim_delta)
+
+            delta2_axes.vlines(
+                og_xlim_delta[1], 
+                og_ylim_delta[0], 
+                og_ylim_delta[1], 
+                **redraw_axes_kwargs
+            )
+
     for ax, xlim, ylim in zip([rawdata_axes, contrast_axes], [og_xlim_raw, og_xlim_contrast], [og_ylim_raw, og_ylim_contrast]):
         ax.set_xlim(xlim)
         ax.set_ylim(ylim)
 
-    
 def extract_group_summaries(proportional, err_color, rawdata_axes, asymmetric_side, horizontal, 
                             bootstraps_color_by_group, plot_palette_raw, all_plot_groups,
                             n_groups, color_col, ytick_color, plot_kwargs):
