@@ -45,7 +45,11 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         fig_size=None,
         dpi=100,
         ax=None,
-        gridkey_rows=None,
+
+
+        gridkey_rows=None, gridkey_kwargs=None,
+
+
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
         slopegraph_kwargs=None,
@@ -124,10 +128,10 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs,
      reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
-     delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs) = get_kwargs(
-                                                                                                                plot_kwargs=plot_kwargs, 
-                                                                                                                ytick_color=ytick_color
-                                                                                                                )
+     delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs) = get_kwargs(
+                                                                                                                            plot_kwargs=plot_kwargs, 
+                                                                                                                            ytick_color=ytick_color
+                                                                                                                            )
 
     # We also need to extract the `sankey` and `flow` from the kwargs for plotter.py
     # to use for varying different kinds of paired proportional plots
@@ -565,7 +569,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 results = results, 
                 show_delta2 = show_delta2, 
                 show_mini_meta = show_mini_meta, 
-                plot_kwargs = plot_kwargs,
                 x1_level = x1_level,
                 experiment_label = experiment_label,
                 float_contrast = float_contrast,
@@ -573,6 +576,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 delta_delta = effectsize_df.delta_delta if show_delta2 else None,
                 mini_meta_delta = effectsize_df.mini_meta_delta if show_mini_meta else None,
                 effect_size = effect_size,
+                gridkey_kwargs = gridkey_kwargs,
                 )
 
     # Make sure no stray ticks appear!

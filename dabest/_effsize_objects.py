@@ -997,11 +997,6 @@ class EffectSizeDataFrame(object):
         fig_size=None,
         dpi=100,
         ax=None,
-        gridkey_rows=None,
-        gridkey_merge_pairs=False,
-        gridkey_show_Ns=True,
-        gridkey_show_es=True,
-        gridkey_delimiters=[';', '>', '_'],
         swarmplot_kwargs=None,
         barplot_kwargs=None,
         violinplot_kwargs=None,
@@ -1017,7 +1012,7 @@ class EffectSizeDataFrame(object):
         fontsize_contrastxlabel=12,
         fontsize_contrastylabel=12,
         fontsize_delta2label=12,
-        #### Contrast bars and delta text and delta dots WIP  ####
+        #### Contrast bars, Swarm bars, delta text, and delta dots WIP  ####
         contrast_bars=True,
         swarm_bars=True,
         contrast_bars_kwargs=None,
@@ -1032,6 +1027,14 @@ class EffectSizeDataFrame(object):
         # Horizontal Plots
         horizontal=False,
         horizontal_table_kwargs=None,
+
+        # Gridkey
+        gridkey_rows=None,
+        gridkey_merge_pairs=False,
+        gridkey_show_Ns=True,
+        gridkey_show_es=True,
+        gridkey_delimiters=[';', '>', '_'],
+        gridkey_kwargs=None,
     ):
         """
         Creates an estimation plot for the effect size of interest.
@@ -1120,21 +1123,6 @@ class EffectSizeDataFrame(object):
         ax : matplotlib.Axes, default None
             Provide an existing Axes for the plots to be created. If no Axes is
             specified, a new matplotlib Figure will be created.
-        gridkey_rows : list, default None
-            Provide a list of row labels for the gridkey. The supplied idx is
-            checked against the row labels to determine whether the corresponding
-            cell should be populated or not. 
-            This can also be set to "auto", which will attempt to auto populate the table.
-        gridkey_merge_pairs : boolean, default False
-            If True, the gridkey will merge the pairs of groups into a single
-            cell. This is useful for when the groups are paired.
-        gridkey_show_Ns : boolean, default True
-            If True, the gridkey will show the number of observations in each
-            group.
-        gridkey_show_es : boolean, default True
-            If True, the gridkey will show the effect size of each comparison.
-        gridkey_delimiters : list, default [';', '>', '_']
-            The delimiters used to separate the group names in the gridkey.
         swarmplot_kwargs : dict, default None
             Pass any keyword arguments accepted by the seaborn `swarmplot`
             command here, as a dict. If None, the following keywords are
@@ -1231,6 +1219,21 @@ class EffectSizeDataFrame(object):
             Pass relevant keyword arguments to the horizontal table. If None, the following keywords are passed:
             {'color' : 'yellow', 'alpha' :0.2, 'fontsize' : 12, 'text_color' : 'black', 'text_units' : None, 
             'paired_gap_dashes' : False, 'fontsize_label': 12, 'label': 'Δ'}
+            
+        gridkey_rows : list, default None
+            Provide a list of row labels for the gridkey. The supplied idx is
+            checked against the row labels to determine whether the corresponding
+            cell should be populated or not. 
+            This can also be set to "auto", which will attempt to auto populate the table.
+        gridkey_kwargs : dict, default None
+            Pass relevant keyword arguments to the gridkey. If None, the following keywords are passed:
+            {   'show_es' : True,                   # If True, the gridkey will show the effect size of each comparison.
+                'show_Ns' :True,                    # If True, the gridkey will show the number of observations in eachgroup.
+                'merge_pairs' : False,              # If True, the gridkey will merge the pairs of groups into a single cell. This is useful for when the groups are paired.
+                'delimiters': [';', '>', '_'],      # Delimiters to split the group names.
+                'marker': "\u25CF",                 # Marker for the gridkey dots.
+            }
+
 
         Returns
         -------

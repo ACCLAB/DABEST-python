@@ -1602,9 +1602,8 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
     return current_group, current_control, current_effsize, contrast_xtick_labels
 
 def gridkey_plotter(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes, contrast_axes, 
-                 plot_data, xvar, yvar, results, show_delta2, show_mini_meta, 
-                 plot_kwargs, x1_level, experiment_label, float_contrast, horizontal,
-                 delta_delta, mini_meta_delta, effect_size):
+                 plot_data, xvar, yvar, results, show_delta2, show_mini_meta, x1_level, experiment_label, 
+                 float_contrast, horizontal, delta_delta, mini_meta_delta, effect_size, gridkey_kwargs):
     """
     Add gridkey to the contrast plot.
 
@@ -1634,8 +1633,6 @@ def gridkey_plotter(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes,
         Whether to show the delta-delta.
     show_mini_meta : bool
         Whether to show the mini meta-analysis.
-    plot_kwargs : dict
-        Keyword arguments for the plot.
     x1_level : list
         List of x1 levels.
     experiment_label : list
@@ -1650,9 +1647,16 @@ def gridkey_plotter(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes,
         Mini meta-analysis object.
     effect_size : str
         Type of effect size to plot
+    gridkey_kwargs : dict
+        Keyword arguments for the gridkey.
     """
-    
-    gridkey_delimiters=plot_kwargs["gridkey_delimiters"] # Auto parser for gridkey - implemented by SangyuXu
+    # Extract relevant kwargs
+    gridkey_show_Ns=gridkey_kwargs["show_Ns"]
+    gridkey_show_es=gridkey_kwargs["show_es"]
+    gridkey_merge_pairs=gridkey_kwargs["merge_pairs"]
+    gridkey_marker = gridkey_kwargs["marker"]
+    gridkey_delimiters=gridkey_kwargs["delimiters"] # Auto parser for gridkey - implemented by SangyuXu
+
     if gridkey_rows == "auto":
         if experiment_label is not None:
             gridkey_rows = list(np.concatenate([experiment_label, x1_level]))
@@ -1664,10 +1668,6 @@ def gridkey_plotter(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes,
             unique_groups = list(set(temp_groups))
             rank = [sum([temp_groups.index(i) for i in temp_groups if(j in i)]) for j in unique_groups]
             gridkey_rows = [x for _,x in sorted(zip(rank,unique_groups))]
-    
-    gridkey_show_Ns=plot_kwargs["gridkey_show_Ns"]
-    gridkey_show_es=plot_kwargs["gridkey_show_es"]
-    gridkey_merge_pairs=plot_kwargs["gridkey_merge_pairs"]
     
     # Raise error if there are more than 2 items in any idx and gridkey_merge_pairs is True and is_paired is not None
     if gridkey_merge_pairs and is_paired is not None:
@@ -1716,13 +1716,13 @@ def gridkey_plotter(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes,
                 warnings.warn(i + " is not in any idx. Please check.")
 
     # Populate table: checks if idx for each column contains rowlabel name
-    # IF so, marks that element as present w black dot, or space if not present
+    # IF so, marks that element as present w black dot (default "\u25CF"), or space if not present
     table_cellcols = []
     for i in gridkey_rows:
         thisrow = []
         for q in groups_for_gridkey:
             if str(i) in q:
-                thisrow.append("\u25CF")
+                thisrow.append(gridkey_marker)
             else:
                 thisrow.append("")
         table_cellcols.append(thisrow)
@@ -1777,7 +1777,7 @@ def gridkey_plotter(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes,
 
         for group_idx, group_vals in enumerate(table_cellcols):
             if group_idx == 0:
-                added_group = ['', "\u25CF"]
+                added_group = ['', gridkey_marker]
             elif gridkey_show_es and (group_idx == len(table_cellcols)-1) and not horizontal:
                 added_delta_effectsize = delta_delta.difference if show_delta2 else mini_meta_delta.difference
                 added_delta_effectsize_str = np.format_float_positional(
@@ -1827,7 +1827,7 @@ def gridkey_plotter(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes,
                         fontsize=10,
                         ha='right',
                         rotation=45,
-                        va='top'
+                        va='top',
                     )
     else:
         # Plot the table for vertical format

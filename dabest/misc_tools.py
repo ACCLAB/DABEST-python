@@ -390,10 +390,23 @@ def get_kwargs(plot_kwargs, ytick_color):
     else:
         table_kwargs = merge_two_dicts(default_table_kwargs, plot_kwargs["horizontal_table_kwargs"])
 
+    # Gridkey kwargs.
+    default_gridkey_kwargs = {
+                'show_es' : True,                   # If True, the gridkey will show the effect size of each comparison.
+                'show_Ns' :True,                    # If True, the gridkey will show the number of observations in eachgroup.
+                'merge_pairs' : False,              # If True, the gridkey will merge the pairs of groups into a single cell. This is useful for when the groups are paired.
+                'delimiters': [';', '>', '_'],      # Delimiters to split the group names.
+                'marker': "\u25CF",                 # Marker for the gridkey dots.
+    }
+    if plot_kwargs["gridkey_kwargs"] is None:
+        gridkey_kwargs = default_gridkey_kwargs
+    else:
+        gridkey_kwargs = merge_two_dicts(default_gridkey_kwargs, plot_kwargs["gridkey_kwargs"])
+
     # Return the kwargs.
     return (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs, 
             reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
-            delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs)
+            delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs)
 
 
 def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_groups):
