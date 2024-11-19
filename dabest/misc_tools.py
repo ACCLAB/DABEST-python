@@ -526,8 +526,7 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_gr
         if color_by_subgroups:
             plot_palette_raw = dict()
             plot_palette_contrast = dict()
-            # plot_palette_bar set to None because currently there is no empty_circle toggle for proportion plots
-            plot_palette_bar = None
+            plot_palette_bar = None  # plot_palette_bar set to None because currently there is no empty_circle toggle for proportion plots
             for i in range(len(idx)):
                 for names_i in idx[i]:
                     plot_palette_raw[names_i] = swarm_colors[i]
@@ -539,8 +538,8 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_gr
 
         plot_palette_sankey = custom_pal
 
-    return (color_col, bootstraps_color_by_group, n_groups, filled, swarm_colors, plot_palette_raw, 
-            bar_color, plot_palette_bar, plot_palette_contrast, plot_palette_sankey)
+    return (color_col, bootstraps_color_by_group, n_groups, filled, plot_palette_raw, bar_color, 
+            plot_palette_bar, plot_palette_contrast, plot_palette_sankey)
 
 def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_paired, show_pairs, proportional,
                    float_contrast, effect_size_type, yvar, horizontal):

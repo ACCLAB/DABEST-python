@@ -140,16 +140,15 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     )
 
     # Extract Color palette
-    (color_col, bootstraps_color_by_group, n_groups, 
-     filled, swarm_colors, plot_palette_raw, bar_color, 
-     plot_palette_bar, plot_palette_contrast, plot_palette_sankey) = get_color_palette(
-                                                                                plot_kwargs=plot_kwargs, 
-                                                                                plot_data=plot_data, 
-                                                                                xvar=xvar, 
-                                                                                show_pairs=show_pairs,
-                                                                                idx=idx,
-                                                                                all_plot_groups=all_plot_groups
-                                                                                )
+    (color_col, bootstraps_color_by_group, n_groups, filled, plot_palette_raw, 
+     bar_color, plot_palette_bar, plot_palette_contrast, plot_palette_sankey) = get_color_palette(
+                                                                                        plot_kwargs=plot_kwargs, 
+                                                                                        plot_data=plot_data, 
+                                                                                        xvar=xvar, 
+                                                                                        show_pairs=show_pairs,
+                                                                                        idx=idx,
+                                                                                        all_plot_groups=all_plot_groups
+                                                                                        )
 
     # Initialise the figure.
     fig, rawdata_axes, contrast_axes, table_axes = initialize_fig(
@@ -248,7 +247,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                             y=yvar,
                             ax=rawdata_axes,
                             order=all_plot_groups,
-                            # hue=xvar if color_col is None else color_col,
                             hue=color_col,
                             palette=plot_palette_raw,
                             zorder=1,
