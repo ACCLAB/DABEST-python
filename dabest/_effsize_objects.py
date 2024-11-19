@@ -1155,7 +1155,7 @@ class EffectSizeDataFrame(object):
             command here, as a dict. This will change the appearance of the
             vertical summary lines for each group, if `group_summaries` is not
             'None'. If None, the following keywords are passed to
-            matplotlib.lines.Line2D : {'lw':2, 'alpha':1, 'zorder':3}.
+            matplotlib.lines.Line2D : {'lw':2, 'alpha':1, 'zorder':3, 'gap_width_percent':1.5}.
         legend_kwargs : dict, default None
             Pass any keyword arguments accepted by the matplotlib Axes
             `legend` command here, as a dict. If None, the following keywords

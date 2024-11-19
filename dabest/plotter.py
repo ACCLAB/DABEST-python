@@ -45,11 +45,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         fig_size=None,
         dpi=100,
         ax=None,
-
-
         gridkey_rows=None, gridkey_kwargs=None,
-
-
         swarmplot_kwargs=None,
         violinplot_kwargs=None,
         slopegraph_kwargs=None,
@@ -306,7 +302,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 y=yvar,
                 offset=group_summaries_offset,
                 line_color=group_summaries_line_color,
-                gap_width_percent=1.5,
                 type=group_summaries,
                 ax=rawdata_axes,
                 method=group_summaries_method,

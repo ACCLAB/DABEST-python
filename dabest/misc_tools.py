@@ -295,7 +295,8 @@ def get_kwargs(plot_kwargs, ytick_color):
     default_group_summary_kwargs = {
                         "zorder": 3, 
                         "lw": 2, 
-                        "alpha": 1
+                        "alpha": 1,
+                        'gap_width_percent': 1.5,
     }
     if plot_kwargs["group_summary_kwargs"] is None:
         group_summary_kwargs = default_group_summary_kwargs
