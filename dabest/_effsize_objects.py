@@ -993,7 +993,6 @@ class EffectSizeDataFrame(object):
         show_delta2=True,
         show_mini_meta=True,
         group_summaries=None,
-        group_summaries_offset=0.1,
         fig_size=None,
         dpi=100,
         ax=None,
@@ -1003,7 +1002,7 @@ class EffectSizeDataFrame(object):
         slopegraph_kwargs=None,
         sankey_kwargs=None,
         reflines_kwargs=None,
-        group_summary_kwargs=None,
+        group_summaries_kwargs=None,
         legend_kwargs=None,
         title=None,
         fontsize_title=16,
@@ -1035,6 +1034,9 @@ class EffectSizeDataFrame(object):
         gridkey_show_es=True,
         gridkey_delimiters=[';', '>', '_'],
         gridkey_kwargs=None,
+
+        es_marker_kwargs=None,
+        es_errorbar_kwargs=None,
     ):
         """
         Creates an estimation plot for the effect size of interest.
@@ -1113,9 +1115,6 @@ class EffectSizeDataFrame(object):
             notched line beside each group. If 'median_quantiles', then the
             median and 25th and 75th percentiles of each group is plotted
             instead. If 'None', the summaries are not shown.
-        group_summaries_offset : float, default 0.1
-            If group summaries are displayed, they will be offset from the raw
-            data swarmplot groups by this value.
         fig_size : tuple, default None
             The desired dimensions of the figure as a (length, width) tuple.
         dpi : int, default 100
@@ -1150,12 +1149,13 @@ class EffectSizeDataFrame(object):
             command here, as a dict. If None, the following keywords are
             passed to Axes.hlines : {'linestyle':'solid', 'linewidth':0.75,
             'zorder':2, 'color' : default y-tick color}.
-        group_summary_kwargs : dict, default None
+        group_summaries_kwargs : dict, default None
             Pass any keyword arguments accepted by the matplotlib.lines.Line2D
             command here, as a dict. This will change the appearance of the
             vertical summary lines for each group, if `group_summaries` is not
             'None'. If None, the following keywords are passed to
-            matplotlib.lines.Line2D : {'lw':2, 'alpha':1, 'zorder':3, 'gap_width_percent':1.5}.
+            matplotlib.lines.Line2D : {'lw':2, 'alpha':1, 'zorder':3, 
+            'gap_width_percent':1.5, 'offset':0.1, 'color':None}.
         legend_kwargs : dict, default None
             Pass any keyword arguments accepted by the matplotlib Axes
             `legend` command here, as a dict. If None, the following keywords
@@ -1234,6 +1234,12 @@ class EffectSizeDataFrame(object):
                 'marker': "\u25CF",                 # Marker for the gridkey dots.
             }
 
+        es_marker_kwargs: dict, default None
+            Pass relevant keyword arguments to the effectsize marker plotting. If none, the following keywords are passed:
+            {'marker': 'o', 'size': plot_kwargs['es_marker_size'], 'color': 'black', 'alpha': 1, 'zorder': 1}
+        es_errorbar_kwargs: dict, default None
+            Pass relevant keyword arguments to the effectsize errorbar plotting. If none, the following keywords are passed:
+            {'color': 'black', 'lw': 2, 'linestyle': '-', 'alpha': 1,'zorder': 1,}
 
         Returns
         -------

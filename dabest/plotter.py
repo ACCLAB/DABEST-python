@@ -41,7 +41,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         show_pairs=True,
         show_delta2=True,
         group_summaries=None,
-        group_summaries_offset=0.1,
         fig_size=None,
         dpi=100,
         ax=None,
@@ -51,7 +50,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         slopegraph_kwargs=None,
         sankey_kwargs=None,
         reflines_kwargs=None,
-        group_summary_kwargs=None,
+        group_summaries_kwargs=None,
         legend_kwargs=None,
         title=None, fontsize_title=16,
         fontsize_rawxlabel=12, fontsize_rawylabel=12,
@@ -62,6 +61,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         delta_text=True, delta_text_kwargs=None,
         delta_dot=True, delta_dot_kwargs=None,
         horizontal=False, horizontal_table_kwargs=None,
+        es_marker_kwargs=None, es_errorbar_kwargs=None
     """
     from .misc_tools import (
         get_params,
@@ -115,16 +115,16 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     # Extract parameters and set kwargs
     (dabest_obj, plot_data, xvar, yvar, is_paired, 
      effect_size, proportional, all_plot_groups, idx, show_delta2, 
-     show_mini_meta, float_contrast, show_pairs, effect_size_type, 
-     group_summaries, err_color, horizontal, results, 
-     es_marker_size, halfviolin_alpha, ci_type, x1_level, experiment_label) = get_params(
-                                                                                    effectsize_df=effectsize_df, 
-                                                                                    plot_kwargs=plot_kwargs,
-                                                                                    )
+     show_mini_meta, float_contrast, show_pairs, effect_size_type, group_summaries, 
+     err_color, horizontal, results, halfviolin_alpha, ci_type, x1_level, experiment_label) = get_params(
+                                                                                                effectsize_df=effectsize_df, 
+                                                                                                plot_kwargs=plot_kwargs,
+                                                                                                )
 
-    (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs,
-     reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
-     delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs) = get_kwargs(
+    (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, 
+     slopegraph_kwargs, reflines_kwargs, legend_kwargs, group_summaries_kwargs, 
+     redraw_axes_kwargs, delta_dot_kwargs, delta_text_kwargs, summary_bars_kwargs, 
+     swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs, es_marker_kwargs, es_errorbar_kwargs) = get_kwargs(
                                                                                                                             plot_kwargs=plot_kwargs, 
                                                                                                                             ytick_color=ytick_color
                                                                                                                             )
@@ -278,21 +278,20 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             
         # Plot the error bars.
         if group_summaries is not None:
-            (group_summaries_method, 
-             group_summaries_offset, group_summaries_line_color) = extract_group_summaries(
-                                                                                    proportional=proportional, 
-                                                                                    err_color=err_color, 
-                                                                                    rawdata_axes=rawdata_axes, 
-                                                                                    asymmetric_side=asymmetric_side if not proportional else None, 
-                                                                                    horizontal=horizontal, 
-                                                                                    bootstraps_color_by_group=bootstraps_color_by_group, 
-                                                                                    plot_palette_raw=plot_palette_raw, 
-                                                                                    all_plot_groups=all_plot_groups,
-                                                                                    n_groups=n_groups, 
-                                                                                    color_col=color_col, 
-                                                                                    ytick_color=ytick_color, 
-                                                                                    plot_kwargs=plot_kwargs
-                                                                                    )
+            (group_summaries_method, group_summaries_offset, group_summaries_line_color) = extract_group_summaries(
+                                                                                                    proportional=proportional, 
+                                                                                                    err_color=err_color, 
+                                                                                                    rawdata_axes=rawdata_axes, 
+                                                                                                    asymmetric_side=asymmetric_side if not proportional else None, 
+                                                                                                    horizontal=horizontal, 
+                                                                                                    bootstraps_color_by_group=bootstraps_color_by_group, 
+                                                                                                    plot_palette_raw=plot_palette_raw, 
+                                                                                                    all_plot_groups=all_plot_groups,
+                                                                                                    n_groups=n_groups, 
+                                                                                                    color_col=color_col, 
+                                                                                                    ytick_color=ytick_color, 
+                                                                                                    group_summaries_kwargs=group_summaries_kwargs
+                                                                                                    )
             # Plot
             error_bar(
                 plot_data,
@@ -304,7 +303,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 ax=rawdata_axes,
                 method=group_summaries_method,
                 horizontal=horizontal,
-                **group_summary_kwargs
+                **group_summaries_kwargs
                 )
 
     # Add the counts to the rawdata axes xticks.
@@ -348,11 +347,11 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                                     violinplot_kwargs=violinplot_kwargs, 
                                                                     halfviolin_alpha=halfviolin_alpha, 
                                                                     ytick_color=ytick_color, 
-                                                                    es_marker_size=es_marker_size, 
-                                                                    group_summary_kwargs=group_summary_kwargs,  
                                                                     bootstraps_color_by_group=bootstraps_color_by_group,
                                                                     plot_palette_contrast=plot_palette_contrast,
                                                                     horizontal=horizontal,
+                                                                    es_marker_kwargs=es_marker_kwargs,
+                                                                    es_errorbar_kwargs=es_errorbar_kwargs
                                                                     )
 
     # Plot mini-meta or delta-delta violin
@@ -367,13 +366,13 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                                 violinplot_kwargs=violinplot_kwargs, 
                                                                 halfviolin_alpha=halfviolin_alpha, 
                                                                 ytick_color=ytick_color, 
-                                                                es_marker_size=es_marker_size, 
-                                                                group_summary_kwargs=group_summary_kwargs, 
                                                                 contrast_xtick_labels=contrast_xtick_labels, 
                                                                 effect_size=effect_size,
                                                                 show_delta2=show_delta2, 
                                                                 plot_kwargs=plot_kwargs, 
                                                                 horizontal=horizontal,
+                                                                es_marker_kwargs=es_marker_kwargs,
+                                                                es_errorbar_kwargs=es_errorbar_kwargs
                                                                 )
     
     # Make sure the contrast_axes x-lims match the rawdata_axes xlims,

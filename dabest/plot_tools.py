@@ -1370,8 +1370,8 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
 
 def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, rawdata_axes,
                                         contrast_axes, violinplot_kwargs, halfviolin_alpha, ytick_color, 
-                                        es_marker_size, group_summary_kwargs, contrast_xtick_labels, effect_size,
-                                        show_delta2, plot_kwargs, horizontal):
+                                        contrast_xtick_labels, effect_size, show_delta2, plot_kwargs, 
+                                        horizontal, es_marker_kwargs, es_errorbar_kwargs):
     """
     Add mini meta-analysis or delta-delta violin plots to the contrast plot.
 
@@ -1395,8 +1395,6 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
         Color of the yticks.
     es_marker_size : int
         Size of the effect size marker.
-    group_summary_kwargs : dict
-        Keyword arguments for the group summary.
     contrast_xtick_labels : list
         List of xtick labels for the contrast plot.
     effect_size : str
@@ -1407,7 +1405,13 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
         Keyword arguments for the plot.
     horizontal : bool
         If the plot is horizontal.
+    es_marker_kwargs: dict
+        Keyword arguments for the effectsize marker.
+    es_errorbar_kwargs: dict
+        Keyword arguments for the effectsize errorbar.
     """
+
+    # Plot the curve
     if show_mini_meta:
         mini_meta_delta = effectsize_df.mini_meta_delta
         data = mini_meta_delta.bootstraps_weighted_delta
@@ -1449,17 +1453,15 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
     contrast_axes.plot(
         effsize_x,
         effsize_y,
-        marker="o",
-        color=ytick_color,
-        markersize=es_marker_size,
+        # color=ytick_color,
+        **es_marker_kwargs
     )
     # Plot the confidence interval.
     contrast_axes.plot(
         ci_x,
         ci_y,
-        linestyle="-",
-        color=ytick_color,
-        linewidth=group_summary_kwargs["lw"],
+        # color=ytick_color,
+        **es_errorbar_kwargs
     )
 
     if horizontal:
@@ -1505,8 +1507,8 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
 
 
 def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, violinplot_kwargs, halfviolin_alpha, 
-                              ytick_color, es_marker_size, group_summary_kwargs, bootstraps_color_by_group, plot_palette_contrast,
-                              horizontal):
+                              ytick_color, bootstraps_color_by_group, plot_palette_contrast,
+                              horizontal, es_marker_kwargs, es_errorbar_kwargs):
     """
     Add effect size curves to the contrast plot.
 
@@ -1528,16 +1530,19 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
         Color of the yticks.
     es_marker_size : int
         Size of the effect size marker.
-    group_summary_kwargs : dict
-        Keyword arguments for the group summary.
     bootstraps_color_by_group : bool
         Whether to color the bootstraps by group.
     plot_palette_contrast : dict
         Dictionary of colors used in the contrast plot.
     horizontal : bool
         If the plot is horizontal.
+    es_marker_kwargs: dict
+        Keyword arguments for the effectsize marker.
+    es_errorbar_kwargs: dict
+        Keyword arguments for the effectsize errorbar.
     """
 
+    # Plot the curves
     contrast_xtick_labels = []
     for j, tick in enumerate(ticks_to_plot):
         current_group = results.test[j]
@@ -1582,18 +1587,16 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
         contrast_axes.plot(
             effsize_x,
             effsize_y,
-            marker="o",
-            color=ytick_color,
-            markersize=es_marker_size,
+            # color=ytick_color,
+            **es_marker_kwargs
         )
 
         # Plot the confidence interval.
         contrast_axes.plot(
             ci_x,
             ci_y,
-            linestyle="-",
-            color=ytick_color,
-            linewidth=group_summary_kwargs["lw"],
+            # color=ytick_color,
+            **es_errorbar_kwargs
         )
 
         contrast_xtick_labels.append(

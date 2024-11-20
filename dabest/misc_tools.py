@@ -166,13 +166,12 @@ def get_params(effectsize_df, plot_kwargs):
         float_contrast = False
 
     # Contrast Axes kwargs
-    es_marker_size = plot_kwargs["es_marker_size"]
     halfviolin_alpha = plot_kwargs["halfviolin_alpha"]
     ci_type = plot_kwargs["ci_type"]
         
     return (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, idx, 
             show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type, group_summaries, err_color, horizontal,
-            results, es_marker_size, halfviolin_alpha, ci_type, x1_level, experiment_label)
+            results, halfviolin_alpha, ci_type, x1_level, experiment_label)
 
 def get_kwargs(plot_kwargs, ytick_color):
     """
@@ -233,6 +232,7 @@ def get_kwargs(plot_kwargs, ytick_color):
         "vert": True,
         "showextrema": False,
         "showmedians": False,
+        
     }
     if plot_kwargs["violinplot_kwargs"] is None:
         violinplot_kwargs = default_violinplot_kwargs
@@ -292,17 +292,19 @@ def get_kwargs(plot_kwargs, ytick_color):
             "group_summaries must be one of" " these: {}.".format(gs_default)
         )
 
-    default_group_summary_kwargs = {
+    default_group_summaries_kwargs = {
                         "zorder": 3, 
                         "lw": 2, 
                         "alpha": 1,
                         'gap_width_percent': 1.5,
+                        'offset': 0.1,
+                        'color': None
     }
-    if plot_kwargs["group_summary_kwargs"] is None:
-        group_summary_kwargs = default_group_summary_kwargs
+    if plot_kwargs["group_summaries_kwargs"] is None:
+        group_summaries_kwargs = default_group_summaries_kwargs
     else:
-        group_summary_kwargs = merge_two_dicts(
-            default_group_summary_kwargs, plot_kwargs["group_summary_kwargs"]
+        group_summaries_kwargs = merge_two_dicts(
+            default_group_summaries_kwargs, plot_kwargs["group_summaries_kwargs"]
         )
 
     # Redraw axes kwargs.
@@ -404,10 +406,37 @@ def get_kwargs(plot_kwargs, ytick_color):
     else:
         gridkey_kwargs = merge_two_dicts(default_gridkey_kwargs, plot_kwargs["gridkey_kwargs"])
 
+    # Effect size marker kwargs
+    default_es_marker_kwargs = {
+                'marker': 'o',
+                'markersize': plot_kwargs['es_marker_size'],
+                'color': ytick_color,
+                'alpha': 1,
+                'zorder': 1,
+    }
+    if plot_kwargs['es_marker_kwargs'] is None:
+        es_marker_kwargs = default_es_marker_kwargs
+    else:
+        es_marker_kwargs = merge_two_dicts(default_es_marker_kwargs, plot_kwargs['es_marker_kwargs'])
+
+    # Effect size error bar kwargs
+    default_es_errorbar_kwargs = {
+                'color': ytick_color,
+                'lw': 2,
+                'linestyle': '-',
+                'alpha': 1,
+                'zorder': 1,
+    }
+    if plot_kwargs['es_errorbar_kwargs'] is None:
+        es_errorbar_kwargs = default_es_errorbar_kwargs
+    else:
+        es_errorbar_kwargs = merge_two_dicts(default_es_errorbar_kwargs, plot_kwargs['es_errorbar_kwargs'])
+
     # Return the kwargs.
     return (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs, 
-            reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
-            delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs)
+            reflines_kwargs, legend_kwargs, group_summaries_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
+            delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs,
+            es_marker_kwargs, es_errorbar_kwargs)
 
 
 def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_groups):
@@ -1539,7 +1568,7 @@ def Redraw_Spines(rawdata_axes, contrast_axes, redraw_axes_kwargs, float_contras
 
 def extract_group_summaries(proportional, err_color, rawdata_axes, asymmetric_side, horizontal, 
                             bootstraps_color_by_group, plot_palette_raw, all_plot_groups,
-                            n_groups, color_col, ytick_color, plot_kwargs):
+                            n_groups, color_col, ytick_color, group_summaries_kwargs):
     
     from .plot_tools import get_swarm_spans
 
@@ -1582,7 +1611,11 @@ def extract_group_summaries(proportional, err_color, rawdata_axes, asymmetric_si
             xspans = xspans[:len(all_plot_groups)]
 
         group_summaries_method = "gapped_lines"
-        group_summaries_offset = xspans + np.array(plot_kwargs["group_summaries_offset"])
+        group_summaries_offset = xspans + np.array(group_summaries_kwargs["offset"])
         group_summaries_line_color = line_colors
+
+    if group_summaries_kwargs['color'] is not None:
+        group_summaries_line_color = group_summaries_kwargs.pop("color")
+    group_summaries_kwargs.pop("offset")
 
     return group_summaries_method, group_summaries_offset, group_summaries_line_color
