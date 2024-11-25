@@ -175,6 +175,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                     )
         if not proportional:
             # Plot the raw data as a slopegraph.
+
             slopegraph_plotter(
                 dabest_obj=dabest_obj, 
                 plot_data=plot_data, 
@@ -188,7 +189,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 temp_idx=temp_idx,
                 horizontal=horizontal
                 )
-
+            
             # DELTA PTS ON CONTRAST PLOT WIP
             show_delta_dots = plot_kwargs["delta_dot"]
             if show_delta_dots and is_paired is not None:
@@ -313,6 +314,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             yvar=yvar, 
             rawdata_axes=rawdata_axes, 
             plot_kwargs=plot_kwargs,
+            flow = sankey_kwargs["flow"],
             horizontal=horizontal,
             )
 
@@ -388,6 +390,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                         ticks_to_skip=ticks_to_skip, 
                         contrast_xtick_labels=contrast_xtick_labels, 
                         plot_kwargs=plot_kwargs,
+                        proportional=proportional,
                         horizontal=horizontal,
                         )
     # Legend

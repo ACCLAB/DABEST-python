@@ -872,7 +872,7 @@ def get_plot_groups(is_paired, idx, proportional, all_plot_groups):
     return temp_idx, temp_all_plot_groups
 
 
-def add_counts_to_ticks(plot_data, xvar, yvar, rawdata_axes, plot_kwargs, horizontal):
+def add_counts_to_ticks(plot_data, xvar, yvar, rawdata_axes, plot_kwargs, flow, horizontal):
     """
 
     Add the counts to the raw data axes labels.
@@ -889,6 +889,8 @@ def add_counts_to_ticks(plot_data, xvar, yvar, rawdata_axes, plot_kwargs, horizo
         The raw data axes.
     plot_kwargs : dict
         Kwargs passed to the plot function.
+    flow : bool
+        Whether sankey flow is enabled or not.
     horizontal : bool
         A boolean flag to determine if the plot is for horizontal plotting.
     """
@@ -919,7 +921,12 @@ def add_counts_to_ticks(plot_data, xvar, yvar, rawdata_axes, plot_kwargs, horizo
     
     for ticklab in get_label():
         t = ticklab.get_text()
-        te = t.split('\n')[-1]  # Get the last line of the label
+
+        if horizontal and not flow:
+            te = t.split('v.s. ')[-1]  # Get the last line of the label
+        else:
+            te = t.split('\n')[-1]  # Get the last line of the label
+
         value = lookup_value(te)
         if horizontal:
             ticks_with_counts.append(f"{t} (N={value})")
@@ -992,7 +999,7 @@ def extract_contrast_plotting_ticks(is_paired, show_pairs, two_col_sankey, plot_
     return ticks_to_skip, ticks_to_plot, ticks_to_skip_contrast, ticks_to_start_twocol_sankey
 
 def set_xaxis_ticks_and_lims(show_delta2, show_mini_meta, rawdata_axes, contrast_axes, show_pairs, float_contrast,
-                             ticks_to_skip, contrast_xtick_labels, plot_kwargs, horizontal):
+                             ticks_to_skip, contrast_xtick_labels, plot_kwargs, proportional, horizontal):
     """
     Set the x-axis/yaxis ticks and limits for the plotter function.
 
@@ -1016,6 +1023,8 @@ def set_xaxis_ticks_and_lims(show_delta2, show_mini_meta, rawdata_axes, contrast
         A list of contrast xtick labels.
     plot_kwargs : dict
         Kwargs passed to the plot function.
+    proportional: bool
+        A boolean flag to determine if the plot is a proportional plot.
     horizontal : bool
         A boolean flag to determine if the plot is for horizontal plotting.
     """
@@ -1033,6 +1042,9 @@ def set_xaxis_ticks_and_lims(show_delta2, show_mini_meta, rawdata_axes, contrast
         if show_pairs:
             max_x = contrast_axes.get_ylim()[1]
             rawdata_axes.set_ylim(-0.375, max_x)
+
+            if proportional:
+                rawdata_axes.set_ylim(-0.375, max_x+0.1)
 
         if show_delta2 or show_mini_meta:
             # Increase the ylim of raw data by 2

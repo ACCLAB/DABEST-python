@@ -850,8 +850,8 @@ def sankeydiag(
         sankey_ticks = (
             [f"{left}" for left in broadcasted_left]
             if flow
-            else [
-                f"{left}\n v.s.\n{right}"
+            else [f"{left} v.s. {right}" if horizontal
+                else f"{left}\n v.s.\n{right}"
                 for left, right in zip(broadcasted_left, right_idx)
             ]
         )
@@ -917,9 +917,9 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
     else:
         summary_xmin, summary_xmax = ax_to_plot.get_xlim()
         summary_bars_colors = (
-            [summary_bars_kwargs.get('color')]*(max(ticks_to_plot)+1)
+            [summary_bars_kwargs.get('color')]*int(max(ticks_to_plot)+1)
             if summary_bars_kwargs.get('color') is not None
-            else ['black']*(max(ticks_to_plot)+1)
+            else ['black']*int(max(ticks_to_plot)+1)
             if color_col is not None or (proportional and is_paired) or is_paired 
             else list(plot_palette_raw.values())
         )
@@ -932,7 +932,7 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
                 summary_ci_low = results.pct_low[summary_index]
                 summary_ci_high = results.pct_high[summary_index]
 
-            summary_color = summary_bars_colors[ticks_to_plot[summary_index]]
+            summary_color = summary_bars_colors[int(ticks_to_plot[summary_index])]
 
             ax_to_plot.add_patch(mpatches.Rectangle((summary_xmin,summary_ci_low),summary_xmax+1, 
             summary_ci_high-summary_ci_low, zorder=-2, color=summary_color, **summary_bars_kwargs))
@@ -981,14 +981,14 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
 
     contrast_means = []
     for j, tick in enumerate(ticks_to_plot):
-        contrast_means.append(results.difference[j])
+        contrast_means.append(results.difference[int(j)])
 
     unpacked_idx = [element for innerList in idx for element in innerList] 
 
     contrast_bars_colors = (
-        [contrast_bars_kwargs.get('color')] * (max(ticks_to_plot) + 1) 
+        [contrast_bars_kwargs.get('color')] * int(max(ticks_to_plot) + 1) 
         if contrast_bars_kwargs.get('color') is not None 
-        else ['black'] * (max(ticks_to_plot) + 1) 
+        else ['black'] * int(max(ticks_to_plot) + 1) 
         if color_col is not None or is_paired 
         else plot_palette_raw
     )
@@ -1136,9 +1136,9 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
     delta_text_kwargs.pop('x_location')
 
     delta_text_colors = (
-        [delta_text_kwargs.get('color')]*(max(ticks_to_plot)+1)
+        [delta_text_kwargs.get('color')]*int(max(ticks_to_plot)+1)
         if delta_text_kwargs.get('color') is not None
-        else ['black']*(max(ticks_to_plot)+1)
+        else ['black']*int(max(ticks_to_plot)+1)
         if color_col is not None or (proportional and is_paired) or is_paired
         else plot_palette_raw
     )
@@ -1156,7 +1156,7 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
     # Collect the Y-values for the delta text
     Delta_Values = []
     for j, tick in enumerate(ticks_to_plot):
-        Delta_Values.append(results.difference[j])
+        Delta_Values.append(results.difference[int(j)])
     if show_delta2: Delta_Values.append(delta_delta.difference)
     if show_mini_meta: Delta_Values.append(mini_meta_delta.difference)
 
@@ -1197,9 +1197,9 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
     for x,y,t,tick in zip(delta_text_x_coordinates, delta_text_y_coordinates,Delta_Values,ticks_to_plot):
         Delta_Text = np.format_float_positional(t, precision=2, sign=True, trim="k", min_digits=2)
         idx_selector = (
-            tick
+            int(tick)
             if type(delta_text_colors) == list 
-            else unpacked_idx[tick]
+            else unpacked_idx[int(tick)]
             )
         ax_to_plot.text(x, y, Delta_Text, color=delta_text_colors[idx_selector], zorder=5, **delta_text_kwargs)
 
@@ -1349,7 +1349,16 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
         current_pair = pivoted_plot_data.loc[
             :, pd.MultiIndex.from_product([pivot_values, current_tuple])
         ].dropna()
+
+        # Check for correct pairing
+        if len(current_pair) == 0:
+            raise ValueError('There are no pairs to plot... check original dataframe for correct ID pairing')
+
+        current_pair = pivoted_plot_data.loc[
+            :, pd.MultiIndex.from_product([pivot_values, current_tuple])
+        ]
         grp_count = len(current_tuple)
+
         # Iterate through the data for the current tuple.
         for ID, observation in current_pair.iterrows():
             x_points = [t + 0.15*jitter*rng.standard_t(df=6, size=None) for t in range(x_start, x_start + grp_count)] # devMJBL
@@ -1545,16 +1554,16 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
     # Plot the curves
     contrast_xtick_labels = []
     for j, tick in enumerate(ticks_to_plot):
-        current_group = results.test[j]
-        current_control = results.control[j]
-        current_bootstrap = results.bootstraps[j]
-        current_effsize = results.difference[j]
+        current_group = results.test[int(j)]
+        current_control = results.control[int(j)]
+        current_bootstrap = results.bootstraps[int(j)]
+        current_effsize = results.difference[int(j)]
         if ci_type == "bca":
-            current_ci_low = results.bca_low[j]
-            current_ci_high = results.bca_high[j]
+            current_ci_low = results.bca_low[int(j)]
+            current_ci_high = results.bca_high[int(j)]
         else:
-            current_ci_low = results.pct_low[j]
-            current_ci_high = results.pct_high[j]
+            current_ci_low = results.pct_low[int(j)]
+            current_ci_high = results.pct_high[int(j)]
 
         # Create the violinplot.
         # New in v0.2.6: drop negative infinities before plotting.
@@ -2195,6 +2204,8 @@ class SwarmPlot:
         h = (ax.get_position().ymax - ax.get_position().ymin) * figh
         ax_xspan = ax.get_xlim()[1] - ax.get_xlim()[0]
         ax_yspan = ax.get_ylim()[1] - ax.get_ylim()[0]
+        if horizontal:
+            ax_xspan, ax_yspan = ax_yspan, ax_xspan
 
         # increases jitter distance based on number of swarms that is going to be drawn
         jitter = jitter * (1 + 0.05 * (math.log(ax_xspan)))
