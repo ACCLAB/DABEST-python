@@ -1217,8 +1217,8 @@ class EffectSizeDataFrame(object):
             Whether or not to plot the effect size plot in a horizontal format.
         horizontal_table_kwargs : dict, default None
             Pass relevant keyword arguments to the horizontal table. If None, the following keywords are passed:
-            {'color' : 'yellow', 'alpha' :0.2, 'fontsize' : 12, 'text_color' : 'black', 'text_units' : None, 
-            'paired_gap_dashes' : False, 'fontsize_label': 12, 'label': 'Δ'}
+            {'show: True, 'color' : 'yellow', 'alpha' :0.2, 'fontsize' : 12, 'text_color' : 'black', 
+            'text_units' : None, 'paired_gap_dashes' : False, 'fontsize_label': 12, 'label': 'Δ'}
             
         gridkey_rows : list, default None
             Provide a list of row labels for the gridkey. The supplied idx is

@@ -379,6 +379,7 @@ def get_kwargs(plot_kwargs, ytick_color):
 
     # Table axes for horizontal plot kwargs.
     default_table_kwargs = {
+                'show': True,
                 'color' : 'yellow',
                 'alpha' :0.2,
                 'fontsize' : 12,
@@ -571,7 +572,7 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_gr
             plot_palette_bar, plot_palette_contrast, plot_palette_sankey)
 
 def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_paired, show_pairs, proportional,
-                   float_contrast, effect_size_type, yvar, horizontal):
+                   float_contrast, effect_size_type, yvar, horizontal, show_table):
     """
     Initialize the figure and axes for the plotter function.
 
@@ -599,8 +600,8 @@ def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_pair
         The name of the y-axis variable.
     horizontal : bool
         A boolean flag to determine if the plot is for horizontal plotting.
-    redraw_axes_kwargs : dict
-        Kwargs for the redraw_axes.
+    show_table : dict
+        A boolean flag to determine if the table will be shown in horizontal plot.
     """
     # Params
     fig_size = plot_kwargs["fig_size"]
@@ -655,9 +656,12 @@ def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_pair
             contrast_axes = rawdata_axes.inset_axes(
                     [1+contrast_wspace, 0, (plot_width_ratios[1]/plot_width_ratios[0]), 1]
                     )
-            table_axes = rawdata_axes.inset_axes(
-                    [1+contrast_wspace+(plot_width_ratios[1]/plot_width_ratios[0]), 0, (plot_width_ratios[2]/plot_width_ratios[0]), 1]
-                    )
+            if show_table:
+                table_axes = rawdata_axes.inset_axes(
+                        [1+contrast_wspace+(plot_width_ratios[1]/plot_width_ratios[0]), 0, (plot_width_ratios[2]/plot_width_ratios[0]), 1]
+                        )
+            else:
+                table_axes = None
 
             rawdata_axes.set_position(
                     [ax_position.x0,
@@ -703,11 +707,14 @@ def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_pair
     else:
         # Here, we hardcode some figure parameters.
         if horizontal:
-            fig, axx = plt.subplots(
-                ncols=3, gridspec_kw={'width_ratios' : [1,0.7,0.3], 'wspace' : 0.05}, **init_fig_kwargs
-            )
-            fig.patch.set_facecolor(face_color)
-
+            if show_table:
+                fig, axx = plt.subplots(
+                    ncols=3, gridspec_kw={'width_ratios' : [1,0.7,0.3], 'wspace' : 0.05}, **init_fig_kwargs
+                )
+            else:
+                fig, axx = plt.subplots(
+                    ncols=2, gridspec_kw={'width_ratios' : [1,0.7], 'wspace' : 0.05}, **init_fig_kwargs
+                )
         else:
             if float_contrast:
                 fig, axx = plt.subplots(
@@ -715,13 +722,11 @@ def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_pair
                     gridspec_kw={"width_ratios": width_ratios_ga, "wspace": 0},
                     **init_fig_kwargs
                 )
-                fig.patch.set_facecolor(face_color)
-
             else:
                 fig, axx = plt.subplots(
                     nrows=2, gridspec_kw={"hspace": h_space_cummings}, **init_fig_kwargs
                 )
-                fig.patch.set_facecolor(face_color)
+        fig.patch.set_facecolor(face_color)
 
         # Title
         title = plot_kwargs["title"]
@@ -730,10 +735,10 @@ def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_pair
             fig.suptitle(title, fontsize=fontsize_title)
         rawdata_axes = axx[0]
         contrast_axes = axx[1]
-        table_axes = axx[2] if horizontal else None
+        table_axes = axx[2] if horizontal and show_table else None
     rawdata_axes.set_frame_on(False)
     contrast_axes.set_frame_on(False)
-    if horizontal:
+    if horizontal and show_table:
         table_axes.set_frame_on(False)
     
     # Swarmplot ylim (Vertical) or xlim (Horizontal)

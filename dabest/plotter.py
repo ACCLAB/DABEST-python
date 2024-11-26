@@ -163,6 +163,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                             effect_size_type=effect_size_type,
                                                             yvar=yvar,
                                                             horizontal=horizontal,
+                                                            show_table = table_kwargs['show']
                                                             )
     
     # Plotting the rawdata.
@@ -537,7 +538,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                     )
 
     # Table Axes for horizontal plots
-    if horizontal:
+    if horizontal and table_kwargs['show']:
         table_for_horizontal_plots(
                             effectsize_df = effectsize_df,
                             ax = table_axes,

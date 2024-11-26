@@ -826,3 +826,7 @@ gridkey_kwargs = {'show_es': False, 'show_Ns': False, 'marker': '√'}
 def test_414_gridkey_kwargs_and_autoparser():
     return two_groups_unpaired.mean_diff.plot(horizontal=True, gridkey_rows='auto', gridkey_kwargs=gridkey_kwargs);
 
+# Table hide
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_415_Horizontal_Table_hide():
+    return multi_2group_unpaired.mean_diff.plot(horizontal=True, horizontal_table_kwargs={'show': False});
