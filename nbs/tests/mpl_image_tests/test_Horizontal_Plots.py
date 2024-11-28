@@ -839,3 +839,29 @@ def test_416_delta_dot_hide():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_417_delta_dot_kwargs():
     return multi_2group_paired.mean_diff.plot(horizontal=True, delta_dot_kwargs={"color":'red', "alpha":0.1, 'zorder': 2, 'size': 5, 'side': 'left'});
+
+# Contrast bars
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_418_shared_control_meandiff_showcontrastbars():
+    return shared_control.mean_diff.plot(horizontal=True, contrast_bars=True, swarm_bars=False);
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_419_shared_control_meandiff_hidecontrastbars():
+    return shared_control.mean_diff.plot(horizontal=True, contrast_bars=False, swarm_bars=False);
+
+contrast_kwargs = {'color': "red", 'alpha': 0.2}
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_420_shared_control_meandiff_contrastbars_kwargs():
+    return shared_control.mean_diff.plot(horizontal=True, contrast_bars=True, contrast_bars_kwargs = contrast_kwargs, swarm_bars=False);
+
+# Summary bars
+summary_bars=[0, 1]
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_421_shared_control_meandiff_summarybars():
+    return shared_control.mean_diff.plot(horizontal=True, summary_bars=[0, 1], swarm_bars=False, contrast_bars=False,);
+
+summary_bars_kwargs = {'color': "black", 'alpha': 0.2, 'span_ax': True}
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_422_shared_control_meandiff_summarybars_kwargs():
+    return shared_control.mean_diff.plot(horizontal=True, summary_bars=[0, 1], summary_bars_kwargs = summary_bars_kwargs,
+                                         contrast_bars=False, swarm_bars=False);

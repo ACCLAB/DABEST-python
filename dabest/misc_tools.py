@@ -350,6 +350,7 @@ def get_kwargs(plot_kwargs, ytick_color):
 
     # Summary bars kwargs.
     default_summary_bars_kwargs = {
+                    "span_ax": False,
                     "color": None, 
                     "alpha": 0.15
     }
@@ -617,23 +618,23 @@ def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_pair
         if show_delta2 or show_mini_meta:
             all_groups_count += 2
    
-        if is_paired and show_pairs and proportional is False:
-            frac = 0.8
-        else:
-            frac = 1
-        if float_contrast:
-            height_inches = 4
-            each_group_width_inches = 2.5 * frac
-        else:
-            height_inches = 6
-            each_group_width_inches = 1.5 * frac
-
-        width_inches = each_group_width_inches * all_groups_count
-        fig_size = (width_inches, height_inches) 
-
         if horizontal:
             frac = 0.3 if is_paired or show_mini_meta else 0.5
             fig_size = (7, 1 + (frac * all_groups_count))
+        else:
+            if is_paired and show_pairs and proportional is False:
+                frac = 0.8
+            else:
+                frac = 1
+            if float_contrast:
+                height_inches = 4
+                each_group_width_inches = 2.5 * frac
+            else:
+                height_inches = 6
+                each_group_width_inches = 1.5 * frac
+
+            width_inches = each_group_width_inches * all_groups_count
+            fig_size = (width_inches, height_inches) 
 
     init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"], tight_layout=True)
 
@@ -701,6 +702,7 @@ def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_pair
                     ]
                 )
 
+            # Set axes
             contrast_axes = axins
             rawdata_axes.contrast_axes = axins
             table_axes = None
@@ -734,9 +736,12 @@ def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_pair
         fontsize_title = plot_kwargs["fontsize_title"]
         if title is not None:
             fig.suptitle(title, fontsize=fontsize_title)
+
+        # Set axes   
         rawdata_axes = axx[0]
         contrast_axes = axx[1]
         table_axes = axx[2] if horizontal and show_table else None
+
     rawdata_axes.set_frame_on(False)
     contrast_axes.set_frame_on(False)
     if horizontal and show_table:
@@ -783,17 +788,11 @@ def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_pair
                     contrast_axes.set_ylim(contrast_ylim)
 
     # Set raw axes y-label.
-    swarm_label = plot_kwargs["swarm_label"]
-    if swarm_label is None and yvar is None:
-        swarm_label = "value"
-    elif swarm_label is None and yvar is not None:
-        swarm_label = yvar
-
-    bar_label = plot_kwargs["bar_label"]
-    if bar_label is None and effect_size_type != "cohens_h":
-        bar_label = "proportion of success"
-    elif bar_label is None and effect_size_type == "cohens_h":
-        bar_label = "value"
+    swarm_label, bar_label = plot_kwargs["swarm_label"], plot_kwargs["bar_label"]
+    if swarm_label is None:
+        swarm_label = yvar if yvar is not None else "value"
+    if bar_label is None:
+        bar_label = "proportion of success" if effect_size_type != "cohens_h" else "value"
 
     fontsize_rawylabel = plot_kwargs["fontsize_rawylabel"]
     rawdata_label = bar_label if proportional else swarm_label

@@ -1197,7 +1197,7 @@ class EffectSizeDataFrame(object):
             Pass a list of indices of the contrast objects to have summary bars displayed on the plot.
             For example, [0,1] will show summary bars for the first two contrast objects.
         summary_bars_kwargs: dict, default None
-            If None, the following keywords are passed: {"color": None, "alpha": 0.15}
+            If None, the following keywords are passed: {"span_ax": False, "color": None, "alpha": 0.15}
         delta_text : boolean, default True
             Whether or not to display the text deltas.
         delta_text_kwargs : dict, default None

@@ -247,7 +247,7 @@ summary_bars=[0, 1]
 def test_222_cummings_shared_control_meandiff_summarybars():
     return shared_control.mean_diff.plot(summary_bars=[0, 1], swarm_bars=False, contrast_bars=False,);
 
-summary_bars_kwargs = {'color': "black", 'alpha': 0.2}
+summary_bars_kwargs = {'color': "black", 'alpha': 0.2, 'span_ax': True}
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_223_cummings_shared_control_meandiff_summarybars_kwargs():
     return shared_control.mean_diff.plot(summary_bars=[0, 1], summary_bars_kwargs = summary_bars_kwargs,

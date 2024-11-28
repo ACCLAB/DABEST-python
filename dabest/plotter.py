@@ -501,7 +501,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     # Summary bars WIP
     summary_bars = plot_kwargs["summary_bars"]
-    if summary_bars is not None and not horizontal:
+    if summary_bars is not None:
         summary_bars_plotter(
                         summary_bars = summary_bars, 
                         results = results, 
@@ -513,7 +513,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                         color_col = color_col,
                         plot_palette_raw = plot_palette_raw, 
                         proportional = proportional, 
-                        is_paired = is_paired
+                        is_paired = is_paired,
+                        horizontal = horizontal,
                         )
     # Delta text WIP
     delta_text = plot_kwargs["delta_text"]

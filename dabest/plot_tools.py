@@ -875,7 +875,7 @@ def sankeydiag(
 def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object,
                  float_contrast: bool,summary_bars_kwargs: dict, ci_type: str,
                  ticks_to_plot: list, color_col: str, plot_palette_raw: dict, 
-                 proportional: bool, is_paired: bool):
+                 proportional: bool, is_paired: bool, horizontal: bool):
     """
     Add summary bars to the contrast plot. Currently only functional for Vertical plots.
 
@@ -903,6 +903,8 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
         Whether the data is proportional.
     is_paired : bool
         Whether the data is paired.
+    horizontal : bool
+        Whether the plot is horizontal.
     """
 # Begin checks        
     if not isinstance(summary_bars, list):
@@ -916,6 +918,8 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
 # End checks
     else:
         summary_xmin, summary_xmax = ax_to_plot.get_xlim()
+        summary_ymin, summary_ymax = ax_to_plot.get_ylim()
+
         summary_bars_colors = (
             [summary_bars_kwargs.get('color')]*int(max(ticks_to_plot)+1)
             if summary_bars_kwargs.get('color') is not None
@@ -924,6 +928,8 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
             else list(plot_palette_raw.values())
         )
         summary_bars_kwargs.pop('color')
+        span_ax = summary_bars_kwargs.pop("span_ax")
+
         for summary_index in summary_bars:
             if ci_type == "bca":
                 summary_ci_low = results.bca_low[summary_index]
@@ -932,12 +938,28 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
                 summary_ci_low = results.pct_low[summary_index]
                 summary_ci_high = results.pct_high[summary_index]
 
+            if span_ax == True:
+                starting_location = summary_ymax if horizontal else summary_xmin
+            else:
+                starting_location = ticks_to_plot[summary_index]                
+
             summary_color = summary_bars_colors[int(ticks_to_plot[summary_index])]
 
-            ax_to_plot.add_patch(mpatches.Rectangle((summary_xmin,summary_ci_low),summary_xmax+1, 
-            summary_ci_high-summary_ci_low, zorder=-2, color=summary_color, **summary_bars_kwargs))
-
-
+            if horizontal:
+                ax_to_plot.add_patch(mpatches.Rectangle(
+                    (summary_ci_low, starting_location),
+                    summary_ci_high-summary_ci_low, summary_ymin+1, 
+                    zorder=-2, color=summary_color, 
+                    **summary_bars_kwargs)
+                    )
+            else:
+                ax_to_plot.add_patch(mpatches.Rectangle(
+                    (starting_location, summary_ci_low),
+                    summary_xmax+1, summary_ci_high-summary_ci_low, 
+                    zorder=-2, color=summary_color, 
+                    **summary_bars_kwargs)
+                    )
+                
 def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: object,
                           ticks_to_plot: list, contrast_bars_kwargs: dict, color_col: str, 
                           plot_palette_raw: dict, show_mini_meta: bool, mini_meta_delta: object, 
