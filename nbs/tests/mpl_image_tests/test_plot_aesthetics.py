@@ -115,6 +115,9 @@ two_groups_unpaired = load(df, idx=("Control 1", "Test 1"))
 
 multi_2group = load(df, idx=(("Control 1", "Test 1",), ("Control 2", "Test 2"),),)
 
+multi_2group_paired = load(df, idx=(("Control 1", "Test 1"),
+                                         ("Control 2", "Test 2")),paired='baseline', id_col='ID')
+
 shared_control = load(df, idx=("Control 1", "Test 1", "Test 2", "Test 3", "Test 4", "Test 5", "Test 6"))
 
 multi_groups = load(df, idx=(("Control 1", "Test 1",), ("Control 2", "Test 2", "Test 3"),
@@ -275,5 +278,13 @@ def test_228_multi_2group_meandiff_deltatext_kwargs_x_adjust():
 # Jitter
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_229_samevalues_jitter():
-    return multi_2group_jitter.mean_diff.plot(horizontal=False, slopegraph_kwargs={'jitter': 1});
+    return multi_2group_jitter.mean_diff.plot(slopegraph_kwargs={'jitter': 1});
 
+# Delta-dots
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_230_delta_dot_hide():
+    return multi_2group_paired.mean_diff.plot(delta_dot=False);
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_231_delta_dot_kwargs():
+    return multi_2group_paired.mean_diff.plot(delta_dot_kwargs={"color":'red', "alpha":0.1, 'zorder': 2, 'size': 5, 'side': 'left'});

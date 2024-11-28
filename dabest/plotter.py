@@ -176,7 +176,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                     )
         if not proportional:
             # Plot the raw data as a slopegraph.
-
             slopegraph_plotter(
                 dabest_obj=dabest_obj, 
                 plot_data=plot_data, 

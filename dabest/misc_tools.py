@@ -318,9 +318,10 @@ def get_kwargs(plot_kwargs, ytick_color):
     
     # Delta dots kwargs.
     default_delta_dot_kwargs = {
+                "color": 'k',
                 "marker": "^", 
                 "alpha": 0.5, 
-                "zorder": 2, 
+                "zorder": -1, 
                 "size": 3, 
                 "side": "right"
     }

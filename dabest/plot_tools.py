@@ -1237,12 +1237,12 @@ def DeltaDotsPlotter(plot_data, contrast_axes, delta_id_col, idx, xvar, yvar, is
     
     # Checks and initializations
     from .plot_tools import swarmplot
-
+    delta_dot_color = delta_dot_kwargs.pop('color')
     if color_col is not None:
         plot_palette_deltapts = plot_palette_raw
         delta_plot_data = plot_data[[xvar, yvar, delta_id_col, color_col]]
     else:
-        plot_palette_deltapts = "k"
+        plot_palette_deltapts = delta_dot_color
         delta_plot_data = plot_data[[xvar, yvar, delta_id_col]]
 
     # TODO: to make jitter value more accurate and not just a hardcoded eyeball value

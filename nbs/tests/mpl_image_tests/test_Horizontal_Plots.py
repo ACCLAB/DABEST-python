@@ -830,3 +830,12 @@ def test_414_gridkey_kwargs_and_autoparser():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_415_Horizontal_Table_hide():
     return multi_2group_unpaired.mean_diff.plot(horizontal=True, horizontal_table_kwargs={'show': False});
+
+# Delta-dots
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_416_delta_dot_hide():
+    return multi_2group_paired.mean_diff.plot(horizontal=True, delta_dot=False);
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_417_delta_dot_kwargs():
+    return multi_2group_paired.mean_diff.plot(horizontal=True, delta_dot_kwargs={"color":'red', "alpha":0.1, 'zorder': 2, 'size': 5, 'side': 'left'});
