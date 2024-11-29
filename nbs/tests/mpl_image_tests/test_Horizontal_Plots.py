@@ -865,3 +865,17 @@ summary_bars_kwargs = {'color': "black", 'alpha': 0.2, 'span_ax': True}
 def test_422_shared_control_meandiff_summarybars_kwargs():
     return shared_control.mean_diff.plot(horizontal=True, summary_bars=[0, 1], summary_bars_kwargs = summary_bars_kwargs,
                                          contrast_bars=False, swarm_bars=False);
+
+# Add counts to prop plots
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_423_shared_control_propdiff_show_counts():
+    return shared_control_prop.mean_diff.plot(horizontal=True, prop_sample_counts=True,)
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_424_repeated_measures_baseline_propdiff_show_counts():
+    return repeated_measures_baseline_prop.mean_diff.plot(horizontal=True, prop_sample_counts=True,)
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_425_repeated_measures_baseline_propdiff_show_counts_and_kwargs():
+    return repeated_measures_baseline_prop.mean_diff.plot(horizontal=True,
+            prop_sample_counts=True, prop_sample_counts_kwargs={"color": "red", "fontsize": 12, "fontweight": "bold"})

@@ -389,6 +389,23 @@ def test_134_separate_control_sankey_off():
 def test_135_separate_control_flow_off():
     return multi_groups_sequential.mean_diff.plot(sankey_kwargs={"flow": False})
 
+# Show sample counts
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_137_multi_2group_show_sample_counts():
+    return multi_2group.mean_diff.plot(prop_sample_counts=True)
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_138_multi_groups_paired_show_sample_counts():
+    return multi_groups_paired.mean_diff.plot(prop_sample_counts=True)
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_139_multi_2group_show_sample_counts_and_kwargs():
+    return multi_2group.mean_diff.plot(prop_sample_counts=True, prop_sample_counts_kwargs={
+        "color": "red", "fontsize": 12, "fontweight": "bold"})
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_140_multi_groups_paired_show_sample_counts_with_sankey_off():
+    return multi_groups_paired.mean_diff.plot(prop_sample_counts=True, sankey_kwargs={"sankey": False})
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_136_style_sheets():

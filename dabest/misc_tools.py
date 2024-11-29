@@ -200,7 +200,7 @@ def get_kwargs(plot_kwargs, ytick_color):
     # Barplot kwargs
     default_barplot_kwargs = {
         "estimator": np.mean, 
-        "errorbar": plot_kwargs["ci"]
+        "errorbar": plot_kwargs["ci"],
     }
     if plot_kwargs["barplot_kwargs"] is None:
         barplot_kwargs = default_barplot_kwargs
@@ -435,11 +435,23 @@ def get_kwargs(plot_kwargs, ytick_color):
     else:
         es_errorbar_kwargs = merge_two_dicts(default_es_errorbar_kwargs, plot_kwargs['es_errorbar_kwargs'])
 
+    # Prop sample counts kwargs
+    default_prop_sample_counts_kwargs = {
+                                        'color': 'k', 
+                                        'zorder': 5, 
+                                        'ha': 'center', 
+                                        'va': 'center'
+    }
+    if plot_kwargs['prop_sample_counts_kwargs'] is None:
+        prop_sample_counts_kwargs = default_prop_sample_counts_kwargs
+    else:
+        prop_sample_counts_kwargs = merge_two_dicts(default_prop_sample_counts_kwargs, plot_kwargs['prop_sample_counts_kwargs'])
+
     # Return the kwargs.
     return (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs, 
             reflines_kwargs, legend_kwargs, group_summaries_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
             delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs,
-            es_marker_kwargs, es_errorbar_kwargs)
+            es_marker_kwargs, es_errorbar_kwargs, prop_sample_counts_kwargs)
 
 
 def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_groups):

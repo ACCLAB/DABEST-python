@@ -9,8 +9,8 @@ from __future__ import annotations
 __all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'width_determine',
            'single_sankey', 'sankeydiag', 'summary_bars_plotter', 'contrast_bars_plotter', 'swarm_bars_plotter',
            'delta_text_plotter', 'DeltaDotsPlotter', 'slopegraph_plotter', 'plot_minimeta_or_deltadelta_violins',
-           'effect_size_curve_plotter', 'gridkey_plotter', 'barplotter', 'table_for_horizontal_plots', 'swarmplot',
-           'SwarmPlot']
+           'effect_size_curve_plotter', 'gridkey_plotter', 'barplotter', 'table_for_horizontal_plots',
+           'add_counts_to_prop_plots', 'swarmplot', 'SwarmPlot']
 
 # %% ../nbs/API/plot_tools.ipynb 4
 import math
@@ -1919,9 +1919,8 @@ def barplotter(xvar, yvar, all_plot_groups, rawdata_axes, plot_data, bar_color, 
     horizontal : bool
         If the plot is horizontal.
     """
-    
-    x_label, y_label = rawdata_axes.get_xlabel(), rawdata_axes.get_ylabel()
 
+    x_label, y_label = rawdata_axes.get_xlabel(), rawdata_axes.get_ylabel()
     if horizontal:
         x_var, y_var, orient = np.ones(len(all_plot_groups)), all_plot_groups, "h"
     else:
@@ -1969,7 +1968,7 @@ def barplotter(xvar, yvar, all_plot_groups, rawdata_axes, plot_data, bar_color, 
             centre = x + width / 2.0
             bar.set_x(centre - bar_width / 2.0)
             bar.set_width(bar_width)
-    
+
     # reset the x and y labels
     rawdata_axes.set_xlabel(x_label)
     rawdata_axes.set_ylabel(y_label)
@@ -2046,6 +2045,61 @@ def table_for_horizontal_plots(effectsize_df, ax, contrast_axes, ticks_to_plot, 
     ax.tick_params(left=False, bottom=False)
     ax.set_xlabel(label, fontsize=fontsize_label) # Set the x-axis label - hardcoded for now
     sns.despine(ax=ax, left=True, bottom=True)
+
+
+def add_counts_to_prop_plots(plot_data, xvar, yvar, rawdata_axes, horizontal, is_paired, prop_sample_counts_kwargs):
+    """
+    Add counts to the proportion plots.
+
+    Parameters
+    ----------
+    plot_data : object (Dataframe)
+        Dataframe of the plot data.
+    xvar : str
+        Column name of the x variable.
+    yvar : str
+        Column name of the y variable.
+    rawdata_axes : object
+        Matplotlib axis object to plot on.
+    horizontal : bool
+        If the plot is horizontal.
+    is_paired : bool
+        Whether the data is paired.
+    prop_sample_counts_kwargs : dict
+        Keyword arguments for the sample counts.
+    """
+
+    # Group orders
+    if isinstance(plot_data[xvar].dtype, pd.CategoricalDtype):
+        sample_size_text_order = pd.unique(plot_data[xvar]).categories
+    else:
+        sample_size_text_order = pd.unique(plot_data[xvar])
+
+    # Get the sample size values
+    ones, zeros = plot_data[plot_data[yvar] == 1], plot_data[plot_data[yvar] == 0]
+
+    sample_size_val1 = ones.groupby(xvar, observed=False)[yvar].count().reindex(index=sample_size_text_order)
+    sample_size_val0 = zeros.groupby(xvar, observed=False)[yvar].count().reindex(index=sample_size_text_order)
+
+    fontsize = 8 if horizontal else 10
+    fontsize -= 2 if is_paired else 0
+
+    if "fontsize" not in prop_sample_counts_kwargs.keys():
+        fontsize = 8 if horizontal else 10
+        fontsize -= 2 if is_paired else 0
+        prop_sample_counts_kwargs.update({'fontsize': fontsize})
+
+    for sample_text_x, sample_text_y0, sample_text_y1 in zip(
+                                                            np.arange(0,len(sample_size_text_order)+1,1), 
+                                                            sample_size_val0,
+                                                            sample_size_val1,
+                                                            ):
+        if horizontal:
+            rawdata_axes.text(0.05, sample_text_x, sample_text_y1, **prop_sample_counts_kwargs)
+            rawdata_axes.text(0.95, sample_text_x, sample_text_y0, **prop_sample_counts_kwargs)
+        else:
+            rawdata_axes.text(sample_text_x, 0.05, sample_text_y1, **prop_sample_counts_kwargs)
+            rawdata_axes.text(sample_text_x, 0.95, sample_text_y0, **prop_sample_counts_kwargs)
 
 # %% ../nbs/API/plot_tools.ipynb 6
 def swarmplot(

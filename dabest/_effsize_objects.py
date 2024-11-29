@@ -1037,6 +1037,9 @@ class EffectSizeDataFrame(object):
 
         es_marker_kwargs=None,
         es_errorbar_kwargs=None,
+
+        prop_sample_counts=False,
+        prop_sample_counts_kwargs=None
     ):
         """
         Creates an estimation plot for the effect size of interest.
@@ -1126,6 +1129,9 @@ class EffectSizeDataFrame(object):
             Pass any keyword arguments accepted by the seaborn `swarmplot`
             command here, as a dict. If None, the following keywords are
             passed to sns.swarmplot : {'size':`raw_marker_size`}.
+        barplot_kwargs : dict, default None
+            By default, the keyword arguments passed are:
+            {"estimator": np.mean, "errorbar": plot_kwargs["ci"]}
         violinplot_kwargs : dict, default None
             Pass any keyword arguments accepted by the matplotlib `
             pyplot.violinplot` command here, as a dict. If None, the following
@@ -1240,6 +1246,13 @@ class EffectSizeDataFrame(object):
         es_errorbar_kwargs: dict, default None
             Pass relevant keyword arguments to the effectsize errorbar plotting. If none, the following keywords are passed:
             {'color': 'black', 'lw': 2, 'linestyle': '-', 'alpha': 1,'zorder': 1,}
+
+        prop_sample_counts: bool, default False
+            Show the sample counts for each group in proportional plots
+        prop_sample_counts_kwargs: dict, default None
+            Pass relevant keyword arguments. If None, the following keywords are passed:
+            {'color': 'k', 'zorder': 5, 'ha': 'center', 'va': 'center'}
+        
 
         Returns
         -------

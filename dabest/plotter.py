@@ -61,7 +61,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         delta_text=True, delta_text_kwargs=None,
         delta_dot=True, delta_dot_kwargs=None,
         horizontal=False, horizontal_table_kwargs=None,
-        es_marker_kwargs=None, es_errorbar_kwargs=None
+        es_marker_kwargs=None, es_errorbar_kwargs=None,
+        prop_sample_counts=False, prop_sample_counts_kwargs=None
     """
     from .misc_tools import (
         get_params,
@@ -93,6 +94,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         gridkey_plotter,
         barplotter,
         table_for_horizontal_plots,
+        add_counts_to_prop_plots,
     )
 
     warnings.filterwarnings(
@@ -121,13 +123,14 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                                                                 plot_kwargs=plot_kwargs,
                                                                                                 )
 
-    (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, 
-     slopegraph_kwargs, reflines_kwargs, legend_kwargs, group_summaries_kwargs, 
-     redraw_axes_kwargs, delta_dot_kwargs, delta_text_kwargs, summary_bars_kwargs, 
-     swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs, es_marker_kwargs, es_errorbar_kwargs) = get_kwargs(
-                                                                                                                            plot_kwargs=plot_kwargs, 
-                                                                                                                            ytick_color=ytick_color
-                                                                                                                            )
+    (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, 
+     violinplot_kwargs, slopegraph_kwargs, reflines_kwargs, 
+     legend_kwargs, group_summaries_kwargs, redraw_axes_kwargs, delta_dot_kwargs, 
+     delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, 
+     table_kwargs, gridkey_kwargs, es_marker_kwargs, es_errorbar_kwargs, prop_sample_counts_kwargs) = get_kwargs(
+                                                                                                                plot_kwargs=plot_kwargs, 
+                                                                                                                ytick_color=ytick_color
+                                                                                                                )
 
     # We also need to extract the `sankey` and `flow` from the kwargs for plotter.py
     # to use for varying different kinds of paired proportional plots
@@ -317,6 +320,18 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             flow = sankey_kwargs["flow"],
             horizontal=horizontal,
             )
+
+    # Add counts to prop plots
+    if proportional and plot_kwargs['prop_sample_counts'] and sankey_kwargs["flow"]:
+        add_counts_to_prop_plots(
+                        plot_data=plot_data, 
+                        xvar=xvar, 
+                        yvar=yvar, 
+                        rawdata_axes=rawdata_axes, 
+                        horizontal=horizontal,
+                        is_paired = is_paired,
+                        prop_sample_counts_kwargs=prop_sample_counts_kwargs,
+                        )
 
     # Plot effect sizes and bootstraps.
     plot_groups = (temp_all_plot_groups if (is_paired == "baseline" and show_pairs and two_col_sankey) 
