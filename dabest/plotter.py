@@ -408,23 +408,6 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                         proportional=proportional,
                         horizontal=horizontal,
                         )
-    # Legend
-    handles, labels = rawdata_axes.get_legend_handles_labels()
-    legend_labels = [l for l in labels]
-    legend_handles = [h for h in handles]
-
-    if bootstraps_color_by_group is False and not effectsize_df.delta2:
-        rawdata_axes.legend().set_visible(False)
-        show_legend(
-            legend_labels=legend_labels, 
-            legend_handles=legend_handles, 
-            rawdata_axes=rawdata_axes, 
-            contrast_axes=contrast_axes, 
-            float_contrast=float_contrast, 
-            show_pairs=show_pairs, 
-            horizontal=horizontal,
-            legend_kwargs=legend_kwargs
-            )
 
     # Plot aesthetic adjustments.
     if float_contrast and not horizontal:
@@ -589,6 +572,27 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                 effect_size = effect_size,
                 gridkey_kwargs = gridkey_kwargs,
                 )
+        
+
+    # Legend
+    handles, labels = rawdata_axes.get_legend_handles_labels()
+    legend_labels = [l for l in labels]
+    legend_handles = [h for h in handles]
+
+    if bootstraps_color_by_group is False and not effectsize_df.delta2:
+        rawdata_axes.legend().set_visible(False)
+        show_legend(
+            legend_labels=legend_labels, 
+            legend_handles=legend_handles, 
+            rawdata_axes=rawdata_axes, 
+            contrast_axes=contrast_axes, 
+            table_axes=table_axes,
+            float_contrast=float_contrast, 
+            show_pairs=show_pairs, 
+            horizontal=horizontal,
+            legend_kwargs=legend_kwargs,
+            table_kwargs=table_kwargs
+            )
 
     # Make sure no stray ticks appear!
     rawdata_axes.xaxis.set_ticks_position("bottom")

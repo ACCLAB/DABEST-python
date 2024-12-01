@@ -272,7 +272,7 @@ def get_kwargs(plot_kwargs, ytick_color):
     # Legend kwargs.
     default_legend_kwargs = {
         "loc": "upper left", 
-        "frameon": False
+        "frameon": False,
     }
     if plot_kwargs["legend_kwargs"] is None:
         legend_kwargs = default_legend_kwargs
@@ -1110,7 +1110,7 @@ def set_xaxis_ticks_and_lims(show_delta2, show_mini_meta, rawdata_axes, contrast
         )
 
 
-def show_legend(legend_labels, legend_handles, rawdata_axes, contrast_axes, float_contrast, show_pairs, horizontal, legend_kwargs):
+def show_legend(legend_labels, legend_handles, rawdata_axes, contrast_axes, table_axes, float_contrast, show_pairs, horizontal, legend_kwargs, table_kwargs):
     """
     Show the legend for the plotter function.
 
@@ -1124,6 +1124,8 @@ def show_legend(legend_labels, legend_handles, rawdata_axes, contrast_axes, floa
         The raw data axes.
     contrast_axes : object (Axes)
         The contrast axes.
+    table_axes : object (Axes)
+        The table axes.
     float_contrast : bool
         A boolean flag to determine if the plot is GA or Cumming format.
     show_pairs : bool
@@ -1140,41 +1142,39 @@ def show_legend(legend_labels, legend_handles, rawdata_axes, contrast_axes, floa
         pd.Series(legend_handles, dtype="object").loc[unique_idx]
     ).tolist()
 
-    if len(legend_handles_unique) > 0:
+    # Location of the legend
+    if "bbox_to_anchor" not in legend_kwargs.keys():
         if horizontal:
-            axes_with_legend = rawdata_axes
-            # bta = (0.8, 0.8)
-            leg = axes_with_legend.legend(
-                legend_handles_unique,
-                legend_labels_unique,
-                handlelength=0.5,
-                **legend_kwargs
-            )
-            if show_pairs:
-                for line in leg.get_lines():
-                    line.set_linewidth(3)
+            bta = (1,1)
         else:
             if float_contrast:
-                axes_with_legend = contrast_axes
-                if show_pairs:
-                    bta = (2.00, 1.02)
-                else:
-                    bta = (1.5, 1.02)
+                bta = (2.00, 1.02) if show_pairs else (1.5, 1.02)
             else:
-                axes_with_legend = rawdata_axes
-                if show_pairs:
-                    bta = (1.02, 1.0)
-                else:
-                    bta = (1.0, 1.0)
-            leg = axes_with_legend.legend(
-                legend_handles_unique,
-                legend_labels_unique,
-                bbox_to_anchor=bta,
-                **legend_kwargs
-            )
-            if show_pairs:
-                for line in leg.get_lines():
-                    line.set_linewidth(3.0)
+                bta = (1.02, 1.0) if show_pairs else (1.0, 1.0)
+        legend_kwargs.update({'bbox_to_anchor': bta})
+
+    # Pick the ax to plot
+    if horizontal:
+        if table_kwargs['show']:
+            axes_with_legend = table_axes
+        else:
+            axes_with_legend = contrast_axes
+    elif float_contrast:
+        axes_with_legend = contrast_axes
+    else:
+        axes_with_legend = rawdata_axes
+
+    # Plot the legend
+    if len(legend_handles_unique) > 0:
+        leg = axes_with_legend.legend(
+                            legend_handles_unique,
+                            legend_labels_unique,
+                            handlelength=0.5,
+                            **legend_kwargs
+        )
+        if show_pairs:
+            for line in leg.get_lines():
+                line.set_linewidth(3.0)
     
 def Gardner_Altman_Plot_Aesthetic_Adjustments(effect_size_type, plot_data, xvar, yvar, current_control, current_group,
                                          rawdata_axes, contrast_axes, results, current_effsize, is_paired, one_sankey,
