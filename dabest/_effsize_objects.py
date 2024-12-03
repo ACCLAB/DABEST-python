@@ -731,7 +731,7 @@ class EffectSizeDataFrame(object):
         out = []
         reprs = []
 
-        grouped_data = {name: group[yvar].copy() for name, group in dat.groupby(xvar)}
+        grouped_data = {name: group[yvar].copy() for name, group in dat.groupby(xvar, observed=False)}
         if self.__delta2:
             mixed_data = []
             for j, current_tuple in enumerate(idx):
