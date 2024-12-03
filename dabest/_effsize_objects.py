@@ -982,6 +982,7 @@ class EffectSizeDataFrame(object):
         contrast_ylim=None,
         delta2_ylim=None,
         swarm_side=None,
+        empty_circle=False,
         custom_palette=None,
         swarm_desat=0.5,
         halfviolin_desat=1,
@@ -1005,10 +1006,6 @@ class EffectSizeDataFrame(object):
         fig_size=None,
         dpi=100,
         ax=None,
-        contrast_show_es=False,
-        es_sf=2,
-        es_fontsize=10,
-        contrast_show_deltas=True,
         gridkey_rows=None,
         gridkey_merge_pairs=False,
         gridkey_show_Ns=True,
@@ -1028,6 +1025,17 @@ class EffectSizeDataFrame(object):
         fontsize_contrastxlabel=12,
         fontsize_contrastylabel=12,
         fontsize_delta2label=12,
+        #### Contrast bars and delta text and delta dots WIP  ####
+        contrast_bars=True,
+        swarm_bars=True,
+        contrast_bars_kwargs=None,
+        swarm_bars_kwargs=None,
+        summary_bars=None,
+        summary_bars_kwargs=None,
+        delta_text=True,
+        delta_text_kwargs=None,
+        delta_dot=True,
+        delta_dot_kwargs=None,
     ):
         """
         Creates an estimation plot for the effect size of interest.
@@ -1075,6 +1083,12 @@ class EffectSizeDataFrame(object):
             https://seaborn.pydata.org/generated/seaborn.cubehelix_palette.html
             The named colors of matplotlib can be found here:
             https://matplotlib.org/examples/color/named_colors.html
+        swarm_side: string, default None
+            The side on which points are swarmed for swarmplots ("center", "left", or "right").
+        empty_circle: boolean, default False
+            Boolean value determining if empty circles will be used for plotting of
+            swarmplot for control groups. Color of each individual swarm is also now
+            dependent on the comparison group.
         swarm_desat : float, default 1
             Decreases the saturation of the colors in the swarmplot by the
             desired proportion. Uses `seaborn.desaturate()` to acheive this.
@@ -1170,7 +1184,39 @@ class EffectSizeDataFrame(object):
             Font size for the contrast axes ylabel.
         fontsize_delta2label : float, default 12
             Font size for the delta-delta axes ylabel.
+            
+            
+        contrast_bars : boolean, default True
+            Whether or not to display the contrast bars.
+        swarm_bars : boolean, default True
+            Whether or not to display the swarm bars.
+        contrast_bars_kwargs : dict, default None
+            Pass relevant keyword arguments to the contrast bars. Pass any keyword arguments accepted by 
+            matplotlib.patches.Rectangle here, as a string. If None, the following keywords are passed:
+            {"color": None, "alpha": 0.3}
+        swarm_bars_kwargs : dict, default None
+            Pass relevant keyword arguments to the swarm bars. Pass any keyword arguments accepted by 
+            matplotlib.patches.Rectangle here, as a string. If None, the following keywords are passed:
+            {"color": None, "alpha": 0.3}
 
+        summary_bars : list, default None
+            Pass a list of indices of the contrast objects to have summary bars displayed on the plot.
+            For example, [0,1] will show summary bars for the first two contrast objects.
+        summary_bars_kwargs: dict, default None
+            If None, the following keywords are passed: {"color": None, "alpha": 0.15}
+        delta_text : boolean, default True
+            Whether or not to display the text deltas.
+        delta_text_kwargs : dict, default None
+            Pass relevant keyword arguments to the delta text. Pass any keyword arguments accepted by
+            matplotlib.text.Text here, as a string. If None, the following keywords are passed:
+            {"color": None, "alpha": 1, "fontsize": 10, "ha": 'center', "va": 'center', "rotation": 0, 
+            "x_location": 'right', "x_coordinates": None, "y_coordinates": None}
+            Use "x_coordinates" and "y_coordinates" if you would like to specify the text locations manually.
+        delta_dot : boolean, default True
+            Whether or not to display the delta dots on paired or repeated measure plots.
+        delta_dot_kwargs : dict, default None
+            Pass relevant keyword arguments. If None, the following keywords are passed:
+            {"marker": "^", "alpha": 0.5, "zorder": 2, "size": 3, "side": "right"}
 
         Returns
         -------
@@ -1191,7 +1237,7 @@ class EffectSizeDataFrame(object):
         if hasattr(self, "results") is False:
             self.__pre_calc()
 
-        if self.__delta2:
+        if self.__delta2 and not empty_circle:
             color_col = self.__x2
 
         # if self.__proportional:

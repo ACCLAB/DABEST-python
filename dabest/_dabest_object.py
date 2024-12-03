@@ -8,11 +8,10 @@ __all__ = ['Dabest']
 # %% ../nbs/API/dabest_object.ipynb 4
 # Import standard data science libraries
 from numpy import array, repeat, random, issubdtype, number
+import numpy as np
 import pandas as pd
 from scipy.stats import norm
 from scipy.stats import randint
-
-from .misc_tools import unique_with_types
 
 # %% ../nbs/API/dabest_object.ipynb 6
 class Dabest(object):
@@ -113,8 +112,7 @@ class Dabest(object):
         # Determine the kind of estimation plot we need to produce.
         if all([isinstance(i, (str, int, float)) for i in idx]):
             # flatten out idx.
-            # all_plot_groups = pd.unique([t for t in idx]).tolist()
-            all_plot_groups = unique_with_types([t for t in idx])
+            all_plot_groups = pd.unique([t for t in idx]).tolist()
             if len(idx) > len(all_plot_groups):
                 err0 = "`idx` contains duplicated groups. Please remove any duplicates and try again."
                 raise ValueError(err0)
@@ -124,8 +122,7 @@ class Dabest(object):
             self.__idx = (idx,)
 
         elif all([isinstance(i, (tuple, list)) for i in idx]):
-            # all_plot_groups = pd.unique([t for t in idx]).tolist()
-            all_plot_groups = unique_with_types([tt for t in idx for tt in t])
+            all_plot_groups = pd.unique([tt for t in idx for tt in t]).tolist()
 
             actual_groups_given = sum([len(i) for i in idx])
 
@@ -483,8 +480,7 @@ class Dabest(object):
 
             # Handling str type condition
             if is_str_condition_met:
-                # if len(pd.unique(idx).tolist()) != 2:
-                if len(unique_with_types(idx)) != 2:
+                if len(np.unique(idx).tolist()) != 2:
                     err0 = "`mini_meta` is True, but `idx` ({})".format(idx)
                     err1 = "does not contain exactly 2 unique columns."
                     raise ValueError(err0 + err1)
@@ -672,7 +668,7 @@ class Dabest(object):
                 all_plot_groups, ordered=True, inplace=True
             )
         else:
-            plot_data.loc[:, self.__xvar] = pd.Categorical(
+            plot_data[self.__xvar] = pd.Categorical(
                 plot_data[self.__xvar], categories=all_plot_groups, ordered=True
             )
 
