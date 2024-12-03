@@ -1016,30 +1016,22 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
     )
     contrast_bars_kwargs.pop('color')
 
-    if horizontal:
-        for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
-            idx_selector = (
-                int(contrast_bars_x) 
-                if type(contrast_bars_colors) == list 
-                else unpacked_idx[int(contrast_bars_x)]
-            )
-            ax_to_plot.add_patch(mpatches.Rectangle((0,contrast_bars_x-0.5),contrast_bars_y, 0.5, color=contrast_bars_colors[idx_selector], **contrast_bars_kwargs))
+    for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
+        idx_selector = (
+            int(contrast_bars_x) 
+            if type(contrast_bars_colors) == list 
+            else unpacked_idx[int(contrast_bars_x)]
+        )
+        if horizontal:
+            ax_to_plot.add_patch(mpatches.Rectangle((0, contrast_bars_x-0.5), contrast_bars_y, 0.5, color=contrast_bars_colors[idx_selector], **contrast_bars_kwargs))
+        else:
+            ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25, 0),0.5, contrast_bars_y, color=contrast_bars_colors[idx_selector], **contrast_bars_kwargs))
 
-        if show_mini_meta or show_delta2:
-            diff = mini_meta_delta.difference if show_mini_meta else delta_delta.difference
+    if show_mini_meta or show_delta2:
+        diff = mini_meta_delta.difference if show_mini_meta else delta_delta.difference
+        if horizontal:
             ax_to_plot.add_patch(mpatches.Rectangle((0, max(swarm_plot_ax.get_yticks())-0.5), diff, 0.5, color='black', **contrast_bars_kwargs))
-
-    else:
-        for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
-            idx_selector = (
-                int(contrast_bars_x) 
-                if type(contrast_bars_colors) == list 
-                else unpacked_idx[int(contrast_bars_x)]
-            )
-            ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25,0),0.5, contrast_bars_y, color=contrast_bars_colors[idx_selector], **contrast_bars_kwargs))
-
-        if show_mini_meta or show_delta2:
-            diff = mini_meta_delta.difference if show_mini_meta else delta_delta.difference
+        else:
             ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25,0),0.5, diff, color='black', **contrast_bars_kwargs))
 
     ax_to_plot.set_xlim(og_xlim)
@@ -1104,10 +1096,9 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
     ax.set_xlim(og_xlim)
     ax.set_ylim(og_ylim)
 
-def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: object, ticks_to_plot: list, delta_text_kwargs: dict, color_col: str, 
-                       plot_palette_raw: dict, is_paired: bool, proportional: bool, float_contrast: bool,
-                       show_mini_meta: bool, mini_meta_delta: object, show_delta2: bool, delta_delta: object,
-                       idx: list):
+def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: object, ticks_to_plot: list, delta_text_kwargs: dict, 
+                       color_col: str, plot_palette_raw: dict, is_paired: bool, proportional: bool, float_contrast: bool,
+                       show_mini_meta: bool, mini_meta_delta: object, show_delta2: bool, delta_delta: object, idx: list):
     """
     Add delta text to the contrast plot.
 
@@ -1393,7 +1384,7 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
         x_start = x_start + grp_count
 
 def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, rawdata_axes,
-                                        contrast_axes, violinplot_kwargs, halfviolin_alpha, ytick_color, 
+                                        contrast_axes, violinplot_kwargs, halfviolin_alpha, 
                                         contrast_xtick_labels, effect_size, show_delta2, plot_kwargs, 
                                         horizontal, es_marker_kwargs, es_errorbar_kwargs):
     """
@@ -1415,8 +1406,6 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
         Keyword arguments for the violinplot.
     halfviolin_alpha : float
         Alpha value for the half violin.
-    ytick_color : str
-        Color of the yticks.
     es_marker_size : int
         Size of the effect size marker.
     contrast_xtick_labels : list
@@ -1477,14 +1466,12 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
     contrast_axes.plot(
         effsize_x,
         effsize_y,
-        # color=ytick_color,
         **es_marker_kwargs
     )
     # Plot the confidence interval.
     contrast_axes.plot(
         ci_x,
         ci_y,
-        # color=ytick_color,
         **es_errorbar_kwargs
     )
 
@@ -1531,7 +1518,7 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
 
 
 def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, violinplot_kwargs, halfviolin_alpha, 
-                              ytick_color, bootstraps_color_by_group, plot_palette_contrast,
+                              bootstraps_color_by_group, plot_palette_contrast,
                               horizontal, es_marker_kwargs, es_errorbar_kwargs,
                               idx, is_paired, es_paired_lines, es_paired_lines_kwargs):
     """
@@ -1551,8 +1538,6 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
         Keyword arguments for the violinplot.
     halfviolin_alpha : float
         Alpha value for the half violin.
-    ytick_color : str
-        Color of the yticks.
     es_marker_size : int
         Size of the effect size marker.
     bootstraps_color_by_group : bool
@@ -1657,18 +1642,14 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
                     else:
                         mean_diffs_for_lines.append(int(0))
 
-                if horizontal:
-                    contrast_axes.plot(
-                        mean_diffs_for_lines,
-                        group,
-                        **es_paired_lines_kwargs
-                    )
-                else:
-                    contrast_axes.plot(
-                        group, 
-                        mean_diffs_for_lines,
-                        **es_paired_lines_kwargs
-                    )
+                x_data = mean_diffs_for_lines if horizontal else group
+                y_data = group if horizontal else mean_diffs_for_lines
+
+                contrast_axes.plot(
+                    x_data, 
+                    y_data,
+                    **es_paired_lines_kwargs
+                )
 
     return current_group, current_control, current_effsize, contrast_xtick_labels
 
