@@ -18,7 +18,7 @@ import logging
 
 # %% ../nbs/API/plotter.ipynb 5
 # TODO refactor function name
-def effectsize_df_plotter(effectsize_df, **plot_kwargs):
+def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.figure.Figure:
     """
     Custom function that creates an estimation plot from an EffectSizeDataFrame.
     Keywords
@@ -62,7 +62,8 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         delta_dot=True, delta_dot_kwargs=None,
         horizontal=False, horizontal_table_kwargs=None,
         es_marker_kwargs=None, es_errorbar_kwargs=None,
-        prop_sample_counts=False, prop_sample_counts_kwargs=None
+        prop_sample_counts=False, prop_sample_counts_kwargs=None, 
+        es_paired_lines=True, es_paired_lines_kwargs=None,
     """
     from .misc_tools import (
         get_params,
@@ -119,18 +120,18 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
      effect_size, proportional, all_plot_groups, idx, show_delta2, 
      show_mini_meta, float_contrast, show_pairs, effect_size_type, group_summaries, 
      err_color, horizontal, results, halfviolin_alpha, ci_type, x1_level, experiment_label) = get_params(
-                                                                                                effectsize_df=effectsize_df, 
-                                                                                                plot_kwargs=plot_kwargs,
+                                                                                                effectsize_df = effectsize_df, 
+                                                                                                plot_kwargs = plot_kwargs,
                                                                                                 )
 
     (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, 
-     violinplot_kwargs, slopegraph_kwargs, reflines_kwargs, 
-     legend_kwargs, group_summaries_kwargs, redraw_axes_kwargs, delta_dot_kwargs, 
-     delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, 
-     table_kwargs, gridkey_kwargs, es_marker_kwargs, es_errorbar_kwargs, prop_sample_counts_kwargs) = get_kwargs(
-                                                                                                                plot_kwargs=plot_kwargs, 
-                                                                                                                ytick_color=ytick_color
-                                                                                                                )
+     violinplot_kwargs, slopegraph_kwargs, reflines_kwargs, legend_kwargs,
+     group_summaries_kwargs, redraw_axes_kwargs, delta_dot_kwargs, delta_text_kwargs,
+     summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs,
+     gridkey_kwargs, es_marker_kwargs, es_errorbar_kwargs, prop_sample_counts_kwargs, es_paired_lines_kwargs) = get_kwargs(
+                                                                                                                    plot_kwargs = plot_kwargs, 
+                                                                                                                    ytick_color = ytick_color
+                                                                                                                    )
 
     # We also need to extract the `sankey` and `flow` from the kwargs for plotter.py
     # to use for varying different kinds of paired proportional plots
@@ -145,70 +146,70 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     # Extract Color palette
     (color_col, bootstraps_color_by_group, n_groups, filled, plot_palette_raw, 
      bar_color, plot_palette_bar, plot_palette_contrast, plot_palette_sankey) = get_color_palette(
-                                                                                        plot_kwargs=plot_kwargs, 
-                                                                                        plot_data=plot_data, 
-                                                                                        xvar=xvar, 
-                                                                                        show_pairs=show_pairs,
-                                                                                        idx=idx,
-                                                                                        all_plot_groups=all_plot_groups
+                                                                                        plot_kwargs = plot_kwargs, 
+                                                                                        plot_data = plot_data, 
+                                                                                        xvar = xvar, 
+                                                                                        show_pairs = show_pairs,
+                                                                                        idx = idx,
+                                                                                        all_plot_groups = all_plot_groups
                                                                                         )
 
     # Initialise the figure.
     fig, rawdata_axes, contrast_axes, table_axes = initialize_fig(
-                                                            plot_kwargs=plot_kwargs, 
-                                                            dabest_obj=dabest_obj, 
-                                                            show_delta2=show_delta2, 
-                                                            show_mini_meta=show_mini_meta, 
-                                                            is_paired=is_paired, 
-                                                            show_pairs=show_pairs, 
-                                                            proportional=proportional, 
-                                                            float_contrast=float_contrast,
-                                                            effect_size_type=effect_size_type,
-                                                            yvar=yvar,
-                                                            horizontal=horizontal,
+                                                            plot_kwargs = plot_kwargs, 
+                                                            dabest_obj = dabest_obj, 
+                                                            show_delta2 = show_delta2, 
+                                                            show_mini_meta = show_mini_meta, 
+                                                            is_paired = is_paired, 
+                                                            show_pairs = show_pairs, 
+                                                            proportional = proportional, 
+                                                            float_contrast = float_contrast,
+                                                            effect_size_type = effect_size_type,
+                                                            yvar = yvar,
+                                                            horizontal = horizontal,
                                                             show_table = table_kwargs['show']
                                                             )
     
     # Plotting the rawdata.
     if show_pairs:
         temp_idx, temp_all_plot_groups = get_plot_groups(
-                                                    is_paired=is_paired, 
-                                                    idx=idx, 
-                                                    proportional=proportional, 
-                                                    all_plot_groups=all_plot_groups
+                                                    is_paired = is_paired, 
+                                                    idx = idx, 
+                                                    proportional = proportional, 
+                                                    all_plot_groups = all_plot_groups
                                                     )
         if not proportional:
             # Plot the raw data as a slopegraph.
             slopegraph_plotter(
-                dabest_obj=dabest_obj, 
-                plot_data=plot_data, 
-                xvar=xvar, 
-                yvar=yvar, 
-                color_col=color_col, 
-                plot_palette_raw=plot_palette_raw, 
-                slopegraph_kwargs=slopegraph_kwargs, 
-                rawdata_axes=rawdata_axes, 
-                ytick_color=ytick_color, 
-                temp_idx=temp_idx,
-                horizontal=horizontal
+                dabest_obj = dabest_obj, 
+                plot_data = plot_data, 
+                xvar = xvar, 
+                yvar = yvar, 
+                color_col = color_col, 
+                plot_palette_raw = plot_palette_raw, 
+                slopegraph_kwargs = slopegraph_kwargs, 
+                rawdata_axes = rawdata_axes, 
+                ytick_color = ytick_color, 
+                temp_idx = temp_idx,
+                horizontal = horizontal
                 )
             
-            # DELTA PTS ON CONTRAST PLOT WIP
+            # Add delta dots to the contrast axes for paired plots.
             show_delta_dots = plot_kwargs["delta_dot"]
             if show_delta_dots and is_paired is not None:
                 DeltaDotsPlotter(
-                    plot_data=plot_data, 
-                    contrast_axes=contrast_axes, 
-                    delta_id_col=dabest_obj.id_col, 
-                    idx=idx, 
-                    xvar=xvar, 
-                    yvar=yvar, 
-                    is_paired=is_paired, 
-                    color_col=color_col, 
-                    float_contrast=float_contrast, 
-                    plot_palette_raw=plot_palette_raw, 
-                    delta_dot_kwargs=delta_dot_kwargs,
-                    horizontal=horizontal,
+                    plot_data = plot_data, 
+                    contrast_axes = contrast_axes, 
+                    delta_id_col = dabest_obj.id_col, 
+                    idx = idx, 
+                    xvar = xvar, 
+                    yvar = yvar, 
+                    is_paired = is_paired, 
+                    color_col = color_col, 
+                    float_contrast = float_contrast, 
+                    plot_palette_raw = plot_palette_raw, 
+                    delta_dot_kwargs = delta_dot_kwargs,
+                    horizontal = horizontal,
                     )
 
             # Set the tick labels, because the slopegraph plotting doesn't.
@@ -223,14 +224,14 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             # Plot the raw data as a set of Sankey Diagrams aligned like barplot.
             sankey_control_group, sankey_test_group = sankeydiag(
                                                             plot_data,
-                                                            xvar=xvar,
-                                                            yvar=yvar,
-                                                            temp_all_plot_groups=temp_all_plot_groups,
-                                                            idx=idx,
-                                                            temp_idx=temp_idx,
-                                                            palette=plot_palette_sankey,
-                                                            ax=rawdata_axes,
-                                                            horizontal=horizontal,
+                                                            xvar = xvar,
+                                                            yvar = yvar,
+                                                            temp_all_plot_groups = temp_all_plot_groups,
+                                                            idx = idx,
+                                                            temp_idx = temp_idx,
+                                                            palette = plot_palette_sankey,
+                                                            ax = rawdata_axes,
+                                                            horizontal = horizontal,
                                                             **sankey_kwargs
                                                             )
     else:
@@ -246,20 +247,20 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
             # swarmplot() plots swarms based on current size of ax
             # Therefore, since the ax size for mini_meta and show_delta changes later on, there has to be increased jitter
             rawdata_plot = swarmplot(
-                            data=plot_data,
-                            x=xvar,
-                            y=yvar,
-                            ax=rawdata_axes,
-                            order=all_plot_groups,
-                            hue=color_col,
-                            palette=plot_palette_raw,
-                            zorder=1,
-                            side=asymmetric_side,
-                            jitter=1.25 if show_mini_meta else 1.4 if show_delta2 else 1, # TODO: to make jitter value more accurate and not just a hardcoded eyeball value
-                            filled=filled,
-                            is_drop_gutter=True,
-                            gutter_limit=0.45,
-                            horizontal=horizontal,
+                            data = plot_data,
+                            x = xvar,
+                            y = yvar,
+                            ax = rawdata_axes,
+                            order = all_plot_groups,
+                            hue = color_col,
+                            palette = plot_palette_raw,
+                            zorder = 1,
+                            side = asymmetric_side,
+                            jitter = 1.25 if show_mini_meta else 1.4 if show_delta2 else 1, # TODO: to make jitter value more accurate and not just a hardcoded eyeball value
+                            filled = filled,
+                            is_drop_gutter = True,
+                            gutter_limit = 0.45,
+                            horizontal = horizontal,
                             **swarmplot_kwargs
             )
             if color_col is None:
@@ -268,69 +269,70 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         else:
             # Plot the raw data as a barplot.
             barplotter(
-                xvar=xvar, 
-                yvar=yvar, 
-                all_plot_groups=all_plot_groups, 
-                rawdata_axes=rawdata_axes, 
-                plot_data=plot_data, 
-                bar_color=bar_color, 
-                plot_palette_bar=plot_palette_bar, 
-                plot_kwargs=plot_kwargs, 
-                barplot_kwargs=barplot_kwargs,
-                horizontal=horizontal,
+                xvar = xvar, 
+                yvar = yvar, 
+                all_plot_groups = all_plot_groups, 
+                rawdata_axes = rawdata_axes, 
+                plot_data = plot_data, 
+                bar_color = bar_color, 
+                plot_palette_bar = plot_palette_bar, 
+                plot_kwargs = plot_kwargs, 
+                barplot_kwargs = barplot_kwargs,
+                horizontal = horizontal,
                 )
             
         # Plot the error bars.
         if group_summaries is not None:
-            (group_summaries_method, group_summaries_offset, group_summaries_line_color) = extract_group_summaries(
-                                                                                                    proportional=proportional, 
-                                                                                                    err_color=err_color, 
-                                                                                                    rawdata_axes=rawdata_axes, 
-                                                                                                    asymmetric_side=asymmetric_side if not proportional else None, 
-                                                                                                    horizontal=horizontal, 
-                                                                                                    bootstraps_color_by_group=bootstraps_color_by_group, 
-                                                                                                    plot_palette_raw=plot_palette_raw, 
-                                                                                                    all_plot_groups=all_plot_groups,
-                                                                                                    n_groups=n_groups, 
-                                                                                                    color_col=color_col, 
-                                                                                                    ytick_color=ytick_color, 
-                                                                                                    group_summaries_kwargs=group_summaries_kwargs
-                                                                                                    )
-            # Plot
+            (group_summaries_method, 
+             group_summaries_offset, group_summaries_line_color) = extract_group_summaries(
+                                                                            proportional = proportional, 
+                                                                            err_color = err_color, 
+                                                                            rawdata_axes = rawdata_axes, 
+                                                                            asymmetric_side = asymmetric_side if not proportional else None, 
+                                                                            horizontal = horizontal, 
+                                                                            bootstraps_color_by_group = bootstraps_color_by_group, 
+                                                                            plot_palette_raw = plot_palette_raw, 
+                                                                            all_plot_groups = all_plot_groups,
+                                                                            n_groups = n_groups, 
+                                                                            color_col = color_col, 
+                                                                            ytick_color = ytick_color, 
+                                                                            group_summaries_kwargs = group_summaries_kwargs
+                                                                            )
+            
             error_bar(
                 plot_data,
-                x=xvar,
-                y=yvar,
-                offset=group_summaries_offset,
-                line_color=group_summaries_line_color,
-                type=group_summaries,
-                ax=rawdata_axes,
-                method=group_summaries_method,
-                horizontal=horizontal,
+                x = xvar,
+                y = yvar,
+                offset = group_summaries_offset,
+                line_color = group_summaries_line_color,
+                type = group_summaries,
+                ax = rawdata_axes,
+                method = group_summaries_method,
+                horizontal = horizontal,
                 **group_summaries_kwargs
                 )
 
     # Add the counts to the rawdata axes xticks.
     add_counts_to_ticks(
-            plot_data=plot_data, 
-            xvar=xvar, 
-            yvar=yvar, 
-            rawdata_axes=rawdata_axes, 
-            plot_kwargs=plot_kwargs,
+            plot_data = plot_data, 
+            xvar = xvar, 
+            yvar = yvar, 
+            rawdata_axes = rawdata_axes, 
+            plot_kwargs = plot_kwargs,
             flow = sankey_kwargs["flow"],
-            horizontal=horizontal,
+            horizontal = horizontal,
             )
 
-    # Add counts to prop plots
+    # Add counts to prop plots (embedded in the plot bars)
     if proportional and plot_kwargs['prop_sample_counts'] and sankey_kwargs["flow"]:
         add_counts_to_prop_plots(
-                        plot_data=plot_data, 
-                        xvar=xvar, 
-                        yvar=yvar, 
-                        rawdata_axes=rawdata_axes, 
-                        horizontal=horizontal,
+                        plot_data = plot_data, 
+                        xvar = xvar, 
+                        yvar = yvar, 
+                        rawdata_axes = rawdata_axes, 
+                        horizontal = horizontal,
                         is_paired = is_paired,
-                        prop_sample_counts_kwargs=prop_sample_counts_kwargs,
+                        prop_sample_counts_kwargs = prop_sample_counts_kwargs,
                         )
 
     # Plot effect sizes and bootstraps.
@@ -339,14 +341,15 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                    else all_plot_groups
                    )
 
+    # Extract ticks for contrast plot
     (ticks_to_skip, ticks_to_plot, 
      ticks_to_skip_contrast, ticks_to_start_twocol_sankey) = extract_contrast_plotting_ticks(
-                                                                                    is_paired=is_paired, 
-                                                                                    show_pairs=show_pairs, 
-                                                                                    two_col_sankey=two_col_sankey, 
-                                                                                    plot_groups=plot_groups,
-                                                                                    idx=idx,
-                                                                                    sankey_control_group=sankey_control_group if two_col_sankey else None,
+                                                                                    is_paired = is_paired, 
+                                                                                    show_pairs = show_pairs, 
+                                                                                    two_col_sankey = two_col_sankey, 
+                                                                                    plot_groups = plot_groups,
+                                                                                    idx = idx,
+                                                                                    sankey_control_group = sankey_control_group if two_col_sankey else None,
                                                                                     )
 
     # Adjust contrast tick locations to account for different plotting styles in horizontal plots
@@ -355,149 +358,154 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         ticks_to_plot = [x+0.25 for x in ticks_to_plot]
 
     # Plot the bootstraps, then the effect sizes and CIs.
+    es_paired_lines = False if float_contrast or not sankey_kwargs["flow"] else plot_kwargs["es_paired_lines"]
     (current_group, current_control, 
      current_effsize, contrast_xtick_labels) = effect_size_curve_plotter(
-                                                                    ticks_to_plot=ticks_to_plot, 
-                                                                    results=results, 
-                                                                    ci_type=ci_type, 
-                                                                    contrast_axes=contrast_axes, 
-                                                                    violinplot_kwargs=violinplot_kwargs, 
-                                                                    halfviolin_alpha=halfviolin_alpha, 
-                                                                    ytick_color=ytick_color, 
-                                                                    bootstraps_color_by_group=bootstraps_color_by_group,
-                                                                    plot_palette_contrast=plot_palette_contrast,
-                                                                    horizontal=horizontal,
-                                                                    es_marker_kwargs=es_marker_kwargs,
-                                                                    es_errorbar_kwargs=es_errorbar_kwargs
-                                                                    )
+                                                                ticks_to_plot = ticks_to_plot, 
+                                                                results = results, 
+                                                                ci_type = ci_type, 
+                                                                contrast_axes = contrast_axes, 
+                                                                violinplot_kwargs = violinplot_kwargs, 
+                                                                halfviolin_alpha = halfviolin_alpha, 
+                                                                ytick_color = ytick_color, 
+                                                                bootstraps_color_by_group = bootstraps_color_by_group,
+                                                                plot_palette_contrast = plot_palette_contrast,
+                                                                horizontal = horizontal,
+                                                                es_marker_kwargs = es_marker_kwargs,
+                                                                es_errorbar_kwargs = es_errorbar_kwargs,
+                                                                idx = idx,
+                                                                is_paired = is_paired,
+                                                                es_paired_lines = es_paired_lines,
+                                                                es_paired_lines_kwargs = es_paired_lines_kwargs,
+                                                                )
 
     # Plot mini-meta or delta-delta violin
     delta2_axes = None
     if show_mini_meta or show_delta2:
         delta2_axes, contrast_xtick_labels = plot_minimeta_or_deltadelta_violins(
-                                                                show_mini_meta=show_mini_meta, 
-                                                                effectsize_df=effectsize_df, 
-                                                                ci_type=ci_type, 
-                                                                rawdata_axes=rawdata_axes,
-                                                                contrast_axes=contrast_axes, 
-                                                                violinplot_kwargs=violinplot_kwargs, 
-                                                                halfviolin_alpha=halfviolin_alpha, 
-                                                                ytick_color=ytick_color, 
-                                                                contrast_xtick_labels=contrast_xtick_labels, 
-                                                                effect_size=effect_size,
-                                                                show_delta2=show_delta2, 
-                                                                plot_kwargs=plot_kwargs, 
-                                                                horizontal=horizontal,
-                                                                es_marker_kwargs=es_marker_kwargs,
-                                                                es_errorbar_kwargs=es_errorbar_kwargs
+                                                                show_mini_meta = show_mini_meta, 
+                                                                effectsize_df = effectsize_df, 
+                                                                ci_type = ci_type, 
+                                                                rawdata_axes = rawdata_axes,
+                                                                contrast_axes = contrast_axes, 
+                                                                violinplot_kwargs = violinplot_kwargs, 
+                                                                halfviolin_alpha = halfviolin_alpha, 
+                                                                ytick_color = ytick_color, 
+                                                                contrast_xtick_labels = contrast_xtick_labels, 
+                                                                effect_size = effect_size,
+                                                                show_delta2 = show_delta2, 
+                                                                plot_kwargs = plot_kwargs, 
+                                                                horizontal = horizontal,
+                                                                es_marker_kwargs = es_marker_kwargs,
+                                                                es_errorbar_kwargs = es_errorbar_kwargs
                                                                 )
     
     # Make sure the contrast_axes x-lims match the rawdata_axes xlims,
     # and add an extra violinplot tick for delta-delta plot.
     # Name is xaxis but it is actually y-axis for horizontal plots
     set_xaxis_ticks_and_lims(
-                        show_delta2=show_delta2, 
-                        show_mini_meta=show_mini_meta, 
-                        rawdata_axes=rawdata_axes, 
-                        contrast_axes=contrast_axes, 
-                        show_pairs=show_pairs, 
-                        float_contrast=float_contrast,
-                        ticks_to_skip=ticks_to_skip, 
-                        contrast_xtick_labels=contrast_xtick_labels, 
-                        plot_kwargs=plot_kwargs,
-                        proportional=proportional,
-                        horizontal=horizontal,
-                        )
+                    show_delta2 = show_delta2, 
+                    show_mini_meta = show_mini_meta, 
+                    rawdata_axes = rawdata_axes, 
+                    contrast_axes = contrast_axes, 
+                    show_pairs = show_pairs, 
+                    float_contrast = float_contrast,
+                    ticks_to_skip = ticks_to_skip, 
+                    contrast_xtick_labels = contrast_xtick_labels, 
+                    plot_kwargs = plot_kwargs,
+                    proportional = proportional,
+                    horizontal = horizontal,
+                    )
 
     # Plot aesthetic adjustments.
     if float_contrast and not horizontal:
         # For Gardner-Altman plots only.
         Gardner_Altman_Plot_Aesthetic_Adjustments(
-                                            effect_size_type=effect_size_type, 
-                                            plot_data=plot_data, 
-                                            xvar=xvar, 
-                                            yvar=yvar, 
-                                            current_control=current_control, 
-                                            current_group=current_group,
-                                            rawdata_axes=rawdata_axes, 
-                                            contrast_axes=contrast_axes, 
-                                            results=results, 
-                                            current_effsize=current_effsize, 
-                                            is_paired=is_paired, 
-                                            one_sankey=one_sankey,
-                                            reflines_kwargs=reflines_kwargs, 
-                                            redraw_axes_kwargs=redraw_axes_kwargs, 
+                                            effect_size_type = effect_size_type, 
+                                            plot_data = plot_data, 
+                                            xvar = xvar, 
+                                            yvar = yvar, 
+                                            current_control = current_control, 
+                                            current_group = current_group,
+                                            rawdata_axes = rawdata_axes, 
+                                            contrast_axes = contrast_axes, 
+                                            results = results, 
+                                            current_effsize = current_effsize, 
+                                            is_paired = is_paired, 
+                                            one_sankey = one_sankey,
+                                            reflines_kwargs = reflines_kwargs, 
+                                            redraw_axes_kwargs = redraw_axes_kwargs, 
                                             )
     else:
         # For Cumming Plots only.
         skip_redraw_lines = True if plot_kwargs["gridkey_rows"] is not None else False
         Cumming_Plot_Aesthetic_Adjustments(
-                                    contrast_axes=contrast_axes, 
-                                    reflines_kwargs=reflines_kwargs, 
-                                    is_paired=is_paired, 
-                                    show_pairs=show_pairs, 
-                                    two_col_sankey=two_col_sankey, 
-                                    idx=idx, 
-                                    ticks_to_start_twocol_sankey=ticks_to_start_twocol_sankey,
-                                    proportional=proportional, 
-                                    ticks_to_skip=ticks_to_skip, 
-                                    temp_idx=temp_idx if is_paired == "baseline" and show_pairs else None, 
-                                    rawdata_axes=rawdata_axes, 
-                                    redraw_axes_kwargs=redraw_axes_kwargs,
-                                    ticks_to_skip_contrast=ticks_to_skip_contrast,
+                                    contrast_axes = contrast_axes, 
+                                    reflines_kwargs = reflines_kwargs, 
+                                    is_paired = is_paired, 
+                                    show_pairs = show_pairs, 
+                                    two_col_sankey = two_col_sankey, 
+                                    idx = idx, 
+                                    ticks_to_start_twocol_sankey = ticks_to_start_twocol_sankey,
+                                    proportional = proportional, 
+                                    ticks_to_skip = ticks_to_skip, 
+                                    temp_idx = temp_idx if is_paired == "baseline" and show_pairs else None, 
+                                    rawdata_axes = rawdata_axes, 
+                                    redraw_axes_kwargs = redraw_axes_kwargs,
+                                    ticks_to_skip_contrast = ticks_to_skip_contrast,
                                     show_delta2 = show_delta2,
                                     show_mini_meta = show_mini_meta,
-                                    horizontal=horizontal,
-                                    skip_redraw_lines=skip_redraw_lines,
+                                    horizontal = horizontal,
+                                    skip_redraw_lines = skip_redraw_lines,
                                     )
     
     # Add the dependent axes spines back in.
     Redraw_Spines(
-        rawdata_axes=rawdata_axes, 
-        contrast_axes=contrast_axes, 
-        redraw_axes_kwargs=redraw_axes_kwargs, 
-        float_contrast=float_contrast, 
-        horizontal=horizontal,
-        show_delta2=show_delta2, 
-        delta2_axes=delta2_axes
+        rawdata_axes = rawdata_axes, 
+        contrast_axes = contrast_axes, 
+        redraw_axes_kwargs = redraw_axes_kwargs, 
+        float_contrast = float_contrast, 
+        horizontal = horizontal,
+        show_delta2 = show_delta2, 
+        delta2_axes = delta2_axes
         )
 
-    # Swarm bars WIP
+    # Swarm bars
     swarm_bars = plot_kwargs["swarm_bars"]
     if swarm_bars and not proportional and not horizontal:
         swarm_bars_plotter(
-                    plot_data=plot_data, 
-                    xvar=xvar, 
-                    yvar=yvar, 
-                    ax=rawdata_axes, 
-                    swarm_bars_kwargs=swarm_bars_kwargs, 
-                    color_col=color_col, 
-                    plot_palette_raw=plot_palette_raw,
-                    is_paired=is_paired,
+                    plot_data = plot_data, 
+                    xvar = xvar, 
+                    yvar = yvar, 
+                    ax = rawdata_axes, 
+                    swarm_bars_kwargs = swarm_bars_kwargs, 
+                    color_col = color_col, 
+                    plot_palette_raw = plot_palette_raw,
+                    is_paired = is_paired,
                     idx = idx,
                     )
 
-    # Contrast bars WIP
+    # Contrast bars
     contrast_bars = plot_kwargs["contrast_bars"]
     if contrast_bars:
         contrast_bars_plotter(
-                        results=results, 
-                        ax_to_plot=contrast_axes, 
-                        swarm_plot_ax=rawdata_axes,
-                        ticks_to_plot=ticks_to_plot, 
-                        contrast_bars_kwargs=contrast_bars_kwargs, 
-                        color_col=color_col, 
-                        plot_palette_raw=plot_palette_raw, 
-                        show_mini_meta=show_mini_meta, 
-                        mini_meta_delta=effectsize_df.mini_meta_delta if show_mini_meta else None, 
-                        show_delta2=show_delta2, 
-                        delta_delta=effectsize_df.delta_delta if show_delta2 else None, 
-                        is_paired=is_paired,
-                        horizontal=horizontal,
-                        idx=idx
+                        results = results, 
+                        ax_to_plot = contrast_axes, 
+                        swarm_plot_ax = rawdata_axes,
+                        ticks_to_plot = ticks_to_plot, 
+                        contrast_bars_kwargs = contrast_bars_kwargs, 
+                        color_col = color_col, 
+                        plot_palette_raw = plot_palette_raw, 
+                        show_mini_meta = show_mini_meta, 
+                        mini_meta_delta = effectsize_df.mini_meta_delta if show_mini_meta else None, 
+                        show_delta2 = show_delta2, 
+                        delta_delta = effectsize_df.delta_delta if show_delta2 else None, 
+                        is_paired = is_paired,
+                        horizontal = horizontal,
+                        idx = idx
                         )
 
-    # Summary bars WIP
+    # Summary bars
     summary_bars = plot_kwargs["summary_bars"]
     if summary_bars is not None:
         summary_bars_plotter(
@@ -514,7 +522,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                         is_paired = is_paired,
                         horizontal = horizontal,
                         )
-    # Delta text WIP
+    # Delta text
     delta_text = plot_kwargs["delta_text"]
     if delta_text and not horizontal: 
         delta_text_plotter(
@@ -582,16 +590,16 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     if bootstraps_color_by_group is False and not effectsize_df.delta2:
         rawdata_axes.legend().set_visible(False)
         show_legend(
-            legend_labels=legend_labels, 
-            legend_handles=legend_handles, 
-            rawdata_axes=rawdata_axes, 
-            contrast_axes=contrast_axes, 
-            table_axes=table_axes,
-            float_contrast=float_contrast, 
-            show_pairs=show_pairs, 
-            horizontal=horizontal,
-            legend_kwargs=legend_kwargs,
-            table_kwargs=table_kwargs
+            legend_labels = legend_labels, 
+            legend_handles = legend_handles, 
+            rawdata_axes = rawdata_axes, 
+            contrast_axes = contrast_axes, 
+            table_axes = table_axes,
+            float_contrast = float_contrast, 
+            show_pairs = show_pairs, 
+            horizontal = horizontal,
+            legend_kwargs = legend_kwargs,
+            table_kwargs = table_kwargs
             )
 
     # Make sure no stray ticks appear!

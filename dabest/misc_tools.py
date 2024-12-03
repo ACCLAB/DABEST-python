@@ -93,13 +93,13 @@ def get_unique_categories(names):
         # For dict_keys and other iterables
         return np.unique(list(names))
 
-def get_params(effectsize_df, plot_kwargs):
+def get_params(effectsize_df: object, plot_kwargs: dict):
     """
-    Extracts the parameters from the `effectsize_df` and `plot_kwargs` objects for use in the plotter function.
+    Extracts parameters from the `effectsize_df` and `plot_kwargs` objects for use in the plotter function.
     
     Parameters
     ----------
-    effectsize_df : object (Dataframe)
+    effectsize_df : object
         A `dabest` EffectSizeDataFrame object.
     plot_kwargs : dict
         Kwargs passed to the plot function.
@@ -119,7 +119,6 @@ def get_params(effectsize_df, plot_kwargs):
     x1_level = dabest_obj.x1_level
     experiment_label = dabest_obj.experiment_label
     
-
     if effect_size not in ["mean_diff", "delta_g"] or not delta2:
         show_delta2 = False
     else:
@@ -352,7 +351,8 @@ def get_kwargs(plot_kwargs, ytick_color):
     default_summary_bars_kwargs = {
                     "span_ax": False,
                     "color": None, 
-                    "alpha": 0.15
+                    "alpha": 0.15,
+                    "zorder":-3
     }
     if plot_kwargs["summary_bars_kwargs"] is None:
         summary_bars_kwargs = default_summary_bars_kwargs
@@ -362,7 +362,8 @@ def get_kwargs(plot_kwargs, ytick_color):
     # Swarm bars kwargs.
     default_swarm_bars_kwargs = {
                     "color": None, 
-                    "alpha": 0.3
+                    "alpha": 0.3,
+                    "zorder":-3
     }
     if plot_kwargs["swarm_bars_kwargs"] is None:
         swarm_bars_kwargs = default_swarm_bars_kwargs
@@ -372,7 +373,8 @@ def get_kwargs(plot_kwargs, ytick_color):
     # Contrast bars kwargs.
     default_contrast_bars_kwargs = {
                     "color": None, 
-                    "alpha": 0.3
+                    "alpha": 0.3,
+                    "zorder":-3
     }
     if plot_kwargs["contrast_bars_kwargs"] is None:
         contrast_bars_kwargs = default_contrast_bars_kwargs
@@ -447,11 +449,25 @@ def get_kwargs(plot_kwargs, ytick_color):
     else:
         prop_sample_counts_kwargs = merge_two_dicts(default_prop_sample_counts_kwargs, plot_kwargs['prop_sample_counts_kwargs'])
 
+
+    # RM Lines kwargs
+    default_es_paired_lines_kwargs = {
+        "linestyle": "-",
+        "linewidth": 2,
+        "zorder": -2,
+        "color": 'dimgray',
+        "alpha": 1
+    }
+    if plot_kwargs["es_paired_lines_kwargs"] is None:
+        es_paired_lines_kwargs = default_es_paired_lines_kwargs
+    else:
+        es_paired_lines_kwargs = merge_two_dicts(default_es_paired_lines_kwargs, plot_kwargs["es_paired_lines_kwargs"])
+
     # Return the kwargs.
     return (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs, 
             reflines_kwargs, legend_kwargs, group_summaries_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
             delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs,
-            es_marker_kwargs, es_errorbar_kwargs, prop_sample_counts_kwargs)
+            es_marker_kwargs, es_errorbar_kwargs, prop_sample_counts_kwargs, es_paired_lines_kwargs)
 
 
 def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_groups):
@@ -485,6 +501,7 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_gr
         bootstraps_color_by_group = False
     if show_pairs:
         bootstraps_color_by_group = False
+
     # Handle the color palette.
     filled = True
     empty_circle = plot_kwargs["empty_circle"]

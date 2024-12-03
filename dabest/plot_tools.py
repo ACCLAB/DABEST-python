@@ -949,14 +949,14 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
                 ax_to_plot.add_patch(mpatches.Rectangle(
                     (summary_ci_low, starting_location),
                     summary_ci_high-summary_ci_low, summary_ymin+1, 
-                    zorder=-2, color=summary_color, 
+                    color=summary_color, 
                     **summary_bars_kwargs)
                     )
             else:
                 ax_to_plot.add_patch(mpatches.Rectangle(
                     (starting_location, summary_ci_low),
                     summary_xmax+1, summary_ci_high-summary_ci_low, 
-                    zorder=-2, color=summary_color, 
+                    color=summary_color, 
                     **summary_bars_kwargs)
                     )
                 
@@ -1023,13 +1023,11 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
                 if type(contrast_bars_colors) == list 
                 else unpacked_idx[int(contrast_bars_x)]
             )
-            ax_to_plot.add_patch(mpatches.Rectangle((0,contrast_bars_x-0.5),contrast_bars_y, 0.5, zorder=-10, color=contrast_bars_colors[idx_selector], **contrast_bars_kwargs))
+            ax_to_plot.add_patch(mpatches.Rectangle((0,contrast_bars_x-0.5),contrast_bars_y, 0.5, color=contrast_bars_colors[idx_selector], **contrast_bars_kwargs))
 
-        if show_mini_meta:
-            ax_to_plot.add_patch(mpatches.Rectangle((0, max(swarm_plot_ax.get_yticks())-0.5), mini_meta_delta.difference, 0.5, zorder=-10, color='black', **contrast_bars_kwargs))
-
-        if show_delta2:
-            ax_to_plot.add_patch(mpatches.Rectangle((0, max(swarm_plot_ax.get_yticks())-0.5), delta_delta.difference, 0.5, zorder=-10, color='black', **contrast_bars_kwargs))
+        if show_mini_meta or show_delta2:
+            diff = mini_meta_delta.difference if show_mini_meta else delta_delta.difference
+            ax_to_plot.add_patch(mpatches.Rectangle((0, max(swarm_plot_ax.get_yticks())-0.5), diff, 0.5, color='black', **contrast_bars_kwargs))
 
     else:
         for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
@@ -1038,13 +1036,11 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
                 if type(contrast_bars_colors) == list 
                 else unpacked_idx[int(contrast_bars_x)]
             )
-            ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25,0),0.5, contrast_bars_y, zorder=-1, color=contrast_bars_colors[idx_selector], **contrast_bars_kwargs))
+            ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25,0),0.5, contrast_bars_y, color=contrast_bars_colors[idx_selector], **contrast_bars_kwargs))
 
-        if show_mini_meta:
-            ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25,0),0.5, mini_meta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
-
-        if show_delta2:
-            ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25,0),0.5, delta_delta.difference, zorder=-1, color='black', **contrast_bars_kwargs))
+        if show_mini_meta or show_delta2:
+            diff = mini_meta_delta.difference if show_mini_meta else delta_delta.difference
+            ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25,0),0.5, diff, color='black', **contrast_bars_kwargs))
 
     ax_to_plot.set_xlim(og_xlim)
     ax_to_plot.set_ylim(og_ylim)
@@ -1103,7 +1099,7 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
             else unpacked_idx[swarm_bars_x]
             )
         ax.add_patch(mpatches.Rectangle((swarm_bars_x-0.25,0), 0.5, swarm_bars_y, 
-                                        zorder=-1,color=swarm_bars_colors[idx_selector],**swarm_bars_kwargs))
+                                        color=swarm_bars_colors[idx_selector],**swarm_bars_kwargs))
 
     ax.set_xlim(og_xlim)
     ax.set_ylim(og_ylim)
@@ -1344,15 +1340,12 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
     """
     # Jitter Kwargs 
     # With help from devMJBL
-    jitter = slopegraph_kwargs["jitter"]
+    jitter = slopegraph_kwargs.pop("jitter")
     if jitter >= 1:
         err0 = "Jitter value is too high. Defaulting to 1."
         warnings.warn(err0)
         jitter = 1
-    rng = np.random.default_rng(slopegraph_kwargs["jitter_seed"])
-    for key in ["jitter", "jitter_seed"]:
-        if key in slopegraph_kwargs:
-            slopegraph_kwargs.pop(key)
+    rng = np.random.default_rng(slopegraph_kwargs.pop("jitter_seed"))
 
     # Pivot the long (melted) data.
     if color_col is None:
@@ -1539,7 +1532,8 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
 
 def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, violinplot_kwargs, halfviolin_alpha, 
                               ytick_color, bootstraps_color_by_group, plot_palette_contrast,
-                              horizontal, es_marker_kwargs, es_errorbar_kwargs):
+                              horizontal, es_marker_kwargs, es_errorbar_kwargs,
+                              idx, is_paired, es_paired_lines, es_paired_lines_kwargs):
     """
     Add effect size curves to the contrast plot.
 
@@ -1571,6 +1565,14 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
         Keyword arguments for the effectsize marker.
     es_errorbar_kwargs: dict
         Keyword arguments for the effectsize errorbar.
+    idx : list
+        List of indices of the raw groups.
+    is_paired : bool
+        Whether the data is paired.
+    es_paired_lines : bool
+        Whether to add lines for repeated measures data.
+    es_paired_lines_kwargs : dict
+        Keyword arguments for the repeated measures lines.
     """
 
     # Plot the curves
@@ -1618,7 +1620,6 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
         contrast_axes.plot(
             effsize_x,
             effsize_y,
-            # color=ytick_color,
             **es_marker_kwargs
         )
 
@@ -1626,13 +1627,49 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
         contrast_axes.plot(
             ci_x,
             ci_y,
-            # color=ytick_color,
             **es_errorbar_kwargs
         )
 
         contrast_xtick_labels.append(
             "{}\nminus\n{}".format(current_group, current_control)
         )
+
+    # Add lines for repeated measures data
+    if is_paired and es_paired_lines:
+        temp_num = 0
+        lines_to_plot_list = []
+
+        for group in idx:
+            new_group = []
+            if len(group) >= 2:
+                new_group.append(temp_num)
+                for i in range(1, len(group)):
+                    new_group.append(temp_num+i)
+            temp_num += len(group)
+            lines_to_plot_list.append(new_group)
+
+        for group in lines_to_plot_list:
+            if len(group) > 0:
+                mean_diffs_for_lines = []
+                for ticks in group:
+                    if ticks in ticks_to_plot:
+                        mean_diffs_for_lines.append(results.loc[ticks_to_plot.index(ticks)]["difference"])
+                    else:
+                        mean_diffs_for_lines.append(int(0))
+
+                if horizontal:
+                    contrast_axes.plot(
+                        mean_diffs_for_lines,
+                        group,
+                        **es_paired_lines_kwargs
+                    )
+                else:
+                    contrast_axes.plot(
+                        group, 
+                        mean_diffs_for_lines,
+                        **es_paired_lines_kwargs
+                    )
+
     return current_group, current_control, current_effsize, contrast_xtick_labels
 
 def gridkey_plotter(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes, contrast_axes, 

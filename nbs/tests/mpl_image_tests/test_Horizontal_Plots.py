@@ -879,3 +879,16 @@ def test_424_repeated_measures_baseline_propdiff_show_counts():
 def test_425_repeated_measures_baseline_propdiff_show_counts_and_kwargs():
     return repeated_measures_baseline_prop.mean_diff.plot(horizontal=True,
             prop_sample_counts=True, prop_sample_counts_kwargs={"color": "red", "fontsize": 12, "fontweight": "bold"})
+
+# Effect size paired lines
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_426_repeatedmeasures_meandiff_show_es_paired_lines():
+    return repeated_measures.mean_diff.plot(horizontal=True, es_paired_lines=True);
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_427_repeatedmeasures_meandiff_hide_es_paired_lines():
+    return repeated_measures.mean_diff.plot(horizontal=True, es_paired_lines=False);
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_428_multigroups_paired_meandiff_es_paired_lines_kwargs():
+    return multi_groups_paired_baseline.mean_diff.plot(horizontal=True, es_paired_lines=True, es_paired_lines_kwargs={'color':'red', 'linestyle': '--', 'linewidth': 2, 'alpha': 0.5});

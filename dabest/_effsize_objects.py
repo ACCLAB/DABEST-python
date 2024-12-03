@@ -1039,7 +1039,10 @@ class EffectSizeDataFrame(object):
         es_errorbar_kwargs=None,
 
         prop_sample_counts=False,
-        prop_sample_counts_kwargs=None
+        prop_sample_counts_kwargs=None,
+
+        es_paired_lines=True,
+        es_paired_lines_kwargs=None,
     ):
         """
         Creates an estimation plot for the effect size of interest.
@@ -1193,17 +1196,17 @@ class EffectSizeDataFrame(object):
         contrast_bars_kwargs : dict, default None
             Pass relevant keyword arguments to the contrast bars. Pass any keyword arguments accepted by 
             matplotlib.patches.Rectangle here, as a string. If None, the following keywords are passed:
-            {"color": None, "alpha": 0.3}
+            {"color": None, "alpha": 0.3, "zorder":-3}
         swarm_bars_kwargs : dict, default None
             Pass relevant keyword arguments to the swarm bars. Pass any keyword arguments accepted by 
             matplotlib.patches.Rectangle here, as a string. If None, the following keywords are passed:
-            {"color": None, "alpha": 0.3}
+            {"color": None, "alpha": 0.3, "zorder":-3}
 
         summary_bars : list, default None
             Pass a list of indices of the contrast objects to have summary bars displayed on the plot.
             For example, [0,1] will show summary bars for the first two contrast objects.
         summary_bars_kwargs: dict, default None
-            If None, the following keywords are passed: {"span_ax": False, "color": None, "alpha": 0.15}
+            If None, the following keywords are passed: {"span_ax": False, "color": None, "alpha": 0.15, "zorder":-3}
         delta_text : boolean, default True
             Whether or not to display the text deltas.
         delta_text_kwargs : dict, default None
@@ -1251,7 +1254,13 @@ class EffectSizeDataFrame(object):
             Show the sample counts for each group in proportional plots
         prop_sample_counts_kwargs: dict, default None
             Pass relevant keyword arguments. If None, the following keywords are passed:
-            {'color': 'k', 'zorder': 5, 'ha': 'center', 'va': 'center'}
+            {'color': 'k', 'zorder': 5, 'ha': 'center', 'va': 'center'},
+
+        es_paired_lines: bool, default True
+            Whether or not to add lines to connect the effect size curves in paired plots.
+        es_paired_lines_kwargs: dict, default None
+            Pass relevant plot keyword arguments. If None, the following keywords are passed:
+            {"linestyle": "-", "linewidth": 2, "zorder": -2, "color": 'dimgray', "alpha": 1}
         
 
         Returns

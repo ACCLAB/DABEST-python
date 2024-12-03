@@ -120,6 +120,11 @@ multi_2group_paired = load(df, idx=(("Control 1", "Test 1"),
 
 shared_control = load(df, idx=("Control 1", "Test 1", "Test 2", "Test 3", "Test 4", "Test 5", "Test 6"))
 
+repeated_measures = load(df, idx=("Control 1", "Test 1", "Test 2", "Test 3", "Test 4", "Test 5", "Test 6"), paired='baseline', id_col='ID')
+
+multi_groups_paired_baseline = load(df,idx=(("Control 1","Test 1", "Test 2"),("Control 2", "Test 3"),("Control 3", "Test 4", "Test 5", "Test 6"),),
+                                    paired='baseline', id_col='ID')
+
 multi_groups = load(df, idx=(("Control 1", "Test 1",), ("Control 2", "Test 2", "Test 3"),
                               ("Control 3", "Test 4", "Test 5", "Test 6"),),)
 
@@ -288,3 +293,16 @@ def test_230_delta_dot_hide():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_231_delta_dot_kwargs():
     return multi_2group_paired.mean_diff.plot(delta_dot_kwargs={"color":'red', "alpha":0.1, 'zorder': 2, 'size': 5, 'side': 'left'});
+
+# Effect size paired lines
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_232_repeatedmeasures_meandiff_show_es_paired_lines():
+    return repeated_measures.mean_diff.plot(es_paired_lines=True);
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_233_repeatedmeasures_meandiff_hide_es_paired_lines():
+    return repeated_measures.mean_diff.plot(es_paired_lines=False);
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_234_multigroups_paired_meandiff_es_paired_lines_kwargs():
+    return multi_groups_paired_baseline.mean_diff.plot(es_paired_lines=True, es_paired_lines_kwargs={'color':'red', 'linestyle': '--', 'linewidth': 2, 'alpha': 0.5});
