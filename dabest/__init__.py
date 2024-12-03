@@ -4,4 +4,11 @@ from ._stats_tools import confint_2group_diff as ci_2g
 from ._effsize_objects import TwoGroupsEffectSize, PermutationTest
 from ._dabest_object import Dabest
 
+
+import os
+if os.environ.get('SKIP_NUMBA_COMPILE') != '1':
+    from ._stats_tools.precompile import precompile_all, _NUMBA_COMPILED
+    if not _NUMBA_COMPILED:
+        precompile_all()
+
 __version__ = "2024.03.30"
