@@ -479,7 +479,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                     swarm_bars_kwargs = swarm_bars_kwargs, 
                     color_col = color_col, 
                     plot_palette_raw = plot_palette_raw,
-                    is_paired = is_paired,
+                    show_pairs = show_pairs,
                     idx = idx,
                     )
 
@@ -498,7 +498,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                         mini_meta_delta = effectsize_df.mini_meta_delta if show_mini_meta else None, 
                         show_delta2 = show_delta2, 
                         delta_delta = effectsize_df.delta_delta if show_delta2 else None, 
-                        is_paired = is_paired,
+                        show_pairs = show_pairs,
                         horizontal = horizontal,
                         idx = idx
                         )
@@ -517,7 +517,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                         color_col = color_col,
                         plot_palette_raw = plot_palette_raw, 
                         proportional = proportional, 
-                        is_paired = is_paired,
+                        show_pairs = show_pairs,
                         horizontal = horizontal,
                         )
     # Delta text

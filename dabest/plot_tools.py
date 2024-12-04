@@ -875,7 +875,7 @@ def sankeydiag(
 def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object,
                  float_contrast: bool,summary_bars_kwargs: dict, ci_type: str,
                  ticks_to_plot: list, color_col: str, plot_palette_raw: dict, 
-                 proportional: bool, is_paired: bool, horizontal: bool):
+                 proportional: bool, show_pairs: bool, horizontal: bool):
     """
     Add summary bars to the contrast plot. Currently only functional for Vertical plots.
 
@@ -901,8 +901,8 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
         Dictionary of colors used in the plot.
     proportional : bool
         Whether the data is proportional.
-    is_paired : bool
-        Whether the data is paired.
+    show_pairs : bool
+        Whether the data is paired and shown in pairs.
     horizontal : bool
         Whether the plot is horizontal.
     """
@@ -924,7 +924,7 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
             [summary_bars_kwargs.get('color')]*int(max(ticks_to_plot)+1)
             if summary_bars_kwargs.get('color') is not None
             else ['black']*int(max(ticks_to_plot)+1)
-            if color_col is not None or (proportional and is_paired) or is_paired 
+            if color_col is not None or (proportional and show_pairs) or show_pairs 
             else list(plot_palette_raw.values())
         )
         summary_bars_kwargs.pop('color')
@@ -963,7 +963,7 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
 def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: object,
                           ticks_to_plot: list, contrast_bars_kwargs: dict, color_col: str, 
                           plot_palette_raw: dict, show_mini_meta: bool, mini_meta_delta: object, 
-                          show_delta2: bool, delta_delta: object, is_paired: bool,
+                          show_delta2: bool, delta_delta: object, show_pairs: bool,
                           horizontal: bool, idx: list):
     """
     Add contrast bars to the contrast plot.
@@ -992,8 +992,8 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
         Whether to show the delta-delta.
     delta_delta : object
         delta-delta object.
-    is_paired : bool
-        Whether the data is paired.
+    show_pairs : bool
+        Whether the data is paired and shown in pairs.
     horizontal : bool
         Whether the plot is horizontal.
     idx : list
@@ -1012,13 +1012,13 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
         [contrast_bars_kwargs.get('color')] * int(max(ticks_to_plot) + 1) 
         if contrast_bars_kwargs.get('color') is not None 
         else ['black'] * int(max(ticks_to_plot) + 1) 
-        if color_col is not None or is_paired 
+        if color_col is not None or show_pairs
         else plot_palette_raw
     )
     contrast_bars_kwargs.pop('color')
 
     # alpha
-    contrast_bars_kwargs['alpha'] = contrast_bars_kwargs.get('alpha', 0.15 if color_col is not None or is_paired else 0.25)
+    contrast_bars_kwargs['alpha'] = contrast_bars_kwargs.get('alpha', 0.15 if color_col is not None or show_pairs else 0.25)
 
     for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
         idx_selector = (
@@ -1043,7 +1043,7 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
 
 def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
                        swarm_bars_kwargs: dict, color_col: str, plot_palette_raw: dict, 
-                       is_paired: bool, idx: list):
+                       show_pairs: bool, idx: list):
     """
     Add bars to the raw data plot. Currently only for vertical plots.
 
@@ -1063,8 +1063,8 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
         Column name of the color column.
     plot_palette_raw : dict
         Dictionary of colors used in the plot.
-    is_paired : bool
-        Whether the data is paired.
+    show_pairs : bool
+        Whether the data is paired and shown in pairs.
     idx : list
         List of indices of the raw groups.
     """
@@ -1084,13 +1084,13 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
         [swarm_bars_kwargs.get('color')] * (len(swarm_bars_order) + 1) 
         if swarm_bars_kwargs.get('color') is not None 
         else ['black']*(len(swarm_bars_order)+1)
-        if color_col is not None or is_paired
+        if color_col is not None or show_pairs
         else plot_palette_raw
         )
     swarm_bars_kwargs.pop('color')
 
     # alpha
-    swarm_bars_kwargs['alpha'] = swarm_bars_kwargs.get('alpha', 0.15 if color_col is not None or is_paired else 0.25)
+    swarm_bars_kwargs['alpha'] = swarm_bars_kwargs.get('alpha', 0.15 if color_col is not None or show_pairs else 0.25)
 
     for swarm_bars_x,swarm_bars_y in zip(np.arange(0,len(swarm_bars_order)+1,1), swarm_means):
         idx_selector = (
