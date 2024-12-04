@@ -362,7 +362,6 @@ def get_kwargs(plot_kwargs, ytick_color):
     # Swarm bars kwargs.
     default_swarm_bars_kwargs = {
                     "color": None, 
-                    "alpha": 0.3,
                     "zorder":-3
     }
     if plot_kwargs["swarm_bars_kwargs"] is None:
@@ -373,7 +372,6 @@ def get_kwargs(plot_kwargs, ytick_color):
     # Contrast bars kwargs.
     default_contrast_bars_kwargs = {
                     "color": None, 
-                    "alpha": 0.3,
                     "zorder":-3
     }
     if plot_kwargs["contrast_bars_kwargs"] is None:

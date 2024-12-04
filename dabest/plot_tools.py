@@ -1007,6 +1007,7 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
 
     unpacked_idx = [element for innerList in idx for element in innerList] 
 
+    # Colors
     contrast_bars_colors = (
         [contrast_bars_kwargs.get('color')] * int(max(ticks_to_plot) + 1) 
         if contrast_bars_kwargs.get('color') is not None 
@@ -1015,6 +1016,9 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
         else plot_palette_raw
     )
     contrast_bars_kwargs.pop('color')
+
+    # alpha
+    contrast_bars_kwargs['alpha'] = contrast_bars_kwargs.get('alpha', 0.15 if color_col is not None or is_paired else 0.25)
 
     for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
         idx_selector = (
@@ -1032,7 +1036,7 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
         if horizontal:
             ax_to_plot.add_patch(mpatches.Rectangle((0, max(swarm_plot_ax.get_yticks())-0.5), diff, 0.5, color='black', **contrast_bars_kwargs))
         else:
-            ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25,0),0.5, diff, color='black', **contrast_bars_kwargs))
+            ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25, 0), 0.5, diff, color='black', **contrast_bars_kwargs))
 
     ax_to_plot.set_xlim(og_xlim)
     ax_to_plot.set_ylim(og_ylim)
@@ -1075,6 +1079,7 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
 
     unpacked_idx = [element for innerList in idx for element in innerList] 
 
+    # Colors
     swarm_bars_colors = (
         [swarm_bars_kwargs.get('color')] * (len(swarm_bars_order) + 1) 
         if swarm_bars_kwargs.get('color') is not None 
@@ -1083,6 +1088,9 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
         else plot_palette_raw
         )
     swarm_bars_kwargs.pop('color')
+
+    # alpha
+    swarm_bars_kwargs['alpha'] = swarm_bars_kwargs.get('alpha', 0.15 if color_col is not None or is_paired else 0.25)
 
     for swarm_bars_x,swarm_bars_y in zip(np.arange(0,len(swarm_bars_order)+1,1), swarm_means):
         idx_selector = (
