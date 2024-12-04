@@ -726,7 +726,7 @@ def test_392_Empty_Circle():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_393_Horizontal_Table_Kwargs():
     return multi_2group_unpaired.mean_diff.plot(horizontal=True, horizontal_table_kwargs={'color': 'red', 'alpha': 0.5, 'text_color': 'white',
-                                                                       'text_units':'mm', 'label': 'delta mm'});
+                                                                       'text_units':'mm', 'label': 'delta mm', 'control_marker': 'o',});
 
 # Gridkey
 # Two Group

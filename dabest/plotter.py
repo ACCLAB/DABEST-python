@@ -350,7 +350,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                                                                                     plot_groups = plot_groups,
                                                                                     idx = idx,
                                                                                     sankey_control_group = sankey_control_group if two_col_sankey else None,
-                                                                                    )
+                                                                                    )                                                                  
 
     # Adjust contrast tick locations to account for different plotting styles in horizontal plots
     table_axes_ticks_to_plot = ticks_to_plot
@@ -551,6 +551,8 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                             show_mini_meta = show_mini_meta,
                             show_delta2 = show_delta2,
                             table_kwargs = table_kwargs,
+
+                            ticks_to_skip = ticks_to_skip
                             )
 
     # Gridkey

@@ -2130,7 +2130,9 @@ def table_for_horizontal_plots(
         ticks_to_plot: list, 
         show_mini_meta: bool, 
         show_delta2: bool, 
-        table_kwargs: dict
+        table_kwargs: dict,
+
+        ticks_to_skip: list
     ):
     """
     Add table axes for showing the deltas for horizontal plots.
@@ -2151,6 +2153,9 @@ def table_for_horizontal_plots(
         Whether to show the delta-delta.
     table_kwargs : dict
         Keyword arguments for the table.
+
+    ticks_to_skip:  list
+        List of ticks to skip in the table.
     """
 
     table_color = table_kwargs['color']
@@ -2158,7 +2163,7 @@ def table_for_horizontal_plots(
     table_font_size = table_kwargs['fontsize'] if table_kwargs['text_units'] == None else table_kwargs['fontsize']-2
     table_text_color = table_kwargs['text_color']
     text_units = '' if table_kwargs['text_units'] == None else table_kwargs['text_units']
-    table_gap_dashes = table_kwargs['paired_gap_dashes']   # Currently unused
+    control_marker = table_kwargs['control_marker']   # Currently unused
     fontsize_label = table_kwargs['fontsize_label']
     label = table_kwargs['label']
 
@@ -2179,19 +2184,12 @@ def table_for_horizontal_plots(
     else:
         new_ticks = ticks_to_plot.copy()
     for i,loc in zip(tab.index, new_ticks):
-        ax.text(0.5, loc, "{:+.2f}".format(tab.iloc[i,0])+text_units,ha="center", va="center", color=table_text_color,size=table_font_size)
+        ax.text(0.5, loc, "{:+.2f}".format(tab.iloc[i,0])+text_units, ha="center", va="center", color=table_text_color, size=table_font_size)
 
-    # ### Plot the dashes
-    # if show_mini_meta or show_delta2:
-    #     no_contrast_positions = list(set([int(x-0.5) for x in ticks_to_plot[:-1]]) ^ set(np.arange(2,Num_Exps+2,1)))
-    # else:
-    #     no_contrast_positions = list(set([int(x-0.5) for x in ypos]) ^ set(np.arange(0,Num_Exps,1)))
-
-    # if table_gap_dashes or not is_paired or multi_paired_control:
-    #     if not (mini_meta or delta2):
-    #         for i in no_contrast_positions:
-    #             rawdata_axes.table_axes.text(0.5, i+1, "—",ha="center", va="center", color=table_text_color,size=table_font_size)
-
+    # Plot the dashes
+    if control_marker is not None:
+        for loc in ticks_to_skip:
+            ax.text(0.5, loc, control_marker, ha="center", va="center", color=table_text_color, size=table_font_size)
 
     ### Parameters for table
     ax.axvspan(0, 1, facecolor=table_color, alpha=table_alpha)  #### Plot the background color

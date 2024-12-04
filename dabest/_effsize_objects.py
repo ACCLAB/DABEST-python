@@ -1227,7 +1227,7 @@ class EffectSizeDataFrame(object):
         horizontal_table_kwargs : dict, default None
             Pass relevant keyword arguments to the horizontal table. If None, the following keywords are passed:
             {'show: True, 'color' : 'yellow', 'alpha' :0.2, 'fontsize' : 12, 'text_color' : 'black', 
-            'text_units' : None, 'paired_gap_dashes' : False, 'fontsize_label': 12, 'label': 'Δ'}
+            'text_units' : None, 'control_marker' : '-', 'fontsize_label': 12, 'label': 'Δ'}
             
         gridkey_rows : list, default None
             Provide a list of row labels for the gridkey. The supplied idx is
