@@ -470,7 +470,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
 
     # Swarm bars
     swarm_bars = plot_kwargs["swarm_bars"]
-    if swarm_bars and not proportional and not horizontal:
+    if swarm_bars and not proportional and not horizontal: #Currently not supporting swarm bars for horizontal plots (looks weird)
         swarm_bars_plotter(
                     plot_data = plot_data, 
                     xvar = xvar, 
@@ -531,7 +531,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                     delta_text_kwargs = delta_text_kwargs, 
                     color_col = color_col, 
                     plot_palette_raw = plot_palette_raw, 
-                    is_paired = is_paired,
+                    show_pairs = show_pairs,
                     proportional = proportional, 
                     float_contrast = float_contrast, 
                     show_mini_meta = show_mini_meta, 
@@ -553,7 +553,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                             table_kwargs = table_kwargs,
                             )
 
-    # GRIDKEY
+    # Gridkey
     gridkey_rows = plot_kwargs["gridkey_rows"]
     if gridkey_rows is not None:
         gridkey_plotter(
@@ -579,7 +579,6 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                 gridkey_kwargs = gridkey_kwargs,
                 )
         
-
     # Legend
     handles, labels = rawdata_axes.get_legend_handles_labels()
     legend_labels = [l for l in labels]

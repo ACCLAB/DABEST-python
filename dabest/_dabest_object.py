@@ -5,7 +5,7 @@
 # %% auto 0
 __all__ = ['Dabest']
 
-# %% ../nbs/API/dabest_object.ipynb 4
+# %% ../nbs/API/dabest_object.ipynb 5
 # Import standard data science libraries
 from numpy import array, repeat, random, issubdtype, number
 import numpy as np
@@ -13,7 +13,7 @@ import pandas as pd
 from scipy.stats import norm
 from scipy.stats import randint
 
-# %% ../nbs/API/dabest_object.ipynb 6
+# %% ../nbs/API/dabest_object.ipynb 7
 class Dabest(object):
 
     """
@@ -122,7 +122,7 @@ class Dabest(object):
             self.__idx = (idx,)
 
         elif all([isinstance(i, (tuple, list)) for i in idx]):
-            all_plot_groups = pd.unique([tt for t in idx for tt in t]).tolist()
+            all_plot_groups = pd.Series([tt for t in idx for tt in t]).unique().tolist()
 
             actual_groups_given = sum([len(i) for i in idx])
 

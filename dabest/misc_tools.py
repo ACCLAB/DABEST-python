@@ -17,6 +17,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib
+import matplotlib.axes as axes
 
 # %% ../nbs/API/misc_tools.ipynb 5
 def merge_two_dicts(
@@ -93,7 +94,10 @@ def get_unique_categories(names):
         # For dict_keys and other iterables
         return np.unique(list(names))
 
-def get_params(effectsize_df: object, plot_kwargs: dict):
+def get_params(
+        effectsize_df: object, 
+        plot_kwargs: dict
+    ):
     """
     Extracts parameters from the `effectsize_df` and `plot_kwargs` objects for use in the plotter function.
     
@@ -172,7 +176,10 @@ def get_params(effectsize_df: object, plot_kwargs: dict):
             show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type, group_summaries, err_color, horizontal,
             results, halfviolin_alpha, ci_type, x1_level, experiment_label)
 
-def get_kwargs(plot_kwargs, ytick_color):
+def get_kwargs(
+        plot_kwargs: dict, 
+        ytick_color
+    ):
     """
     Extracts the kwargs from the `plot_kwargs` object for use in the plotter function.
 
@@ -180,7 +187,7 @@ def get_kwargs(plot_kwargs, ytick_color):
     ----------
     plot_kwargs : dict
         Kwargs passed to the plot function.
-    ytick_color : str
+    ytick_color : str or color list
         Color of the yticks.
     """
     from .misc_tools import merge_two_dicts
@@ -468,7 +475,14 @@ def get_kwargs(plot_kwargs, ytick_color):
             es_marker_kwargs, es_errorbar_kwargs, prop_sample_counts_kwargs, es_paired_lines_kwargs)
 
 
-def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_groups):
+def get_color_palette(
+        plot_kwargs: dict, 
+        plot_data: pd.DataFrame, 
+        xvar: str, 
+        show_pairs: bool, 
+        idx: list, 
+        all_plot_groups: list
+    ):
     """
     Create the color palette to be used in the plotter function.
 
@@ -600,8 +614,20 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_gr
     return (color_col, bootstraps_color_by_group, n_groups, filled, plot_palette_raw, bar_color, 
             plot_palette_bar, plot_palette_contrast, plot_palette_sankey)
 
-def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_paired, show_pairs, proportional,
-                   float_contrast, effect_size_type, yvar, horizontal, show_table):
+def initialize_fig(
+        plot_kwargs: dict, 
+        dabest_obj: object, 
+        show_delta2: bool, 
+        show_mini_meta: bool, 
+        is_paired: bool, 
+        show_pairs: bool, 
+        proportional: bool,
+        float_contrast: bool,
+        effect_size_type: str, 
+        yvar: str, 
+        horizontal: bool, 
+        show_table: bool
+    ):
     """
     Initialize the figure and axes for the plotter function.
 
@@ -868,7 +894,12 @@ def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_pair
 
     return fig, rawdata_axes, contrast_axes, table_axes
 
-def get_plot_groups(is_paired, idx, proportional, all_plot_groups):
+def get_plot_groups(
+        is_paired: bool, 
+        idx: list, 
+        proportional: bool, 
+        all_plot_groups: list
+    ):
     """
     Extract the plot groups from the `idx` object for use in the plotter function.
 
@@ -904,7 +935,15 @@ def get_plot_groups(is_paired, idx, proportional, all_plot_groups):
     return temp_idx, temp_all_plot_groups
 
 
-def add_counts_to_ticks(plot_data, xvar, yvar, rawdata_axes, plot_kwargs, flow, horizontal):
+def add_counts_to_ticks(
+        plot_data: pd.DataFrame, 
+        xvar: str, 
+        yvar: str, 
+        rawdata_axes: axes.Axes, 
+        plot_kwargs: dict, 
+        flow: bool, 
+        horizontal: bool
+    ):
     """
 
     Add the counts to the raw data axes labels.
@@ -971,7 +1010,14 @@ def add_counts_to_ticks(plot_data, xvar, yvar, rawdata_axes, plot_kwargs, flow, 
     # Ensure ticks are at the correct locations
     set_major_loc_method(plt.FixedLocator(get_ticks()))
 
-def extract_contrast_plotting_ticks(is_paired, show_pairs, two_col_sankey, plot_groups, idx, sankey_control_group):
+def extract_contrast_plotting_ticks(
+        is_paired: bool, 
+        show_pairs: bool, 
+        two_col_sankey: bool, 
+        plot_groups: list, 
+        idx: list, 
+        sankey_control_group: list
+    ):
     """
     Extract the contrast plotting ticks from the `idx` object for use in the plotter function.
 
@@ -988,7 +1034,7 @@ def extract_contrast_plotting_ticks(is_paired, show_pairs, two_col_sankey, plot_
     idx : list
         A list of tuples containing the group names.
     sankey_control_group : list
-        TBC.
+        A list of the control group names.
     """
     # Take note of where the `control` groups are.
     ticks_to_skip_contrast = None
@@ -1030,8 +1076,18 @@ def extract_contrast_plotting_ticks(is_paired, show_pairs, two_col_sankey, plot_
 
     return ticks_to_skip, ticks_to_plot, ticks_to_skip_contrast, ticks_to_start_twocol_sankey
 
-def set_xaxis_ticks_and_lims(show_delta2, show_mini_meta, rawdata_axes, contrast_axes, show_pairs, float_contrast,
-                             ticks_to_skip, contrast_xtick_labels, plot_kwargs, proportional, horizontal):
+def set_xaxis_ticks_and_lims(
+        show_delta2: bool, 
+        show_mini_meta: bool, 
+        rawdata_axes: axes.Axes, 
+        contrast_axes: axes.Axes, 
+        show_pairs: bool, 
+        float_contrast: bool,
+        ticks_to_skip: list, 
+        contrast_xtick_labels: list, 
+        plot_kwargs: dict, 
+        proportional: bool, 
+        horizontal: bool):
     """
     Set the x-axis/yaxis ticks and limits for the plotter function.
 
@@ -1125,7 +1181,18 @@ def set_xaxis_ticks_and_lims(show_delta2, show_mini_meta, rawdata_axes, contrast
         )
 
 
-def show_legend(legend_labels, legend_handles, rawdata_axes, contrast_axes, table_axes, float_contrast, show_pairs, horizontal, legend_kwargs, table_kwargs):
+def show_legend(
+        legend_labels: list, 
+        legend_handles: list, 
+        rawdata_axes: axes.Axes, 
+        contrast_axes: axes.Axes, 
+        table_axes: axes.Axes, 
+        float_contrast: bool, 
+        show_pairs: bool, 
+        horizontal: bool, 
+        legend_kwargs: dict, 
+        table_kwargs: dict
+    ):
     """
     Show the legend for the plotter function.
 
@@ -1191,9 +1258,22 @@ def show_legend(legend_labels, legend_handles, rawdata_axes, contrast_axes, tabl
             for line in leg.get_lines():
                 line.set_linewidth(3.0)
     
-def Gardner_Altman_Plot_Aesthetic_Adjustments(effect_size_type, plot_data, xvar, yvar, current_control, current_group,
-                                         rawdata_axes, contrast_axes, results, current_effsize, is_paired, one_sankey,
-                                         reflines_kwargs, redraw_axes_kwargs):
+def Gardner_Altman_Plot_Aesthetic_Adjustments(
+        effect_size_type: str, 
+        plot_data: pd.DataFrame, 
+        xvar: str, 
+        yvar: str, 
+        current_control: str, 
+        current_group: str,
+        rawdata_axes: axes.Axes, 
+        contrast_axes: axes.Axes, 
+        results: pd.DataFrame, 
+        current_effsize: float, 
+        is_paired: bool, 
+        one_sankey: bool,
+        reflines_kwargs: dict, 
+        redraw_axes_kwargs: dict
+    ):
     """
     Aesthetic adjustments for the Gardner-Altman plot.
     
@@ -1382,9 +1462,25 @@ def Gardner_Altman_Plot_Aesthetic_Adjustments(effect_size_type, plot_data, xvar,
     )
 
 
-def Cumming_Plot_Aesthetic_Adjustments(contrast_axes, reflines_kwargs, is_paired, show_pairs, two_col_sankey, idx, ticks_to_start_twocol_sankey,
-                                       proportional, ticks_to_skip, temp_idx, rawdata_axes, redraw_axes_kwargs, ticks_to_skip_contrast, 
-                                       show_delta2, show_mini_meta, horizontal, skip_redraw_lines):
+def Cumming_Plot_Aesthetic_Adjustments(
+        contrast_axes: axes.Axes, 
+        reflines_kwargs: dict, 
+        is_paired: bool, 
+        show_pairs: bool, 
+        two_col_sankey: bool, 
+        idx: list, 
+        ticks_to_start_twocol_sankey: list,
+        proportional: bool, 
+        ticks_to_skip: list, 
+        temp_idx: list, 
+        rawdata_axes: axes.Axes, 
+        redraw_axes_kwargs: dict, 
+        ticks_to_skip_contrast: list, 
+        show_delta2: bool, 
+        show_mini_meta: bool, 
+        horizontal: bool, 
+        skip_redraw_lines: bool
+    ):
     
     """
     Aesthetic adjustments for the Cumming plot.
@@ -1535,8 +1631,15 @@ def Cumming_Plot_Aesthetic_Adjustments(contrast_axes, reflines_kwargs, is_paired
             rawdata_axes.set_ylim(swarm_ylim[0]-0.5, swarm_ylim[1])
             contrast_axes.set_ylim(contrast_ylim[0]-0.5, contrast_ylim[1])
             
-def Redraw_Spines(rawdata_axes, contrast_axes, redraw_axes_kwargs, float_contrast, horizontal,
-                  show_delta2, delta2_axes):
+def Redraw_Spines(
+        rawdata_axes: axes.Axes, 
+        contrast_axes: axes.Axes, 
+        redraw_axes_kwargs: dict, 
+        float_contrast: bool, 
+        horizontal: bool,
+        show_delta2: bool, 
+        delta2_axes: axes.Axes
+    ):
     """
     Aesthetic general adjustments across both GA and Cumming plots.
 
@@ -1610,9 +1713,50 @@ def Redraw_Spines(rawdata_axes, contrast_axes, redraw_axes_kwargs, float_contras
         ax.set_xlim(xlim)
         ax.set_ylim(ylim)
 
-def extract_group_summaries(proportional, err_color, rawdata_axes, asymmetric_side, horizontal, 
-                            bootstraps_color_by_group, plot_palette_raw, all_plot_groups,
-                            n_groups, color_col, ytick_color, group_summaries_kwargs):
+def extract_group_summaries(
+        proportional: bool, 
+        err_color, 
+        rawdata_axes: axes.Axes, 
+        asymmetric_side: str, 
+        horizontal: bool, 
+        bootstraps_color_by_group: bool, 
+        plot_palette_raw: list, 
+        all_plot_groups: list,
+        n_groups: int, 
+        color_col, 
+        ytick_color, 
+        group_summaries_kwargs: dict
+    ):
+    """
+    Extract the group summaries for the plotter function.
+
+    Parameters
+    ----------
+    proportional : bool
+        A boolean flag to determine if the plot is for proportional data.
+    err_color : str
+        The color of the error bars.
+    rawdata_axes : object (Axes)
+        The raw data axes.
+    asymmetric_side : str
+        The side of the asymmetric error bars.
+    horizontal : bool
+        A boolean flag to determine if the plot is for horizontal plotting.
+    bootstraps_color_by_group : bool
+        A boolean flag to determine if the bootstraps are colored by group.
+    plot_palette_raw : list
+        A list of the plot palette colors.
+    all_plot_groups : list
+        A list of all the plot groups.
+    n_groups : int
+        The number of groups.
+    color_col : str
+        The name of the color column.
+    ytick_color : str
+        The color of the y-ticks.
+    group_summaries_kwargs : dict
+        Kwargs passed to the group summaries.
+    """
     
     from .plot_tools import get_swarm_spans
 

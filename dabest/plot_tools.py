@@ -872,20 +872,30 @@ def sankeydiag(
 
     return left_idx, right_idx
 
-def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object,
-                 float_contrast: bool,summary_bars_kwargs: dict, ci_type: str,
-                 ticks_to_plot: list, color_col: str, plot_palette_raw: dict, 
-                 proportional: bool, show_pairs: bool, horizontal: bool):
+def summary_bars_plotter(
+        summary_bars: list, 
+        results: pd.DataFrame,
+        ax_to_plot: axes.Axes,
+        float_contrast: bool,
+        summary_bars_kwargs: dict, 
+        ci_type: str,
+        ticks_to_plot: list, 
+        color_col: str, 
+        plot_palette_raw: dict, 
+        proportional: bool, 
+        show_pairs: bool, 
+        horizontal: bool
+    ):
     """
-    Add summary bars to the contrast plot. Currently only functional for Vertical plots.
+    Add summary bars to the contrast plot.
 
     Parameters
     ----------
     summary_bars : list
         List of indices of the contrast objects to plot summary bars for.
-    results : object (Dataframe)
+    results : DataFrame
         Dataframe of contrast object comparisons.
-    ax_to_plot : object
+    ax_to_plot : axes.Axes
         Matplotlib axis object to plot on.
     float_contrast : bool
         Whether the DABEST plot uses Gardner-Altman or Cummings.
@@ -960,11 +970,22 @@ def summary_bars_plotter(summary_bars: list, results: object, ax_to_plot: object
                     **summary_bars_kwargs)
                     )
                 
-def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: object,
-                          ticks_to_plot: list, contrast_bars_kwargs: dict, color_col: str, 
-                          plot_palette_raw: dict, show_mini_meta: bool, mini_meta_delta: object, 
-                          show_delta2: bool, delta_delta: object, show_pairs: bool,
-                          horizontal: bool, idx: list):
+def contrast_bars_plotter(
+        results: pd.DataFrame, 
+        ax_to_plot: axes.Axes,  
+        swarm_plot_ax: axes.Axes,
+        ticks_to_plot: list, 
+        contrast_bars_kwargs: dict, 
+        color_col: str, 
+        plot_palette_raw: dict, 
+        show_mini_meta: bool, 
+        mini_meta_delta: object, 
+        show_delta2: bool, 
+        delta_delta: object, 
+        show_pairs: bool,
+        horizontal: bool, 
+        idx: list
+    ):
     """
     Add contrast bars to the contrast plot.
 
@@ -972,9 +993,9 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
     ----------
     results : object (Dataframe)
         Dataframe of contrast object comparisons.
-    ax_to_plot : object
+    ax_to_plot : axes.Axes
         Matplotlib axis object to plot on.
-    swarm_plot_ax : object (ax)
+    swarm_plot_ax : axes.Axes
         Matplotlib axis object of the swarm plot.
     ticks_to_plot : list
         List of indices of the contrast objects.
@@ -1029,7 +1050,7 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
         if horizontal:
             ax_to_plot.add_patch(mpatches.Rectangle((0, contrast_bars_x-0.5), contrast_bars_y, 0.5, color=contrast_bars_colors[idx_selector], **contrast_bars_kwargs))
         else:
-            ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25, 0),0.5, contrast_bars_y, color=contrast_bars_colors[idx_selector], **contrast_bars_kwargs))
+            ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25, 0), 0.5, contrast_bars_y, color=contrast_bars_colors[idx_selector], **contrast_bars_kwargs))
 
     if show_mini_meta or show_delta2:
         diff = mini_meta_delta.difference if show_mini_meta else delta_delta.difference
@@ -1041,9 +1062,17 @@ def contrast_bars_plotter(results: object, ax_to_plot: object,  swarm_plot_ax: o
     ax_to_plot.set_xlim(og_xlim)
     ax_to_plot.set_ylim(og_ylim)
 
-def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
-                       swarm_bars_kwargs: dict, color_col: str, plot_palette_raw: dict, 
-                       show_pairs: bool, idx: list):
+def swarm_bars_plotter(
+        plot_data: pd.DataFrame, 
+        xvar: str, 
+        yvar: str, 
+        ax: axes.Axes,
+        swarm_bars_kwargs: dict, 
+        color_col: str, 
+        plot_palette_raw: dict, 
+        show_pairs: bool, 
+        idx: list
+    ):
     """
     Add bars to the raw data plot. Currently only for vertical plots.
 
@@ -1055,7 +1084,7 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
         Column name of the x variable.
     yvar : str
         Column name of the y variable.
-    ax : object  
+    ax : axes.Axes  
         Matplotlib axis object to plot on.
     swarm_bars_kwargs : dict
         Keyword arguments for the swarm bars.
@@ -1104,9 +1133,23 @@ def swarm_bars_plotter(plot_data: object, xvar: str, yvar: str, ax: object,
     ax.set_xlim(og_xlim)
     ax.set_ylim(og_ylim)
 
-def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: object, ticks_to_plot: list, delta_text_kwargs: dict, 
-                       color_col: str, plot_palette_raw: dict, is_paired: bool, proportional: bool, float_contrast: bool,
-                       show_mini_meta: bool, mini_meta_delta: object, show_delta2: bool, delta_delta: object, idx: list):
+def delta_text_plotter(
+        results: pd.DataFrame, 
+        ax_to_plot: object, 
+        swarm_plot_ax: axes.Axes, 
+        ticks_to_plot: list, 
+        delta_text_kwargs: dict, 
+        color_col: str, 
+        plot_palette_raw: dict, 
+        show_pairs: bool, 
+        proportional: bool, 
+        float_contrast: bool,
+        show_mini_meta: bool, 
+        mini_meta_delta: object, 
+        show_delta2: bool, 
+        delta_delta: object, 
+        idx: list
+    ):
     """
     Add delta text to the contrast plot.
 
@@ -1114,9 +1157,9 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
     ----------
     results : object (Dataframe)
         Dataframe of contrast object comparisons.
-    ax_to_plot : object
+    ax_to_plot : axes.Axes
         Matplotlib axis object to plot on.
-    swarm_plot_ax : object
+    swarm_plot_ax : axes.Axes
         Matplotlib axis object of the swarm plot.
     ticks_to_plot : list
         List of indices of the contrast objects.
@@ -1126,8 +1169,8 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
         Column name of the color column.
     plot_palette_raw : dict
         Dictionary of colors used in the plot.
-    is_paired : bool
-        Whether the data is paired.
+    show_pairs : bool
+        Whether the data is paired and show pairs.
     proportional : bool
         Whether the data is proportional.
     float_contrast : bool
@@ -1152,13 +1195,16 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
         delta_text_kwargs["va"] = 'bottom' if results.difference[0] >= 0 else 'top'
     delta_text_kwargs.pop('x_location')
 
+    # Colors
     delta_text_colors = (
         [delta_text_kwargs.get('color')]*int(max(ticks_to_plot)+1)
         if delta_text_kwargs.get('color') is not None
         else ['black']*int(max(ticks_to_plot)+1)
-        if color_col is not None or (proportional and is_paired) or is_paired
+        if color_col is not None or (proportional and show_pairs) or show_pairs
         else plot_palette_raw
     )
+
+    # Idx
     unpacked_idx = [element for innerList in idx for element in innerList] 
     if show_mini_meta or show_delta2: 
         unpacked_idx.append('extra_delta')
@@ -1221,14 +1267,26 @@ def delta_text_plotter(results: object, ax_to_plot: object, swarm_plot_ax: objec
         ax_to_plot.text(x, y, Delta_Text, color=delta_text_colors[idx_selector], zorder=5, **delta_text_kwargs)
 
 
-def DeltaDotsPlotter(plot_data, contrast_axes, delta_id_col, idx, xvar, yvar, is_paired, color_col, float_contrast, 
-                     plot_palette_raw, delta_dot_kwargs, horizontal):
+def DeltaDotsPlotter(
+        plot_data: pd.DataFrame, 
+        contrast_axes: axes.Axes, 
+        delta_id_col: str, 
+        idx: list, 
+        xvar: str, 
+        yvar: str, 
+        is_paired: bool, 
+        color_col: str, 
+        float_contrast: bool, 
+        plot_palette_raw: dict, 
+        delta_dot_kwargs: dict, 
+        horizontal: bool
+    ):
     """
     Parameters
     ----------
     plot_data : object (Dataframe)
         Dataframe of the plot data.
-    contrast_axes : object
+    contrast_axes : axes.Axes
         Matplotlib axis object to plot on.
     delta_id_col : str
         Column name of the delta id column.
@@ -1307,8 +1365,19 @@ def DeltaDotsPlotter(plot_data, contrast_axes, delta_id_col, idx, xvar, yvar, is
     contrast_axes.legend().set_visible(False)
 
 
-def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palette_raw, slopegraph_kwargs, 
-                       rawdata_axes, ytick_color, temp_idx, horizontal):
+def slopegraph_plotter(
+        dabest_obj: object, 
+        plot_data: pd.DataFrame, 
+        xvar: str, 
+        yvar: str, 
+        color_col: str, 
+        plot_palette_raw: dict, 
+        slopegraph_kwargs: dict, 
+        rawdata_axes: axes.Axes, 
+        ytick_color: str, 
+        temp_idx: list, 
+        horizontal: bool
+    ):
     """
     Add slopegraph to the rawdata axes.
 
@@ -1328,7 +1397,7 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
         Dictionary of colors used in the plot.
     slopegraph_kwargs : dict
         Keyword arguments for the slopegraph.
-    rawdata_axes : object
+    rawdata_axes : axes.Axes
         Matplotlib axis object to plot on.
     ytick_color : str
         Color of the yticks.
@@ -1338,7 +1407,7 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
         If the plotting will be in horizontal format.
     """
     # Jitter Kwargs 
-    # With help from devMJBL
+    # With help from GitHub user: devMJBL
     jitter = slopegraph_kwargs.pop("jitter")
     if jitter >= 1:
         err0 = "Jitter value is too high. Defaulting to 1."
@@ -1391,10 +1460,22 @@ def slopegraph_plotter(dabest_obj, plot_data, xvar, yvar, color_col, plot_palett
 
         x_start = x_start + grp_count
 
-def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, rawdata_axes,
-                                        contrast_axes, violinplot_kwargs, halfviolin_alpha, 
-                                        contrast_xtick_labels, effect_size, show_delta2, plot_kwargs, 
-                                        horizontal, es_marker_kwargs, es_errorbar_kwargs):
+def plot_minimeta_or_deltadelta_violins(
+        show_mini_meta: bool, 
+        effectsize_df: object, 
+        ci_type: str, 
+        rawdata_axes: axes.Axes,
+        contrast_axes: axes.Axes, 
+        violinplot_kwargs: dict, 
+        halfviolin_alpha: float, 
+        contrast_xtick_labels: list, 
+        effect_size: str, 
+        show_delta2: bool, 
+        plot_kwargs: dict, 
+        horizontal: bool, 
+        es_marker_kwargs: dict, 
+        es_errorbar_kwargs: dict
+    ):
     """
     Add mini meta-analysis or delta-delta violin plots to the contrast plot.
 
@@ -1403,12 +1484,12 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
     show_mini_meta : bool
         Whether to show the mini meta-analysis.
     effectsize_df : object
-        Dataframe of effect sizes.
+        DABEST Effectsize object
     ci_type : str
         Type of confidence interval to plot.
-    rawdata_axes : object
+    rawdata_axes : axes.Axes
         Matplotlib axis object to plot on.
-    contrast_axes : object
+    contrast_axes : axes.Axes
         Matplotlib axis object to plot on.
     violinplot_kwargs : dict
         Keyword arguments for the violinplot.
@@ -1483,6 +1564,7 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
         **es_errorbar_kwargs
     )
 
+    # Add labels and ticks
     if horizontal:
         current_yticks = rawdata_axes.get_yticks()
         current_yticks = np.append(current_yticks, position)
@@ -1525,10 +1607,23 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
     return delta2_axes, contrast_xtick_labels
 
 
-def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, violinplot_kwargs, halfviolin_alpha, 
-                              bootstraps_color_by_group, plot_palette_contrast,
-                              horizontal, es_marker_kwargs, es_errorbar_kwargs,
-                              idx, is_paired, es_paired_lines, es_paired_lines_kwargs):
+def effect_size_curve_plotter(
+        ticks_to_plot: list, 
+        results: pd.DataFrame, 
+        ci_type: str, 
+        contrast_axes: axes.Axes, 
+        violinplot_kwargs: dict, 
+        halfviolin_alpha: float, 
+        bootstraps_color_by_group: bool, 
+        plot_palette_contrast: dict,
+        horizontal: bool, 
+        es_marker_kwargs: dict, 
+        es_errorbar_kwargs: dict,
+        idx: list, 
+        is_paired: bool, 
+        es_paired_lines: bool, 
+        es_paired_lines_kwargs: dict
+    ):
     """
     Add effect size curves to the contrast plot.
 
@@ -1540,7 +1635,7 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
         Dataframe of contrast object comparisons.
     ci_type : str
         Type of confidence interval to plot.
-    contrast_axes : object
+    contrast_axes : axes.Axes
         Matplotlib axis object to plot on.
     violinplot_kwargs : dict
         Keyword arguments for the violinplot.
@@ -1661,9 +1756,28 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
 
     return current_group, current_control, current_effsize, contrast_xtick_labels
 
-def gridkey_plotter(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes, contrast_axes, 
-                 plot_data, xvar, yvar, results, show_delta2, show_mini_meta, x1_level, experiment_label, 
-                 float_contrast, horizontal, delta_delta, mini_meta_delta, effect_size, gridkey_kwargs):
+def gridkey_plotter(
+        is_paired: bool, 
+        idx: list,
+        all_plot_groups: list, 
+        gridkey_rows: list, 
+        rawdata_axes: axes.Axes, 
+        contrast_axes: axes.Axes, 
+        plot_data: pd.DataFrame, 
+        xvar: str, 
+        yvar: str, 
+        results: pd.DataFrame, 
+        show_delta2: bool, 
+        show_mini_meta: bool, 
+        x1_level: list, 
+        experiment_label: list, 
+        float_contrast: bool, 
+        horizontal: bool, 
+        delta_delta: object, 
+        mini_meta_delta: object, 
+        effect_size: str, 
+        gridkey_kwargs: dict,
+    ):
     """
     Add gridkey to the contrast plot.
 
@@ -1677,9 +1791,9 @@ def gridkey_plotter(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes,
         List of all plot groups.
     gridkey_rows : list
         List of gridkey rows.
-    rawdata_axes : object
+    rawdata_axes : axes.Axes
         Matplotlib axis object for the raw data.
-    contrast_axes : object
+    contrast_axes : axes.Axes
         Matplotlib axis object for the contrast data.
     plot_data : object (Dataframe)
         Dataframe of the plot data.
@@ -1917,8 +2031,18 @@ def gridkey_plotter(is_paired, idx, all_plot_groups, gridkey_rows, rawdata_axes,
         rawdata_axes.get_xaxis().set_visible(False)
         contrast_axes.get_xaxis().set_visible(False)
 
-def barplotter(xvar, yvar, all_plot_groups, rawdata_axes, plot_data, bar_color, plot_palette_bar, 
-               plot_kwargs, barplot_kwargs, horizontal):
+def barplotter(
+        xvar: str, 
+        yvar: str, 
+        all_plot_groups: list, 
+        rawdata_axes: axes.Axes, 
+        plot_data: pd.DataFrame, 
+        bar_color: str, 
+        plot_palette_bar: dict, 
+        plot_kwargs: dict, 
+        barplot_kwargs: dict, 
+        horizontal: bool
+    ):
     """
     Add bars to the raw data plot.
 
@@ -1999,14 +2123,22 @@ def barplotter(xvar, yvar, all_plot_groups, rawdata_axes, plot_data, bar_color, 
     rawdata_axes.set_xlabel(x_label)
     rawdata_axes.set_ylabel(y_label)
 
-def table_for_horizontal_plots(effectsize_df, ax, contrast_axes, ticks_to_plot, show_mini_meta, show_delta2, table_kwargs):
+def table_for_horizontal_plots(
+        effectsize_df: object, 
+        ax: axes.Axes, 
+        contrast_axes: axes.Axes, 
+        ticks_to_plot: list, 
+        show_mini_meta: bool, 
+        show_delta2: bool, 
+        table_kwargs: dict
+    ):
     """
     Add table axes for showing the deltas for horizontal plots.
 
     Parameters
     ----------
     effectsize_df : object
-        Dataframe of effect sizes.
+        Effect size DABEST object.
     ax : object
         Matplotlib axis object to plot the table axes.
     contrast_axes : object
@@ -2073,7 +2205,15 @@ def table_for_horizontal_plots(effectsize_df, ax, contrast_axes, ticks_to_plot, 
     sns.despine(ax=ax, left=True, bottom=True)
 
 
-def add_counts_to_prop_plots(plot_data, xvar, yvar, rawdata_axes, horizontal, is_paired, prop_sample_counts_kwargs):
+def add_counts_to_prop_plots(
+        plot_data: pd.DataFrame, 
+        xvar: str, 
+        yvar: str, 
+        rawdata_axes: axes.Axes, 
+        horizontal: bool, 
+        is_paired: bool, 
+        prop_sample_counts_kwargs: dict
+    ):
     """
     Add counts to the proportion plots.
 
@@ -2085,7 +2225,7 @@ def add_counts_to_prop_plots(plot_data, xvar, yvar, rawdata_axes, horizontal, is
         Column name of the x variable.
     yvar : str
         Column name of the y variable.
-    rawdata_axes : object
+    rawdata_axes : axes.Axes
         Matplotlib axis object to plot on.
     horizontal : bool
         If the plot is horizontal.
@@ -2106,9 +2246,6 @@ def add_counts_to_prop_plots(plot_data, xvar, yvar, rawdata_axes, horizontal, is
 
     sample_size_val1 = ones.groupby(xvar, observed=False)[yvar].count().reindex(index=sample_size_text_order)
     sample_size_val0 = zeros.groupby(xvar, observed=False)[yvar].count().reindex(index=sample_size_text_order)
-
-    fontsize = 8 if horizontal else 10
-    fontsize -= 2 if is_paired else 0
 
     if "fontsize" not in prop_sample_counts_kwargs.keys():
         fontsize = 8 if horizontal else 10
