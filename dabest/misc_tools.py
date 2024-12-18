@@ -481,7 +481,8 @@ def get_color_palette(
         xvar: str, 
         show_pairs: bool, 
         idx: list, 
-        all_plot_groups: list
+        all_plot_groups: list,
+        delta2: bool,
     ):
     """
     Create the color palette to be used in the plotter function.
@@ -500,6 +501,8 @@ def get_color_palette(
         A list of tuples containing the group names.
     all_plot_groups : list
         A list of all the group names.
+    delta2 : bool
+        A boolean flag to determine if the plot will have a delta-delta effect size.
     """
     # Create color palette that will be shared across subplots.
     color_col = plot_kwargs["color_col"]
@@ -550,9 +553,16 @@ def get_color_palette(
             unsat_colors = [sns.color_palette("gray")[3]] + unsat_colors
     else:
         if isinstance(custom_pal, dict):
-            groups_in_palette = {
-                k: custom_pal[k] for k in all_plot_groups if k in color_groups
-            }
+            if delta2:
+                groups_in_palette = {
+                    k: custom_pal[k] for k in color_groups
+                }
+            elif color_col is None:
+                groups_in_palette = {
+                    k: custom_pal[k] for k in all_plot_groups if k in color_groups
+                }
+            else:
+                raise ValueError("The `custom_palette` dictionary is not supported when `color_col` is None.")
 
             names = groups_in_palette.keys()
             unsat_colors = groups_in_palette.values()
