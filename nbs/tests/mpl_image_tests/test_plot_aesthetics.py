@@ -278,7 +278,7 @@ def test_227_multi_2group_meandiff_deltatext_kwargs_specificy_coordinates():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_228_multi_2group_meandiff_deltatext_kwargs_x_adjust():
-    return multi_2group.mean_diff.plot(delta_text=True, delta_text_kwargs={"x_adjust":0.1});
+    return multi_2group.mean_diff.plot(delta_text=True, delta_text_kwargs={"offset":0.1});
 
 # Jitter
 @pytest.mark.mpl_image_compare(tolerance=8)

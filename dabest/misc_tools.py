@@ -347,7 +347,7 @@ def get_kwargs(
                 "x_location": 'right', 
                 "x_coordinates": None, 
                 "y_coordinates": None,
-                "x_adjust": 0
+                "offset": 0
     }
     if plot_kwargs["delta_text_kwargs"] is None:
         delta_text_kwargs = default_delta_text_kwargs

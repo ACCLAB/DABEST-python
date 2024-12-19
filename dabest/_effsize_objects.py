@@ -1213,7 +1213,7 @@ class EffectSizeDataFrame(object):
             Pass relevant keyword arguments to the delta text. Pass any keyword arguments accepted by
             matplotlib.text.Text here, as a string. If None, the following keywords are passed:
             {"color": None, "alpha": 1, "fontsize": 10, "ha": 'center', "va": 'center', "rotation": 0, 
-            "x_location": 'right', "x_coordinates": None, "y_coordinates": None, "x_adjust": 0}
+            "x_location": 'right', "x_coordinates": None, "y_coordinates": None, "offset": 0}
             Use "x_coordinates" and "y_coordinates" if you would like to specify the text locations manually. 
             Use "x_adjust" to adjust the x location of all the texts (positive moves right, negative left).
         delta_dot : boolean, default True

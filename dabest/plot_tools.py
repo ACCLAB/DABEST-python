@@ -1224,8 +1224,8 @@ def delta_text_plotter(
     if show_mini_meta: Delta_Values.append(mini_meta_delta.difference)
 
     # Collect the X-coordinates for the delta text
-    delta_text_x_coordinates = delta_text_kwargs.get('x_coordinates')
-    delta_text_x_adjustment = delta_text_kwargs.get('x_adjust')
+    delta_text_x_coordinates = delta_text_kwargs.pop('x_coordinates')
+    delta_text_x_adjustment = delta_text_kwargs.pop('offset')
 
     if delta_text_x_coordinates is not None:
         if not isinstance(delta_text_x_coordinates, (list, tuple)) or not all(isinstance(x, (int, float)) for x in delta_text_x_coordinates):
@@ -1240,8 +1240,6 @@ def delta_text_plotter(
         if show_mini_meta: delta_text_x_coordinates.append(max(swarm_plot_ax.get_xticks())+2+X_Adjust)
         if show_delta2: delta_text_x_coordinates.append(max(swarm_plot_ax.get_xticks())+2-0.35)
         if show_mini_meta or show_delta2: ticks_to_plot.append(max(ticks_to_plot)+1)
-    delta_text_kwargs.pop('x_coordinates')
-    delta_text_kwargs.pop('x_adjust')
 
     # Collect the Y-coordinates for the delta text
     delta_text_y_coordinates = delta_text_kwargs.get('y_coordinates')
