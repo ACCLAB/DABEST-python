@@ -61,6 +61,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
         contrast_bars=True, contrast_bars_kwargs=None,
         delta_text=True, delta_text_kwargs=None,
         delta_dot=True, delta_dot_kwargs=None,
+        show_baseline_ec=False,
     """
     from .misc_tools import (
         get_params,
@@ -111,9 +112,9 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     ytick_color = plt.rcParams["ytick.color"]
 
     # Extract parameters and set kwargs
-    (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, 
-     proportional, all_plot_groups, idx, show_delta2, show_mini_meta, 
-     float_contrast, show_pairs, effect_size_type, group_summaries, err_color) = get_params(
+    (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional,
+     all_plot_groups, idx, show_delta2, show_mini_meta, float_contrast,
+     show_pairs, effect_size_type, group_summaries, err_color, show_baseline_ec) = get_params(
                                                                                     effectsize_df=effectsize_df, 
                                                                                     plot_kwargs=plot_kwargs
                                                                                     )
@@ -332,7 +333,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
     # Plot effect sizes and bootstraps.
     plot_groups = temp_all_plot_groups if (is_paired == "baseline" and show_pairs and two_col_sankey) else temp_idx if (two_col_sankey) else all_plot_groups
 
-    (ticks_to_skip, ticks_to_plot, 
+    (ticks_to_skip, ticks_to_plot, ticks_for_baseline_ec,
      ticks_to_skip_contrast, ticks_to_start_twocol_sankey) = extract_contrast_plotting_ticks(
                                                                                     is_paired=is_paired, 
                                                                                     show_pairs=show_pairs, 
@@ -349,9 +350,10 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
 
     results = effectsize_df.results
 
-    (current_group, current_control, 
+    (current_group, current_control,
      current_effsize, contrast_xtick_labels) = effect_size_curve_plotter(
                                                                     ticks_to_plot=ticks_to_plot, 
+                                                                    ticks_for_baseline_ec=ticks_for_baseline_ec,
                                                                     results=results, 
                                                                     ci_type=ci_type, 
                                                                     contrast_axes=contrast_axes, 
@@ -362,6 +364,7 @@ def effectsize_df_plotter(effectsize_df, **plot_kwargs):
                                                                     group_summary_kwargs=group_summary_kwargs,  
                                                                     bootstraps_color_by_group=bootstraps_color_by_group,
                                                                     plot_palette_contrast=plot_palette_contrast,
+                                                                    show_baseline_ec=show_baseline_ec,
                                                                     )
 
     # Plot mini-meta violin
