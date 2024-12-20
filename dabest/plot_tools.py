@@ -1271,40 +1271,50 @@ def plot_minimeta_or_deltadelta_violins(show_mini_meta, effectsize_df, ci_type, 
     return contrast_xtick_labels
 
 
-def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, violinplot_kwargs, halfviolin_alpha, 
-                              ytick_color, es_marker_size, group_summary_kwargs, bootstraps_color_by_group, plot_palette_contrast):
+def effect_size_curve_plotter(ticks_to_plot, ticks_for_baseline_ec, results, ci_type, contrast_axes, 
+                              violinplot_kwargs, halfviolin_alpha, ytick_color, es_marker_size, 
+                              group_summary_kwargs, bootstraps_color_by_group, plot_palette_contrast,
+                              show_baseline_ec):
     contrast_xtick_labels = []
+        
+    def plot_effect_size(tick, group, control, bootstrap, effsize, ci_low, ci_high):
+        # Create the violinplot
+        # New in v0.2.6: drop negative infinities before plotting.
+        v = contrast_axes.violinplot(
+            bootstrap[~np.isinf(bootstrap)],
+            positions=[tick],
+            **violinplot_kwargs
+        )
+        
+        # Color the violin plot
+        # Turn the violinplot into half, and color it the same as the swarmplot.
+        # Do this only if the color column is not specified.
+        # Ideally, the alpha (transparency) fo the violin plot should be
+        # less than one so the effect size and CIs are visible.
+        fc = plot_palette_contrast[group] if bootstraps_color_by_group else "grey"
+        halfviolin(v, fill_color=fc, alpha=halfviolin_alpha)
+
+        # Plot the confidence interval
+        contrast_axes.plot(
+            [tick, tick],
+            [ci_low, ci_high],
+            linestyle="-",
+            color=ytick_color,
+            linewidth=group_summary_kwargs["lw"],
+        )    
+        
+        return "{}\nminus\n{}".format(group, control)
+    
+    # Plot for ticks_to_plot
     for j, tick in enumerate(ticks_to_plot):
         current_group = results.test[j]
         current_control = results.control[j]
         current_bootstrap = results.bootstraps[j]
         current_effsize = results.difference[j]
-        if ci_type == "bca":
-            current_ci_low = results.bca_low[j]
-            current_ci_high = results.bca_high[j]
-        else:
-            current_ci_low = results.pct_low[j]
-            current_ci_high = results.pct_high[j]
-
-        # Create the violinplot.
-        # New in v0.2.6: drop negative infinities before plotting.
-        v = contrast_axes.violinplot(
-            current_bootstrap[~np.isinf(current_bootstrap)],
-            positions=[tick],
-            **violinplot_kwargs
-        )
-        # Turn the violinplot into half, and color it the same as the swarmplot.
-        # Do this only if the color column is not specified.
-        # Ideally, the alpha (transparency) fo the violin plot should be
-        # less than one so the effect size and CIs are visible.
-        if bootstraps_color_by_group:
-            fc = plot_palette_contrast[current_group]
-        else:
-            fc = "grey"
-
-        halfviolin(v, fill_color=fc, alpha=halfviolin_alpha)
-
-        # Plot the effect size.
+        current_ci_low = results.bca_low[j] if ci_type == "bca" else results.pct_low[j]
+        current_ci_high = results.bca_high[j] if ci_type == "bca" else results.pct_high[j]
+        
+        # Plot the effect size
         contrast_axes.plot(
             [tick],
             current_effsize,
@@ -1313,18 +1323,34 @@ def effect_size_curve_plotter(ticks_to_plot, results, ci_type, contrast_axes, vi
             markersize=es_marker_size,
         )
 
-        # Plot the confidence interval.
-        contrast_axes.plot(
-            [tick, tick],
-            [current_ci_low, current_ci_high],
-            linestyle="-",
-            color=ytick_color,
-            linewidth=group_summary_kwargs["lw"],
-        )
+        label = plot_effect_size(tick, current_group, current_control, current_bootstrap, 
+                                 current_effsize, current_ci_low, current_ci_high)
+        contrast_xtick_labels.append(label)
+        
 
-        contrast_xtick_labels.append(
-            "{}\nminus\n{}".format(current_group, current_control)
+    bec_results = results.drop_duplicates(subset='control', keep='first').reset_index(drop=True)
+    for j, tick in enumerate(ticks_for_baseline_ec):
+        bec_group = bec_results.control[j]
+        bec_control = bec_results.control[j]
+        bec_bootstrap = bec_results.bec_bootstraps[j]
+        bec_effsize = bec_results.bec_difference[j]
+        bec_ci_low = bec_results.bec_bca_low[j] if ci_type == "bca" else bec_results.bec_pct_low[j]
+        bec_ci_high = bec_results.bec_bca_high[j] if ci_type == "bca" else bec_results.bec_pct_high[j]
+        
+        # Plot the effect size no matter show_baseline
+        contrast_axes.plot(
+            [tick],
+            bec_effsize,
+            marker="o",
+            color=ytick_color,
+            markersize=es_marker_size,
         )
+        
+        if show_baseline_ec:
+            _ = plot_effect_size(tick, bec_group, bec_control, bec_bootstrap, 
+                                     bec_effsize, bec_ci_low, bec_ci_high)
+            # Baseline Curve don't need ticks text
+    
     return current_group, current_control, current_effsize, contrast_xtick_labels
 
 
