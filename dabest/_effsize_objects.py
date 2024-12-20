@@ -9,6 +9,7 @@ __all__ = ['TwoGroupsEffectSize', 'EffectSizeDataFrame', 'PermutationTest']
 import pandas as pd
 import lqrt
 from scipy.stats import norm
+import numpy as np
 from numpy import array, isnan, isinf, repeat, random, isin, abs, var
 from numpy import sort as npsort
 from numpy import nan as npnan
@@ -357,12 +358,17 @@ class TwoGroupsEffectSize(object):
             # References:
             # https://en.wikipedia.org/wiki/McNemar%27s_test
 
-            df_temp = pd.DataFrame({"control": self.__control, "test": self.__test})
-            x1 = len(df_temp[(df_temp["control"] == 0) & (df_temp["test"] == 0)])
-            x2 = len(df_temp[(df_temp["control"] == 0) & (df_temp["test"] == 1)])
-            x3 = len(df_temp[(df_temp["control"] == 1) & (df_temp["test"] == 0)])
-            x4 = len(df_temp[(df_temp["control"] == 1) & (df_temp["test"] == 1)])
-            table = [[x1, x2], [x3, x4]]
+            # df_temp = pd.DataFrame({"control": self.__control, "test": self.__test})
+            # x1 = len(df_temp[(df_temp["control"] == 0) & (df_temp["test"] == 0)])
+            # x2 = len(df_temp[(df_temp["control"] == 0) & (df_temp["test"] == 1)])
+            # x3 = len(df_temp[(df_temp["control"] == 1) & (df_temp["test"] == 0)])
+            # x4 = len(df_temp[(df_temp["control"] == 1) & (df_temp["test"] == 1)])
+            # table = [[x1, x2], [x3, x4]]
+            x1 = np.sum((self.__control == 0) & (self.__test == 0))
+            x2 = np.sum((self.__control == 0) & (self.__test == 1))
+            x3 = np.sum((self.__control == 1) & (self.__test == 0))
+            x4 = np.sum((self.__control == 1) & (self.__test == 1))
+            table = np.array([[x1, x2], [x3, x4]])
             _mcnemar = mcnemar(table, exact=True, correction=True)
             self.__pvalue_mcnemar = _mcnemar.pvalue
             self.__statistic_mcnemar = _mcnemar.statistic
@@ -861,18 +867,19 @@ class EffectSizeDataFrame(object):
         out = []
         reprs = []
 
+        grouped_data = {name: group[yvar].copy() for name, group in dat.groupby(xvar, observed=False)}
         if self.__delta2:
             mixed_data = []
             for j, current_tuple in enumerate(idx):
                 if self.__is_paired != "sequential":
                     cname = current_tuple[0]
-                    control = dat[dat[xvar] == cname][yvar].copy()
+                    control = grouped_data[cname]
 
                 for ix, tname in enumerate(current_tuple[1:]):
                     if self.__is_paired == "sequential":
                         cname = current_tuple[ix]
-                        control = dat[dat[xvar] == cname][yvar].copy()
-                    test = dat[dat[xvar] == tname][yvar].copy()
+                        control = grouped_data[cname]
+                    test = grouped_data[tname]
                     mixed_data.append(control)
                     mixed_data.append(test)
             bootstraps_delta_delta = ci2g.compute_delta2_bootstrapped_diff(
@@ -888,13 +895,13 @@ class EffectSizeDataFrame(object):
         for j, current_tuple in enumerate(idx):
             if self.__is_paired != "sequential":
                 cname = current_tuple[0]
-                control = dat[dat[xvar] == cname][yvar].copy()
+                control = grouped_data[cname]
 
             for ix, tname in enumerate(current_tuple[1:]):
                 if self.__is_paired == "sequential":
                     cname = current_tuple[ix]
-                    control = dat[dat[xvar] == cname][yvar].copy()
-                test = dat[dat[xvar] == tname][yvar].copy()
+                    control = grouped_data[cname]
+                test = grouped_data[tname]
 
                 result = TwoGroupsEffectSize(
                     control,
@@ -1055,16 +1062,18 @@ class EffectSizeDataFrame(object):
 
         out = []
 
+        grouped_data = {name:group[yvar].copy() for name, group in dat.groupby(xvar)}
+
         for j, current_tuple in enumerate(db_obj.idx):
             if self.__is_paired != "sequential":
                 cname = current_tuple[0]
-                control = dat[dat[xvar] == cname][yvar].copy()
+                control = grouped_data[cname]
 
             for ix, tname in enumerate(current_tuple[1:]):
                 if self.__is_paired == "sequential":
                     cname = current_tuple[ix]
-                    control = dat[dat[xvar] == cname][yvar].copy()
-                test = dat[dat[xvar] == tname][yvar].copy()
+                    control = grouped_data[cname]
+                test = grouped_data[tname]
 
                 if self.__is_paired:
                     # Refactored here in v0.3.0 for performance issues.

@@ -369,7 +369,9 @@ def single_sankey(
 ):
     """
     Make a single Sankey diagram showing proportion flow from left to right
+
     Original code from: https://github.com/anazalea/pySankey
+    
     Changes are added to normalize each diagram's height to be 1
 
     """

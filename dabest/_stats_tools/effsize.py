@@ -5,9 +5,11 @@
 # %% ../../nbs/API/effsize.ipynb 4
 from __future__ import annotations
 import numpy as np
+from numba import njit
 import warnings
 from scipy.special import gamma
 from scipy.stats import mannwhitneyu
+
 
 # %% auto 0
 __all__ = ['two_group_difference', 'func_difference', 'cohens_d', 'cohens_h', 'hedges_g', 'cliffs_delta', 'weighted_delta']
@@ -62,6 +64,10 @@ def two_group_difference(control:list|tuple|np.ndarray, #Accepts lists, tuples, 
 
     """
 
+    if ~isinstance(control, np.ndarray):
+        control = np.array(control)
+    if ~isinstance(test, np.ndarray):
+        test    = np.array(test)
 
     if effect_size == "mean_diff":
         return func_difference(control, test, np.mean, is_paired)
@@ -117,19 +123,11 @@ def func_difference(control:list|tuple|np.ndarray, # NaNs are automatically disc
             err = "The two arrays supplied do not have the same length."
             raise ValueError(err)
 
-        control_nan = np.where(np.isnan(control))[0]
-        test_nan    = np.where(np.isnan(test))[0]
+        non_nan_mask = ~np.isnan(control) & ~np.isnan(test)
+        control_non_nan = control[non_nan_mask]
+        test_non_nan = test[non_nan_mask]
 
-        indexes_to_drop = np.unique(np.concatenate([control_nan,
-                                                    test_nan]))
-
-        good_indexes = [i for i in range(0, len(control))
-                        if i not in indexes_to_drop]
-
-        control = control[good_indexes]
-        test    = test[good_indexes]
-
-        return func(test - control)
+        return func(test_non_nan - control_non_nan)
 
     
     control = control[~np.isnan(control)]
@@ -138,6 +136,7 @@ def func_difference(control:list|tuple|np.ndarray, # NaNs are automatically disc
 
 
 # %% ../../nbs/API/effsize.ipynb 7
+@njit(cache=True)
 def cohens_d(control:list|tuple|np.ndarray,
              test:list|tuple|np.ndarray,
              is_paired:str=None # If not None, the paired Cohen's d is returned.
@@ -182,12 +181,6 @@ def cohens_d(control:list|tuple|np.ndarray,
         - https://en.wikipedia.org/wiki/Standard_deviation#Corrected_sample_standard_deviation
     """
 
-    # Convert to numpy arrays for speed.
-    # NaNs are automatically dropped.
-    if ~isinstance(control, np.ndarray):
-        control = np.array(control)
-    if ~isinstance(test, np.ndarray):
-        test    = np.array(test)
     control = control[~np.isnan(control)]
     test    = test[~np.isnan(test)]
 
@@ -218,6 +211,7 @@ def cohens_d(control:list|tuple|np.ndarray,
     return M / divisor
 
 # %% ../../nbs/API/effsize.ipynb 8
+# @njit(cache=True) # It uses np.seterr which is not supported by Numba
 def cohens_h(control:list|tuple|np.ndarray, 
              test:list|tuple|np.ndarray
             )->float:
@@ -240,10 +234,6 @@ def cohens_h(control:list|tuple|np.ndarray,
     # Convert to numpy arrays for speed.
     # NaNs are automatically dropped.
     # Aligned with cohens_d calculation.
-    if ~isinstance(control, np.ndarray):
-        control = np.array(control)
-    if ~isinstance(test, np.ndarray):
-        test    = np.array(test)
     control = control[~np.isnan(control)]
     test = test[~np.isnan(test)]
 
@@ -272,10 +262,6 @@ def hedges_g(control:list|tuple|np.ndarray,
 
     # Convert to numpy arrays for speed.
     # NaNs are automatically dropped.
-    if ~isinstance(control, np.ndarray):
-        control = np.array(control)
-    if ~isinstance(test, np.ndarray):
-        test    = np.array(test)
     control = control[~np.isnan(control)]
     test    = test[~np.isnan(test)]
 
@@ -286,6 +272,29 @@ def hedges_g(control:list|tuple|np.ndarray,
     return correction_factor * d
 
 # %% ../../nbs/API/effsize.ipynb 10
+@njit(cache=True)
+def _mann_whitney_u(x, y):
+    """Numba-optimized Mann-Whitney U calculation"""
+    n1, n2 = len(x), len(y)
+    combined = np.concatenate((x, y))
+    
+    # Use numpy broadcasting for comparison
+    less_than = (combined.reshape(-1, 1) > combined).sum(axis=1)
+    equal_to = (combined.reshape(-1, 1) == combined).sum(axis=1)
+    
+    # Calculate ranks directly
+    ranks = less_than + (equal_to + 1) / 2
+    
+    R1 = np.sum(ranks[:n1])
+    U1 = R1 - (n1 * (n1 + 1)) / 2
+    return U1
+
+@njit(cache=True)
+def _cliffs_delta_core(control, test):
+    """Numba-optimized Cliff's delta calculation"""
+    U = _mann_whitney_u(test, control)
+    return ((2 * U) / (len(control) * len(test))) - 1
+
 def cliffs_delta(control:list|tuple|np.ndarray, 
                  test:list|tuple|np.ndarray
                 )->float:
@@ -293,28 +302,13 @@ def cliffs_delta(control:list|tuple|np.ndarray,
     Computes Cliff's delta for 2 samples.
     See [here](https://en.wikipedia.org/wiki/Effect_size#Effect_size_for_ordinal_data)
     """
-
-    # Convert to numpy arrays for speed.
-    # NaNs are automatically dropped.
-    if ~isinstance(control, np.ndarray):
-        control = np.array(control)
-    if ~isinstance(test, np.ndarray):
-        test    = np.array(test)
-
     c = control[~np.isnan(control)]
     t = test[~np.isnan(test)]
-
-    control_n = len(c)
-    test_n = len(t)
-
-    # Note the order of the control and test arrays.
-    U, _ = mannwhitneyu(t, c, alternative='two-sided')
-    cliffs_delta = ((2 * U) / (control_n * test_n)) - 1
-
-    return cliffs_delta
+    return _cliffs_delta_core(c, t)
 
 
 # %% ../../nbs/API/effsize.ipynb 11
+@njit(cache=True)
 def _compute_standardizers(control, test):
     """
     Computes the pooled and average standard deviations for two datasets.
@@ -348,9 +342,9 @@ def _compute_standardizers(control, test):
     control_n = len(control)
     test_n = len(test)
 
-    control_var = np.var(control, ddof=1) # use N-1 to compute the variance.
-    test_var = np.var(test, ddof=1)
-
+    # ddof parameter is not supported by numba.
+    control_var = np.var(control)*control_n/(control_n-1) # use N-1 to compute the variance.
+    test_var = np.var(test)*test_n/(test_n-1)
 
     # For unpaired 2-groups standardized mean difference.
     pooled = np.sqrt(((control_n - 1) * control_var + (test_n - 1) * test_var) /
@@ -379,6 +373,7 @@ def _compute_hedges_correction_factor(n1,
     """
 
     df = n1 + n2 - 2
+    # gamma function is not supported by numba.
     numer = gamma(df / 2)
     denom0 = gamma((df - 1) / 2)
     denom = np.sqrt(df / 2) * denom0
@@ -396,6 +391,7 @@ def _compute_hedges_correction_factor(n1,
     return out
 
 # %% ../../nbs/API/effsize.ipynb 13
+@njit(cache=True)
 def weighted_delta(difference, group_var):
     '''
     Compute the weighted deltas where the weight is the inverse of the
