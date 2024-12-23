@@ -6,8 +6,8 @@
 __all__ = ['merge_two_dicts', 'unpack_and_add', 'print_greeting', 'get_varname', 'get_unique_categories', 'get_params',
            'get_kwargs', 'get_color_palette', 'initialize_fig', 'get_plot_groups', 'add_counts_to_ticks',
            'extract_contrast_plotting_ticks', 'set_xaxis_ticks_and_lims', 'show_legend',
-           'Gardner_Altman_Plot_Aesthetic_Adjustments', 'Cumming_Plot_Aesthetic_Adjustments',
-           'General_Plot_Aesthetic_Adjustments']
+           'Gardner_Altman_Plot_Aesthetic_Adjustments', 'Cumming_Plot_Aesthetic_Adjustments', 'Redraw_Spines',
+           'extract_group_summaries']
 
 # %% ../nbs/API/misc_tools.ipynb 4
 import datetime as dt
@@ -17,6 +17,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib
+import matplotlib.axes as axes
 
 # %% ../nbs/API/misc_tools.ipynb 5
 def merge_two_dicts(
@@ -93,16 +94,20 @@ def get_unique_categories(names):
         # For dict_keys and other iterables
         return np.unique(list(names))
 
-def get_params(effectsize_df, plot_kwargs):
+def get_params(
+        effectsize_df: object, 
+        plot_kwargs: dict
+    ):
     """
+    Extracts parameters from the `effectsize_df` and `plot_kwargs` objects for use in the plotter function.
+    
     Parameters
     ----------
-    effectsize_df : object (Dataframe)
+    effectsize_df : object
         A `dabest` EffectSizeDataFrame object.
     plot_kwargs : dict
         Kwargs passed to the plot function.
     """
-    dabest_obj = effectsize_df.dabest_obj
     plot_data = effectsize_df._plot_data
     xvar = effectsize_df.xvar
     yvar = effectsize_df.yvar
@@ -111,9 +116,13 @@ def get_params(effectsize_df, plot_kwargs):
     mini_meta = effectsize_df.mini_meta
     effect_size = effectsize_df.effect_size
     proportional = effectsize_df.proportional
+    results = effectsize_df.results
+    dabest_obj = effectsize_df.dabest_obj
     all_plot_groups = dabest_obj._all_plot_groups
     idx = dabest_obj.idx
-
+    x1_level = dabest_obj.x1_level
+    experiment_label = dabest_obj.experiment_label
+    
     if effect_size not in ["mean_diff", "delta_g"] or not delta2:
         show_delta2 = False
     else:
@@ -153,27 +162,43 @@ def get_params(effectsize_df, plot_kwargs):
     err_color = plot_kwargs["err_color"]
     if err_color is None: 
         err_color = "black"
+
+    # Horizontal
+    horizontal = plot_kwargs["horizontal"]
+    if horizontal:
+        float_contrast = False
+
+    # Contrast Axes kwargs
+    halfviolin_alpha = plot_kwargs["halfviolin_alpha"]
+    ci_type = plot_kwargs["ci_type"]
         
     # Boolean for showing Baseline Curve
     show_baseline_ec = plot_kwargs["show_baseline_ec"]
         
     return (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, idx, 
-            show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type, group_summaries, err_color,
-            show_baseline_ec)
+            show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type, group_summaries, err_color, horizontal,
+            results, halfviolin_alpha, ci_type, x1_level, experiment_label, show_baseline_ec)
 
-def get_kwargs(plot_kwargs, ytick_color):
+def get_kwargs(
+        plot_kwargs: dict, 
+        ytick_color
+    ):
     """
+    Extracts the kwargs from the `plot_kwargs` object for use in the plotter function.
+
     Parameters
     ----------
     plot_kwargs : dict
         Kwargs passed to the plot function.
-    ytick_color : str
+    ytick_color : str or color list
         Color of the yticks.
     """
     from .misc_tools import merge_two_dicts
 
     # Swarmplot kwargs
-    default_swarmplot_kwargs = {"size": plot_kwargs["raw_marker_size"]}
+    default_swarmplot_kwargs = {
+        "size": plot_kwargs["raw_marker_size"]
+    }
     if plot_kwargs["swarmplot_kwargs"] is None:
         swarmplot_kwargs = default_swarmplot_kwargs
     else:
@@ -182,7 +207,10 @@ def get_kwargs(plot_kwargs, ytick_color):
         )
 
     # Barplot kwargs
-    default_barplot_kwargs = {"estimator": np.mean, "errorbar": plot_kwargs["ci"]}
+    default_barplot_kwargs = {
+        "estimator": np.mean, 
+        "errorbar": plot_kwargs["ci"],
+    }
     if plot_kwargs["barplot_kwargs"] is None:
         barplot_kwargs = default_barplot_kwargs
     else:
@@ -213,6 +241,7 @@ def get_kwargs(plot_kwargs, ytick_color):
         "vert": True,
         "showextrema": False,
         "showmedians": False,
+        
     }
     if plot_kwargs["violinplot_kwargs"] is None:
         violinplot_kwargs = default_violinplot_kwargs
@@ -222,7 +251,12 @@ def get_kwargs(plot_kwargs, ytick_color):
         )
 
     # Slopegraph kwargs.
-    default_slopegraph_kwargs = {"linewidth": 1, "alpha": 0.5}
+    default_slopegraph_kwargs = {
+        "linewidth": 1, 
+        "alpha": 0.5,
+        'jitter': 0, 
+        'jitter_seed': 9876543210
+    }
     if plot_kwargs["slopegraph_kwargs"] is None:
         slopegraph_kwargs = default_slopegraph_kwargs
     else:
@@ -245,7 +279,10 @@ def get_kwargs(plot_kwargs, ytick_color):
         )
 
     # Legend kwargs.
-    default_legend_kwargs = {"loc": "upper left", "frameon": False}
+    default_legend_kwargs = {
+        "loc": "upper left", 
+        "frameon": False,
+    }
     if plot_kwargs["legend_kwargs"] is None:
         legend_kwargs = default_legend_kwargs
     else:
@@ -254,18 +291,29 @@ def get_kwargs(plot_kwargs, ytick_color):
         )
 
     # Group summaries kwargs.
-    gs_default = {"mean_sd", "median_quartiles", None}
+    gs_default = {
+        "mean_sd", 
+        "median_quartiles", 
+        None
+    }
     if plot_kwargs["group_summaries"] not in gs_default:
         raise ValueError(
             "group_summaries must be one of" " these: {}.".format(gs_default)
         )
 
-    default_group_summary_kwargs = {"zorder": 3, "lw": 2, "alpha": 1}
-    if plot_kwargs["group_summary_kwargs"] is None:
-        group_summary_kwargs = default_group_summary_kwargs
+    default_group_summaries_kwargs = {
+                        "zorder": 3, 
+                        "lw": 2, 
+                        "alpha": 1,
+                        'gap_width_percent': 1.5,
+                        'offset': 0.1,
+                        'color': None
+    }
+    if plot_kwargs["group_summaries_kwargs"] is None:
+        group_summaries_kwargs = default_group_summaries_kwargs
     else:
-        group_summary_kwargs = merge_two_dicts(
-            default_group_summary_kwargs, plot_kwargs["group_summary_kwargs"]
+        group_summaries_kwargs = merge_two_dicts(
+            default_group_summaries_kwargs, plot_kwargs["group_summaries_kwargs"]
         )
 
     # Redraw axes kwargs.
@@ -278,47 +326,187 @@ def get_kwargs(plot_kwargs, ytick_color):
     }
     
     # Delta dots kwargs.
-    default_delta_dot_kwargs = {"marker": "^", "alpha": 0.5, "zorder": 2, "size": 3, "side": "right"}
+    default_delta_dot_kwargs = {
+                "color": 'k',
+                "marker": "^", 
+                "alpha": 0.5, 
+                "zorder": -1, 
+                "size": 3, 
+                "side": "right"
+    }
     if plot_kwargs["delta_dot_kwargs"] is None:
         delta_dot_kwargs = default_delta_dot_kwargs
     else:
         delta_dot_kwargs = merge_two_dicts(default_delta_dot_kwargs, plot_kwargs["delta_dot_kwargs"])
 
     # Delta text kwargs.
-    default_delta_text_kwargs = {"color": None, "alpha": 1, "fontsize": 10, "ha": 'center', "va": 'center', "rotation": 0, "x_location": 'right', "x_coordinates": None, "y_coordinates": None}
+    default_delta_text_kwargs = {
+                "color": None, 
+                "alpha": 1,
+                "fontsize": 10, 
+                "ha": 'center', 
+                "va": 'center', 
+                "rotation": 0, 
+                "x_location": 'right', 
+                "x_coordinates": None, 
+                "y_coordinates": None,
+                "offset": 0
+    }
     if plot_kwargs["delta_text_kwargs"] is None:
         delta_text_kwargs = default_delta_text_kwargs
     else:
         delta_text_kwargs = merge_two_dicts(default_delta_text_kwargs, plot_kwargs["delta_text_kwargs"])
 
     # Summary bars kwargs.
-    default_summary_bars_kwargs = {"color": None, "alpha": 0.15}
+    default_summary_bars_kwargs = {
+                    "span_ax": False,
+                    "color": None, 
+                    "alpha": 0.15,
+                    "zorder":-3
+    }
     if plot_kwargs["summary_bars_kwargs"] is None:
         summary_bars_kwargs = default_summary_bars_kwargs
     else:
         summary_bars_kwargs = merge_two_dicts(default_summary_bars_kwargs, plot_kwargs["summary_bars_kwargs"])
 
     # Swarm bars kwargs.
-    default_swarm_bars_kwargs = {"color": None, "alpha": 0.3}
+    default_swarm_bars_kwargs = {
+                    "color": None, 
+                    "zorder":-3
+    }
     if plot_kwargs["swarm_bars_kwargs"] is None:
         swarm_bars_kwargs = default_swarm_bars_kwargs
     else:
         swarm_bars_kwargs = merge_two_dicts(default_swarm_bars_kwargs, plot_kwargs["swarm_bars_kwargs"])
 
     # Contrast bars kwargs.
-    default_contrast_bars_kwargs = {"color": None, "alpha": 0.3}
+    default_contrast_bars_kwargs = {
+                    "color": None, 
+                    "zorder":-3
+    }
     if plot_kwargs["contrast_bars_kwargs"] is None:
         contrast_bars_kwargs = default_contrast_bars_kwargs
     else:
         contrast_bars_kwargs = merge_two_dicts(default_contrast_bars_kwargs, plot_kwargs["contrast_bars_kwargs"])
 
+    # Table axes for horizontal plot kwargs.
+    default_table_kwargs = {
+                'show': True,
+                'color' : 'yellow',
+                'alpha' : 0.2,
+                'fontsize' : 12,
+                'text_color' : 'black', 
+                'text_units' : None,
+                'control_marker' : '-',
+                'fontsize_label': 12,
+                'label': 'Δ'
+    }
+    if plot_kwargs["horizontal_table_kwargs"] is None:
+        table_kwargs = default_table_kwargs
+    else:
+        table_kwargs = merge_two_dicts(default_table_kwargs, plot_kwargs["horizontal_table_kwargs"])
+
+    # Gridkey kwargs.
+    default_gridkey_kwargs = {
+                'show_es' : True,                   # If True, the gridkey will show the effect size of each comparison.
+                'show_Ns' :True,                    # If True, the gridkey will show the number of observations in eachgroup.
+                'merge_pairs' : False,              # If True, the gridkey will merge the pairs of groups into a single cell. This is useful for when the groups are paired.
+                'delimiters': [';', '>', '_'],      # Delimiters to split the group names.
+                'marker': "\u25CF",                 # Marker for the gridkey dots.
+    }
+    if plot_kwargs["gridkey_kwargs"] is None:
+        gridkey_kwargs = default_gridkey_kwargs
+    else:
+        gridkey_kwargs = merge_two_dicts(default_gridkey_kwargs, plot_kwargs["gridkey_kwargs"])
+
+    # Effect size marker kwargs
+    default_es_marker_kwargs = {
+                'marker': 'o',
+                'markersize': plot_kwargs['es_marker_size'],
+                'color': ytick_color,
+                'alpha': 1,
+                'zorder': 2,
+    }
+    if plot_kwargs['es_marker_kwargs'] is None:
+        es_marker_kwargs = default_es_marker_kwargs
+    else:
+        es_marker_kwargs = merge_two_dicts(default_es_marker_kwargs, plot_kwargs['es_marker_kwargs'])
+
+    # Effect size error bar kwargs
+    default_es_errorbar_kwargs = {
+                'color': ytick_color,
+                'lw': 2,
+                'linestyle': '-',
+                'alpha': 1,
+                'zorder': 1,
+    }
+    if plot_kwargs['es_errorbar_kwargs'] is None:
+        es_errorbar_kwargs = default_es_errorbar_kwargs
+    else:
+        es_errorbar_kwargs = merge_two_dicts(default_es_errorbar_kwargs, plot_kwargs['es_errorbar_kwargs'])
+
+    # Prop sample counts kwargs
+    default_prop_sample_counts_kwargs = {
+                                        'color': 'k', 
+                                        'zorder': 5, 
+                                        'ha': 'center', 
+                                        'va': 'center'
+    }
+    if plot_kwargs['prop_sample_counts_kwargs'] is None:
+        prop_sample_counts_kwargs = default_prop_sample_counts_kwargs
+    else:
+        prop_sample_counts_kwargs = merge_two_dicts(default_prop_sample_counts_kwargs, plot_kwargs['prop_sample_counts_kwargs'])
+
+
+    # RM Lines kwargs
+    default_es_paired_lines_kwargs = {
+        "linestyle": "-",
+        "linewidth": 2,
+        "zorder": -2,
+        "color": 'dimgray',
+        "alpha": 1
+    }
+    if plot_kwargs["es_paired_lines_kwargs"] is None:
+        es_paired_lines_kwargs = default_es_paired_lines_kwargs
+    else:
+        es_paired_lines_kwargs = merge_two_dicts(default_es_paired_lines_kwargs, plot_kwargs["es_paired_lines_kwargs"])
+
+    # Return the kwargs.
     return (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs, 
-            reflines_kwargs, legend_kwargs, group_summary_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
-            delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs)
+            reflines_kwargs, legend_kwargs, group_summaries_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
+            delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs,
+            es_marker_kwargs, es_errorbar_kwargs, prop_sample_counts_kwargs, es_paired_lines_kwargs)
 
 
-def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_groups):
+def get_color_palette(
+        plot_kwargs: dict, 
+        plot_data: pd.DataFrame, 
+        xvar: str, 
+        show_pairs: bool, 
+        idx: list, 
+        all_plot_groups: list,
+        delta2: bool,
+    ):
+    """
+    Create the color palette to be used in the plotter function.
 
+    Parameters
+    ----------
+    plot_kwargs : dict
+        Kwargs passed to the plot function.
+    plot_data : object (Dataframe)
+        A dataframe of plot data.
+    xvar : str
+        The name of the x-axis variable.
+    show_pairs : bool
+        A boolean flag to determine if the plot is for paired data.
+    idx : list
+        A list of tuples containing the group names.
+    all_plot_groups : list
+        A list of all the group names.
+    delta2 : bool
+        A boolean flag to determine if the plot will have a delta-delta effect size.
+    """
     # Create color palette that will be shared across subplots.
     color_col = plot_kwargs["color_col"]
     if color_col is None:
@@ -331,6 +519,7 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_gr
         bootstraps_color_by_group = False
     if show_pairs:
         bootstraps_color_by_group = False
+
     # Handle the color palette.
     filled = True
     empty_circle = plot_kwargs["empty_circle"]
@@ -367,9 +556,16 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_gr
             unsat_colors = [sns.color_palette("gray")[3]] + unsat_colors
     else:
         if isinstance(custom_pal, dict):
-            groups_in_palette = {
-                k: custom_pal[k] for k in all_plot_groups if k in color_groups
-            }
+            if delta2:
+                groups_in_palette = {
+                    k: custom_pal[k] for k in color_groups
+                }
+            elif color_col is None:
+                groups_in_palette = {
+                    k: custom_pal[k] for k in all_plot_groups if k in color_groups
+                }
+            else:
+                raise ValueError("The `custom_palette` dictionary is not supported when `color_col` is None.")
 
             names = groups_in_palette.keys()
             unsat_colors = groups_in_palette.values()
@@ -416,8 +612,7 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_gr
         if color_by_subgroups:
             plot_palette_raw = dict()
             plot_palette_contrast = dict()
-            # plot_palette_bar set to None because currently there is no empty_circle toggle for proportion plots
-            plot_palette_bar = None
+            plot_palette_bar = None  # plot_palette_bar set to None because currently there is no empty_circle toggle for proportion plots
             for i in range(len(idx)):
                 for names_i in idx[i]:
                     plot_palette_raw[names_i] = swarm_colors[i]
@@ -429,40 +624,89 @@ def get_color_palette(plot_kwargs, plot_data, xvar, show_pairs, idx, all_plot_gr
 
         plot_palette_sankey = custom_pal
 
-    return (color_col, bootstraps_color_by_group, n_groups, filled, swarm_colors, plot_palette_raw, 
-            bar_color, plot_palette_bar, plot_palette_contrast, plot_palette_sankey)
+    return (color_col, bootstraps_color_by_group, n_groups, filled, plot_palette_raw, bar_color, 
+            plot_palette_bar, plot_palette_contrast, plot_palette_sankey)
 
-def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_paired, show_pairs, proportional,
-                   float_contrast):
+def initialize_fig(
+        plot_kwargs: dict, 
+        dabest_obj: object, 
+        show_delta2: bool, 
+        show_mini_meta: bool, 
+        is_paired: bool, 
+        show_pairs: bool, 
+        proportional: bool,
+        float_contrast: bool,
+        effect_size_type: str, 
+        yvar: str, 
+        horizontal: bool, 
+        show_table: bool
+    ):
+    """
+    Initialize the figure and axes for the plotter function.
+
+    Parameters
+    ----------
+    plot_kwargs : dict
+        Kwargs passed to the plot function.
+    dabest_obj : object (EffectSizeDataFrame)
+        A `dabest` EffectSizeDataFrame object.
+    show_delta2 : bool
+        A boolean flag to determine if the plot will have a delta-delta effect size.
+    show_mini_meta : bool
+        A boolean flag to determine if the plot will have a mini-meta effect size.
+    is_paired : bool
+        A boolean flag to determine if the plot is for paired data.
+    show_pairs : bool
+        A boolean flag to determine if the plot will show the paired data.
+    proportional : bool
+        A boolean flag to determine if the plot is for proportional data.
+    float_contrast : bool
+        A boolean flag to determine if the plot is for floating contrast data.
+    effect_size_type : str
+        The type of effect size to be plotted.
+    yvar : str
+        The name of the y-axis variable.
+    horizontal : bool
+        A boolean flag to determine if the plot is for horizontal plotting.
+    show_table : dict
+        A boolean flag to determine if the table will be shown in horizontal plot.
+    """
     # Params
     fig_size = plot_kwargs["fig_size"]
     face_color = plot_kwargs["face_color"]
     if plot_kwargs["face_color"] is None:
         face_color = "white"
 
+    # Create Figure and Axes
     if fig_size is None:
         all_groups_count = np.sum([len(i) for i in dabest_obj.idx])
-        # Increase the width for delta-delta graph
+        # Increase the width (vertical layout) or height (horizontal layout) for delta-delta or mini-meta graph
         if show_delta2 or show_mini_meta:
             all_groups_count += 2
-        if is_paired and show_pairs and proportional is False:
-            frac = 0.8
+   
+        if horizontal:
+            frac = 0.3 if is_paired or show_mini_meta else 0.5
+            fig_size = (7, 1 + (frac * all_groups_count))
         else:
-            frac = 1
-        if float_contrast:
-            height_inches = 4
-            each_group_width_inches = 2.5 * frac
-        else:
-            height_inches = 6
-            each_group_width_inches = 1.5 * frac
+            if is_paired and show_pairs and proportional is False:
+                frac = 0.8
+            else:
+                frac = 1
+            if float_contrast:
+                height_inches = 4
+                each_group_width_inches = 2.5 * frac
+            else:
+                height_inches = 6
+                each_group_width_inches = 1.5 * frac
 
-        width_inches = each_group_width_inches * all_groups_count
-        fig_size = (width_inches, height_inches)
+            width_inches = each_group_width_inches * all_groups_count
+            fig_size = (width_inches, height_inches) 
 
     init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"], tight_layout=True)
-    width_ratios_ga = [2.5, 1]
 
-    h_space_cummings = 0.3 if plot_kwargs["gridkey_rows"] == None else 0.1     ##### GRIDKEY WIP addition
+    width_ratios_ga = [2.5, 1]
+    h_space_cummings = (0.1 if plot_kwargs["gridkey_rows"] is not None
+                        else 0.3)
 
     if plot_kwargs["ax"] is not None:
         # New in v0.2.6.
@@ -474,69 +718,215 @@ def initialize_fig(plot_kwargs, dabest_obj, show_delta2, show_mini_meta, is_pair
         fig = rawdata_axes.get_figure()
         fig.patch.set_facecolor(face_color)
 
-        if float_contrast:
-            axins = rawdata_axes.inset_axes(
-                [1, 0, width_ratios_ga[1] / width_ratios_ga[0], 1]
-            )
-            rawdata_axes.set_position(  # [l, b, w, h]
-                [
-                    ax_position.x0,
-                    ax_position.y0,
-                    (ax_position.x1 - ax_position.x0)
-                    * (width_ratios_ga[0] / sum(width_ratios_ga)),
-                    (ax_position.y1 - ax_position.y0),
-                ]
-            )
+        if horizontal:
+            plot_width_ratios = [1, 0.7, 0.3]
+            contrast_wspace = 0.05
+            contrast_axes = rawdata_axes.inset_axes(
+                    [1+contrast_wspace, 0, (plot_width_ratios[1]/plot_width_ratios[0]), 1]
+                    )
+            if show_table:
+                table_axes = rawdata_axes.inset_axes(
+                        [1+contrast_wspace+(plot_width_ratios[1]/plot_width_ratios[0]), 0, (plot_width_ratios[2]/plot_width_ratios[0]), 1]
+                        )
+            else:
+                table_axes = None
 
-            contrast_axes = axins
-        else:
-            axins = rawdata_axes.inset_axes([0, -1 - h_space_cummings, 1, 1])
-            plot_height = (ax_position.y1 - ax_position.y0) / (2 + h_space_cummings)
             rawdata_axes.set_position(
-                [
-                    ax_position.x0,
-                    ax_position.y0 + (1 + h_space_cummings) * plot_height,
-                    (ax_position.x1 - ax_position.x0),
-                    plot_height,
-                ]
-            )
+                    [ax_position.x0,
+                     ax_position.y0,
+                     (ax_position.x1 - ax_position.x0) * (plot_width_ratios[0] / sum(plot_width_ratios)),
+                     (ax_position.y1 - ax_position.y0)]
+                     )
+            rawdata_axes.contrast_axes = contrast_axes
+            rawdata_axes.table_axes = table_axes
+        
+        else:
+            if float_contrast:
+                axins = rawdata_axes.inset_axes(
+                    [1, 0, width_ratios_ga[1] / width_ratios_ga[0], 1]
+                )
+                rawdata_axes.set_position(  # [l, b, w, h]
+                    [
+                        ax_position.x0,
+                        ax_position.y0,
+                        (ax_position.x1 - ax_position.x0)
+                        * (width_ratios_ga[0] / sum(width_ratios_ga)),
+                        (ax_position.y1 - ax_position.y0),
+                    ]
+                )
 
-        contrast_axes = axins
-        rawdata_axes.contrast_axes = axins
+                contrast_axes = axins
+            else:
+                axins = rawdata_axes.inset_axes([0, -1 - h_space_cummings, 1, 1])
+                plot_height = (ax_position.y1 - ax_position.y0) / (2 + h_space_cummings)
+                rawdata_axes.set_position(
+                    [
+                        ax_position.x0,
+                        ax_position.y0 + (1 + h_space_cummings) * plot_height,
+                        (ax_position.x1 - ax_position.x0),
+                        plot_height,
+                    ]
+                )
+
+            # Set axes
+            contrast_axes = axins
+            rawdata_axes.contrast_axes = axins
+            table_axes = None
 
     else:
         # Here, we hardcode some figure parameters.
-        if float_contrast:
-            fig, axx = plt.subplots(
-                ncols=2,
-                gridspec_kw={"width_ratios": width_ratios_ga, "wspace": 0},
-                **init_fig_kwargs
-            )
-            fig.patch.set_facecolor(face_color)
-
+        if horizontal:
+            if show_table:
+                fig, axx = plt.subplots(
+                    ncols=3, gridspec_kw={'width_ratios' : [1,0.7,0.3], 'wspace' : 0.05}, **init_fig_kwargs
+                )
+            else:
+                fig, axx = plt.subplots(
+                    ncols=2, gridspec_kw={'width_ratios' : [1,0.7], 'wspace' : 0.05}, **init_fig_kwargs
+                )
         else:
-            fig, axx = plt.subplots(
-                nrows=2, gridspec_kw={"hspace": h_space_cummings}, **init_fig_kwargs
-            )
-            fig.patch.set_facecolor(face_color)
+            if float_contrast:
+                fig, axx = plt.subplots(
+                    ncols=2,
+                    gridspec_kw={"width_ratios": width_ratios_ga, "wspace": 0},
+                    **init_fig_kwargs
+                )
+            else:
+                fig, axx = plt.subplots(
+                    nrows=2, gridspec_kw={"hspace": h_space_cummings}, **init_fig_kwargs
+                )
+        fig.patch.set_facecolor(face_color)
 
         # Title
         title = plot_kwargs["title"]
         fontsize_title = plot_kwargs["fontsize_title"]
         if title is not None:
             fig.suptitle(title, fontsize=fontsize_title)
+
+        # Set axes   
         rawdata_axes = axx[0]
         contrast_axes = axx[1]
+        table_axes = axx[2] if horizontal and show_table else None
+
     rawdata_axes.set_frame_on(False)
     contrast_axes.set_frame_on(False)
-
+    if horizontal and show_table:
+        table_axes.set_frame_on(False)
+    
+    # Swarmplot ylim (Vertical) or xlim (Horizontal)
     swarm_ylim = plot_kwargs["swarm_ylim"]
     if swarm_ylim is not None:
-        rawdata_axes.set_ylim(swarm_ylim)
+        if not isinstance(swarm_ylim, list) and not isinstance(swarm_ylim, tuple) or len(swarm_ylim) != 2:
+            raise ValueError("`swarm_ylim` must be a tuple/list of the lower and upper bound.")
+        if horizontal:
+            rawdata_axes.set_xlim(swarm_ylim)
+        else:
+            rawdata_axes.set_ylim(swarm_ylim)
 
-    return fig, rawdata_axes, contrast_axes, swarm_ylim
+    # Contrastplot ylim (Vertical) or xlim (Horizontal)
+    if horizontal or not float_contrast:
+        contrast_ylim, delta2_ylim = plot_kwargs["contrast_ylim"], plot_kwargs["delta2_ylim"]
+        if contrast_ylim is not None or (delta2_ylim is not None and show_delta2):
+            if contrast_ylim is not None:
+                if delta2_ylim is not None and show_delta2:
+                    if contrast_ylim != delta2_ylim:
+                        raise ValueError("Please check if `contrast_ylim` and `delta2_ylim` are assigned with same values.")
+            else:
+                contrast_ylim = delta2_ylim
 
-def get_plot_groups(is_paired, idx, proportional, all_plot_groups):
+            if not isinstance(contrast_ylim, list) and not isinstance(contrast_ylim, tuple) or len(contrast_ylim) != 2:
+                raise ValueError("`contrast_ylim` must be a tuple/list of the lower and upper bound.")
+
+            if effect_size_type == "cliffs_delta":
+                # Ensure the ylims for a cliffs_delta plot never exceed [-1, 1].
+                l = contrast_ylim[0]
+                h = contrast_ylim[1]
+                low = -1 if l < -1 else l
+                high = 1 if h > 1 else h
+                if horizontal:
+                    contrast_axes.set_xlim(low, high)
+                else:
+                    contrast_axes.set_ylim(low, high)
+            else:
+                if horizontal:
+                    contrast_axes.set_xlim(contrast_ylim)
+                else:
+                    contrast_axes.set_ylim(contrast_ylim)
+
+    # Set raw axes y-label.
+    swarm_label, bar_label = plot_kwargs["swarm_label"], plot_kwargs["bar_label"]
+    if swarm_label is None:
+        swarm_label = yvar if yvar is not None else "value"
+    if bar_label is None:
+        bar_label = "proportion of success" if effect_size_type != "cohens_h" else "value"
+
+    fontsize_rawylabel = plot_kwargs["fontsize_rawylabel"]
+    rawdata_label = bar_label if proportional else swarm_label
+    if horizontal:
+        rawdata_axes.set_xlabel(rawdata_label, fontsize=fontsize_rawylabel)
+        rawdata_axes.set_ylabel("")
+    else:
+        rawdata_axes.set_ylabel(rawdata_label, fontsize=fontsize_rawylabel)
+        rawdata_axes.set_xlabel("")
+
+    # Set contrast axes y-label.
+    contrast_label_dict = {
+        "mean_diff": "mean difference",
+        "median_diff": "median difference",
+        "cohens_d": "Cohen's d",
+        "hedges_g": "Hedges' g",
+        "cliffs_delta": "Cliff's delta",
+        "cohens_h": "Cohen's h",
+        "delta_g": "mean difference",
+    }
+
+    if proportional and effect_size_type != "cohens_h":
+        default_contrast_label = "proportion difference"
+    elif effect_size_type == "delta_g":
+        default_contrast_label = "Hedges' g"
+    else:
+        default_contrast_label = contrast_label_dict[effect_size_type]
+
+    if plot_kwargs["contrast_label"] is None:
+        if is_paired:
+            contrast_label = "paired\n{}".format(default_contrast_label)
+        else:
+            contrast_label = default_contrast_label
+        contrast_label = contrast_label.capitalize()
+    else:
+        contrast_label = plot_kwargs["contrast_label"]
+
+    fontsize_contrastylabel = plot_kwargs["fontsize_contrastylabel"]
+
+    if horizontal:
+        contrast_axes.set_xlabel(contrast_label, fontsize=fontsize_contrastylabel)
+    else:
+        contrast_axes.set_ylabel(contrast_label, fontsize=fontsize_contrastylabel)
+        if float_contrast:
+            contrast_axes.yaxis.set_label_position("right")
+
+    return fig, rawdata_axes, contrast_axes, table_axes
+
+def get_plot_groups(
+        is_paired: bool, 
+        idx: list, 
+        proportional: bool, 
+        all_plot_groups: list
+    ):
+    """
+    Extract the plot groups from the `idx` object for use in the plotter function.
+
+    Parameters
+    ----------
+    is_paired : bool
+        A boolean flag to determine if the plot is for paired data.
+    idx : list
+        A list of tuples containing the group names.
+    proportional : bool
+        A boolean flag to determine if the plot is for proportional data.
+    all_plot_groups : list
+        A list of all the group names.
+    """
 
     if is_paired == "baseline":
         idx_pairs = [
@@ -558,7 +948,37 @@ def get_plot_groups(is_paired, idx, proportional, all_plot_groups):
     return temp_idx, temp_all_plot_groups
 
 
-def add_counts_to_ticks(plot_data, xvar, yvar, rawdata_axes, plot_kwargs):
+def add_counts_to_ticks(
+        plot_data: pd.DataFrame, 
+        xvar: str, 
+        yvar: str, 
+        rawdata_axes: axes.Axes, 
+        plot_kwargs: dict, 
+        flow: bool, 
+        horizontal: bool
+    ):
+    """
+
+    Add the counts to the raw data axes labels.
+
+    Parameters
+    ----------
+    plot_data : object (Dataframe)
+        A dataframe of plot data.
+    xvar : str
+        The name of the x-axis variable.
+    yvar : str
+        The name of the y-axis variable.
+    rawdata_axes : object (Axes)
+        The raw data axes.
+    plot_kwargs : dict
+        Kwargs passed to the plot function.
+    flow : bool
+        Whether sankey flow is enabled or not.
+    horizontal : bool
+        A boolean flag to determine if the plot is for horizontal plotting.
+    """
+
     # Add the counts to the rawdata axes xticks.
     counts = plot_data.groupby(xvar, observed=False).count()[yvar]
     
@@ -574,23 +994,61 @@ def add_counts_to_ticks(plot_data, xvar, yvar, rawdata_axes, plot_kwargs):
                 pass
         print(f"Key '{text}' not found in counts.")
         return "N/A"
-
+    
     ticks_with_counts = []
-    for xticklab in rawdata_axes.get_xticklabels():
-        t = xticklab.get_text()
-        te = t.split('\n')[-1]  # Get the last line of the label
+    if horizontal:
+        get_label, get_ticks = rawdata_axes.get_yticklabels, rawdata_axes.get_yticks
+        set_label, set_major_loc_method= rawdata_axes.set_yticklabels, rawdata_axes.yaxis.set_major_locator
+    else:
+        get_label, get_ticks = rawdata_axes.get_xticklabels, rawdata_axes.get_xticks
+        set_label, set_major_loc_method = rawdata_axes.set_xticklabels, rawdata_axes.xaxis.set_major_locator
+    
+    for ticklab in get_label():
+        t = ticklab.get_text()
+
+        if horizontal and not flow:
+            te = t.split('v.s. ')[-1]  # Get the last line of the label
+        else:
+            te = t.split('\n')[-1]  # Get the last line of the label
+
         value = lookup_value(te)
-        ticks_with_counts.append(f"{t}\nN = {value}")
+        if horizontal:
+            ticks_with_counts.append(f"{t} (N={value})")
+        else:
+            ticks_with_counts.append(f"{t}\n(N={value})")
 
     fontsize_rawxlabel = plot_kwargs.get("fontsize_rawxlabel")
-    rawdata_axes.set_xticklabels(ticks_with_counts, fontsize=fontsize_rawxlabel)
+    set_label(ticks_with_counts, fontsize=fontsize_rawxlabel)
 
     # Ensure ticks are at the correct locations
-    rawdata_axes.xaxis.set_major_locator(plt.FixedLocator(rawdata_axes.get_xticks()))
+    set_major_loc_method(plt.FixedLocator(get_ticks()))
 
+def extract_contrast_plotting_ticks(
+        is_paired: bool, 
+        show_pairs: bool, 
+        two_col_sankey: bool, 
+        plot_groups: list, 
+        idx: list, 
+        sankey_control_group: list
+    ):
+    """
+    Extract the contrast plotting ticks from the `idx` object for use in the plotter function.
 
-def extract_contrast_plotting_ticks(is_paired, show_pairs, two_col_sankey, plot_groups, idx, sankey_control_group):
-
+    Parameters
+    ----------
+    is_paired : bool
+        A boolean flag to determine if the plot is for paired data.
+    show_pairs : bool
+        A boolean flag to determine if the plot will show the paired data.
+    two_col_sankey : bool
+        A boolean flag to determine if the plot will show a two-column sankey diagram.
+    plot_groups : list
+        A list of the plot groups.
+    idx : list
+        A list of tuples containing the group names.
+    sankey_control_group : list
+        A list of the control group names.
+    """
     # Take note of where the `control` groups are.
     ticks_to_skip_contrast = None
     ticks_to_start_twocol_sankey = None
@@ -602,8 +1060,7 @@ def extract_contrast_plotting_ticks(is_paired, show_pairs, two_col_sankey, plot_
             ticks_to_start_twocol_sankey.pop()
             ticks_to_start_twocol_sankey.insert(0, 0)
         else:
-            # ticks_to_skip = np.arange(0, len(temp_all_plot_groups), 2).tolist()
-            # ticks_to_plot = np.arange(1, len(temp_all_plot_groups), 2).tolist()
+
             ticks_to_skip = np.cumsum([len(t) for t in idx])[:-1].tolist()
             ticks_to_skip.insert(0, 0)
             # Then obtain the ticks where we have to plot the effect sizes.
@@ -635,46 +1092,147 @@ def extract_contrast_plotting_ticks(is_paired, show_pairs, two_col_sankey, plot_
     
     return ticks_to_skip, ticks_to_plot, ticks_for_baseline_ec, ticks_to_skip_contrast, ticks_to_start_twocol_sankey
 
-def set_xaxis_ticks_and_lims(show_delta2, show_mini_meta, rawdata_axes, contrast_axes, show_pairs, float_contrast,
-                             ticks_to_skip, contrast_xtick_labels, plot_kwargs):
+def set_xaxis_ticks_and_lims(
+        show_delta2: bool, 
+        show_mini_meta: bool, 
+        rawdata_axes: axes.Axes, 
+        contrast_axes: axes.Axes, 
+        show_pairs: bool, 
+        float_contrast: bool,
+        ticks_to_skip: list, 
+        contrast_xtick_labels: list, 
+        plot_kwargs: dict, 
+        proportional: bool, 
+        horizontal: bool):
+    """
+    Set the x-axis/yaxis ticks and limits for the plotter function.
 
-    if show_delta2 is False and show_mini_meta is False:
-        contrast_axes.set_xticks(rawdata_axes.get_xticks())
-    else:
-        temp = rawdata_axes.get_xticks()
-        temp = np.append(temp, [max(temp) + 1, max(temp) + 2])
-        contrast_axes.set_xticks(temp)
+    Parameters
+    ----------
+    show_delta2 : bool
+        A boolean flag to determine if the plot will have a delta-delta effect size.
+    show_mini_meta : bool
+        A boolean flag to determine if the plot will have a mini-meta effect size.
+    rawdata_axes : object (Axes)
+        The raw data axes.
+    contrast_axes : object (Axes)
+        The contrast axes.
+    show_pairs : bool
+        A boolean flag to determine if the plot will show the paired data.
+    float_contrast : bool
+        A boolean flag to determine if the plot is a GA or Cumming design.
+    ticks_to_skip : list
+        A list of ticks to skip.
+    contrast_xtick_labels : list
+        A list of contrast xtick labels.
+    plot_kwargs : dict
+        Kwargs passed to the plot function.
+    proportional: bool
+        A boolean flag to determine if the plot is a proportional plot.
+    horizontal : bool
+        A boolean flag to determine if the plot is for horizontal plotting.
+    """
 
-    if show_pairs:
-        max_x = contrast_axes.get_xlim()[1]
-        rawdata_axes.set_xlim(-0.375, max_x)
-
-    if float_contrast:
-        contrast_axes.set_xlim(0.5, 1.5)
-    elif show_delta2 or show_mini_meta:
-        # Increase the xlim of raw data by 2
-        temp = rawdata_axes.get_xlim()
-        if show_pairs:
-            rawdata_axes.set_xlim(temp[0], temp[1] + 0.25)
+    if horizontal:
+        # Ticks
+        if show_delta2 is False and show_mini_meta is False:
+            contrast_axes.set_yticks(rawdata_axes.get_yticks())
         else:
-            rawdata_axes.set_xlim(temp[0], temp[1] + 2)
-        contrast_axes.set_xlim(rawdata_axes.get_xlim())
+            temp = rawdata_axes.get_yticks()
+            temp = np.append(temp, [max(temp) + 0, max(temp) + 1])
+            contrast_axes.set_yticks(temp)       
+
+        # Lims
+        if show_pairs:
+            max_x = contrast_axes.get_ylim()[1]
+            rawdata_axes.set_ylim(-0.375, max_x)
+
+            if proportional:
+                rawdata_axes.set_ylim(-0.375, max_x+0.1)
+
+        if show_delta2 or show_mini_meta:
+            # Increase the ylim of raw data by 2
+            temp = rawdata_axes.get_ylim()
+            if show_pairs:
+                rawdata_axes.set_ylim(temp[0], temp[1] + 0.00)
+            else:
+                rawdata_axes.set_ylim(temp[0], temp[1] + 1)
+            contrast_axes.set_ylim(rawdata_axes.get_ylim())
+        else:
+            contrast_axes.set_ylim(rawdata_axes.get_ylim())
+    # Vertical
     else:
-        contrast_axes.set_xlim(rawdata_axes.get_xlim())
+        # Ticks
+        if show_delta2 is False and show_mini_meta is False:
+            contrast_axes.set_xticks(rawdata_axes.get_xticks())
+        else:
+            temp = rawdata_axes.get_xticks()
+            temp = np.append(temp, [max(temp) + 1, max(temp) + 2])
+            contrast_axes.set_xticks(temp)
 
-    # Properly label the contrast ticks.
-    for t in ticks_to_skip:
-        contrast_xtick_labels.insert(t, "")
+        # Lims
+        if show_pairs:
+            max_x = contrast_axes.get_xlim()[1]
+            rawdata_axes.set_xlim(-0.375, max_x)
 
-    if plot_kwargs["fontsize_contrastxlabel"] is not None:
-        fontsize_contrastxlabel = plot_kwargs["fontsize_contrastxlabel"]
+        if float_contrast:
+            contrast_axes.set_xlim(0.5, 1.5)
+        elif show_delta2 or show_mini_meta:
+            # Increase the xlim of raw data by 2
+            temp = rawdata_axes.get_xlim()
+            if show_pairs:
+                rawdata_axes.set_xlim(temp[0], temp[1] + 0.5)
+            else:
+                rawdata_axes.set_xlim(temp[0], temp[1] + 2)
+            contrast_axes.set_xlim(rawdata_axes.get_xlim())
+        else:
+            contrast_axes.set_xlim(rawdata_axes.get_xlim())
 
-    contrast_axes.set_xticklabels(
-        contrast_xtick_labels, fontsize=fontsize_contrastxlabel
-    )
+        # Properly label the contrast ticks.
+        for t in ticks_to_skip:
+            contrast_xtick_labels.insert(t, "")
+
+        contrast_axes.set_xticklabels(
+            contrast_xtick_labels, fontsize=plot_kwargs["fontsize_contrastxlabel"]
+        )
 
 
-def show_legend(legend_labels, legend_handles, rawdata_axes, contrast_axes, float_contrast, show_pairs, legend_kwargs):
+def show_legend(
+        legend_labels: list, 
+        legend_handles: list, 
+        rawdata_axes: axes.Axes, 
+        contrast_axes: axes.Axes, 
+        table_axes: axes.Axes, 
+        float_contrast: bool, 
+        show_pairs: bool, 
+        horizontal: bool, 
+        legend_kwargs: dict, 
+        table_kwargs: dict
+    ):
+    """
+    Show the legend for the plotter function.
+
+    Parameters
+    ----------
+    legend_labels : list
+        A list of legend labels.
+    legend_handles : list
+        A list of legend handles.
+    rawdata_axes : object (Axes)
+        The raw data axes.
+    contrast_axes : object (Axes)
+        The contrast axes.
+    table_axes : object (Axes)
+        The table axes.
+    float_contrast : bool
+        A boolean flag to determine if the plot is GA or Cumming format.
+    show_pairs : bool
+        A boolean flag to determine if the plot will show the paired data.
+    horizontal : bool
+        A boolean flag to determine if the plot is for horizontal plotting.
+    legend_kwargs : dict
+        Kwargs passed to the legend function.
+    """
 
     legend_labels_unique = np.unique(legend_labels)
     unique_idx = np.unique(legend_labels, return_index=True)[1]
@@ -682,36 +1240,98 @@ def show_legend(legend_labels, legend_handles, rawdata_axes, contrast_axes, floa
         pd.Series(legend_handles, dtype="object").loc[unique_idx]
     ).tolist()
 
-    if len(legend_handles_unique) > 0:
-        if float_contrast:
-            axes_with_legend = contrast_axes
-            if show_pairs:
-                bta = (2.00, 1.02)
-            else:
-                bta = (1.5, 1.02)
+    # Location of the legend
+    if "bbox_to_anchor" not in legend_kwargs.keys():
+        if horizontal:
+            bta = (1,1)
         else:
-            axes_with_legend = rawdata_axes
-            if show_pairs:
-                bta = (1.02, 1.0)
+            if float_contrast:
+                bta = (2.00, 1.02) if show_pairs else (1.5, 1.02)
             else:
-                bta = (1.0, 1.0)
+                bta = (1.02, 1.0) if show_pairs else (1.0, 1.0)
+        legend_kwargs.update({'bbox_to_anchor': bta})
+
+    # Pick the ax to plot
+    if horizontal:
+        if table_kwargs['show']:
+            axes_with_legend = table_axes
+        else:
+            axes_with_legend = contrast_axes
+    elif float_contrast:
+        axes_with_legend = contrast_axes
+    else:
+        axes_with_legend = rawdata_axes
+
+    # Plot the legend
+    if len(legend_handles_unique) > 0:
         leg = axes_with_legend.legend(
-            legend_handles_unique,
-            legend_labels_unique,
-            bbox_to_anchor=bta,
-            **legend_kwargs
+                            legend_handles_unique,
+                            legend_labels_unique,
+                            handlelength=0.5,
+                            **legend_kwargs
         )
         if show_pairs:
             for line in leg.get_lines():
                 line.set_linewidth(3.0)
     
-def Gardner_Altman_Plot_Aesthetic_Adjustments(effect_size_type, plot_data, xvar, yvar, current_control, current_group,
-                                         rawdata_axes, contrast_axes, results, current_effsize, is_paired, one_sankey,
-                                         reflines_kwargs, redraw_axes_kwargs, swarm_ylim, og_xlim_raw, og_ylim_raw):
+def Gardner_Altman_Plot_Aesthetic_Adjustments(
+        effect_size_type: str, 
+        plot_data: pd.DataFrame, 
+        xvar: str, 
+        yvar: str, 
+        current_control: str, 
+        current_group: str,
+        rawdata_axes: axes.Axes, 
+        contrast_axes: axes.Axes, 
+        results: pd.DataFrame, 
+        current_effsize: float, 
+        is_paired: bool, 
+        one_sankey: bool,
+        reflines_kwargs: dict, 
+        redraw_axes_kwargs: dict
+    ):
+    """
+    Aesthetic adjustments for the Gardner-Altman plot.
+    
+    Parameters
+    ----------
+    effect_size_type : str
+        The type of effect size.
+    plot_data : object (Dataframe)
+        A dataframe of plot data.
+    xvar : str
+        The name of the x-axis variable.
+    yvar : str
+        The name of the y-axis variable.
+    current_control : str
+        The name of the current control group.
+    current_group : str
+        The name of the current test group.
+    rawdata_axes : object (Axes)
+        The raw data axes.
+    contrast_axes : object (Axes)
+        The contrast axes.
+    results : object (DataFrame)
+        A dataframe of the results.
+    current_effsize : float
+        The current effect size.
+    is_paired : bool
+        A boolean flag to determine if the plot is for paired data.
+    one_sankey : bool
+        A boolean flag to determine if the plot is for a single sankey diagram.
+    reflines_kwargs : dict
+        Kwargs passed to the reference lines.
+    redraw_axes_kwargs : dict
+        Kwargs passed to the redraw axes.
+    """
     from ._stats_tools.effsize import (
         _compute_standardizers,
         _compute_hedges_correction_factor,
     )
+
+    og_ylim_raw = rawdata_axes.get_ylim()
+    og_xlim_raw = rawdata_axes.get_xlim()
+    
     # Normalize ylims and despine the floating contrast axes.
     # Check that the effect size is within the swarm ylims.
     if effect_size_type in ["mean_diff", "cohens_d", "hedges_g", "cohens_h"]:
@@ -730,9 +1350,6 @@ def Gardner_Altman_Plot_Aesthetic_Adjustments(effect_size_type, plot_data, xvar,
         test_group_summary = (
             plot_data.groupby(xvar, observed=False).median(numeric_only=True).loc[current_group, yvar]
         )
-
-    if swarm_ylim is None:
-        swarm_ylim = rawdata_axes.get_ylim()
 
     _, contrast_xlim_max = contrast_axes.get_xlim()
 
@@ -758,10 +1375,8 @@ def Gardner_Altman_Plot_Aesthetic_Adjustments(effect_size_type, plot_data, xvar,
         contrast_axes.set_xlim(contrast_xlim_max - 1, contrast_xlim_max)
 
     elif effect_size_type in ["cohens_d", "hedges_g", "cohens_h"]:
-        if is_paired:
-            which_std = 1
-        else:
-            which_std = 0
+
+        which_std = 1 if is_paired else 0   ############################ Unused line of code
         temp_control = np.array(plot_data[plot_data[xvar] == current_control][yvar])
         temp_test = np.array(plot_data[plot_data[xvar] == current_group][yvar])
 
@@ -863,250 +1478,348 @@ def Gardner_Altman_Plot_Aesthetic_Adjustments(effect_size_type, plot_data, xvar,
     )
 
 
-def Cumming_Plot_Aesthetic_Adjustments(plot_kwargs, show_delta2, effect_size_type, contrast_axes, reflines_kwargs, 
-                                       is_paired, show_pairs, two_col_sankey, idx, ticks_to_start_twocol_sankey,
-                                       proportional, ticks_to_skip, temp_idx, rawdata_axes, redraw_axes_kwargs,
-                                       ticks_to_skip_contrast):
-    # Set custom contrast_ylim, if it was specified.
-    if plot_kwargs["contrast_ylim"] is not None or (
-        plot_kwargs["delta2_ylim"] is not None and show_delta2
+def Cumming_Plot_Aesthetic_Adjustments(
+        contrast_axes: axes.Axes, 
+        reflines_kwargs: dict, 
+        is_paired: bool, 
+        show_pairs: bool, 
+        two_col_sankey: bool, 
+        idx: list, 
+        ticks_to_start_twocol_sankey: list,
+        proportional: bool, 
+        ticks_to_skip: list, 
+        temp_idx: list, 
+        rawdata_axes: axes.Axes, 
+        redraw_axes_kwargs: dict, 
+        ticks_to_skip_contrast: list, 
+        show_delta2: bool, 
+        show_mini_meta: bool, 
+        horizontal: bool, 
+        skip_redraw_lines: bool
     ):
-        if plot_kwargs["contrast_ylim"] is not None:
-            custom_contrast_ylim = plot_kwargs["contrast_ylim"]
-            if plot_kwargs["delta2_ylim"] is not None and show_delta2:
-                custom_delta2_ylim = plot_kwargs["delta2_ylim"]
-                if custom_contrast_ylim != custom_delta2_ylim:
-                    err1 = "Please check if `contrast_ylim` and `delta2_ylim` are assigned"
-                    err2 = "with same values."
-                    raise ValueError(err1 + err2)
-        else:
-            custom_delta2_ylim = plot_kwargs["delta2_ylim"]
-            custom_contrast_ylim = custom_delta2_ylim
+    
+    """
+    Aesthetic adjustments for the Cumming plot.
+    
+    Parameters
+    ----------
+    contrast_axes : object (Axes)
+        The contrast axes.
+    reflines_kwargs : dict
+        Kwargs passed to the reference lines.
+    is_paired : bool
+        A boolean flag to determine if the plot is for paired data.
+    show_pairs : bool
+        A boolean flag to determine if the plot will show the paired data.
+    two_col_sankey : bool
+        A boolean flag to determine if the plot will show a two-column sankey diagram.
+    idx : list
+        A list of tuples containing the group names.
+    ticks_to_start_twocol_sankey : list
+        TBC.
+    proportional : bool
+        A boolean flag to determine if the plot is for proportional data.
+    ticks_to_skip : list
+        A list of ticks to skip.
+    temp_idx : list
+        A list of tuples containing the group names.
+    rawdata_axes : object (Axes)
+        The raw data axes.
+    redraw_axes_kwargs : dict
+        Kwargs passed to the redraw axes.
+    ticks_to_skip_contrast : list
+        A list of ticks to skip.
+    show_delta2 : bool
+        A boolean flag to determine if the plot will have a delta-delta effect size.
+    show_mini_meta : bool
+        A boolean flag to determine if the plot will have a mini-meta effect size.
+    horizontal : bool
+        A boolean flag to determine if the plot is for horizontal plotting.
+    skip_redraw_lines : bool
+        A boolean flag to skip adding spines back if True (for gridkey purposes).
+    """
 
-        if len(custom_contrast_ylim) != 2:
-            err1 = "Please check `contrast_ylim` consists of "
-            err2 = "exactly two numbers."
-            raise ValueError(err1 + err2)
-
-        if effect_size_type == "cliffs_delta":
-            # Ensure the ylims for a cliffs_delta plot never exceed [-1, 1].
-            l = plot_kwargs["contrast_ylim"][0]
-            h = plot_kwargs["contrast_ylim"][1]
-            low = -1 if l < -1 else l
-            high = 1 if h > 1 else h
-            contrast_axes.set_ylim(low, high)
-        else:
-            contrast_axes.set_ylim(custom_contrast_ylim)
-
-
-    # If 0 lies within the ylim of the contrast axes,
-    # draw a zero reference line.
-    contrast_axes_ylim = contrast_axes.get_ylim()
-    if contrast_axes_ylim[0] < contrast_axes_ylim[1]:
-        contrast_ylim_low, contrast_ylim_high = contrast_axes_ylim
+    # If 0 lies within the ylim of the contrast axes, draw a zero reference line.
+    if horizontal:
+        contrast_axes_lim = contrast_axes.get_xlim()
+        method = contrast_axes.axvline
     else:
-        contrast_ylim_high, contrast_ylim_low = contrast_axes_ylim
-    if contrast_ylim_low < 0 < contrast_ylim_high:
-        contrast_axes.axhline(y=0, **reflines_kwargs)
+        contrast_axes_lim = contrast_axes.get_ylim()
+        method = contrast_axes.axhline
 
-    if is_paired == "baseline" and show_pairs:
-        if two_col_sankey:
-            rightend_ticks_raw = np.array([len(i) - 2 for i in idx]) + np.array(
-                ticks_to_start_twocol_sankey
-            )
-        elif proportional and is_paired is not None:
-            rightend_ticks_raw = np.array([len(i) - 1 for i in idx]) + np.array(
-                ticks_to_skip
-            )
-        else:
-            rightend_ticks_raw = np.array(
-                [len(i) - 1 for i in temp_idx]
-            ) + np.array(ticks_to_skip)
-        for ax in [rawdata_axes]:
-            sns.despine(ax=ax, bottom=True)
-
-            ylim = ax.get_ylim()
-            xlim = ax.get_xlim()
-            redraw_axes_kwargs["y"] = ylim[0]
-
-            if two_col_sankey:
-                for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
-                    end_tick = rightend_ticks_raw[k]
-                    ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
-            else:
-                for k, start_tick in enumerate(ticks_to_skip):
-                    end_tick = rightend_ticks_raw[k]
-                    ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
-            ax.set_ylim(ylim)
-            del redraw_axes_kwargs["y"]
-
-        if not proportional:
-            temp_length = [(len(i) - 1) for i in idx]
-        else:
-            temp_length = [(len(i) - 1) * 2 - 1 for i in idx]
-        if two_col_sankey:
-            rightend_ticks_contrast = np.array(
-                [len(i) - 2 for i in idx]
-            ) + np.array(ticks_to_start_twocol_sankey)
-        elif proportional and is_paired is not None:
-            rightend_ticks_contrast = np.array(
-                [len(i) - 1 for i in idx]
-            ) + np.array(ticks_to_skip)
-        else:
-            rightend_ticks_contrast = np.array(temp_length) + np.array(
-                ticks_to_skip_contrast
-            )
-        for ax in [contrast_axes]:
-            sns.despine(ax=ax, bottom=True)
-
-            ylim = ax.get_ylim()
-            xlim = ax.get_xlim()
-            redraw_axes_kwargs["y"] = ylim[0]
-
-            if two_col_sankey:
-                for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
-                    end_tick = rightend_ticks_contrast[k]
-                    ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
-            else:
-                for k, start_tick in enumerate(ticks_to_skip_contrast):
-                    end_tick = rightend_ticks_contrast[k]
-                    ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
-
-            ax.set_ylim(ylim)
-            del redraw_axes_kwargs["y"]
+    if contrast_axes_lim[0] < contrast_axes_lim[1]:
+        contrast_lim_low, contrast_lim_high = contrast_axes_lim
     else:
-        # Compute the end of each x-axes line.
-        if two_col_sankey:
-            rightend_ticks = np.array([len(i) - 2 for i in idx]) + np.array(
-                ticks_to_start_twocol_sankey
-            )
-        else:
-            rightend_ticks = np.array([len(i) - 1 for i in idx]) + np.array(
-                ticks_to_skip
-            )
+        contrast_lim_high, contrast_lim_low = contrast_axes_lim
 
-        for ax in [rawdata_axes, contrast_axes]:
-            sns.despine(ax=ax, bottom=True)
+    if contrast_lim_low < 0 < contrast_lim_high:
+        method(0, **reflines_kwargs)
 
-            ylim = ax.get_ylim()
-            xlim = ax.get_xlim()
-            redraw_axes_kwargs["y"] = ylim[0]
-
+    # Add axes spine lines to link the relevant groups in the plot. (re-add as we removed spines)
+    if not skip_redraw_lines:
+        if horizontal:
             if two_col_sankey:
-                for k, start_tick in enumerate(ticks_to_start_twocol_sankey):
-                    end_tick = rightend_ticks[k]
-                    ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
+                rightend_ticks = np.array([len(i) - 2 for i in idx]) + np.array(ticks_to_start_twocol_sankey)
+                starting_ticks = ticks_to_start_twocol_sankey.copy()
             else:
-                for k, start_tick in enumerate(ticks_to_skip):
+                if is_paired == "baseline" and show_pairs:
+                    if proportional and is_paired is not None:
+                        rightend_ticks = np.array([len(i) - 1 for i in idx]) + np.array(ticks_to_skip)
+                    else:
+                        rightend_ticks = np.array([len(i) - 1 for i in temp_idx]) + np.array(ticks_to_skip)
+                else:
+                    rightend_ticks = np.array([len(i) - 1 for i in idx]) + np.array(ticks_to_skip)
+                starting_ticks = ticks_to_skip.copy()
+
+            for ax in [rawdata_axes]:
+                sns.despine(ax=ax, left=True)
+                xlim, ylim = ax.get_xlim(), ax.get_ylim()
+                redraw_axes_kwargs["x"] = xlim[0]
+                for k, start_tick in enumerate(starting_ticks):
                     end_tick = rightend_ticks[k]
-                    ax.hlines(xmin=start_tick, xmax=end_tick, **redraw_axes_kwargs)
+                    ax.vlines(
+                        ymin=start_tick, 
+                        ymax=end_tick, 
+                        **redraw_axes_kwargs
+                        )
+                ax.set_xlim(xlim)
+                ax.set_ylim(ylim)
+                del redraw_axes_kwargs["x"] 
 
-            ax.set_ylim(ylim)
-            del redraw_axes_kwargs["y"]
+            # Remove y ticks and labels from the contrast axes.
+            sns.despine(ax=contrast_axes, left=True)
+            contrast_axes.set_yticks([])
+            contrast_axes.set_yticklabels([])
 
-def General_Plot_Aesthetic_Adjustments(show_delta2, show_mini_meta, contrast_axes, redraw_axes_kwargs, plot_kwargs,
-                               yvar, effect_size_type, proportional, effectsize_df, is_paired, float_contrast,
-                               rawdata_axes, og_ylim_raw, effect_size):
+        else: # Add spine lines to link the relevant groups in the plot. (re-add as we removed spines) - Vertical plots
+            if two_col_sankey:
+                rightend_ticks_raw = rightend_ticks_contrast = np.array([len(i) - 2 for i in idx]) + np.array(ticks_to_start_twocol_sankey)
+                starting_ticks_raw = starting_ticks_contrast = ticks_to_start_twocol_sankey
+            else:
+                if is_paired == "baseline" and show_pairs:
+                    if proportional and is_paired is not None:
+                        rightend_ticks_raw = rightend_ticks_contrast = np.array([len(i) - 1 for i in idx]) + np.array(ticks_to_skip)
+                    else:
+                        rightend_ticks_raw = np.array([len(i) - 1 for i in temp_idx]) + np.array(ticks_to_skip)
+                        temp_length = [(len(i) - 1) * 2 - 1 for i in idx] if proportional else [(len(i) - 1) for i in idx]
+                        rightend_ticks_contrast = np.array(temp_length) + np.array(ticks_to_skip_contrast)
+                    starting_ticks_raw, starting_ticks_contrast = ticks_to_skip, ticks_to_skip_contrast
+                else:
+                    rightend_ticks_raw = rightend_ticks_contrast = np.array([len(i) - 1 for i in idx]) + np.array(ticks_to_skip)
+                    starting_ticks_raw = starting_ticks_contrast = ticks_to_skip
 
-    if show_delta2 or show_mini_meta:
+            for ax, starting_ticks_current, rightend_ticks_current in zip(
+                    [rawdata_axes, contrast_axes],
+                    [starting_ticks_raw, starting_ticks_contrast],
+                    [rightend_ticks_raw, rightend_ticks_contrast],
+                ):
+                sns.despine(ax=ax, bottom=True)
+                xlim, ylim = ax.get_xlim(), ax.get_ylim()
+                redraw_axes_kwargs["y"] = ylim[0]
+                for k, start_tick in enumerate(starting_ticks_current):
+                    end_tick = rightend_ticks_current[k]
+                    ax.hlines(
+                        xmin=start_tick, 
+                        xmax=end_tick, 
+                        **redraw_axes_kwargs
+                        )
+                ax.set_xlim(xlim)
+                ax.set_ylim(ylim)
+                del redraw_axes_kwargs["y"]
+
+    # Add x-spine line for delta2/mini meta.
+    if (show_delta2 or show_mini_meta) and not horizontal and not skip_redraw_lines:
         ylim = contrast_axes.get_ylim()
         redraw_axes_kwargs["y"] = ylim[0]
         x_ticks = contrast_axes.get_xticks()
         contrast_axes.hlines(xmin=x_ticks[-2], xmax=x_ticks[-1], **redraw_axes_kwargs)
         del redraw_axes_kwargs["y"]
 
-    # Set raw axes y-label.
-    swarm_label = plot_kwargs["swarm_label"]
-    if swarm_label is None and yvar is None:
-        swarm_label = "value"
-    elif swarm_label is None and yvar is not None:
-        swarm_label = yvar
+    # Modify the ylims of the axes to flip the plot (so it shows the plots from top to bottom)
+    if horizontal:
+        if not proportional or (proportional and show_pairs):
+            swarm_ylim, contrast_ylim = rawdata_axes.get_ylim(), contrast_axes.get_ylim()
+            rawdata_axes.set_ylim(swarm_ylim[1], swarm_ylim[0])
+            contrast_axes.set_ylim(contrast_ylim[1], contrast_ylim[0])
+        # Modify the ylim to reduce whitespace in specific plots.
+        if show_delta2 or show_mini_meta or (proportional and show_pairs):
+            swarm_ylim, contrast_ylim = rawdata_axes.get_ylim(), contrast_axes.get_ylim()
+            rawdata_axes.set_ylim(swarm_ylim[0]-0.5, swarm_ylim[1])
+            contrast_axes.set_ylim(contrast_ylim[0]-0.5, contrast_ylim[1])
+            
+def Redraw_Spines(
+        rawdata_axes: axes.Axes, 
+        contrast_axes: axes.Axes, 
+        redraw_axes_kwargs: dict, 
+        float_contrast: bool, 
+        horizontal: bool,
+        show_delta2: bool, 
+        delta2_axes: axes.Axes
+    ):
+    """
+    Aesthetic general adjustments across both GA and Cumming plots.
 
-    bar_label = plot_kwargs["bar_label"]
-    if bar_label is None and effect_size_type != "cohens_h":
-        bar_label = "proportion of success"
-    elif bar_label is None and effect_size_type == "cohens_h":
-        bar_label = "value"
+    Parameters
+    ----------
+    rawdata_axes : object (Axes)
+        The raw data axes.
+    contrast_axes : object (Axes)
+        The contrast axes.
+    redraw_axes_kwargs : dict
+        Kwargs passed to the redraw axes.
+    plot_kwargs : dict
+        Kwargs passed to the plot function.
+    float_contrast : bool
+        A boolean flag to determine if the plot is GA or Cum
+    horizontal : bool
+        A boolean flag to determine if the plot is for horizontal plotting.
+    show_delta2 : bool
+        A boolean flag to determine if the plot will have a delta-delta effect size.
+    delta2_axes : object (Axes)
+        The delta2 axes.
+    """
 
-    # Place contrast axes y-label.
-    contrast_label_dict = {
-        "mean_diff": "mean difference",
-        "median_diff": "median difference",
-        "cohens_d": "Cohen's d",
-        "hedges_g": "Hedges' g",
-        "cliffs_delta": "Cliff's delta",
-        "cohens_h": "Cohen's h",
-        "delta_g": "mean difference",
-    }
-
-    if proportional and effect_size_type != "cohens_h":
-        default_contrast_label = "proportion difference"
-    elif effect_size_type == "delta_g":
-        default_contrast_label = "Hedges' g"
-    else:
-        default_contrast_label = contrast_label_dict[effectsize_df.effect_size]
-
-    if plot_kwargs["contrast_label"] is None:
-        if is_paired:
-            contrast_label = "paired\n{}".format(default_contrast_label)
-        else:
-            contrast_label = default_contrast_label
-        contrast_label = contrast_label.capitalize()
-    else:
-        contrast_label = plot_kwargs["contrast_label"]
-
-    if plot_kwargs["fontsize_rawylabel"] is not None:
-        fontsize_rawylabel = plot_kwargs["fontsize_rawylabel"]
-    if plot_kwargs["fontsize_contrastylabel"] is not None:
-        fontsize_contrastylabel = plot_kwargs["fontsize_contrastylabel"]
-    if plot_kwargs["fontsize_delta2label"] is not None:
-        fontsize_delta2label = plot_kwargs["fontsize_delta2label"]
-
-    contrast_axes.set_ylabel(contrast_label, fontsize=fontsize_contrastylabel)
-    if float_contrast:
-        contrast_axes.yaxis.set_label_position("right")
-
-    # Set the rawdata axes labels appropriately
-    if not proportional:
-        rawdata_axes.set_ylabel(swarm_label, fontsize=fontsize_rawylabel)
-    else:
-        rawdata_axes.set_ylabel(bar_label, fontsize=fontsize_rawylabel)
-    rawdata_axes.set_xlabel("")
-
-    # Because we turned the axes frame off, we also need to draw back
-    # the y-spine for both axes.
-    if not float_contrast:
-        rawdata_axes.set_xlim(contrast_axes.get_xlim())
-    og_xlim_raw = rawdata_axes.get_xlim()
-    rawdata_axes.vlines(
-        og_xlim_raw[0], og_ylim_raw[0], og_ylim_raw[1], **redraw_axes_kwargs
-    )
-
-    og_xlim_contrast = contrast_axes.get_xlim()
-
-    if float_contrast:
-        xpos = og_xlim_contrast[1]
-    else:
-        xpos = og_xlim_contrast[0]
-
-    og_ylim_contrast = contrast_axes.get_ylim()
-    contrast_axes.vlines(
-        xpos, og_ylim_contrast[0], og_ylim_contrast[1], **redraw_axes_kwargs
-    )
-
-    if show_delta2:
-        if plot_kwargs["delta2_label"] is not None:
-            delta2_label = plot_kwargs["delta2_label"]
-        elif effect_size == "mean_diff":
-            delta2_label = "delta - delta"
-        else:
-            delta2_label = "deltas' g"
-        delta2_axes = contrast_axes.twinx()
-        delta2_axes.set_frame_on(False)
-        delta2_axes.set_ylabel(delta2_label, fontsize=fontsize_delta2label)
-        og_xlim_delta = contrast_axes.get_xlim()
-        og_ylim_delta = contrast_axes.get_ylim()
-        delta2_axes.set_ylim(og_ylim_delta)
-        delta2_axes.vlines(
-            og_xlim_delta[1], og_ylim_delta[0], og_ylim_delta[1], **redraw_axes_kwargs
+    # Because we turned the axes frame off, we also need to draw back the x-spine for both axes.
+    og_xlim_raw, og_ylim_raw = rawdata_axes.get_xlim(), rawdata_axes.get_ylim()
+    og_xlim_contrast, og_ylim_contrast = contrast_axes.get_xlim(), contrast_axes.get_ylim()
+    if horizontal:
+        ## Raw axes x spine 
+        rawdata_axes.hlines(
+            og_ylim_raw[0], 
+            og_xlim_raw[0], 
+            og_xlim_raw[1], 
+            **redraw_axes_kwargs
         )
+        ## Contrast axes x spine
+        contrast_axes.hlines(
+            og_ylim_contrast[0], 
+            og_xlim_contrast[0], 
+            og_xlim_contrast[1], 
+            **redraw_axes_kwargs
+        )
+    else:
+        ## Raw axes y spine 
+        rawdata_axes.vlines(
+            og_xlim_raw[0], 
+            og_ylim_raw[0], 
+            og_ylim_raw[1], 
+            **redraw_axes_kwargs
+        )
+        ## Contrast axes y spine
+        xpos = og_xlim_contrast[1] if float_contrast else og_xlim_contrast[0]
+        contrast_axes.vlines(
+            xpos, 
+            og_ylim_contrast[0], 
+            og_ylim_contrast[1], 
+            **redraw_axes_kwargs
+        )
+
+        if show_delta2:
+            og_xlim_delta, og_ylim_delta = contrast_axes.get_xlim(), contrast_axes.get_ylim()
+            delta2_axes.set_ylim(og_ylim_delta)
+
+            delta2_axes.vlines(
+                og_xlim_delta[1], 
+                og_ylim_delta[0], 
+                og_ylim_delta[1], 
+                **redraw_axes_kwargs
+            )
+
+    for ax, xlim, ylim in zip([rawdata_axes, contrast_axes], [og_xlim_raw, og_xlim_contrast], [og_ylim_raw, og_ylim_contrast]):
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)
+
+def extract_group_summaries(
+        proportional: bool, 
+        err_color, 
+        rawdata_axes: axes.Axes, 
+        asymmetric_side: str, 
+        horizontal: bool, 
+        bootstraps_color_by_group: bool, 
+        plot_palette_raw: list, 
+        all_plot_groups: list,
+        n_groups: int, 
+        color_col, 
+        ytick_color, 
+        group_summaries_kwargs: dict
+    ):
+    """
+    Extract the group summaries for the plotter function.
+
+    Parameters
+    ----------
+    proportional : bool
+        A boolean flag to determine if the plot is for proportional data.
+    err_color : str
+        The color of the error bars.
+    rawdata_axes : object (Axes)
+        The raw data axes.
+    asymmetric_side : str
+        The side of the asymmetric error bars.
+    horizontal : bool
+        A boolean flag to determine if the plot is for horizontal plotting.
+    bootstraps_color_by_group : bool
+        A boolean flag to determine if the bootstraps are colored by group.
+    plot_palette_raw : list
+        A list of the plot palette colors.
+    all_plot_groups : list
+        A list of all the plot groups.
+    n_groups : int
+        The number of groups.
+    color_col : str
+        The name of the color column.
+    ytick_color : str
+        The color of the y-ticks.
+    group_summaries_kwargs : dict
+        Kwargs passed to the group summaries.
+    """
+    
+    from .plot_tools import get_swarm_spans
+
+    if proportional:
+        group_summaries_method = "proportional_error_bar"
+        group_summaries_offset = 0
+        group_summaries_line_color = err_color
+    else:
+        # Create list to gather xspans.
+        xspans = []
+        line_colors = []
+        for jj, c in enumerate(rawdata_axes.collections):
+            try:
+                if asymmetric_side == "right":
+                    # currently offset is hardcoded with value of -0.2
+                    x_max_span = -0.2
+                else:
+                    if horizontal:
+                        x_max_span = 0.1 # currently offset is hardcoded with value of 0.1
+                    else:
+                        _, x_max, _, _ = get_swarm_spans(c)
+                        x_max_span = x_max - jj
+                xspans.append(x_max_span)
+            except TypeError:
+                # we have got a None, so skip and move on.
+                pass
+
+            if bootstraps_color_by_group:
+                line_colors.append(plot_palette_raw[all_plot_groups[jj]])
+
+            # Break the loop since hue in Seaborn adds collections to axes and it will result in index out of range
+            if jj >= n_groups - 1 and color_col is None:
+                break
+
+        if len(line_colors) != len(all_plot_groups):
+            line_colors = ytick_color
+            
+        # hue in swarmplot would add collections to axes which will result in len(xspans) = len(all_plot_groups) + len(unique groups in hue)
+        if len(xspans) > len(all_plot_groups):
+            xspans = xspans[:len(all_plot_groups)]
+
+        group_summaries_method = "gapped_lines"
+        group_summaries_offset = xspans + np.array(group_summaries_kwargs["offset"])
+        group_summaries_line_color = line_colors
+
+    if group_summaries_kwargs['color'] is not None:
+        group_summaries_line_color = group_summaries_kwargs.pop("color")
+    group_summaries_kwargs.pop("offset")
+
+    return group_summaries_method, group_summaries_offset, group_summaries_line_color

@@ -358,12 +358,6 @@ class TwoGroupsEffectSize(object):
             # References:
             # https://en.wikipedia.org/wiki/McNemar%27s_test
 
-            # df_temp = pd.DataFrame({"control": self.__control, "test": self.__test})
-            # x1 = len(df_temp[(df_temp["control"] == 0) & (df_temp["test"] == 0)])
-            # x2 = len(df_temp[(df_temp["control"] == 0) & (df_temp["test"] == 1)])
-            # x3 = len(df_temp[(df_temp["control"] == 1) & (df_temp["test"] == 0)])
-            # x4 = len(df_temp[(df_temp["control"] == 1) & (df_temp["test"] == 1)])
-            # table = [[x1, x2], [x3, x4]]
             x1 = np.sum((self.__control == 0) & (self.__test == 0))
             x2 = np.sum((self.__control == 0) & (self.__test == 1))
             x3 = np.sum((self.__control == 1) & (self.__test == 0))
@@ -1146,21 +1140,16 @@ class EffectSizeDataFrame(object):
         show_delta2=True,
         show_mini_meta=True,
         group_summaries=None,
-        group_summaries_offset=0.1,
         fig_size=None,
         dpi=100,
         ax=None,
-        gridkey_rows=None,
-        gridkey_merge_pairs=False,
-        gridkey_show_Ns=True,
-        gridkey_show_es=True,
         swarmplot_kwargs=None,
         barplot_kwargs=None,
         violinplot_kwargs=None,
         slopegraph_kwargs=None,
         sankey_kwargs=None,
         reflines_kwargs=None,
-        group_summary_kwargs=None,
+        group_summaries_kwargs=None,
         legend_kwargs=None,
         title=None,
         fontsize_title=16,
@@ -1169,7 +1158,7 @@ class EffectSizeDataFrame(object):
         fontsize_contrastxlabel=12,
         fontsize_contrastylabel=12,
         fontsize_delta2label=12,
-        #### Contrast bars and delta text and delta dots WIP  ####
+        #### Contrast bars, Swarm bars, delta text, and delta dots WIP  ####
         contrast_bars=True,
         swarm_bars=True,
         contrast_bars_kwargs=None,
@@ -1180,7 +1169,30 @@ class EffectSizeDataFrame(object):
         delta_text_kwargs=None,
         delta_dot=True,
         delta_dot_kwargs=None,
-        show_baseline_ec=False,
+
+        # Horizontal Plots
+        horizontal=False,
+        horizontal_table_kwargs=None,
+
+        # Gridkey
+        gridkey_rows=None,
+        gridkey_merge_pairs=False,
+        gridkey_show_Ns=True,
+        gridkey_show_es=True,
+        gridkey_delimiters=[';', '>', '_'],
+        gridkey_kwargs=None,
+
+        es_marker_kwargs=None,
+        es_errorbar_kwargs=None,
+
+        prop_sample_counts=False,
+        prop_sample_counts_kwargs=None,
+
+        es_paired_lines=True,
+        es_paired_lines_kwargs=None,
+		
+		# Basline EffectSize Curve
+		show_baseline_ec=False,
     ):
         """
         Creates an estimation plot for the effect size of interest.
@@ -1259,9 +1271,6 @@ class EffectSizeDataFrame(object):
             notched line beside each group. If 'median_quantiles', then the
             median and 25th and 75th percentiles of each group is plotted
             instead. If 'None', the summaries are not shown.
-        group_summaries_offset : float, default 0.1
-            If group summaries are displayed, they will be offset from the raw
-            data swarmplot groups by this value.
         fig_size : tuple, default None
             The desired dimensions of the figure as a (length, width) tuple.
         dpi : int, default 100
@@ -1269,14 +1278,13 @@ class EffectSizeDataFrame(object):
         ax : matplotlib.Axes, default None
             Provide an existing Axes for the plots to be created. If no Axes is
             specified, a new matplotlib Figure will be created.
-        gridkey_rows : list, default None
-            Provide a list of row labels for the gridkey. The supplied idx is
-            checked against the row labels to determine whether the corresponding
-            cell should be populated or not.
         swarmplot_kwargs : dict, default None
             Pass any keyword arguments accepted by the seaborn `swarmplot`
             command here, as a dict. If None, the following keywords are
             passed to sns.swarmplot : {'size':`raw_marker_size`}.
+        barplot_kwargs : dict, default None
+            By default, the keyword arguments passed are:
+            {"estimator": np.mean, "errorbar": plot_kwargs["ci"]}
         violinplot_kwargs : dict, default None
             Pass any keyword arguments accepted by the matplotlib `
             pyplot.violinplot` command here, as a dict. If None, the following
@@ -1287,7 +1295,7 @@ class EffectSizeDataFrame(object):
             of observations when `show_pairs=True`. Pass any keyword arguments
             accepted by matplotlib `plot()` function here, as a dict.
             If None, the following keywords are
-            passed to plot() : {'linewidth':1, 'alpha':0.5}.
+            passed to plot() : {'linewidth':1, 'alpha':0.5, 'jitter':0, 'jitter_seed':9876543210}.
         sankey_kwargs: dict, default None
             Whis will change the appearance of the sankey diagram used to depict
             paired proportional data when `show_pairs=True` and `proportional=True`.
@@ -1300,12 +1308,13 @@ class EffectSizeDataFrame(object):
             command here, as a dict. If None, the following keywords are
             passed to Axes.hlines : {'linestyle':'solid', 'linewidth':0.75,
             'zorder':2, 'color' : default y-tick color}.
-        group_summary_kwargs : dict, default None
+        group_summaries_kwargs : dict, default None
             Pass any keyword arguments accepted by the matplotlib.lines.Line2D
             command here, as a dict. This will change the appearance of the
             vertical summary lines for each group, if `group_summaries` is not
             'None'. If None, the following keywords are passed to
-            matplotlib.lines.Line2D : {'lw':2, 'alpha':1, 'zorder':3}.
+            matplotlib.lines.Line2D : {'lw':2, 'alpha':1, 'zorder':3, 
+            'gap_width_percent':1.5, 'offset':0.1, 'color':None}.
         legend_kwargs : dict, default None
             Pass any keyword arguments accepted by the matplotlib Axes
             `legend` command here, as a dict. If None, the following keywords
@@ -1330,7 +1339,6 @@ class EffectSizeDataFrame(object):
         fontsize_delta2label : float, default 12
             Font size for the delta-delta axes ylabel.
             
-            
         contrast_bars : boolean, default True
             Whether or not to display the contrast bars.
         swarm_bars : boolean, default True
@@ -1338,31 +1346,66 @@ class EffectSizeDataFrame(object):
         contrast_bars_kwargs : dict, default None
             Pass relevant keyword arguments to the contrast bars. Pass any keyword arguments accepted by 
             matplotlib.patches.Rectangle here, as a string. If None, the following keywords are passed:
-            {"color": None, "alpha": 0.3}
+            {"color": None, "zorder":-3}
         swarm_bars_kwargs : dict, default None
             Pass relevant keyword arguments to the swarm bars. Pass any keyword arguments accepted by 
             matplotlib.patches.Rectangle here, as a string. If None, the following keywords are passed:
-            {"color": None, "alpha": 0.3}
+            {"color": None, "zorder":-3}
 
         summary_bars : list, default None
             Pass a list of indices of the contrast objects to have summary bars displayed on the plot.
             For example, [0,1] will show summary bars for the first two contrast objects.
         summary_bars_kwargs: dict, default None
-            If None, the following keywords are passed: {"color": None, "alpha": 0.15}
+            If None, the following keywords are passed: {"span_ax": False, "color": None, "alpha": 0.15, "zorder":-3}
         delta_text : boolean, default True
             Whether or not to display the text deltas.
         delta_text_kwargs : dict, default None
             Pass relevant keyword arguments to the delta text. Pass any keyword arguments accepted by
             matplotlib.text.Text here, as a string. If None, the following keywords are passed:
             {"color": None, "alpha": 1, "fontsize": 10, "ha": 'center', "va": 'center', "rotation": 0, 
-            "x_location": 'right', "x_coordinates": None, "y_coordinates": None}
-            Use "x_coordinates" and "y_coordinates" if you would like to specify the text locations manually.
+            "x_location": 'right', "x_coordinates": None, "y_coordinates": None, "offset": 0}
+            Use "x_coordinates" and "y_coordinates" if you would like to specify the text locations manually. 
+            Use "x_adjust" to adjust the x location of all the texts (positive moves right, negative left).
         delta_dot : boolean, default True
             Whether or not to display the delta dots on paired or repeated measure plots.
         delta_dot_kwargs : dict, default None
             Pass relevant keyword arguments. If None, the following keywords are passed:
-            {"marker": "^", "alpha": 0.5, "zorder": 2, "size": 3, "side": "right"}
-        show_baseline_ec : boolean, default False
+            {"color": 'k', "marker": "^", "alpha": 0.5, "zorder": -1, "size": 3, "side": "right"}
+
+        horizontal_table_kwargs : dict, default None
+            {'show: True, 'color' : 'yellow', 'alpha' :0.2, 'fontsize' : 12, 'text_color' : 'black', 
+            'text_units' : None, 'control_marker' : '-', 'fontsize_label': 12, 'label': 'Δ'}
+            
+        gridkey_rows : list, default None
+            cell should be populated or not. 
+            Pass relevant keyword arguments to the gridkey. If None, the following keywords are passed:
+            {   'show_es' : True,                   # If True, the gridkey will show the effect size of each comparison.
+                'show_Ns' :True,                    # If True, the gridkey will show the number of observations in eachgroup.
+                'merge_pairs' : False,              # If True, the gridkey will merge the pairs of groups into a single cell. This is useful for when the groups are paired.
+                'delimiters': [';', '>', '_'],      # Delimiters to split the group names.
+                'marker': "\u25CF",                 # Marker for the gridkey dots.
+            }
+
+        es_marker_kwargs: dict, default None
+            Pass relevant keyword arguments to the effectsize marker plotting. If none, the following keywords are passed:
+            {'marker': 'o', 'size': plot_kwargs['es_marker_size'], 'color': 'black', 'alpha': 1, 'zorder': 1}
+        es_errorbar_kwargs: dict, default None
+            Pass relevant keyword arguments to the effectsize errorbar plotting. If none, the following keywords are passed:
+            {'color': 'black', 'lw': 2, 'linestyle': '-', 'alpha': 1,'zorder': 1,}
+
+        prop_sample_counts: bool, default False
+            Show the sample counts for each group in proportional plots
+        prop_sample_counts_kwargs: dict, default None
+            Pass relevant keyword arguments. If None, the following keywords are passed:
+            {'color': 'k', 'zorder': 5, 'ha': 'center', 'va': 'center'},
+
+        es_paired_lines: bool, default True
+            Whether or not to add lines to connect the effect size curves in paired plots.
+        es_paired_lines_kwargs: dict, default None
+            Pass relevant plot keyword arguments. If None, the following keywords are passed:
+            {"linestyle": "-", "linewidth": 2, "zorder": -2, "color": 'dimgray', "alpha": 1}
+        
+		show_baseline_ec : boolean, default False
             Whether or not to display the baseline error curve. The baseline error curve
             represents the distribution of the effect size when comparing the control
             group to itself, providing a reference for the inherent variability or noise
@@ -1402,7 +1445,6 @@ class EffectSizeDataFrame(object):
         del all_kwargs["self"]
 
         out = effectsize_df_plotter(self, **all_kwargs)
-
         return out
 
     @property

@@ -5,7 +5,7 @@
 # %% auto 0
 __all__ = ['Dabest']
 
-# %% ../nbs/API/dabest_object.ipynb 4
+# %% ../nbs/API/dabest_object.ipynb 5
 # Import standard data science libraries
 from numpy import array, repeat, random, issubdtype, number
 import numpy as np
@@ -13,7 +13,7 @@ import pandas as pd
 from scipy.stats import norm
 from scipy.stats import randint
 
-# %% ../nbs/API/dabest_object.ipynb 6
+# %% ../nbs/API/dabest_object.ipynb 7
 class Dabest(object):
 
     """
