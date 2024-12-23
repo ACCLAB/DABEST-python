@@ -60,6 +60,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
         contrast_bars=True, contrast_bars_kwargs=None,
         delta_text=True, delta_text_kwargs=None,
         delta_dot=True, delta_dot_kwargs=None,
+		show_baseline_ec=False,
         horizontal=False, horizontal_table_kwargs=None,
         es_marker_kwargs=None, es_errorbar_kwargs=None,
         prop_sample_counts=False, prop_sample_counts_kwargs=None, 
@@ -116,11 +117,10 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
     ytick_color = plt.rcParams["ytick.color"]
 
     # Extract parameters and set kwargs
-    (dabest_obj, plot_data, xvar, yvar, is_paired, 
-     effect_size, proportional, all_plot_groups, idx, show_delta2, 
-     show_mini_meta, float_contrast, show_pairs, effect_size_type, group_summaries, 
-     err_color, horizontal, results, halfviolin_alpha, ci_type, x1_level, experiment_label) = get_params(
-                                                                                                effectsize_df = effectsize_df, 
+    (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, idx, 
+    show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type, group_summaries, err_color, horizontal,
+    results, halfviolin_alpha, ci_type, x1_level, experiment_label, show_baseline_ec) = get_params(
+     																							effectsize_df = effectsize_df, 
                                                                                                 plot_kwargs = plot_kwargs,
                                                                                                 )
 
@@ -343,7 +343,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                    )
 
     # Extract ticks for contrast plot
-    (ticks_to_skip, ticks_to_plot, 
+    (ticks_to_skip, ticks_to_plot, ticks_for_baseline_ec,
      ticks_to_skip_contrast, ticks_to_start_twocol_sankey) = extract_contrast_plotting_ticks(
                                                                                     is_paired = is_paired, 
                                                                                     show_pairs = show_pairs, 
@@ -360,9 +360,10 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
 
     # Plot the bootstraps, then the effect sizes and CIs.
     es_paired_lines = False if float_contrast or not sankey_kwargs["flow"] else plot_kwargs["es_paired_lines"]
-    (current_group, current_control, 
+    (current_group, current_control,
      current_effsize, contrast_xtick_labels) = effect_size_curve_plotter(
                                                                 ticks_to_plot = ticks_to_plot, 
+                                                                    ticks_for_baseline_ec=ticks_for_baseline_ec,
                                                                 results = results, 
                                                                 ci_type = ci_type, 
                                                                 contrast_axes = contrast_axes, 
@@ -376,7 +377,8 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                                                                 idx = idx,
                                                                 is_paired = is_paired,
                                                                 es_paired_lines = es_paired_lines,
-                                                                es_paired_lines_kwargs = es_paired_lines_kwargs,
+																es_paired_lines_kwargs = es_paired_lines_kwargs,
+																show_baseline_ec = show_baseline_ec,
                                                                 )
 
     # Plot mini-meta or delta-delta violin

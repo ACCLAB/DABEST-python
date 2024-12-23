@@ -9,6 +9,7 @@ __all__ = ['TwoGroupsEffectSize', 'EffectSizeDataFrame', 'PermutationTest']
 import pandas as pd
 import lqrt
 from scipy.stats import norm
+import numpy as np
 from numpy import array, isnan, isinf, repeat, random, isin, abs, var
 from numpy import sort as npsort
 from numpy import nan as npnan
@@ -167,6 +168,8 @@ class TwoGroupsEffectSize(object):
         self.__pct_interval_idx = (pct_idx_low, pct_idx_high)
         self.__pct_low = sorted_bootstraps[pct_idx_low]
         self.__pct_high = sorted_bootstraps[pct_idx_high]
+        
+        self._get_bootstrap_baseline_ec()
 
         self._perform_statistical_test()
 
@@ -355,12 +358,11 @@ class TwoGroupsEffectSize(object):
             # References:
             # https://en.wikipedia.org/wiki/McNemar%27s_test
 
-            df_temp = pd.DataFrame({"control": self.__control, "test": self.__test})
-            x1 = len(df_temp[(df_temp["control"] == 0) & (df_temp["test"] == 0)])
-            x2 = len(df_temp[(df_temp["control"] == 0) & (df_temp["test"] == 1)])
-            x3 = len(df_temp[(df_temp["control"] == 1) & (df_temp["test"] == 0)])
-            x4 = len(df_temp[(df_temp["control"] == 1) & (df_temp["test"] == 1)])
-            table = [[x1, x2], [x3, x4]]
+            x1 = np.sum((self.__control == 0) & (self.__test == 0))
+            x2 = np.sum((self.__control == 0) & (self.__test == 1))
+            x3 = np.sum((self.__control == 1) & (self.__test == 0))
+            x4 = np.sum((self.__control == 1) & (self.__test == 1))
+            table = np.array([[x1, x2], [x3, x4]])
             _mcnemar = mcnemar(table, exact=True, correction=True)
             self.__pvalue_mcnemar = _mcnemar.pvalue
             self.__statistic_mcnemar = _mcnemar.statistic
@@ -435,6 +437,92 @@ class TwoGroupsEffectSize(object):
         for a in attrs:
             out[a] = getattr(self, a)
         return out
+    
+    def _get_bootstrap_baseline_ec(self):
+        from ._stats_tools import confint_2group_diff as ci2g
+        from ._stats_tools import effsize as es
+        
+        # Cannot use self.__is_paired because it's for baseline curve
+        is_paired = None
+        
+        difference = es.two_group_difference(
+            self.__control, self.__control, is_paired, self.__effect_size
+        )
+        self.__bec_difference = difference
+
+        jackknives = ci2g.compute_meandiff_jackknife(
+            self.__control, self.__control, is_paired, self.__effect_size
+        )
+
+        acceleration_value = ci2g._calc_accel(jackknives)
+
+        bootstraps = ci2g.compute_bootstrapped_diff(
+            self.__control,
+            self.__control,
+            is_paired,
+            self.__effect_size,
+            self.__resamples,
+            self.__random_seed,
+        )
+        self.__bootstraps_baseline_ec = bootstraps
+
+        sorted_bootstraps = npsort(self.__bootstraps_baseline_ec)
+        # We don't have to consider infinities in bootstrap_baseline_ec
+
+        bias_correction = ci2g.compute_meandiff_bias_correction(
+            self.__bootstraps_baseline_ec, difference
+        )
+
+        # Compute BCa intervals.
+        bca_idx_low, bca_idx_high = ci2g.compute_interval_limits(
+            bias_correction,
+            acceleration_value,
+            self.__resamples,
+            self.__ci,
+        )
+
+        self.__bec_bca_interval_idx = (bca_idx_low, bca_idx_high)
+
+        if ~isnan(bca_idx_low) and ~isnan(bca_idx_high):
+            self.__bec_bca_low = sorted_bootstraps[bca_idx_low]
+            self.__bec_bca_high = sorted_bootstraps[bca_idx_high]
+
+            err1 = "The $lim_type limit of the interval"
+            err2 = "was in the $loc 10 values."
+            err3 = "The result for baseline curve should be considered unstable."
+            err_temp = Template(" ".join([err1, err2, err3]))
+
+            if bca_idx_low <= 10:
+                warnings.warn(
+                    err_temp.substitute(lim_type="lower", loc="bottom"), stacklevel=1
+                )
+
+            if bca_idx_high >= self.__resamples - 9:
+                warnings.warn(
+                    err_temp.substitute(lim_type="upper", loc="top"), stacklevel=1
+                )
+
+        else:
+            err1 = "The $lim_type limit of the BCa interval of baseline curve cannot be computed."
+            err2 = "It is set to the effect size itself."
+            err3 = "All bootstrap values were likely all the same."
+            err_temp = Template(" ".join([err1, err2, err3]))
+
+            if isnan(bca_idx_low):
+                self.__bec_bca_low = difference
+                warnings.warn(err_temp.substitute(lim_type="lower"), stacklevel=0)
+
+            if isnan(bca_idx_high):
+                self.__bec_bca_high = difference
+                warnings.warn(err_temp.substitute(lim_type="upper"), stacklevel=0)
+
+        # Compute percentile intervals.
+        pct_idx_low = int((self.__alpha / 2) * self.__resamples)
+        pct_idx_high = int((1 - (self.__alpha / 2)) * self.__resamples)
+
+        self.__bec_pct_interval_idx = (pct_idx_low, pct_idx_high)
+        self.__bec_pct_low = sorted_bootstraps[pct_idx_low]
+        self.__bec_pct_high = sorted_bootstraps[pct_idx_high]
 
     @property
     def difference(self):
@@ -671,6 +759,54 @@ class TwoGroupsEffectSize(object):
             return self.__proportional_difference
         except AttributeError:
             return npnan
+      
+    @property
+    def bec_difference(self):
+        return self.__bec_difference   
+        
+    @property
+    def bec_bootstraps(self):
+        """
+        The generated baseline error bootstraps.
+        """
+        return self.__bootstraps_baseline_ec
+
+    @property
+    def bec_bca_interval_idx(self):
+        return self.__bec_bca_interval_idx
+
+    @property
+    def bec_bca_low(self):
+        """
+        The bias-corrected and accelerated confidence interval lower limit for baseline error.
+        """
+        return self.__bec_bca_low
+
+    @property
+    def bec_bca_high(self):
+        """
+        The bias-corrected and accelerated confidence interval upper limit for baseline error.
+        """
+        return self.__bec_bca_high
+
+    @property
+    def bec_pct_interval_idx(self):
+        return self.__bec_pct_interval_idx
+
+    @property
+    def bec_pct_low(self):
+        """
+        The percentile confidence interval lower limit for baseline error.
+        """
+        return self.__bec_pct_low
+
+    @property
+    def bec_pct_high(self):
+        """
+        The percentile confidence interval lower limit for baseline error.
+        """
+        return self.__bec_pct_high
+        
 
 # %% ../nbs/API/effsize_objects.ipynb 10
 class EffectSizeDataFrame(object):
@@ -725,18 +861,19 @@ class EffectSizeDataFrame(object):
         out = []
         reprs = []
 
+        grouped_data = {name: group[yvar].copy() for name, group in dat.groupby(xvar, observed=False)}
         if self.__delta2:
             mixed_data = []
             for j, current_tuple in enumerate(idx):
                 if self.__is_paired != "sequential":
                     cname = current_tuple[0]
-                    control = dat[dat[xvar] == cname][yvar].copy()
+                    control = grouped_data[cname]
 
                 for ix, tname in enumerate(current_tuple[1:]):
                     if self.__is_paired == "sequential":
                         cname = current_tuple[ix]
-                        control = dat[dat[xvar] == cname][yvar].copy()
-                    test = dat[dat[xvar] == tname][yvar].copy()
+                        control = grouped_data[cname]
+                    test = grouped_data[tname]
                     mixed_data.append(control)
                     mixed_data.append(test)
             bootstraps_delta_delta = ci2g.compute_delta2_bootstrapped_diff(
@@ -752,13 +889,13 @@ class EffectSizeDataFrame(object):
         for j, current_tuple in enumerate(idx):
             if self.__is_paired != "sequential":
                 cname = current_tuple[0]
-                control = dat[dat[xvar] == cname][yvar].copy()
+                control = grouped_data[cname]
 
             for ix, tname in enumerate(current_tuple[1:]):
                 if self.__is_paired == "sequential":
                     cname = current_tuple[ix]
-                    control = dat[dat[xvar] == cname][yvar].copy()
-                test = dat[dat[xvar] == tname][yvar].copy()
+                    control = grouped_data[cname]
+                test = grouped_data[tname]
 
                 result = TwoGroupsEffectSize(
                     control,
@@ -843,6 +980,14 @@ class EffectSizeDataFrame(object):
             "pvalue_kruskal",
             "statistic_kruskal",
             "proportional_difference",
+            "bec_difference",
+            "bec_bootstraps",
+            "bec_bca_interval_idx",
+            "bec_bca_low",
+            "bec_bca_high",
+            "bec_pct_interval_idx",
+            "bec_pct_low",
+            "bec_pct_high",
         ]
         self.__results = out_.reindex(columns=columns_in_order)
         self.__results.dropna(axis="columns", how="all", inplace=True)
@@ -911,16 +1056,18 @@ class EffectSizeDataFrame(object):
 
         out = []
 
+        grouped_data = {name:group[yvar].copy() for name, group in dat.groupby(xvar)}
+
         for j, current_tuple in enumerate(db_obj.idx):
             if self.__is_paired != "sequential":
                 cname = current_tuple[0]
-                control = dat[dat[xvar] == cname][yvar].copy()
+                control = grouped_data[cname]
 
             for ix, tname in enumerate(current_tuple[1:]):
                 if self.__is_paired == "sequential":
                     cname = current_tuple[ix]
-                    control = dat[dat[xvar] == cname][yvar].copy()
-                test = dat[dat[xvar] == tname][yvar].copy()
+                    control = grouped_data[cname]
+                test = grouped_data[tname]
 
                 if self.__is_paired:
                     # Refactored here in v0.3.0 for performance issues.
@@ -1043,6 +1190,9 @@ class EffectSizeDataFrame(object):
 
         es_paired_lines=True,
         es_paired_lines_kwargs=None,
+		
+		# Basline EffectSize Curve
+		show_baseline_ec=False,
     ):
         """
         Creates an estimation plot for the effect size of interest.
@@ -1222,19 +1372,12 @@ class EffectSizeDataFrame(object):
             Pass relevant keyword arguments. If None, the following keywords are passed:
             {"color": 'k', "marker": "^", "alpha": 0.5, "zorder": -1, "size": 3, "side": "right"}
 
-        horizontal : boolean, default False
-            Whether or not to plot the effect size plot in a horizontal format.
         horizontal_table_kwargs : dict, default None
-            Pass relevant keyword arguments to the horizontal table. If None, the following keywords are passed:
             {'show: True, 'color' : 'yellow', 'alpha' :0.2, 'fontsize' : 12, 'text_color' : 'black', 
             'text_units' : None, 'control_marker' : '-', 'fontsize_label': 12, 'label': 'Δ'}
             
         gridkey_rows : list, default None
-            Provide a list of row labels for the gridkey. The supplied idx is
-            checked against the row labels to determine whether the corresponding
             cell should be populated or not. 
-            This can also be set to "auto", which will attempt to auto populate the table.
-        gridkey_kwargs : dict, default None
             Pass relevant keyword arguments to the gridkey. If None, the following keywords are passed:
             {   'show_es' : True,                   # If True, the gridkey will show the effect size of each comparison.
                 'show_Ns' :True,                    # If True, the gridkey will show the number of observations in eachgroup.
@@ -1262,6 +1405,13 @@ class EffectSizeDataFrame(object):
             Pass relevant plot keyword arguments. If None, the following keywords are passed:
             {"linestyle": "-", "linewidth": 2, "zorder": -2, "color": 'dimgray', "alpha": 1}
         
+		show_baseline_ec : boolean, default False
+            Whether or not to display the baseline error curve. The baseline error curve
+            represents the distribution of the effect size when comparing the control
+            group to itself, providing a reference for the inherent variability or noise
+            in the data. When True, this curve is plotted alongside the main effect size
+            distribution, allowing for a visual comparison of the observed effect against
+            the baseline variability.
 
         Returns
         -------

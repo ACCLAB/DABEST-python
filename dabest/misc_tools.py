@@ -172,9 +172,12 @@ def get_params(
     halfviolin_alpha = plot_kwargs["halfviolin_alpha"]
     ci_type = plot_kwargs["ci_type"]
         
+    # Boolean for showing Baseline Curve
+    show_baseline_ec = plot_kwargs["show_baseline_ec"]
+        
     return (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, idx, 
             show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type, group_summaries, err_color, horizontal,
-            results, halfviolin_alpha, ci_type, x1_level, experiment_label)
+            results, halfviolin_alpha, ci_type, x1_level, experiment_label, show_baseline_ec)
 
 def get_kwargs(
         plot_kwargs: dict, 
@@ -422,7 +425,7 @@ def get_kwargs(
                 'markersize': plot_kwargs['es_marker_size'],
                 'color': ytick_color,
                 'alpha': 1,
-                'zorder': 1,
+                'zorder': 2,
     }
     if plot_kwargs['es_marker_kwargs'] is None:
         es_marker_kwargs = default_es_marker_kwargs
@@ -1057,6 +1060,7 @@ def extract_contrast_plotting_ticks(
             ticks_to_start_twocol_sankey.pop()
             ticks_to_start_twocol_sankey.insert(0, 0)
         else:
+
             ticks_to_skip = np.cumsum([len(t) for t in idx])[:-1].tolist()
             ticks_to_skip.insert(0, 0)
             # Then obtain the ticks where we have to plot the effect sizes.
@@ -1083,8 +1087,10 @@ def extract_contrast_plotting_ticks(
             ticks_to_plot = [
                 t for t in range(0, len(plot_groups)) if t not in ticks_to_skip
             ]
-
-    return ticks_to_skip, ticks_to_plot, ticks_to_skip_contrast, ticks_to_start_twocol_sankey
+    
+    ticks_for_baseline_ec = ticks_to_skip
+    
+    return ticks_to_skip, ticks_to_plot, ticks_for_baseline_ec, ticks_to_skip_contrast, ticks_to_start_twocol_sankey
 
 def set_xaxis_ticks_and_lims(
         show_delta2: bool, 
@@ -1371,8 +1377,8 @@ def Gardner_Altman_Plot_Aesthetic_Adjustments(
     elif effect_size_type in ["cohens_d", "hedges_g", "cohens_h"]:
 
         which_std = 1 if is_paired else 0   ############################ Unused line of code
-        temp_control = plot_data[plot_data[xvar] == current_control][yvar]
-        temp_test = plot_data[plot_data[xvar] == current_group][yvar]
+        temp_control = np.array(plot_data[plot_data[xvar] == current_control][yvar])
+        temp_test = np.array(plot_data[plot_data[xvar] == current_group][yvar])
 
         stds = _compute_standardizers(temp_control, temp_test)
         if is_paired:

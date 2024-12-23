@@ -112,7 +112,7 @@ class Dabest(object):
         # Determine the kind of estimation plot we need to produce.
         if all([isinstance(i, (str, int, float)) for i in idx]):
             # flatten out idx.
-            all_plot_groups = pd.unique([t for t in idx]).tolist()
+            all_plot_groups = pd.Series([t for t in idx]).unique().tolist()
             if len(idx) > len(all_plot_groups):
                 err0 = "`idx` contains duplicated groups. Please remove any duplicates and try again."
                 raise ValueError(err0)
@@ -663,9 +663,9 @@ class Dabest(object):
 
 
         if isinstance(plot_data[self.__xvar].dtype, pd.CategoricalDtype):
-            plot_data[self.__xvar].cat.remove_unused_categories(inplace=True)
+            plot_data[self.__xvar].cat.remove_unused_categories()
             plot_data[self.__xvar].cat.reorder_categories(
-                all_plot_groups, ordered=True, inplace=True
+                all_plot_groups, ordered=True
             )
         else:
             plot_data[self.__xvar] = pd.Categorical(

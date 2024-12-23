@@ -306,3 +306,12 @@ def test_233_repeatedmeasures_meandiff_hide_es_paired_lines():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_234_multigroups_paired_meandiff_es_paired_lines_kwargs():
     return multi_groups_paired_baseline.mean_diff.plot(es_paired_lines=True, es_paired_lines_kwargs={'color':'red', 'linestyle': '--', 'linewidth': 2, 'alpha': 0.5});
+
+# Baseline Error Curve
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_235_cummings_multi_groups_meandiff_show_baseline_ec():
+    return multi_groups.mean_diff.plot(show_baseline_ec=True);
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_236_cummings_multi_2_group_meandiff_show_baseline_ec():
+    return multi_2group.mean_diff.plot(show_baseline_ec=True);
