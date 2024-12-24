@@ -884,6 +884,7 @@ class EffectSizeDataFrame(object):
                 self.__is_paired,
                 self.__resamples,
                 self.__random_seed,
+                self.__proportional,
             )
 
         for j, current_tuple in enumerate(idx):
