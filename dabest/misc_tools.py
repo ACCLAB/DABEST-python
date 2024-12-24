@@ -1018,6 +1018,7 @@ def add_counts_to_ticks(
             ticks_with_counts.append(f"{t}\n(N={value})")
 
     fontsize_rawxlabel = plot_kwargs.get("fontsize_rawxlabel")
+    set_major_loc_method(plt.FixedLocator(get_ticks()))
     set_label(ticks_with_counts, fontsize=fontsize_rawxlabel)
 
     # Ensure ticks are at the correct locations
