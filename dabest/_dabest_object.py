@@ -501,9 +501,6 @@ class Dabest(object):
                 error_msg = "If `delta2` is True. `x` parameter cannot be None. String or list expected"
                 raise ValueError(error_msg)
                 
-            if self.__proportional:
-                err0 = "`proportional` and `delta2` cannot be True at the same time."
-                raise ValueError(err0)
 
             # idx should not be specified
             if idx:
