@@ -277,6 +277,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                 plot_data = plot_data, 
                 bar_color = bar_color, 
                 plot_palette_bar = plot_palette_bar, 
+                color_col = color_col,
                 plot_kwargs = plot_kwargs, 
                 barplot_kwargs = barplot_kwargs,
                 horizontal = horizontal,

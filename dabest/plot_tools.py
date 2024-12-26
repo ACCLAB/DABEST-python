@@ -731,14 +731,17 @@ def sankeydiag(
     right_idx = []
     # Design for Sankey Flow Diagram
     sankey_idx = (
-        [
-            (control, test)
-            for i in idx
-            for control, test in zip(i[:], (i[1:] + (i[0],)))
-        ]
-        if flow
-        else temp_idx
-    )
+    [
+        (control, test)
+        for i in idx
+        for control, test in zip(
+            i[:],
+            (tuple(i[1:]) + (i[0],)) if isinstance(i, tuple) else (list(i[1:]) + [i[0]])
+        )
+    ]
+    if flow
+    else temp_idx
+)
     for i in sankey_idx:
         left_idx.append(i[0])
         right_idx.append(i[1])
@@ -2065,6 +2068,7 @@ def barplotter(
         plot_data: pd.DataFrame, 
         bar_color: str, 
         plot_palette_bar: dict, 
+        color_col: str,
         plot_kwargs: dict, 
         barplot_kwargs: dict, 
         horizontal: bool
@@ -2088,6 +2092,8 @@ def barplotter(
         Color of the bar.
     plot_palette_bar : dict
         Dictionary of colors used in the bar plot.
+    color_col : str
+        Column name of the color column.
     plot_kwargs : dict
         Keyword arguments for the plot.
     barplot_kwargs : dict
@@ -2123,6 +2129,8 @@ def barplotter(
         ax=rawdata_axes,
         order=all_plot_groups,
         palette=plot_palette_bar,
+        hue=color_col,
+        dodge=False,
         zorder=1,
         orient=orient,
         **barplot_kwargs

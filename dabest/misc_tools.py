@@ -590,12 +590,12 @@ def get_color_palette(
         if color_by_subgroups:
             plot_palette_raw = dict()
             plot_palette_contrast = dict()
-            # plot_palette_bar set to None because currently there is no empty_circle toggle for proportion plots
-            plot_palette_bar = None
+            plot_palette_bar = dict()
             for i in range(len(idx)):
                 for names_i in idx[i]:
                     plot_palette_raw[names_i] = swarm_colors[i]
                     plot_palette_contrast[names_i] = contrast_colors[i]
+                    plot_palette_bar[names_i] = bar_color[i]
         else:
             plot_palette_raw = dict(zip(categories, swarm_colors))
             plot_palette_contrast = dict(zip(categories, contrast_colors))
@@ -612,11 +612,12 @@ def get_color_palette(
         if color_by_subgroups:
             plot_palette_raw = dict()
             plot_palette_contrast = dict()
-            plot_palette_bar = None  # plot_palette_bar set to None because currently there is no empty_circle toggle for proportion plots
+            plot_palette_bar = dict()
             for i in range(len(idx)):
                 for names_i in idx[i]:
                     plot_palette_raw[names_i] = swarm_colors[i]
                     plot_palette_contrast[names_i] = contrast_colors[i]
+                    plot_palette_bar[names_i] = bar_color[i]
         else:
             plot_palette_raw = dict(zip(names, swarm_colors))
             plot_palette_contrast = dict(zip(names, contrast_colors))
