@@ -2108,7 +2108,26 @@ def barplotter(
     else:
         x_var, y_var, orient = all_plot_groups, np.ones(len(all_plot_groups)), "v"
 
-    bar1_df = pd.DataFrame({xvar: x_var, "proportion": y_var})
+        # Create bar1_df with basic columns
+    bar1_df = pd.DataFrame({
+        xvar: x_var, 
+        "proportion": y_var
+    })
+
+    # Handle colors
+    if color_col:
+        # Get first color value for each group
+        color_mapping = plot_data.groupby(xvar, observed=False)[color_col].first()
+        bar1_df[color_col] = [color_mapping.get(group) for group in all_plot_groups]
+        
+        # Map colors, defaulting to bar_color if no match
+        edge_colors = [
+            plot_palette_bar.get(hue_val, bar_color) 
+            for hue_val in bar1_df[color_col]
+        ]
+    else:
+        edge_colors = bar_color
+
 
     bar1 = sns.barplot(
         data=bar1_df,
@@ -2118,7 +2137,7 @@ def barplotter(
         order=all_plot_groups,
         linewidth=2,
         facecolor=(1, 1, 1, 0),
-        edgecolor=bar_color,
+        edgecolor=edge_colors,
         zorder=1,
         orient=orient,
     )
