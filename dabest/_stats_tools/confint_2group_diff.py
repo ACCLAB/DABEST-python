@@ -167,9 +167,7 @@ def delta2_bootstrap_loop(x1, x2, x3, x4, resamples, pooled_sd, rng_seed, is_pai
     """
     np.random.seed(rng_seed)
     deltadelta = np.empty(resamples)
-    
-    # For proportional data, we don't need out_delta_g
-    out_delta_g = np.empty(resamples) if not proportional else deltadelta  # Use deltadelta as dummy
+    out_delta_g = np.empty(resamples)
     
     n1, n2, n3, n4 = len(x1), len(x2), len(x3), len(x4)
     if is_paired and (n1 != n2 or n3 != n4):
@@ -197,8 +195,8 @@ def delta2_bootstrap_loop(x1, x2, x3, x4, resamples, pooled_sd, rng_seed, is_pai
         delta_delta = delta_2 - delta_1
         
         deltadelta[i] = delta_delta
-        if not proportional:
-            out_delta_g[i] = delta_delta / pooled_sd
+
+        out_delta_g[i] = delta_delta if proportional else delta_delta/pooled_sd
 
     return out_delta_g, deltadelta
 
