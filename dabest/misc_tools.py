@@ -863,10 +863,10 @@ def initialize_fig(
     fontsize_rawylabel = plot_kwargs["fontsize_rawylabel"]
     rawdata_label = bar_label if proportional else swarm_label
     if horizontal:
-        rawdata_axes.set_xlabel(rawdata_label, fontsize=fontsize_rawylabel)
+        rawdata_axes.set_xlabel(rawdata_label.capitalize(), fontsize=fontsize_rawylabel)
         rawdata_axes.set_ylabel("")
     else:
-        rawdata_axes.set_ylabel(rawdata_label, fontsize=fontsize_rawylabel)
+        rawdata_axes.set_ylabel(rawdata_label.capitalize(), fontsize=fontsize_rawylabel)
         rawdata_axes.set_xlabel("")
 
     # Set contrast axes y-label.
