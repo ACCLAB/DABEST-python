@@ -257,7 +257,8 @@ class TwoGroupsEffectSize(object):
             raise ValueError(err1)
 
         if self.__proportional and self.__effect_size not in ["mean_diff", "cohens_h"]:
-            err1 = "`proportional` is True; therefore effect size other than mean_diff and cohens_h is not defined."
+            err1 = "`proportional` is True; therefore effect size other than mean_diff and cohens_h is not defined." + \
+                    "If you are calculating deltas' g, it's the same as delta-delta when `proportional` is True"
             raise ValueError(err1)
 
         if self.__proportional and (
@@ -884,6 +885,7 @@ class EffectSizeDataFrame(object):
                 self.__is_paired,
                 self.__resamples,
                 self.__random_seed,
+                self.__proportional,
             )
 
         for j, current_tuple in enumerate(idx):

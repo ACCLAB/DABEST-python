@@ -159,24 +159,26 @@ def compute_bootstrapped_diff(
 
     return out
 
-@njit(cache=True) # parallelization must be turned off for random number generation
-def delta2_bootstrap_loop(x1, x2, x3, x4, resamples, pooled_sd, rng_seed, is_paired):
+
+@njit(cache=True)
+def delta2_bootstrap_loop(x1, x2, x3, x4, resamples, pooled_sd, rng_seed, is_paired, proportional=False):
+    """
+    Compute bootstrapped differences for delta-delta, handling both regular and proportional data
+    """
     np.random.seed(rng_seed)
-    out_delta_g = np.empty(resamples)
     deltadelta = np.empty(resamples)
+    out_delta_g = np.empty(resamples)
     
     n1, n2, n3, n4 = len(x1), len(x2), len(x3), len(x4)
-    if is_paired:
-        if n1 != n2 or n3 != n4:
-            raise ValueError("Each control group must have the same length as its corresponding test group in paired analysis.")
-    
+    if is_paired and (n1 != n2 or n3 != n4):
+        raise ValueError("Each control group must have the same length as its corresponding test group in paired analysis.")
 
     # Bootstrapping
     for i in range(resamples):
         # Paired or unpaired resampling
         if is_paired:
-            indices_1 = np.random.choice(len(x1),len(x1))
-            indices_2 = np.random.choice(len(x3),len(x3))
+            indices_1 = np.random.choice(len(x1), len(x1))
+            indices_2 = np.random.choice(len(x3), len(x3))
             x1_sample, x2_sample = x1[indices_1], x2[indices_1]
             x3_sample, x4_sample = x3[indices_2], x4[indices_2]
         else:
@@ -187,13 +189,14 @@ def delta2_bootstrap_loop(x1, x2, x3, x4, resamples, pooled_sd, rng_seed, is_pai
             x1_sample, x2_sample = x1[indices_1], x2[indices_2]
             x3_sample, x4_sample = x3[indices_3], x4[indices_4]
 
-        # Calculating deltas
+        # Calculate deltas
         delta_1 = np.mean(x2_sample) - np.mean(x1_sample)
         delta_2 = np.mean(x4_sample) - np.mean(x3_sample)
         delta_delta = delta_2 - delta_1
-
+        
         deltadelta[i] = delta_delta
-        out_delta_g[i] = delta_delta / pooled_sd
+
+        out_delta_g[i] = delta_delta if proportional else delta_delta/pooled_sd
 
     return out_delta_g, deltadelta
 
@@ -204,39 +207,42 @@ def compute_delta2_bootstrapped_diff(
     x3: np.ndarray,  # Control group 2
     x4: np.ndarray,  # Test group 2
     is_paired: str = None,
-    resamples: int = 5000,  # The number of bootstrap resamples to be taken for the calculation of the confidence interval limits.
-    random_seed: int = 12345,  # `random_seed` is used to seed the random number generator during bootstrap resampling. This ensures that the confidence intervals reported are replicable.
-) -> (
-    tuple
-):  # bootstraped result and empirical result of deltas' g, and the bootstraped result of delta-delta
+    resamples: int = 5000,
+    random_seed: int = 12345,
+    proportional: bool = False
+) -> tuple:
     """
-    Bootstraps the effect size deltas' g.
-
+    Bootstraps the effect size deltas' g or proportional delta-delta
     """
-
     x1, x2, x3, x4 = map(np.asarray, [x1, x2, x3, x4])
-
-    # Calculating pooled sample standard deviation
-    stds = [np.std(x) for x in [x1, x2, x3, x4]]
-    ns = [len(x) for x in [x1, x2, x3, x4]]
-
-    sd_numerator = sum((n - 1) * s**2 for n, s in zip(ns, stds))
-    sd_denominator = sum(n - 1 for n in ns)
-
-    # Avoid division by zero
-    if sd_denominator == 0:
-        raise ValueError("Insufficient data to compute pooled standard deviation.")
-
-    pooled_sample_sd = np.sqrt(sd_numerator / sd_denominator)
-
-    # Ensure pooled_sample_sd is not NaN or zero (to avoid division by zero later)
-    if np.isnan(pooled_sample_sd) or pooled_sample_sd == 0:
-        raise ValueError("Pooled sample standard deviation is NaN or zero.")
-
-    out_delta_g, deltadelta = delta2_bootstrap_loop(x1, x2, x3, x4, resamples, pooled_sample_sd, random_seed, is_paired)
-
-    # Empirical delta_g calculation
-    delta_g = ((np.mean(x4) - np.mean(x3)) - (np.mean(x2) - np.mean(x1))) / pooled_sample_sd
+    
+    if proportional:
+        # For proportional data, pass 1.0 as dummy pooled_sd (won't be used)
+        out_delta_g, deltadelta = delta2_bootstrap_loop(
+            x1, x2, x3, x4, resamples, 1.0, random_seed, is_paired, proportional=True
+        )
+        # For proportional data, delta_g is the empirical delta-delta
+        delta_g = ((np.mean(x4) - np.mean(x3)) - (np.mean(x2) - np.mean(x1)))
+    else:
+        # Calculate pooled sample standard deviation for non-proportional data
+        stds = [np.std(x) for x in [x1, x2, x3, x4]]
+        ns = [len(x) for x in [x1, x2, x3, x4]]
+        
+        sd_numerator = sum((n - 1) * s**2 for n, s in zip(ns, stds))
+        sd_denominator = sum(n - 1 for n in ns)
+        
+        if sd_denominator == 0:
+            raise ValueError("Insufficient data to compute pooled standard deviation.")
+            
+        pooled_sample_sd = np.sqrt(sd_numerator / sd_denominator)
+        
+        if np.isnan(pooled_sample_sd) or pooled_sample_sd == 0:
+            raise ValueError("Pooled sample standard deviation is NaN or zero.")
+            
+        out_delta_g, deltadelta = delta2_bootstrap_loop(
+            x1, x2, x3, x4, resamples, pooled_sample_sd, random_seed, is_paired, proportional=False
+        )
+        delta_g = ((np.mean(x4) - np.mean(x3)) - (np.mean(x2) - np.mean(x1))) / pooled_sample_sd
 
     return out_delta_g, delta_g, deltadelta
 

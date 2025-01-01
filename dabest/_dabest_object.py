@@ -7,6 +7,7 @@ __all__ = ['Dabest']
 
 # %% ../nbs/API/dabest_object.ipynb 5
 # Import standard data science libraries
+import warnings
 from numpy import array, repeat, random, issubdtype, number
 import numpy as np
 import pandas as pd
@@ -62,7 +63,6 @@ class Dabest(object):
 
         # Check if there is NaN under any of the paired settings
         if self.__is_paired and self.__output_data.isnull().values.any():
-            import warnings
             warn1 = f"NaN values detected under paired setting and removed,"
             warn2 = f" please check your data."
             warnings.warn(warn1 + warn2)
@@ -500,10 +500,10 @@ class Dabest(object):
             if x is None:
                 error_msg = "If `delta2` is True. `x` parameter cannot be None. String or list expected"
                 raise ValueError(error_msg)
-                
+            
             if self.__proportional:
-                err0 = "`proportional` and `delta2` cannot be True at the same time."
-                raise ValueError(err0)
+                mes1 = "Only mean_diff is supported for proportional data when `delta2` is True"
+                warnings.warn(message=mes1, category=UserWarning)
 
             # idx should not be specified
             if idx:
@@ -581,8 +581,6 @@ class Dabest(object):
         """
         # Check if there is NaN under any of the paired settings
         if self.__is_paired is not None and self.__output_data.isnull().values.any():
-            print("Nan")
-            import warnings
             warn1 = f"NaN values detected under paired setting and removed,"
             warn2 = f" please check your data."
             warnings.warn(warn1 + warn2)
@@ -634,7 +632,6 @@ class Dabest(object):
 
             # Check if there is NaN under any of the paired settings
             if self.__is_paired is not None and self.__output_data.isnull().values.any():
-                import warnings
                 warn1 = f"NaN values detected under paired setting and removed,"
                 warn2 = f" please check your data."
                 warnings.warn(warn1 + warn2)

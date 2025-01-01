@@ -26,6 +26,9 @@ def create_demo_dataset_delta(seed=9999, N=20):
     y = norm.rvs(loc=3, scale=0.4, size=N*4)
     y[N:2*N] = y[N:2*N]+1
     y[2*N:3*N] = y[2*N:3*N]-0.5
+    ind = np.random.binomial(1, 0.5, size=N*4)
+    ind[N:2*N] = np.random.binomial(1, 0.2, size=N)
+    ind[2*N:3*N] = np.random.binomial(1, 0.7, size=N)
 
     # Add drug column
     t1 = np.repeat('Placebo', N*2).tolist()
@@ -54,10 +57,11 @@ def create_demo_dataset_delta(seed=9999, N=20):
 
     # Combine all columns into a DataFrame.
     df = pd.DataFrame({'ID'        : id_col,
-                      'Rep'      : rep,
+                      'Rep'        : rep,
                        'Genotype'  : genotype, 
-                       'Treatment': treatment,
-                       'Y'         : y
+                       'Treatment' : treatment,
+                       'Y'         : y,
+                       'Cat'       :ind
                     })
     return df
 
@@ -80,6 +84,34 @@ baseline = load(data = df, x = ["Treatment", "Rep"], y = "Y", delta2 = True,
 sequential = load(data = df, x = ["Treatment", "Rep"], y = "Y", delta2 = True, 
                 experiment = "Genotype",
                 paired="sequential", id_col="ID")
+
+unpaired_prop = load(data = df, proportional=True,
+                            # id_col="index", paired='baseline', 
+                            x = ["Genotype", "Genotype"], 
+                            y = "Cat", delta2=True,
+                            experiment="Treatment",)
+
+unpaired_specified_prop = load(data = df, proportional=True,
+                            # id_col="index", paired='baseline', 
+                            x = ["Genotype", "Genotype"], 
+                            y = "Cat", delta2=True,
+                            experiment="Treatment",
+                            experiment_label = ["Drug", "Placebo"],
+                            x1_level = ["M", "W"])
+
+paired_prop = load(data = df, proportional=True,
+                            id_col="ID", paired='baseline', 
+                            x = ["Genotype", "Genotype"], 
+                            y = "Cat", delta2=True,
+                            experiment="Treatment",)
+
+paired_specified_prop = load(data = df, proportional=True,
+                            id_col="ID", paired='baseline', 
+                            x = ["Genotype", "Genotype"], 
+                            y = "Cat", delta2=True,
+                            experiment="Treatment",
+                            experiment_label = ["Drug", "Placebo"],
+                            x1_level = ["M", "W"])
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
@@ -165,3 +197,19 @@ def test_72_sequential_delta_g():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_73_baseline_delta_g():
     return baseline.mean_diff.plot();
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_74_unpaired_prop_delta2():
+    return unpaired_prop.mean_diff.plot()
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_75_unpaired_specified_prop_delta2():
+    return unpaired_specified_prop.mean_diff.plot()
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_76_paired_prop_delta2():
+    return paired_prop.mean_diff.plot()
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_77_paired_specified_prop_delta2():
+    return paired_specified_prop.mean_diff.plot()
