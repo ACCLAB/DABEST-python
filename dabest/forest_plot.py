@@ -177,6 +177,8 @@ def check_for_errors(
     # Custom palette
     if custom_palette is not None and not isinstance(custom_palette, (dict, list, str, type(None))):
         raise TypeError("The `custom_palette` must be either a dictionary, list, string, or `None`.")
+    if isinstance(custom_palette, dict) and labels is None:
+        raise ValueError("The `labels` argument must be provided if `custom_palette` is a dictionary.")
 
 
     # Halfviolin alpha and desat
