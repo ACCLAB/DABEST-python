@@ -321,8 +321,8 @@ def color_palette(
 
 
 def forest_plot(
-    data: List,
-    idx: Optional[List[int]] = None,
+    data: list,
+    idx: Optional[list[int]] = None,
     ax: Optional[plt.Axes] = None,
     fig_size: tuple[int, int] = None,
     effect_size: str = "mean_diff",
@@ -333,16 +333,16 @@ def forest_plot(
     halfviolin_alpha: float = 0.8,
     halfviolin_desat: float = 1,
 
-    labels: List[str] = None,
+    labels: list[str] = None,
     labels_rotation: int = None,
     labels_fontsize: int = 10,
     title: str = "ΔΔ Forest",
     title_fontsize: int = 16,
     ylabel: str = None,
     ylabel_fontsize: int = 12,
-    ylim: Optional[tuple[float, float] | list[float, float]] = None,
-    yticks: Optional[tuple[float] | list[float]] = None,
-    yticklabels: Optional[tuple[str] | list[str]] = None,
+    ylim: Optional[list[float, float]] = None,
+    yticks: Optional[list[float]] = None,
+    yticklabels: Optional[list[str]] = None,
     remove_spines: bool = True,
 
     violin_kwargs: Optional[dict] = None,
