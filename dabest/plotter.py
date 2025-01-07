@@ -364,7 +364,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
     (current_group, current_control,
      current_effsize, contrast_xtick_labels) = effect_size_curve_plotter(
                                                                 ticks_to_plot = ticks_to_plot, 
-                                                                    ticks_for_baseline_ec=ticks_for_baseline_ec,
+                                                                ticks_for_baseline_ec = ticks_for_baseline_ec,
                                                                 results = results, 
                                                                 ci_type = ci_type, 
                                                                 contrast_axes = contrast_axes, 
