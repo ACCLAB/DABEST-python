@@ -157,42 +157,174 @@ contrasts_mini_meta = [contrast_mini_meta01, contrast_mini_meta02, contrast_mini
 from dabest.forest_plot import forest_plot
 
 @pytest.mark.mpl_image_compare(tolerance=8)
-def test_201_forest_plot_no_colorpalette():
-    return forest_plot(contrasts, 
-                       contrast_labels=['Drug1', 'Drug2', 'Drug3'])
+def test_500_deltadelta_forest():
+    return forest_plot(
+                contrasts, 
+                labels=['Drug1', 'Drug2', 'Drug3']
+            )
 
 @pytest.mark.mpl_image_compare(tolerance=8)
-def test_202_forest_plot_with_colorpalette():
-    return forest_plot(contrasts, 
-                       contrast_labels=['Drug1', 'Drug2', 'Drug3'],
-                       custom_palette=['gray', 'blue', 'green']) 
+def test_501_deltadelta_with_deltas_idx_forest():
+    return forest_plot(
+                contrasts, 
+                labels=['Drug1 Delta', 'Drug1 Delta-Delta', 
+                        'Drug2 Delta', 'Drug2 Delta-Delta',
+                        'Drug3 Delta', 'Drug3 Delta-Delta'
+                        ],
+                idx = [(0, 2), (0, 2), (0, 2)]
+            )
 
 @pytest.mark.mpl_image_compare(tolerance=8)
-def test_203_horizontal_forest_plot_no_colorpalette():
-    return forest_plot(contrasts, 
-                       contrast_labels=['Drug1', 'Drug2', 'Drug3'],
-                       horizontal=True)
+def test_502_minimeta_forest():
+    return forest_plot(
+                contrasts_mini_meta, 
+                labels=['mini_meta1', 'mini_meta2', 'mini_meta3']
+            )
+
+
 
 @pytest.mark.mpl_image_compare(tolerance=8)
-def test_204_horizontal_forest_plot_with_colorpalette():
-    return forest_plot(contrasts, 
-                       contrast_labels=['Drug1', 'Drug2', 'Drug3'], 
-                       custom_palette=['gray', 'blue', 'green'], 
-                       horizontal=True)
+def test_503_deltadelta_custompalette_forest():
+    return forest_plot(
+                contrasts, 
+                labels=['Drug1', 'Drug2', 'Drug3'],
+                custom_palette=['gray', 'blue', 'green']
+            )
 
 @pytest.mark.mpl_image_compare(tolerance=8)
-def test_206_forest_mini_meta():
-    return forest_plot(contrasts_mini_meta, 
-                       contrast_type='mini_meta', 
-                       contrast_labels=['mini_meta1', 'mini_meta2', 'mini_meta3'])
+def test_504_deltadelta_horizontal_forest():
+    return forest_plot(
+                contrasts, 
+                labels=['Drug1', 'Drug2', 'Drug3'],
+                horizontal=True
+            )
 
 @pytest.mark.mpl_image_compare(tolerance=8)
-def test_205_forest_mini_meta_horizontal():
-    return forest_plot(contrasts_mini_meta, 
-                       contrast_type='mini_meta', 
-                       contrast_labels=['mini_meta1', 'mini_meta2', 'mini_meta3'], 
-                       horizontal=True)
+def test_505_deltadelta_insert_ax_forest():
+    f_forest_drug_profiles, axes  = plt.subplots(2, 2, figsize=[15, 14])
+    f_forest_drug_profiles.subplots_adjust(hspace=0.3, wspace=0.3)
+
+    for ax, contrast in zip(axes.flatten(), [unpaired_delta_01, unpaired_delta_02, unpaired_delta_03]):
+        contrast.mean_diff.plot(                  
+                        contrast_label='Mean Diff',
+                        raw_marker_size = 1,
+                        es_marker_size = 5,
+                        color_col='Genotype',
+                        ax = ax
+        )
+        forest_plot(
+                data = contrasts, 
+                labels = ['Drug1', 'Drug2', 'Drug3'], 
+                ax = axes[1,1], 
+                )
+    
+    for ax, title in zip(axes.flatten(), ['Drug 1', 'Drug 2', 'Drug 3', 'Forest plot']):
+        ax.set_title(title, fontsize = 12)
+
+    return f_forest_drug_profiles
 
 
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_506_deltadelta_mediandiff_forest():
+    return forest_plot(
+                contrasts, 
+                labels=['Drug1', 'Drug2', 'Drug3'],
+                effect_size='median_diff'
+            )
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_507_deltadelta_fig_size_forest():
+    return forest_plot(
+                contrasts, 
+                labels=['Drug1', 'Drug2', 'Drug3'],
+                fig_size=[6, 6]
+            )
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_508_deltadelta_fig_size_forest():
+    return forest_plot(
+                contrasts, 
+                labels=['Drug1', 'Drug2', 'Drug3'],
+                fig_size=[6, 6]
+            )
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_509_deltadelta_halfviolin_aesthetics_forest():
+    return forest_plot(
+                contrasts, 
+                labels=['Drug1', 'Drug2', 'Drug3'],
+                halfviolin_alpha=0.2,
+                halfviolin_desat=0.2
+            )
 
 
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_510_deltadelta_labels_and_title_aesthetics_forest():
+    return forest_plot(
+                contrasts, 
+                labels=['Drug1', 'Drug2', 'Drug3'],
+                labels_fontsize=12,
+                labels_rotation=0,
+                ylabel='Effect Size',
+                ylabel_fontsize=14,
+                title='Drug Efficacy',
+                title_fontsize=20
+            )
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_511_deltadelta_lims_and_ticks_forest():
+    return forest_plot(
+                contrasts, 
+                labels=['Drug1', 'Drug2', 'Drug3'],
+                ylim=[-1, 1],
+                yticks=[-1, 0, 1],
+                yticklabels=['Negative', 'Zero', 'Positive']
+            )
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_512_deltadelta_spines_forest():
+    return forest_plot(
+                contrasts, 
+                labels=['Drug1', 'Drug2', 'Drug3'],
+                remove_spines=False
+            )
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_513_deltadelta_violinkwargs_forest():
+    return forest_plot(
+                contrasts, 
+                labels=['Drug1', 'Drug2', 'Drug3'],
+                violin_kwargs={
+                    "widths": 0.8, "showextrema": True, 
+                    "showmedians": True, "vert": True
+                }
+            )
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_514_deltadelta_zerolinekwargs_forest():
+    return forest_plot(
+                contrasts, 
+                labels=['Drug1', 'Drug2', 'Drug3'],
+                zeroline_kwargs={"linewidth": 2, "color": "red"}
+            )   
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_515_deltadelta_esmarkerkwargs_forest():
+    return forest_plot(
+                contrasts, 
+                labels=['Drug1', 'Drug2', 'Drug3'],
+                es_marker_kwargs={
+                    'marker': '^', 'markersize': 15,'color': 'blue',
+                    'alpha': 0.5,
+                    }
+            )
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_516_deltadelta_eserrorbarkwargs_forest():
+    return forest_plot(
+                contrasts, 
+                labels=['Drug1', 'Drug2', 'Drug3'],
+                es_errorbar_kwargs={
+                    'color': 'red', 'lw': 4, 'linestyle': '--', 'alpha': 0.6,
+                }
+            )

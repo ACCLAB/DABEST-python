@@ -2937,7 +2937,7 @@ class SwarmPlot:
                 ax.scatter(
                     [],
                     [],
-                    c=self.__palette[cmap_group_i],
+                    color=self.__palette[cmap_group_i],
                     label=cmap_group_i,
                 )
 
