@@ -486,6 +486,7 @@ def get_color_palette(
         idx: list, 
         all_plot_groups: list,
         delta2: bool,
+        sankey: bool
     ):
     """
     Create the color palette to be used in the plotter function.
@@ -506,6 +507,8 @@ def get_color_palette(
         A list of all the group names.
     delta2 : bool
         A boolean flag to determine if the plot will have a delta-delta effect size.
+    sankey : bool
+        A boolean flag to determine if the plot is for a Sankey diagram.
     """
     # Create color palette that will be shared across subplots.
     color_col = plot_kwargs["color_col"]
@@ -559,6 +562,10 @@ def get_color_palette(
             if delta2:
                 groups_in_palette = {
                     k: custom_pal[k] for k in color_groups
+                }
+            elif sankey:
+                groups_in_palette = {
+                    k: custom_pal[k] for k in [1, 0]
                 }
             elif color_col is None:
                 groups_in_palette = {
