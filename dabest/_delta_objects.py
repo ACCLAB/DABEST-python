@@ -209,11 +209,29 @@ class DeltaDelta(object):
         dictionary.
         """
         # Only get public (user-facing) attributes.
-        attrs = [a for a in dir(self) if not a.startswith(("_", "to_dict"))]
+        attrs = [a for a in dir(self) if not a.startswith(("_", "to_dict", "results"))]
         out = {}
         for a in attrs:
             out[a] = getattr(self, a)
         return out
+    
+    def __compute_results(self):
+        # With some inspiration from @jungyangliao
+        delta_delta_results_df = pd.Series(self.to_dict()).to_frame().T
+
+        column_index = ['control', 'test', 'difference', 'ci', 'bca_low', 'bca_high', 'bca_interval_idx', 
+                        'pct_low', 'pct_high', 'pct_interval_idx', 'bootstraps_control', 'bootstraps_test', 
+                        'bootstraps_delta_delta', 'permutations_control', 'permutations_test', 'permutations_delta_delta',
+                        'pvalue_permutation', 'permutation_count', 'bias_correction', 'jackknives'
+                        ]
+        delta_delta_results_df['bootstraps_control'] = [delta_delta_results_df['bootstraps'][0][0]]
+        delta_delta_results_df['bootstraps_test'] = [delta_delta_results_df['bootstraps'][0][1]]
+        delta_delta_results_df['permutations_control'] = [delta_delta_results_df['permutations'][0][0]]
+        delta_delta_results_df['permutations_test'] = [delta_delta_results_df['permutations'][0][1]]
+        delta_delta_results_df = delta_delta_results_df.reindex(columns=column_index)
+
+        self.__results = delta_delta_results_df
+        return self.__results
 
     @property
     def ci(self):
@@ -352,6 +370,17 @@ class DeltaDelta(object):
         except AttributeError:
             self.__permutation_test()
             return self.__permutations_delta_delta
+        
+    @property
+    def results(self):
+        """
+        Return the results of the delta-delta analysis.
+        """
+        try:
+            return self.__results
+        except AttributeError:
+            self.__compute_results()
+        return self.__results
 
 # %% ../nbs/API/delta_objects.ipynb 10
 class MiniMetaDelta(object):
@@ -575,11 +604,30 @@ class MiniMetaDelta(object):
         """
         # Only get public (user-facing) attributes.
         attrs = [a for a in dir(self)
-                 if not a.startswith(("_", "to_dict"))]
+                 if not a.startswith(("_", "to_dict", "results"))]
         out = {}
         for a in attrs:
             out[a] = getattr(self, a)
         return out
+    
+
+    def __compute_results(self):
+        # With some inspiration from @jungyangliao
+        """
+        Returns all attributes of the `dabest.MiniMetaDelta` object as a
+        DataFrame.
+        """
+        mini_meta_delta_results_df = pd.Series(self.to_dict()).to_frame().T
+        column_index = ['control', 'test', 'control_N', 'test_N', 'control_var', 'test_var', 'group_var',
+                        'difference', 'ci', 'bca_low', 'bca_high', 'bca_interval_idx', 
+                        'pct_low', 'pct_high', 'pct_interval_idx', 'bootstraps', 'bootstraps_weighted_delta', 
+                        'permutations', 'permutations_var', 'permutations_weighted_delta', 'pvalue_permutation', 
+                        'permutation_count', 'bias_correction', 'jackknives']
+        mini_meta_delta_results_df = mini_meta_delta_results_df.reindex(columns=column_index)
+        mini_meta_delta_results_df.rename(columns={'bootstraps': 'bootstraps_deltas'}, inplace=True)
+
+        self.__results = mini_meta_delta_results_df
+        return self.__results
 
 
     @property
@@ -801,4 +849,13 @@ class MiniMetaDelta(object):
             self.__permutation_test()
             return self.__permutations_weighted_delta
 
-
+    @property
+    def results(self):
+        """
+        Return the results of the mini-meta analysis.
+        """
+        try:
+            return self.__results
+        except AttributeError:
+            self.__compute_results()
+        return self.__results
