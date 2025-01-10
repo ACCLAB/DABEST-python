@@ -118,11 +118,13 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
 
     # Extract parameters and set kwargs
     (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, idx, 
-    show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type, group_summaries, err_color, horizontal,
+    show_delta2, show_mini_meta, float_contrast, show_pairs, group_summaries, err_color, horizontal,
     results, halfviolin_alpha, ci_type, x1_level, experiment_label, show_baseline_ec) = get_params(
      																							effectsize_df = effectsize_df, 
                                                                                                 plot_kwargs = plot_kwargs,
                                                                                                 )
+    
+    print(effect_size)
 
     (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, 
      violinplot_kwargs, slopegraph_kwargs, reflines_kwargs, legend_kwargs,
@@ -166,7 +168,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                                                             show_pairs = show_pairs, 
                                                             proportional = proportional, 
                                                             float_contrast = float_contrast,
-                                                            effect_size_type = effect_size_type,
+                                                            effect_size_type = effect_size,
                                                             yvar = yvar,
                                                             horizontal = horizontal,
                                                             show_table = table_kwargs['show']
@@ -198,7 +200,8 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
             
             # Add delta dots to the contrast axes for paired plots.
             show_delta_dots = plot_kwargs["delta_dot"]
-            if show_delta_dots and is_paired is not None:
+            unavailable_effect_sizes = ["hedges_g", "delta_g", "cohens_d"]
+            if show_delta_dots and is_paired and not any([es in effect_size for es in unavailable_effect_sizes]):
                 DeltaDotsPlotter(
                     plot_data = plot_data, 
                     contrast_axes = contrast_axes, 
@@ -424,7 +427,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
     if float_contrast and not horizontal:
         # For Gardner-Altman plots only.
         Gardner_Altman_Plot_Aesthetic_Adjustments(
-                                            effect_size_type = effect_size_type, 
+                                            effect_size_type = effect_size, 
                                             plot_data = plot_data, 
                                             xvar = xvar, 
                                             yvar = yvar, 
