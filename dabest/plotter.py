@@ -123,8 +123,6 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
      																							effectsize_df = effectsize_df, 
                                                                                                 plot_kwargs = plot_kwargs,
                                                                                                 )
-    
-    print(effect_size)
 
     (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, 
      violinplot_kwargs, slopegraph_kwargs, reflines_kwargs, legend_kwargs,
