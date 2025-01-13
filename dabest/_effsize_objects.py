@@ -106,7 +106,7 @@ class TwoGroupsEffectSize(object):
         self.__effect_size = effect_size
         self.__random_seed = random_seed
         self.__ci = ci
-        self.__proportional = proportional
+        self.__is_proportional = proportional
         self._check_errors(control, test)
 
         # Convert to numpy arrays for speed.
@@ -256,16 +256,16 @@ class TwoGroupsEffectSize(object):
             err1 = "`paired` is not None; therefore Cliff's delta is not defined."
             raise ValueError(err1)
 
-        if self.__proportional and self.__effect_size not in ["mean_diff", "cohens_h"]:
-            err1 = "`proportional` is True; therefore effect size other than mean_diff and cohens_h is not defined." + \
-                    "If you are calculating deltas' g, it's the same as delta-delta when `proportional` is True"
+        if self.__is_proportional and self.__effect_size not in ["mean_diff", "cohens_h"]:
+            err1 = "`is_proportional` is True; therefore effect size other than mean_diff and cohens_h is not defined." + \
+                    "If you are calculating deltas' g, it's the same as delta-delta when `is_proportional` is True"
             raise ValueError(err1)
 
-        if self.__proportional and (
+        if self.__is_proportional and (
             isin(control, [0, 1]).all() == False or isin(test, [0, 1]).all() == False
         ):
             err1 = (
-                "`proportional` is True; Only accept binary data consisting of 0 and 1."
+                "`is_proportional` is True; Only accept binary data consisting of 0 and 1."
             )
             raise ValueError(err1)
 
@@ -333,7 +333,7 @@ class TwoGroupsEffectSize(object):
             self.__permutation_count,
         )
 
-        if self.__is_paired and not self.__proportional:
+        if self.__is_paired and not self.__is_proportional:
             # Wilcoxon, a non-parametric version of the paired T-test.
             try:
                 wilcoxon = spstats.wilcoxon(self.__control, self.__test)
@@ -354,7 +354,7 @@ class TwoGroupsEffectSize(object):
                 self.__pvalue_paired_students_t = paired_t.pvalue
                 self.__statistic_paired_students_t = paired_t.statistic
 
-        elif self.__is_paired and self.__proportional:
+        elif self.__is_paired and self.__is_proportional:
             # for binary paired data, use McNemar's test
             # References:
             # https://en.wikipedia.org/wiki/McNemar%27s_test
@@ -368,7 +368,7 @@ class TwoGroupsEffectSize(object):
             self.__pvalue_mcnemar = _mcnemar.pvalue
             self.__statistic_mcnemar = _mcnemar.statistic
 
-        elif self.__proportional:
+        elif self.__is_proportional:
             # The Cohen's h calculation is for binary categorical data
             try:
                 self.__proportional_difference = es.cohens_h(
@@ -544,8 +544,8 @@ class TwoGroupsEffectSize(object):
         return self.__is_paired
 
     @property
-    def proportional(self):
-        return self.__proportional
+    def is_proportional(self):
+        return self.__is_proportional
 
     @property
     def ci(self):
@@ -842,7 +842,7 @@ class EffectSizeDataFrame(object):
         self.__resamples = resamples
         self.__permutation_count = permutation_count
         self.__random_seed = random_seed
-        self.__proportional = proportional
+        self.__is_proportional = proportional
         self.__x1_level = x1_level
         self.__experiment_label = experiment_label
         self.__x2 = x2
@@ -885,7 +885,7 @@ class EffectSizeDataFrame(object):
                 self.__is_paired,
                 self.__resamples,
                 self.__random_seed,
-                self.__proportional,
+                self.__is_proportional,
             )
 
         for j, current_tuple in enumerate(idx):
@@ -903,7 +903,7 @@ class EffectSizeDataFrame(object):
                     control,
                     test,
                     self.__effect_size,
-                    self.__proportional,
+                    self.__is_proportional,
                     self.__is_paired,
                     self.__ci,
                     self.__resamples,
@@ -1300,7 +1300,7 @@ class EffectSizeDataFrame(object):
             passed to plot() : {'linewidth':1, 'alpha':0.5, 'jitter':0, 'jitter_seed':9876543210}.
         sankey_kwargs: dict, default None
             Whis will change the appearance of the sankey diagram used to depict
-            paired proportional data when `show_pairs=True` and `proportional=True`.
+            paired proportional data when `show_pairs=True` and `is_proportional=True`.
             Pass any keyword arguments accepted by plot_tools.sankeydiag() function
             here, as a dict. If None, the following keywords are passed to sankey diagram:
             {"width": 0.5, "align": "center", "alpha": 0.4, "bar_width": 0.1, "rightColor": False}
@@ -1437,9 +1437,6 @@ class EffectSizeDataFrame(object):
         if self.__delta2 and not empty_circle:
             color_col = self.__x2
 
-        # if self.__proportional:
-        #     raw_marker_size = 0.01
-
         # Modification incurred due to update of Seaborn
         ci = ("ci", ci) if ci is not None else None
 
@@ -1450,12 +1447,12 @@ class EffectSizeDataFrame(object):
         return out
 
     @property
-    def proportional(self):
+    def is_proportional(self):
         """
         Returns the proportional parameter
         class.
         """
-        return self.__proportional
+        return self.__is_proportional
 
     @property
     def results(self):
@@ -1568,13 +1565,6 @@ class EffectSizeDataFrame(object):
         """
         return self.__dabest_obj
 
-    @property
-    def proportional(self):
-        """
-        Returns the proportional parameter
-        class.
-        """
-        return self.__proportional
 
     @property
     def lqrt(self):

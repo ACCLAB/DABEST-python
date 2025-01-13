@@ -54,7 +54,7 @@ class Dabest(object):
         self.__is_paired = paired
         self.__resamples = resamples
         self.__random_seed = random_seed
-        self.__proportional = proportional
+        self.__is_proportional = proportional
         self.__mini_meta = mini_meta
 
         # after this call the attributes self.__experiment_label and self.__x1_level are updated
@@ -419,11 +419,11 @@ class Dabest(object):
         return self.__plot_data
 
     @property
-    def proportional(self):
+    def is_proportional(self):
         """
         Returns the proportional parameter class.
         """
-        return self.__proportional
+        return self.__is_proportional
 
     @property
     def mini_meta(self):
@@ -448,7 +448,7 @@ class Dabest(object):
         # Check if it is a valid mini_meta case
         if self.__mini_meta:
             # Only mini_meta calculation but not proportional and delta-delta function
-            if self.__proportional:
+            if self.__is_proportional:
                 err0 = "`proportional` and `mini_meta` cannot be True at the same time."
                 raise ValueError(err0)
             if self.__delta2:
@@ -501,7 +501,7 @@ class Dabest(object):
                 error_msg = "If `delta2` is True. `x` parameter cannot be None. String or list expected"
                 raise ValueError(error_msg)
             
-            if self.__proportional:
+            if self.__is_proportional:
                 mes1 = "Only mean_diff is supported for proportional data when `delta2` is True"
                 warnings.warn(message=mes1, category=UserWarning)
 
@@ -683,7 +683,7 @@ class Dabest(object):
             is_paired=self.__is_paired,
             random_seed=self.__random_seed,
             resamples=self.__resamples,
-            proportional=self.__proportional,
+            proportional=self.__is_proportional,
             delta2=self.__delta2,
             experiment_label=self.__experiment_label,
             x1_level=self.__x1_level,

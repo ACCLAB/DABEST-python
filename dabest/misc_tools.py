@@ -115,7 +115,7 @@ def get_params(
     delta2 = effectsize_df.delta2
     mini_meta = effectsize_df.mini_meta
     effect_size = effectsize_df.effect_size
-    proportional = effectsize_df.proportional
+    proportional = effectsize_df.is_proportional
     results = effectsize_df.results
     dabest_obj = effectsize_df.dabest_obj
     all_plot_groups = dabest_obj._all_plot_groups
