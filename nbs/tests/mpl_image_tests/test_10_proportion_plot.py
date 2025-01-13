@@ -407,6 +407,16 @@ def test_139_multi_2group_show_sample_counts_and_kwargs():
 def test_140_multi_groups_paired_show_sample_counts_with_sankey_off():
     return multi_groups_paired.mean_diff.plot(prop_sample_counts=True, sankey_kwargs={"sankey": False})
 
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_141_sankey_change_palette_a():
+    return multi_groups_paired.mean_diff.plot(custom_palette="Dark2")
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_142_sankey_change_palette_b():
+    return multi_groups_paired.mean_diff.plot(custom_palette={1: 'red', 0: 'blue'})
+
+
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_136_style_sheets():
     # Perform this test last so we don't have to reset the plot style.

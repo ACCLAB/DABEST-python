@@ -138,11 +138,11 @@ def get_params(
     # Disable Gardner-Altman plotting if any of the idxs comprise of more than
     # two groups or if it is a delta-delta plot.
     float_contrast = plot_kwargs["float_contrast"]
-    effect_size_type = effectsize_df.effect_size
+    # effect_size_type = effectsize_df.effect_size
     if len(idx) > 1 or len(idx[0]) > 2:
         float_contrast = False
 
-    if effect_size_type in ["cliffs_delta"]:
+    if effect_size in ["cliffs_delta"]:
         float_contrast = False
 
     if show_delta2 or show_mini_meta:
@@ -176,7 +176,7 @@ def get_params(
     show_baseline_ec = plot_kwargs["show_baseline_ec"]
         
     return (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, idx, 
-            show_delta2, show_mini_meta, float_contrast, show_pairs, effect_size_type, group_summaries, err_color, horizontal,
+            show_delta2, show_mini_meta, float_contrast, show_pairs, group_summaries, err_color, horizontal,
             results, halfviolin_alpha, ci_type, x1_level, experiment_label, show_baseline_ec)
 
 def get_kwargs(
@@ -486,6 +486,7 @@ def get_color_palette(
         idx: list, 
         all_plot_groups: list,
         delta2: bool,
+        sankey: bool
     ):
     """
     Create the color palette to be used in the plotter function.
@@ -506,6 +507,8 @@ def get_color_palette(
         A list of all the group names.
     delta2 : bool
         A boolean flag to determine if the plot will have a delta-delta effect size.
+    sankey : bool
+        A boolean flag to determine if the plot is for a Sankey diagram.
     """
     # Create color palette that will be shared across subplots.
     color_col = plot_kwargs["color_col"]
@@ -559,6 +562,10 @@ def get_color_palette(
             if delta2:
                 groups_in_palette = {
                     k: custom_pal[k] for k in color_groups
+                }
+            elif sankey:
+                groups_in_palette = {
+                    k: custom_pal[k] for k in [1, 0]
                 }
             elif color_col is None:
                 groups_in_palette = {
