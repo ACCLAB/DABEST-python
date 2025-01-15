@@ -86,6 +86,8 @@ def get_unique_categories(names):
     """
     Extract unique categories from various input types.
     """
+    if isinstance(names, list):
+        return names
     if isinstance(names, np.ndarray):
         return names  # numpy.unique() returns a sorted array
     elif isinstance(names, (pd.Categorical, pd.Series)):
@@ -546,7 +548,11 @@ def get_color_palette(
             filled.append(False)
             filled.extend([True] * (len(idx[i]) - 1))
 
-    names = color_groups if not color_by_subgroups else idx
+    if color_col is not None:
+        names = color_groups if not color_by_subgroups else idx
+    else:
+        names = all_plot_groups if not color_by_subgroups else idx
+
     n_groups = len(color_groups)
     custom_pal = plot_kwargs["custom_palette"]
     swarm_desat = plot_kwargs["swarm_desat"]
