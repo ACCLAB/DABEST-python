@@ -332,7 +332,7 @@ def get_kwargs(
                 "color": 'k',
                 "marker": "^", 
                 "alpha": 0.5, 
-                "zorder": -1, 
+                "zorder": 2, 
                 "size": 3, 
                 "side": "right"
     }

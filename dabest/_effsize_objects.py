@@ -1372,7 +1372,7 @@ class EffectSizeDataFrame(object):
             Whether or not to display the delta dots on paired or repeated measure plots.
         delta_dot_kwargs : dict, default None
             Pass relevant keyword arguments. If None, the following keywords are passed:
-            {"color": 'k', "marker": "^", "alpha": 0.5, "zorder": -1, "size": 3, "side": "right"}
+            {"color": 'k', "marker": "^", "alpha": 0.5, "zorder": 2, "size": 3, "side": "right"}
 
         horizontal_table_kwargs : dict, default None
             {'show: True, 'color' : 'yellow', 'alpha' :0.2, 'fontsize' : 12, 'text_color' : 'black', 
