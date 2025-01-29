@@ -578,13 +578,18 @@ def get_color_palette(
                     k: custom_pal[k] for k in all_plot_groups if k in color_groups
                 }
             else:
-                raise ValueError("The `custom_palette` dictionary is not supported when `color_col` is None.")
+                raise ValueError("The `custom_palette` dictionary is not supported when `color_col` is not None.")
 
             names = groups_in_palette.keys()
             unsat_colors = groups_in_palette.values()
 
         elif isinstance(custom_pal, list):
-            unsat_colors = custom_pal[0:n_groups]
+            if len(custom_pal) < n_groups:
+                err1 = "The specified `custom_palette` has fewer colors than the number of groups."
+                err2 = " Please specify a custom palette with at least {} colors.".format(n_groups)
+                raise ValueError(err1 + err2)
+            else:
+                unsat_colors = custom_pal[0:n_groups]
 
         elif isinstance(custom_pal, str):
             # check it is in the list of matplotlib palettes.
