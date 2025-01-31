@@ -549,9 +549,15 @@ def get_color_palette(
             filled.extend([True] * (len(idx[i]) - 1))
 
     if color_col is not None:
-        names = color_groups if not color_by_subgroups else idx
+        if sankey:
+            names = [1, 0]
+        else:
+            names = color_groups if not color_by_subgroups else idx
     else:
-        names = all_plot_groups if not color_by_subgroups else idx
+        if sankey:
+            names = [1, 0]
+        else:
+            names = all_plot_groups if not color_by_subgroups else idx
 
     n_groups = len(color_groups)
     custom_pal = plot_kwargs["custom_palette"]
@@ -584,7 +590,16 @@ def get_color_palette(
             unsat_colors = groups_in_palette.values()
 
         elif isinstance(custom_pal, list):
-            if len(custom_pal) < n_groups:
+            if sankey:
+                if len(custom_pal) != 2:
+                    raise ValueError("To specify a custom palette for a Sankey diagram, you must provide exactly two colors.")
+                else:
+                    groups_in_palette = {
+                        k: custom_pal[k] for k in [1, 0]
+                    }
+                    names = groups_in_palette.keys()
+                    unsat_colors = groups_in_palette.values()
+            elif len(custom_pal) < n_groups:
                 err1 = "The specified `custom_palette` has fewer colors than the number of groups."
                 err2 = " Please specify a custom palette with at least {} colors.".format(n_groups)
                 raise ValueError(err1 + err2)
@@ -618,11 +633,6 @@ def get_color_palette(
             plot_palette_raw = dict(zip(categories, swarm_colors))
             plot_palette_contrast = dict(zip(categories, contrast_colors))
             plot_palette_bar = dict(zip(categories, bar_color))
-
-        # For Sankey Diagram plot, no need to worry about the color, each bar will have the same two colors
-        # default color palette will be set to "hls"
-        plot_palette_sankey = None
-
     else:
         swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
         contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
@@ -640,8 +650,12 @@ def get_color_palette(
             plot_palette_raw = dict(zip(names, swarm_colors))
             plot_palette_contrast = dict(zip(names, contrast_colors))
             plot_palette_bar = dict(zip(names, bar_color))
+            plot_palette_sankey = dict(zip(names, unsat_colors))
 
-        plot_palette_sankey = custom_pal
+    # For Sankey Diagram plot, each bar will have the same two colors if custom_pal is None
+    # default color palette will be set to "hls"
+    if custom_pal is None:
+        plot_palette_sankey = None
 
     return (color_col, bootstraps_color_by_group, n_groups, filled, plot_palette_raw, bar_color, 
             plot_palette_bar, plot_palette_contrast, plot_palette_sankey)
