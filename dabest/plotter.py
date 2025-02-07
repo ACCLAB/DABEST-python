@@ -592,7 +592,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
     legend_labels = [l for l in labels]
     legend_handles = [h for h in handles]
 
-    if bootstraps_color_by_group is False and not effectsize_df.delta2:
+    if bootstraps_color_by_group is False:
         rawdata_axes.legend().set_visible(False)
         show_legend(
             legend_labels = legend_labels, 

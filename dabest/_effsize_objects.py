@@ -1320,8 +1320,7 @@ class EffectSizeDataFrame(object):
         legend_kwargs : dict, default None
             Pass any keyword arguments accepted by the matplotlib Axes
             `legend` command here, as a dict. If None, the following keywords
-            are passed to matplotlib.Axes.legend : {'loc':'upper left',
-            'frameon':False}.
+            are passed to matplotlib.Axes.legend : {'frameon':False}.
         title : string, default None
             Title for the plot. If None, no title will be displayed. Pass any
             keyword arguments accepted by the matplotlib.pyplot.suptitle `t` command here,
