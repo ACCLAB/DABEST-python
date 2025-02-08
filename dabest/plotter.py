@@ -248,7 +248,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
             )  # Default asymmetric side is right
 
             # swarmplot() plots swarms based on current size of ax
-            # Therefore, since the ax size for mini_meta and show_delta changes later on, there has to be increased jitter
+            # Therefore, since the ax size for show_mini_meta and show_delta changes later on, there has to be increased jitter
             rawdata_plot = swarmplot(
                             data = plot_data,
                             x = xvar,
@@ -501,7 +501,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                         color_col = color_col, 
                         plot_palette_raw = plot_palette_raw, 
                         show_mini_meta = show_mini_meta, 
-                        mini_meta_delta = effectsize_df.mini_meta_delta if show_mini_meta else None, 
+                        mini_meta = effectsize_df.mini_meta if show_mini_meta else None, 
                         show_delta2 = show_delta2, 
                         delta_delta = effectsize_df.delta_delta if show_delta2 else None, 
                         show_pairs = show_pairs,
@@ -541,7 +541,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                     proportional = proportional, 
                     float_contrast = float_contrast, 
                     show_mini_meta = show_mini_meta, 
-                    mini_meta_delta = effectsize_df.mini_meta_delta if show_mini_meta else None, 
+                    mini_meta = effectsize_df.mini_meta if show_mini_meta else None, 
                     show_delta2 = show_delta2, 
                     delta_delta = effectsize_df.delta_delta if show_delta2 else None,
                     idx = idx
@@ -582,7 +582,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                 float_contrast = float_contrast,
                 horizontal = horizontal,
                 delta_delta = effectsize_df.delta_delta if show_delta2 else None,
-                mini_meta_delta = effectsize_df.mini_meta_delta if show_mini_meta else None,
+                mini_meta = effectsize_df.mini_meta if show_mini_meta else None,
                 effect_size = effect_size,
                 gridkey_kwargs = gridkey_kwargs,
                 )

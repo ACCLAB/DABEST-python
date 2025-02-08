@@ -55,7 +55,7 @@ class Dabest(object):
         self.__resamples = resamples
         self.__random_seed = random_seed
         self.__is_proportional = proportional
-        self.__mini_meta = mini_meta
+        self.__is_mini_meta = mini_meta
 
         # after this call the attributes self.__experiment_label and self.__x1_level are updated
         self._check_errors(x, y, idx, experiment, experiment_label, x1_level)
@@ -114,7 +114,7 @@ class Dabest(object):
                 )
             )
 
-        if self.__mini_meta:
+        if self.__is_mini_meta:
             comparisons.append("weighted delta (only for mean difference)")
 
         for j, g in enumerate(comparisons):
@@ -399,11 +399,11 @@ class Dabest(object):
         return self.__is_proportional
 
     @property
-    def mini_meta(self):
+    def is_mini_meta(self):
         """
         Returns the mini_meta boolean parameter.
         """
-        return self.__mini_meta
+        return self.__is_mini_meta
 
     @property
     def _all_plot_groups(self):
@@ -426,7 +426,7 @@ class Dabest(object):
                 raise ValueError(err0)
 
         # Check if it is a valid mini_meta case
-        if self.__mini_meta:
+        if self.__is_mini_meta:
             # Only mini_meta calculation but not proportional and delta-delta function
             if self.__is_proportional:
                 err0 = "`proportional` and `mini_meta` cannot be True at the same time."
@@ -692,7 +692,7 @@ class Dabest(object):
             experiment_label=self.__experiment_label,
             x1_level=self.__x1_level,
             x2=self.__x2,
-            mini_meta=self.__mini_meta,
+            mini_meta=self.__is_mini_meta,
         )
 
         self.__mean_diff = EffectSizeDataFrame(

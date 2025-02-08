@@ -55,12 +55,12 @@ def load_plot_data(
     first_contrast = data[0]
     if first_contrast.delta2 is True:
         contrast_type = "delta2"
-    elif first_contrast.mini_meta is True:
+    elif first_contrast.is_mini_meta is True:
         contrast_type = "mini_meta"
     else:
         raise ValueError("The `contrast_type` parameter must be specified as either `delta2` or `mini_meta`.")
 
-    contrast_attr_map = {"delta2": "delta_delta", "mini_meta": "mini_meta_delta"}
+    contrast_attr_map = {"delta2": "delta_delta", "mini_meta": "mini_meta"}
     contrast_attr = contrast_attr_map.get(contrast_type)
 
     if idx is not None and contrast_type == 'delta2':

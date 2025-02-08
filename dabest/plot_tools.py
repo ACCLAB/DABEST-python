@@ -984,7 +984,7 @@ def contrast_bars_plotter(
         color_col: str, 
         plot_palette_raw: dict, 
         show_mini_meta: bool, 
-        mini_meta_delta: object, 
+        mini_meta: object, 
         show_delta2: bool, 
         delta_delta: object, 
         show_pairs: bool,
@@ -1012,7 +1012,7 @@ def contrast_bars_plotter(
         Dictionary of colors used in the plot.
     show_mini_meta : bool   
         Whether to show the mini meta-analysis.
-    mini_meta_delta : object    
+    mini_meta : object    
         Mini meta-analysis object.
     show_delta2 : bool
         Whether to show the delta-delta.
@@ -1058,7 +1058,7 @@ def contrast_bars_plotter(
             ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25, 0), 0.5, contrast_bars_y, color=contrast_bars_colors[idx_selector], **contrast_bars_kwargs))
 
     if show_mini_meta or show_delta2:
-        diff = mini_meta_delta.difference if show_mini_meta else delta_delta.difference
+        diff = mini_meta.difference if show_mini_meta else delta_delta.difference
         if horizontal:
             ax_to_plot.add_patch(mpatches.Rectangle((0, max(swarm_plot_ax.get_yticks())-0.5), diff, 0.5, color='black', **contrast_bars_kwargs))
         else:
@@ -1150,7 +1150,7 @@ def delta_text_plotter(
         proportional: bool, 
         float_contrast: bool,
         show_mini_meta: bool, 
-        mini_meta_delta: object, 
+        mini_meta: object, 
         show_delta2: bool, 
         delta_delta: object, 
         idx: list
@@ -1182,7 +1182,7 @@ def delta_text_plotter(
         Whether the DABEST plot uses Gardner-Altman or Cummings
     show_mini_meta : bool
         Whether to show the mini meta-analysis.
-    mini_meta_delta : object
+    mini_meta : object
         Mini meta-analysis object.
     show_delta2 : bool
         Whether to show the delta-delta.
@@ -1226,7 +1226,7 @@ def delta_text_plotter(
     for j, tick in enumerate(ticks_to_plot):
         Delta_Values.append(results.difference[int(j)])
     if show_delta2: Delta_Values.append(delta_delta.difference)
-    if show_mini_meta: Delta_Values.append(mini_meta_delta.difference)
+    if show_mini_meta: Delta_Values.append(mini_meta.difference)
 
     # Collect the X-coordinates for the delta text
     delta_text_x_coordinates = delta_text_kwargs.pop('x_coordinates')
@@ -1518,13 +1518,13 @@ def plot_minimeta_or_deltadelta_violins(
 
     # Plot the curve
     if show_mini_meta:
-        mini_meta_delta = effectsize_df.mini_meta_delta
-        data = mini_meta_delta.bootstraps_weighted_delta
-        difference = mini_meta_delta.difference
+        mini_meta = effectsize_df.mini_meta
+        data = mini_meta.bootstraps_weighted_delta
+        difference = mini_meta.difference
         if ci_type == "bca":
-            ci_low, ci_high = mini_meta_delta.bca_low, mini_meta_delta.bca_high
+            ci_low, ci_high = mini_meta.bca_low, mini_meta.bca_high
         else:
-            ci_low, ci_high = mini_meta_delta.pct_low, mini_meta_delta.pct_high
+            ci_low, ci_high = mini_meta.pct_low, mini_meta.pct_high
     else:
         delta_delta = effectsize_df.delta_delta
         data = delta_delta.bootstraps_delta_delta
@@ -1803,7 +1803,7 @@ def gridkey_plotter(
         float_contrast: bool, 
         horizontal: bool, 
         delta_delta: object, 
-        mini_meta_delta: object, 
+        mini_meta: object, 
         effect_size: str, 
         gridkey_kwargs: dict,
     ):
@@ -1846,7 +1846,7 @@ def gridkey_plotter(
         If the plot is horizontal.
     delta_delta : object
         delta-delta object.
-    mini_meta_delta : object
+    mini_meta : object
         Mini meta-analysis object.
     effect_size : str
         Type of effect size to plot
@@ -1982,7 +1982,7 @@ def gridkey_plotter(
             if group_idx == 0:
                 added_group = ['', gridkey_marker]
             elif gridkey_show_es and (group_idx == len(table_cellcols)-1) and not horizontal:
-                added_delta_effectsize = delta_delta.difference if show_delta2 else mini_meta_delta.difference
+                added_delta_effectsize = delta_delta.difference if show_delta2 else mini_meta.difference
                 added_delta_effectsize_str = np.format_float_positional(
                                                                         added_delta_effectsize,
                                                                         precision=2,
@@ -2226,7 +2226,7 @@ def table_for_horizontal_plots(
     for n in np.arange(0, len(effectsize_df.results.difference), 1):
         lst.append([effectsize_df.results.difference[n],0])
     if show_mini_meta:
-        lst.append([effectsize_df.mini_meta_delta.difference,0])
+        lst.append([effectsize_df.mini_meta.difference,0])
     elif show_delta2:
         lst.append([effectsize_df.delta_delta.difference,0])
     tab = pd.DataFrame(lst, columns=cols)

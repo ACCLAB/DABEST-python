@@ -115,7 +115,7 @@ def get_params(
     yvar = effectsize_df.yvar
     is_paired = effectsize_df.is_paired
     delta2 = effectsize_df.delta2
-    mini_meta = effectsize_df.mini_meta
+    is_mini_meta = effectsize_df.is_mini_meta
     effect_size = effectsize_df.effect_size
     proportional = effectsize_df.is_proportional
     results = effectsize_df.results
@@ -130,7 +130,7 @@ def get_params(
     else:
         show_delta2 = plot_kwargs["show_delta2"]
 
-    if effect_size != "mean_diff" or not mini_meta:
+    if effect_size != "mean_diff" or not is_mini_meta:
         show_mini_meta = False
     else:
         show_mini_meta = plot_kwargs["show_mini_meta"]

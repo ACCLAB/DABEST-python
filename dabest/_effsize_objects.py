@@ -847,7 +847,7 @@ class EffectSizeDataFrame(object):
         self.__experiment_label = experiment_label
         self.__x2 = x2
         self.__delta2 = delta2
-        self.__mini_meta = mini_meta
+        self.__is_mini_meta = mini_meta
 
     def __pre_calc(self):
         from .misc_tools import print_greeting, get_varname
@@ -920,7 +920,7 @@ class EffectSizeDataFrame(object):
                     if self.__delta2 and self.__effect_size in ["mean_diff", "delta_g"]:
                         resamp_count = False
                         def_pval = False
-                    elif self.__mini_meta and self.__effect_size == "mean_diff":
+                    elif self.__is_mini_meta and self.__effect_size == "mean_diff":
                         resamp_count = False
                         def_pval = False
                     else:
@@ -1016,17 +1016,17 @@ class EffectSizeDataFrame(object):
             )
 
         # Create and compute the weighted average statistics
-        if self.__mini_meta and self.__effect_size == "mean_diff":
-            self.__mini_meta_delta = MiniMetaDelta(
+        if self.__is_mini_meta and self.__effect_size == "mean_diff":
+            self.__mini_meta = MiniMetaDelta(
                 self, self.__permutation_count, self.__ci
             )
-            reprs.append(self.__mini_meta_delta.__repr__(header=False))
-        elif self.__mini_meta and self.__effect_size != "mean_diff":
-            self.__mini_meta_delta = "Weighted delta is not supported for {}.".format(
+            reprs.append(self.__mini_meta.__repr__(header=False))
+        elif self.__is_mini_meta and self.__effect_size != "mean_diff":
+            self.__mini_meta = "Weighted delta is not supported for {}.".format(
                 self.__effect_size
             )
         else:
-            self.__mini_meta_delta = (
+            self.__mini_meta = (
                 "`mini_meta` is False; weighted delta is therefore not calculated."
             )
 
@@ -1579,27 +1579,27 @@ class EffectSizeDataFrame(object):
             return self.__lqrt_results
 
     @property
-    def mini_meta(self):
+    def is_mini_meta(self):
         """
         Returns the mini_meta boolean parameter.
         """
-        return self.__mini_meta
+        return self.__is_mini_meta
 
     @property
-    def mini_meta_delta(self):
+    def mini_meta(self):
         """
         Returns the mini_meta results.
         """
         try:
-            return self.__mini_meta_delta
+            return self.__mini_meta
         except AttributeError:
             self.__pre_calc()
-            return self.__mini_meta_delta
+            return self.__mini_meta
 
     @property
     def delta_delta(self):
         """
-        Returns the mini_meta results.
+        Returns the delta_delta results.
         """
         try:
             return self.__delta_delta
