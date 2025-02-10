@@ -7,10 +7,10 @@ from __future__ import annotations
 
 # %% auto 0
 __all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'width_determine',
-           'single_sankey', 'sankeydiag', 'summary_bars_plotter', 'contrast_bars_plotter', 'swarm_bars_plotter',
-           'delta_text_plotter', 'DeltaDotsPlotter', 'slopegraph_plotter', 'plot_minimeta_or_deltadelta_violins',
-           'effect_size_curve_plotter', 'gridkey_plotter', 'barplotter', 'table_for_horizontal_plots',
-           'add_counts_to_prop_plots', 'swarmplot', 'SwarmPlot']
+           'single_sankey', 'sankeydiag', 'summary_bars_plotter', 'color_picker', 'contrast_bars_plotter',
+           'swarm_bars_plotter', 'delta_text_plotter', 'DeltaDotsPlotter', 'slopegraph_plotter',
+           'plot_minimeta_or_deltadelta_violins', 'effect_size_curve_plotter', 'gridkey_plotter', 'barplotter',
+           'table_for_horizontal_plots', 'add_counts_to_prop_plots', 'swarmplot', 'SwarmPlot']
 
 # %% ../nbs/API/plot_tools.ipynb 4
 import math
@@ -935,14 +935,8 @@ def summary_bars_plotter(
         summary_xmin, summary_xmax = ax_to_plot.get_xlim()
         summary_ymin, summary_ymax = ax_to_plot.get_ylim()
 
-        summary_bars_colors = (
-            [summary_bars_kwargs.get('color')]*int(max(ticks_to_plot)+1)
-            if summary_bars_kwargs.get('color') is not None
-            else ['black']*int(max(ticks_to_plot)+1)
-            if color_col is not None or (proportional and show_pairs) or show_pairs 
-            else list(plot_palette_raw.values())
-        )
-        summary_bars_kwargs.pop('color')
+        summary_bars_colors = color_picker(summary_bars_kwargs, ticks_to_plot, color_col, show_pairs, plot_palette_raw)
+
         span_ax = summary_bars_kwargs.pop("span_ax")
 
         for summary_index in summary_bars:
@@ -974,6 +968,25 @@ def summary_bars_plotter(
                     color=summary_color, 
                     **summary_bars_kwargs)
                     )
+
+def color_picker(kwargs: dict, num_of_elements: list, color_col: str, show_pairs: bool, color_palette: dict) -> list:
+
+    if any(isinstance(val, typ) for val in num_of_elements for typ in [int, float]):
+        num_of_elements = int(max(num_of_elements) + 1)
+    elif any(isinstance(val, typ) for val in num_of_elements for typ in [str]):
+        num_of_elements = len(num_of_elements) + 1
+
+    colors = (
+        [kwargs.get('color')] * num_of_elements
+        if kwargs.get('color') is not None
+        else ['black'] * num_of_elements
+        if color_col is not None or show_pairs 
+        else list(color_palette.values())
+    )
+    kwargs.pop('color')
+
+    return colors
+
                 
 def contrast_bars_plotter(
         results: pd.DataFrame, 
@@ -1034,14 +1047,7 @@ def contrast_bars_plotter(
     unpacked_idx = [element for innerList in idx for element in innerList] 
 
     # Colors
-    contrast_bars_colors = (
-        [contrast_bars_kwargs.get('color')] * int(max(ticks_to_plot) + 1) 
-        if contrast_bars_kwargs.get('color') is not None 
-        else ['black'] * int(max(ticks_to_plot) + 1) 
-        if color_col is not None or show_pairs
-        else plot_palette_raw
-    )
-    contrast_bars_kwargs.pop('color')
+    contrast_bars_colors = color_picker(contrast_bars_kwargs, ticks_to_plot, color_col, show_pairs, plot_palette_raw)
 
     # alpha
     contrast_bars_kwargs['alpha'] = contrast_bars_kwargs.get('alpha', 0.15 if color_col is not None or show_pairs else 0.25)
@@ -1114,14 +1120,7 @@ def swarm_bars_plotter(
     unpacked_idx = [element for innerList in idx for element in innerList] 
 
     # Colors
-    swarm_bars_colors = (
-        [swarm_bars_kwargs.get('color')] * (len(swarm_bars_order) + 1) 
-        if swarm_bars_kwargs.get('color') is not None 
-        else ['black']*(len(swarm_bars_order)+1)
-        if color_col is not None or show_pairs
-        else plot_palette_raw
-        )
-    swarm_bars_kwargs.pop('color')
+    swarm_bars_colors = color_picker(swarm_bars_kwargs, swarm_bars_order, color_col, show_pairs, plot_palette_raw)
 
     # alpha
     swarm_bars_kwargs['alpha'] = swarm_bars_kwargs.get('alpha', 0.15 if color_col is not None or show_pairs else 0.25)
@@ -1201,13 +1200,8 @@ def delta_text_plotter(
     delta_text_kwargs.pop('x_location')
 
     # Colors
-    delta_text_colors = (
-        [delta_text_kwargs.get('color')]*int(max(ticks_to_plot)+1)
-        if delta_text_kwargs.get('color') is not None
-        else ['black']*int(max(ticks_to_plot)+1)
-        if color_col is not None or (proportional and show_pairs) or show_pairs
-        else plot_palette_raw
-    )
+
+    delta_text_colors = color_picker(delta_text_kwargs, ticks_to_plot, color_col, show_pairs, plot_palette_raw)
 
     # Idx
     unpacked_idx = [element for innerList in idx for element in innerList] 
@@ -1217,7 +1211,6 @@ def delta_text_plotter(
             delta_text_colors.append('black')
         else:
             delta_text_colors['extra_delta'] = 'black'
-    delta_text_kwargs.pop('color')
 
     total_ticks = len(ticks_to_plot) + 1 if show_mini_meta or show_delta2 else len(ticks_to_plot)
 
@@ -1517,24 +1510,20 @@ def plot_minimeta_or_deltadelta_violins(
     """
 
     # Plot the curve
-    if show_mini_meta:
-        mini_meta = effectsize_df.mini_meta
-        data = mini_meta.bootstraps_weighted_delta
-        difference = mini_meta.difference
-        if ci_type == "bca":
-            ci_low, ci_high = mini_meta.bca_low, mini_meta.bca_high
-        else:
-            ci_low, ci_high = mini_meta.pct_low, mini_meta.pct_high
-    else:
-        delta_delta = effectsize_df.delta_delta
-        data = delta_delta.bootstraps_delta_delta
-        difference = delta_delta.difference
-        if ci_type == "bca":
-            ci_low, ci_high = delta_delta.bca_low, delta_delta.bca_high
-        else:
-            ci_low, ci_high = delta_delta.pct_low, delta_delta.pct_high
+    def extract_curve_data(dabest_object):
+        try:
+            data = dabest_object.bootstraps_weighted_delta
+        except AttributeError:
+            data = dabest_object.bootstraps_delta_delta
 
-    fc = "grey"
+        if ci_type == "bca":
+            ci_low, ci_high = dabest_object.bca_low, dabest_object.bca_high
+        else:
+            ci_low, ci_high = dabest_object.pct_low, dabest_object.pct_high
+        return data, dabest_object.difference, ci_low, ci_high
+
+    dabest_object = effectsize_df.mini_meta if show_mini_meta else effectsize_df.delta_delta
+    data, difference, ci_low, ci_high = extract_curve_data(dabest_object)
 
     if horizontal:  
         violinplot_kwargs.update({'vert': False, 'widths': 1})
@@ -1552,7 +1541,7 @@ def plot_minimeta_or_deltadelta_violins(
         data[~np.isinf(data)], positions=[position], **violinplot_kwargs
         )
 
-    halfviolin(v, fill_color=fc, alpha=halfviolin_alpha, half=half)
+    halfviolin(v, fill_color="grey", alpha=halfviolin_alpha, half=half)
 
     # Plot the effect size.
     contrast_axes.plot(
@@ -1569,8 +1558,6 @@ def plot_minimeta_or_deltadelta_violins(
 
     # Add labels and ticks
     if horizontal:
-        current_yticks = rawdata_axes.get_yticks()
-        current_yticks = np.append(current_yticks, position)
         current_ylabels = rawdata_axes.get_yticklabels()
         if show_mini_meta:
             current_ylabels.extend(["Weighted delta"])
@@ -1579,7 +1566,7 @@ def plot_minimeta_or_deltadelta_violins(
         else:
             current_ylabels.extend(["delta-delta"])
 
-        rawdata_axes.set_yticks(current_yticks)
+        rawdata_axes.set_yticks(np.append(rawdata_axes.get_yticks(), position))
         rawdata_axes.set_yticklabels(current_ylabels)
 
     else:
@@ -1854,12 +1841,13 @@ def gridkey_plotter(
         Keyword arguments for the gridkey.
     """
     # Extract relevant kwargs
-    gridkey_show_Ns=gridkey_kwargs["show_Ns"]
-    gridkey_show_es=gridkey_kwargs["show_es"]
-    gridkey_merge_pairs=gridkey_kwargs["merge_pairs"]
+    gridkey_show_Ns = gridkey_kwargs["show_Ns"]
+    gridkey_show_es = gridkey_kwargs["show_es"]
+    gridkey_merge_pairs = gridkey_kwargs["merge_pairs"]
     gridkey_marker = gridkey_kwargs["marker"]
-    gridkey_delimiters=gridkey_kwargs["delimiters"] # Auto parser for gridkey - implemented by SangyuXu
+    gridkey_delimiters = gridkey_kwargs["delimiters"] 
 
+    # Auto parser for gridkey - implemented by SangyuXu
     if gridkey_rows == "auto":
         if experiment_label is not None:
             gridkey_rows = list(np.concatenate([experiment_label, x1_level]))
@@ -2108,7 +2096,7 @@ def barplotter(
     else:
         x_var, y_var, orient = all_plot_groups, np.ones(len(all_plot_groups)), "v"
 
-        # Create bar1_df with basic columns
+    # Create bar1_df with basic columns
     bar1_df = pd.DataFrame({
         xvar: x_var, 
         "proportion": y_var
@@ -2127,7 +2115,6 @@ def barplotter(
         ]
     else:
         edge_colors = bar_color
-
 
     bar1 = sns.barplot(
         data=bar1_df,
@@ -2184,7 +2171,6 @@ def table_for_horizontal_plots(
         show_mini_meta: bool, 
         show_delta2: bool, 
         table_kwargs: dict,
-
         ticks_to_skip: list
     ):
     """
@@ -2206,17 +2192,17 @@ def table_for_horizontal_plots(
         Whether to show the delta-delta.
     table_kwargs : dict
         Keyword arguments for the table.
-
     ticks_to_skip:  list
         List of ticks to skip in the table.
     """
 
     table_color = table_kwargs['color']
     table_alpha = table_kwargs['alpha']
-    table_font_size = table_kwargs['fontsize'] if table_kwargs['text_units'] == None else table_kwargs['fontsize']-2
+    table_font_size = table_kwargs['fontsize']
     table_text_color = table_kwargs['text_color']
-    text_units = '' if table_kwargs['text_units'] == None else table_kwargs['text_units']
-    control_marker = table_kwargs['control_marker']   # Currently unused
+    text_units = table_kwargs['text_units']
+    table_font_size -= 2 if text_units != '' else 0
+    control_marker = table_kwargs['control_marker']  
     fontsize_label = table_kwargs['fontsize_label']
     label = table_kwargs['label']
 
@@ -2224,11 +2210,11 @@ def table_for_horizontal_plots(
     cols=['Δ','N']
     lst = []
     for n in np.arange(0, len(effectsize_df.results.difference), 1):
-        lst.append([effectsize_df.results.difference[n],0])
+        lst.append([effectsize_df.results.difference[n], 0])
     if show_mini_meta:
-        lst.append([effectsize_df.mini_meta.difference,0])
+        lst.append([effectsize_df.mini_meta.difference, 0])
     elif show_delta2:
-        lst.append([effectsize_df.delta_delta.difference,0])
+        lst.append([effectsize_df.delta_delta.difference, 0])
     tab = pd.DataFrame(lst, columns=cols)
 
     ### Plot the text
@@ -2304,7 +2290,7 @@ def add_counts_to_prop_plots(
         prop_sample_counts_kwargs.update({'fontsize': fontsize})
 
     for sample_text_x, sample_text_y0, sample_text_y1 in zip(
-                                                            np.arange(0,len(sample_size_text_order)+1,1), 
+                                                            np.arange(0, len(sample_size_text_order) + 1, 1), 
                                                             sample_size_val0,
                                                             sample_size_val1,
                                                             ):

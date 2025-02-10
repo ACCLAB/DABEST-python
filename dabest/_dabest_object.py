@@ -316,6 +316,14 @@ class Dabest(object):
         situation.
         """
         return self.__delta2
+    
+    @property
+    def is_delta_delta(self):
+        """
+        Returns the boolean parameter indicating if this is a delta-delta
+        situation.
+        """
+        return self.__delta2
 
     @property
     def is_paired(self):

@@ -398,7 +398,7 @@ def get_kwargs(
                 'alpha' : 0.2,
                 'fontsize' : 12,
                 'text_color' : 'black', 
-                'text_units' : None,
+                'text_units' : '',
                 'control_marker' : '-',
                 'fontsize_label': 12,
                 'label': 'Δ'

@@ -1534,10 +1534,6 @@ class EffectSizeDataFrame(object):
         return self.__experiment_label
 
     @property
-    def delta2(self):
-        return self.__delta2
-
-    @property
     def resamples(self):
         """
         The number of resamples (with replacement) during bootstrap resampling."
@@ -1606,6 +1602,14 @@ class EffectSizeDataFrame(object):
         except AttributeError:
             self.__pre_calc()
             return self.__delta_delta
+    
+    @property
+    def delta2(self):
+        return self.__delta2
+    
+    @property
+    def is_delta_delta(self):
+        return self.__delta2
 
 # %% ../nbs/API/effsize_objects.ipynb 29
 class PermutationTest:
