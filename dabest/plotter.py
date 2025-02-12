@@ -462,7 +462,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                                     horizontal = horizontal,
                                     skip_redraw_lines = skip_redraw_lines,
                                     )
-    
+
     # Add the dependent axes spines back in.
     Redraw_Spines(
         rawdata_axes = rawdata_axes, 
@@ -557,7 +557,6 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                             show_mini_meta = show_mini_meta,
                             show_delta2 = show_delta2,
                             table_kwargs = table_kwargs,
-
                             ticks_to_skip = ticks_to_skip
                             )
 

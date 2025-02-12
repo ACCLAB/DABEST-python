@@ -16,7 +16,7 @@ def test_forest_plot_no_input_parameters():
     ("data", [], "The `data` argument must be a non-empty list of dabest objects.", ValueError),
     ("idx", 123, "`idx` must be a tuple or list of integers.", TypeError),
     ("ax", "axes", "The `ax` must be a `matplotlib.axes.Axes` instance or `None`.", TypeError),
-    ("effect_size", 456, "The `effect_size` argument must be a string and please choose from the following effect sizes: `mean_diff`, `median_diff`, `cliffs_delta`, `cohens_d`, and `hedges_g`.", TypeError),
+    ("effect_size", 456, "The `effect_size` argument must be a string and please choose from the following effect sizes: `mean_diff`, `hedges_g`, or `delta_g`.", TypeError),
     ("horizontal", "sideways", "`horizontal` must be a boolean value.", TypeError),
     ("marker_size", "large", "`marker_size` must be a positive integer or float.", TypeError),
     ("custom_palette", 123, "The `custom_palette` must be either a dictionary, list, string, or `None`.", TypeError),

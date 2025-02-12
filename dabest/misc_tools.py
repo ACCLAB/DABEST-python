@@ -125,7 +125,7 @@ def get_params(
     x1_level = dabest_obj.x1_level
     experiment_label = dabest_obj.experiment_label
     
-    if effect_size not in ["mean_diff", "delta_g"] or not delta2:
+    if effect_size not in ["mean_diff", "hedges_g"] or not delta2:
         show_delta2 = False
     else:
         show_delta2 = plot_kwargs["show_delta2"]
@@ -889,43 +889,39 @@ def initialize_fig(
     # Set raw axes y-label.
     swarm_label, bar_label = plot_kwargs["swarm_label"], plot_kwargs["bar_label"]
     if swarm_label is None:
-        swarm_label = yvar if yvar is not None else "value"
+        swarm_label = yvar
     if bar_label is None:
-        bar_label = "proportion of success" if effect_size_type != "cohens_h" else "value"
+        bar_label = "Proportion of Success" if effect_size_type != "cohens_h" else "Value"
 
     fontsize_rawylabel = plot_kwargs["fontsize_rawylabel"]
     rawdata_label = bar_label if proportional else swarm_label
     if horizontal:
-        rawdata_axes.set_xlabel(rawdata_label.capitalize(), fontsize=fontsize_rawylabel)
+        rawdata_axes.set_xlabel(rawdata_label, fontsize=fontsize_rawylabel)
         rawdata_axes.set_ylabel("")
     else:
-        rawdata_axes.set_ylabel(rawdata_label.capitalize(), fontsize=fontsize_rawylabel)
+        rawdata_axes.set_ylabel(rawdata_label, fontsize=fontsize_rawylabel)
         rawdata_axes.set_xlabel("")
 
     # Set contrast axes y-label.
     contrast_label_dict = {
-        "mean_diff": "mean difference",
-        "median_diff": "median difference",
+        "mean_diff": "Mean Difference",
+        "median_diff": "Median Difference",
         "cohens_d": "Cohen's d",
         "hedges_g": "Hedges' g",
         "cliffs_delta": "Cliff's delta",
         "cohens_h": "Cohen's h",
-        "delta_g": "mean difference",
     }
 
     if proportional and effect_size_type != "cohens_h":
-        default_contrast_label = "proportion difference"
-    elif effect_size_type == "delta_g":
-        default_contrast_label = "Hedges' g"
+        default_contrast_label = "Proportion Difference"
     else:
         default_contrast_label = contrast_label_dict[effect_size_type]
 
     if plot_kwargs["contrast_label"] is None:
         if is_paired:
-            contrast_label = "paired\n{}".format(default_contrast_label)
+            contrast_label = "Paired\n{}".format(default_contrast_label)
         else:
             contrast_label = default_contrast_label
-        contrast_label = contrast_label.capitalize()
     else:
         contrast_label = plot_kwargs["contrast_label"]
 
@@ -1574,12 +1570,8 @@ def Cumming_Plot_Aesthetic_Adjustments(
     """
 
     # If 0 lies within the ylim of the contrast axes, draw a zero reference line.
-    if horizontal:
-        contrast_axes_lim = contrast_axes.get_xlim()
-        method = contrast_axes.axvline
-    else:
-        contrast_axes_lim = contrast_axes.get_ylim()
-        method = contrast_axes.axhline
+    contrast_axes_lim = contrast_axes.get_xlim() if horizontal else contrast_axes.get_ylim()
+    method = contrast_axes.axvline if horizontal else contrast_axes.axhline
 
     if contrast_axes_lim[0] < contrast_axes_lim[1]:
         contrast_lim_low, contrast_lim_high = contrast_axes_lim

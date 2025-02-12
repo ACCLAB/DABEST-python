@@ -243,17 +243,6 @@ class Dabest(object):
         return self.__cliffs_delta
 
     @property
-    def delta_g(self):
-        """
-        Returns an :py:class:`EffectSizeDataFrame` for deltas' g, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
-        """
-        if self.__delta2:
-            return self.__delta_g
-        else:
-            raise TypeError("Delta-g is only available for delta-delta situations.")
-        # return self.__delta_g
-
-    @property
     def input_data(self):
         """
         Returns the pandas DataFrame that was passed to `dabest.load()`.
@@ -646,7 +635,7 @@ class Dabest(object):
             self.__x = None
             self.__y = None
             self.__xvar = "group"
-            self.__yvar = "value"
+            self.__yvar = "Value"
 
             # First, check we have all columns in the dataset.
             for g in all_plot_groups:
@@ -716,8 +705,6 @@ class Dabest(object):
         self.__cohens_h = EffectSizeDataFrame(self, "cohens_h", **effectsize_df_kwargs)
 
         self.__hedges_g = EffectSizeDataFrame(self, "hedges_g", **effectsize_df_kwargs)
-
-        self.__delta_g = EffectSizeDataFrame(self, "delta_g", **effectsize_df_kwargs)
 
         if not self.__is_paired:
             self.__cliffs_delta = EffectSizeDataFrame(

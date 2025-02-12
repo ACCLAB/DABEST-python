@@ -1560,31 +1560,31 @@ def plot_minimeta_or_deltadelta_violins(
     if horizontal:
         current_ylabels = rawdata_axes.get_yticklabels()
         if show_mini_meta:
-            current_ylabels.extend(["Weighted delta"])
-        elif effect_size == "delta_g":
-            current_ylabels.extend(["deltas' g"])
+            current_ylabels.extend(["Weighted Delta"])
+        elif effect_size == "hedges_g":
+            current_ylabels.extend(["Deltas' g"])
         else:
-            current_ylabels.extend(["delta-delta"])
+            current_ylabels.extend(["Delta-Delta"])
 
         rawdata_axes.set_yticks(np.append(rawdata_axes.get_yticks(), position))
         rawdata_axes.set_yticklabels(current_ylabels)
 
     else:
         if show_mini_meta:
-            contrast_xtick_labels.extend(["", "Weighted delta"])
-        elif effect_size == "delta_g":
-            contrast_xtick_labels.extend(["", "deltas' g"])
+            contrast_xtick_labels.extend(["", "Weighted Delta"])
+        elif effect_size == "hedges_g":
+            contrast_xtick_labels.extend(["", "Deltas' g"])
         else:
-            contrast_xtick_labels.extend(["", "delta-delta"])
+            contrast_xtick_labels.extend(["", "Delta-Delta"])
 
     # Create the delta-delta axes.
     if show_delta2 and not horizontal:
         if plot_kwargs["delta2_label"] is not None:
             delta2_label = plot_kwargs["delta2_label"]
         elif effect_size == "mean_diff":
-            delta2_label = "delta - delta"
+            delta2_label = "Delta - Delta"
         else:
-            delta2_label = "deltas' g"
+            delta2_label = "Deltas' g"
         fontsize_delta2label = plot_kwargs["fontsize_delta2label"]
         delta2_axes = contrast_axes.twinx()
         delta2_axes.set_frame_on(False)
@@ -1960,7 +1960,7 @@ def gridkey_plotter(
     # Add delta-delta or mini_meta details to the table
     if show_mini_meta or show_delta2:
         if show_delta2:
-            added_group_name = ["deltas' g"] if effect_size == "delta_g" else ["delta-delta"]
+            added_group_name = ["deltas' g"] if effect_size == "hedges_g" else ["delta-delta"]
         else:
             added_group_name = ["Weighted delta"]
         gridkey_rows = added_group_name + gridkey_rows

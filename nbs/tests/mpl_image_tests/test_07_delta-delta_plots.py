@@ -188,15 +188,15 @@ def test_59_delta_axes_invert_ylim_not_showing_delta2():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_71_unpaired_delta_g():
-    return unpaired.delta_g.plot();
+    return unpaired.hedges_g.plot();
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_72_sequential_delta_g():
-    return sequential.mean_diff.plot();
+    return sequential.hedges_g.plot();
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_73_baseline_delta_g():
-    return baseline.mean_diff.plot();
+    return baseline.hedges_g.plot();
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_74_unpaired_prop_delta2():

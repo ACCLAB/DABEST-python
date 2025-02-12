@@ -98,7 +98,6 @@ class TwoGroupsEffectSize(object):
             "cohens_h": "Cohen's h",
             "hedges_g": "Hedges' g",
             "cliffs_delta": "Cliff's delta",
-            "delta_g": "deltas' g",
         }
 
         self.__is_paired = is_paired
@@ -237,7 +236,7 @@ class TwoGroupsEffectSize(object):
             return "{}\n{}\n\n{}\n{}".format(out, pvalue, bs, pval_def)
         elif not show_resample_count and define_pval:
             return "{}\n{}\n\n{}".format(out, pvalue, pval_def)
-        elif show_resample_count and ~define_pval:
+        elif show_resample_count and not define_pval:
             return "{}\n{}\n\n{}".format(out, pvalue, bs)
         else:
             return "{}\n{}".format(out, pvalue)
@@ -257,8 +256,7 @@ class TwoGroupsEffectSize(object):
             raise ValueError(err1)
 
         if self.__is_proportional and self.__effect_size not in ["mean_diff", "cohens_h"]:
-            err1 = "`is_proportional` is True; therefore effect size other than mean_diff and cohens_h is not defined." + \
-                    "If you are calculating deltas' g, it's the same as delta-delta when `is_proportional` is True"
+            err1 = "`is_proportional` is True; therefore effect size other than mean_diff and cohens_h is not defined."
             raise ValueError(err1)
 
         if self.__is_proportional and (
@@ -917,7 +915,7 @@ class EffectSizeDataFrame(object):
                 r_dict["test_N"] = int(len(test))
                 out.append(r_dict)
                 if j == len(idx) - 1 and ix == len(current_tuple) - 2:
-                    if self.__delta2 and self.__effect_size in ["mean_diff", "delta_g"]:
+                    if self.__delta2 and self.__effect_size in ["mean_diff", "hedges_g"]:
                         resamp_count = False
                         def_pval = False
                     elif self.__is_mini_meta and self.__effect_size == "mean_diff":
@@ -1001,15 +999,16 @@ class EffectSizeDataFrame(object):
             )
 
         # Create and compute the delta-delta statistics
-        if self.__delta2:
+        if self.__delta2 and self.__effect_size not in ["mean_diff", "hedges_g"]:
+            self.__delta_delta = "Delta-delta is not supported for {}.".format(
+                self.__effect_size
+            )
+        elif self.__delta2:
             self.__delta_delta = DeltaDelta(
                 self, self.__permutation_count, bootstraps_delta_delta, self.__ci
             )
             reprs.append(self.__delta_delta.__repr__(header=False))
-        elif self.__delta2 and self.__effect_size not in ["mean_diff", "delta_g"]:
-            self.__delta_delta = "Delta-delta is not supported for {}.".format(
-                self.__effect_size
-            )
+
         else:
             self.__delta_delta = (
                 "`delta2` is False; delta-delta is therefore not calculated."
@@ -1623,7 +1622,7 @@ class PermutationTest:
         These should be numerical iterables.
     effect_size : string.
         Any one of the following are accepted inputs:
-        'mean_diff', 'median_diff', 'cohens_d', 'hedges_g', 'delta_g" or 'cliffs_delta'
+        'mean_diff', 'median_diff', 'cohens_d', 'hedges_g', or 'cliffs_delta'
     is_paired : string, default None
     permutation_count : int, default 10000
         The number of permutations (reshuffles) to perform.
