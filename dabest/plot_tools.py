@@ -7,10 +7,10 @@ from __future__ import annotations
 
 # %% auto 0
 __all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'width_determine',
-           'single_sankey', 'sankeydiag', 'summary_bars_plotter', 'color_picker', 'contrast_bars_plotter',
-           'swarm_bars_plotter', 'delta_text_plotter', 'DeltaDotsPlotter', 'slopegraph_plotter',
-           'plot_minimeta_or_deltadelta_violins', 'effect_size_curve_plotter', 'gridkey_plotter', 'barplotter',
-           'table_for_horizontal_plots', 'add_counts_to_prop_plots', 'swarmplot', 'SwarmPlot']
+           'single_sankey', 'sankeydiag', 'summary_bars_plotter', 'color_picker', 'swarm_contrast_bar_plotter',
+           'delta_text_plotter', 'DeltaDotsPlotter', 'slopegraph_plotter', 'plot_minimeta_or_deltadelta_violins',
+           'effect_size_curve_plotter', 'gridkey_plotter', 'barplotter', 'table_for_horizontal_plots',
+           'add_counts_to_prop_plots', 'swarmplot', 'SwarmPlot']
 
 # %% ../nbs/API/plot_tools.ipynb 4
 import math
@@ -875,7 +875,7 @@ def sankeydiag(
             ax.set_xticks([0, 1])
             ax.set_xticklabels(sankey_ticks)
 
-    return left_idx, right_idx
+    return (left_idx, right_idx)
 
 def summary_bars_plotter(
         summary_bars: list, 
@@ -940,12 +940,8 @@ def summary_bars_plotter(
         span_ax = summary_bars_kwargs.pop("span_ax")
 
         for summary_index in summary_bars:
-            if ci_type == "bca":
-                summary_ci_low = results.bca_low[summary_index]
-                summary_ci_high = results.bca_high[summary_index]
-            else:
-                summary_ci_low = results.pct_low[summary_index]
-                summary_ci_high = results.pct_high[summary_index]
+            summary_ci_low = results.get(ci_type+'_low')[summary_index]
+            summary_ci_high = results.get(ci_type+'_high')[summary_index]    
 
             if span_ax == True:
                 starting_location = summary_ymax if horizontal else summary_xmin
@@ -987,155 +983,69 @@ def color_picker(kwargs: dict, num_of_elements: list, color_col: str, show_pairs
 
     return colors
 
-                
-def contrast_bars_plotter(
-        results: pd.DataFrame, 
-        ax_to_plot: axes.Axes,  
-        swarm_plot_ax: axes.Axes,
-        ticks_to_plot: list, 
-        contrast_bars_kwargs: dict, 
-        color_col: str, 
-        plot_palette_raw: dict, 
-        show_mini_meta: bool, 
-        mini_meta: object, 
-        show_delta2: bool, 
-        delta_delta: object, 
-        show_pairs: bool,
-        horizontal: bool, 
-        idx: list
-    ):
-    """
-    Add contrast bars to the contrast plot.
+def swarm_contrast_bar_plotter(
+        bar_type: str,
+        axes : list,
+        bar_kwargs: dict,
+        color_col : str,
+        show_pairs : bool,
+        plot_palette_raw : dict,
+        idx : list,
 
-    Parameters
-    ----------
-    results : object (Dataframe)
-        Dataframe of contrast object comparisons.
-    ax_to_plot : axes.Axes
-        Matplotlib axis object to plot on.
-    swarm_plot_ax : axes.Axes
-        Matplotlib axis object of the swarm plot.
-    ticks_to_plot : list
-        List of indices of the contrast objects.
-    contrast_bars_kwargs : dict 
-        Keyword arguments for the contrast bars.
-    color_col : str
-        Column name of the color column.
-    plot_palette_raw : dict
-        Dictionary of colors used in the plot.
-    show_mini_meta : bool   
-        Whether to show the mini meta-analysis.
-    mini_meta : object    
-        Mini meta-analysis object.
-    show_delta2 : bool
-        Whether to show the delta-delta.
-    delta_delta : object
-        delta-delta object.
-    show_pairs : bool
-        Whether the data is paired and shown in pairs.
-    horizontal : bool
-        Whether the plot is horizontal.
-    idx : list
-        List of indices of the raw groups.
-    """
+        plot_data : pd.DataFrame = None, #Only Swarm
+        xvar : str = None, #Only Swarm
+        yvar : str = None, #Only Swarm
+
+        order : list = None, #Only contrast
+        results : object = None, #Only contrast
+        horizontal : bool = False, #Only contrast
+        diff : float = None #Only contrast
+    ):
+
+    ax_to_plot = axes[0] if bar_type == 'Swarm' else axes[1]
     og_xlim, og_ylim = ax_to_plot.get_xlim(), ax_to_plot.get_ylim()
 
-    contrast_means = []
-    for j, tick in enumerate(ticks_to_plot):
-        contrast_means.append(results.difference[int(j)])
+    # Extract means
+    if bar_type == 'Swarm':
+        if isinstance(plot_data[xvar].dtype, pd.CategoricalDtype):
+            order = pd.unique(plot_data[xvar]).categories
+        else:
+            order = pd.unique(plot_data[xvar])
+        means = plot_data.groupby(xvar, observed=False)[yvar].mean().reindex(index=order)
+    elif bar_type == 'Contrast':
+        means = []
+        for j, tick in enumerate(order):
+            means.append(results.difference[int(j)])
 
     unpacked_idx = [element for innerList in idx for element in innerList] 
 
     # Colors
-    contrast_bars_colors = color_picker(contrast_bars_kwargs, ticks_to_plot, color_col, show_pairs, plot_palette_raw)
+    bar_colors = color_picker(bar_kwargs, order, color_col, show_pairs, plot_palette_raw)
 
     # alpha
-    contrast_bars_kwargs['alpha'] = contrast_bars_kwargs.get('alpha', 0.15 if color_col is not None or show_pairs else 0.25)
+    bar_kwargs['alpha'] = bar_kwargs.get('alpha', 0.15 if color_col is not None or show_pairs else 0.25)
 
-    for contrast_bars_x,contrast_bars_y in zip(ticks_to_plot, contrast_means):
+    # Plot the bars
+    y_values = order if bar_type == 'Contrast' else np.arange(0, len(order)+1, 1)
+    for current_x, current_y in zip(y_values, means):
         idx_selector = (
-            int(contrast_bars_x) 
-            if type(contrast_bars_colors) == list 
-            else unpacked_idx[int(contrast_bars_x)]
+            int(current_x) 
+            if type(bar_colors) == list 
+            else unpacked_idx[int(current_x)]
         )
-        if horizontal:
-            ax_to_plot.add_patch(mpatches.Rectangle((0, contrast_bars_x-0.5), contrast_bars_y, 0.5, color=contrast_bars_colors[idx_selector], **contrast_bars_kwargs))
+        if bar_type == 'Contrast' and horizontal:
+            ax_to_plot.add_patch(mpatches.Rectangle((0, current_x-0.5), current_y, 0.5, color=bar_colors[idx_selector], **bar_kwargs))
         else:
-            ax_to_plot.add_patch(mpatches.Rectangle((contrast_bars_x-0.25, 0), 0.5, contrast_bars_y, color=contrast_bars_colors[idx_selector], **contrast_bars_kwargs))
+            ax_to_plot.add_patch(mpatches.Rectangle((current_x-0.25, 0), 0.5, current_y, color=bar_colors[idx_selector], **bar_kwargs))
 
-    if show_mini_meta or show_delta2:
-        diff = mini_meta.difference if show_mini_meta else delta_delta.difference
+    if bar_type == 'Contrast' and diff is not None:
         if horizontal:
-            ax_to_plot.add_patch(mpatches.Rectangle((0, max(swarm_plot_ax.get_yticks())-0.5), diff, 0.5, color='black', **contrast_bars_kwargs))
+            ax_to_plot.add_patch(mpatches.Rectangle((0, max(axes[0].get_yticks())-0.5), diff, 0.5, color='black', **bar_kwargs))
         else:
-            ax_to_plot.add_patch(mpatches.Rectangle((max(swarm_plot_ax.get_xticks())+2-0.25, 0), 0.5, diff, color='black', **contrast_bars_kwargs))
+            ax_to_plot.add_patch(mpatches.Rectangle((max(axes[0].get_xticks())+2-0.25, 0), 0.5, diff, color='black', **bar_kwargs))
 
     ax_to_plot.set_xlim(og_xlim)
-    ax_to_plot.set_ylim(og_ylim)
-
-def swarm_bars_plotter(
-        plot_data: pd.DataFrame, 
-        xvar: str, 
-        yvar: str, 
-        ax: axes.Axes,
-        swarm_bars_kwargs: dict, 
-        color_col: str, 
-        plot_palette_raw: dict, 
-        show_pairs: bool, 
-        idx: list
-    ):
-    """
-    Add bars to the raw data plot. Currently only for vertical plots.
-
-    Parameters
-    ----------
-    plot_data : object (Dataframe)
-        Dataframe of the plot data.
-    xvar : str
-        Column name of the x variable.
-    yvar : str
-        Column name of the y variable.
-    ax : axes.Axes  
-        Matplotlib axis object to plot on.
-    swarm_bars_kwargs : dict
-        Keyword arguments for the swarm bars.
-    color_col : str
-        Column name of the color column.
-    plot_palette_raw : dict
-        Dictionary of colors used in the plot.
-    show_pairs : bool
-        Whether the data is paired and shown in pairs.
-    idx : list
-        List of indices of the raw groups.
-    """
-    og_xlim, og_ylim = ax.get_xlim(), ax.get_ylim()
-
-    if isinstance(plot_data[xvar].dtype, pd.CategoricalDtype):
-        swarm_bars_order = pd.unique(plot_data[xvar]).categories
-    else:
-        swarm_bars_order = pd.unique(plot_data[xvar])
-
-    swarm_means = plot_data.groupby(xvar, observed=False)[yvar].mean().reindex(index=swarm_bars_order)
-
-    unpacked_idx = [element for innerList in idx for element in innerList] 
-
-    # Colors
-    swarm_bars_colors = color_picker(swarm_bars_kwargs, swarm_bars_order, color_col, show_pairs, plot_palette_raw)
-
-    # alpha
-    swarm_bars_kwargs['alpha'] = swarm_bars_kwargs.get('alpha', 0.15 if color_col is not None or show_pairs else 0.25)
-
-    for swarm_bars_x,swarm_bars_y in zip(np.arange(0,len(swarm_bars_order)+1,1), swarm_means):
-        idx_selector = (
-            swarm_bars_x
-            if type(swarm_bars_colors) == list 
-            else unpacked_idx[swarm_bars_x]
-            )
-        ax.add_patch(mpatches.Rectangle((swarm_bars_x-0.25,0), 0.5, swarm_bars_y, 
-                                        color=swarm_bars_colors[idx_selector],**swarm_bars_kwargs))
-
-    ax.set_xlim(og_xlim)
-    ax.set_ylim(og_ylim)
+    ax_to_plot.set_ylim(og_ylim) 
 
 def delta_text_plotter(
         results: pd.DataFrame, 
@@ -1200,7 +1110,6 @@ def delta_text_plotter(
     delta_text_kwargs.pop('x_location')
 
     # Colors
-
     delta_text_colors = color_picker(delta_text_kwargs, ticks_to_plot, color_col, show_pairs, plot_palette_raw)
 
     # Idx
@@ -1307,7 +1216,7 @@ def DeltaDotsPlotter(
     """
     
     # Checks and initializations
-    from .plot_tools import swarmplot
+    # from .plot_tools import swarmplot
     delta_dot_color = delta_dot_kwargs.pop('color')
     if color_col is not None:
         plot_palette_deltapts = plot_palette_raw
@@ -1372,7 +1281,8 @@ def slopegraph_plotter(
         rawdata_axes: axes.Axes, 
         ytick_color: str, 
         temp_idx: list, 
-        horizontal: bool
+        horizontal: bool,
+        temp_all_plot_groups: list
     ):
     """
     Add slopegraph to the rawdata axes.
@@ -1401,6 +1311,8 @@ def slopegraph_plotter(
         List of indices of the contrast objects.
     horizontal : bool
         If the plotting will be in horizontal format.
+    temp_all_plot_groups : list
+
     """
     # Jitter Kwargs 
     # With help from GitHub user: devMJBL
@@ -1455,6 +1367,15 @@ def slopegraph_plotter(
             rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
 
         x_start = x_start + grp_count
+
+    # Set the tick labels, because the slopegraph plotting doesn't.
+    if horizontal:
+        rawdata_axes.set_yticks(np.arange(0, len(temp_all_plot_groups)))
+        rawdata_axes.set_yticklabels(temp_all_plot_groups)
+    else:
+        rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
+        rawdata_axes.set_xticklabels(temp_all_plot_groups)
+    
 
 def plot_minimeta_or_deltadelta_violins(
         show_mini_meta: bool, 
@@ -1516,10 +1437,7 @@ def plot_minimeta_or_deltadelta_violins(
         except AttributeError:
             data = dabest_object.bootstraps_delta_delta
 
-        if ci_type == "bca":
-            ci_low, ci_high = dabest_object.bca_low, dabest_object.bca_high
-        else:
-            ci_low, ci_high = dabest_object.pct_low, dabest_object.pct_high
+        ci_low, ci_high = dabest_object.results.get(ci_type+'_low')[0], dabest_object.results.get(ci_type+'_high')[0]
         return data, dabest_object.difference, ci_low, ci_high
 
     dabest_object = effectsize_df.mini_meta if show_mini_meta else effectsize_df.delta_delta
@@ -1692,12 +1610,8 @@ def effect_size_curve_plotter(
         current_control = results.control[int(j)]
         current_bootstrap = results.bootstraps[int(j)]
         current_effsize = results.difference[int(j)]
-        if ci_type == "bca":
-            current_ci_low = results.bca_low[int(j)]
-            current_ci_high = results.bca_high[int(j)]
-        else:
-            current_ci_low = results.pct_low[int(j)]
-            current_ci_high = results.pct_high[int(j)]
+        current_ci_low = results.get(ci_type+'_low')[int(j)]
+        current_ci_high = results.get(ci_type+'_high')[int(j)]
 
         # Plot the effect size marker
         if horizontal:
@@ -1722,8 +1636,8 @@ def effect_size_curve_plotter(
         bec_control = bec_results.control[j]
         bec_bootstrap = bec_results.bec_bootstraps[j]
         bec_effsize = bec_results.bec_difference[j]
-        bec_ci_low = bec_results.bec_bca_low[j] if ci_type == "bca" else bec_results.bec_pct_low[j]
-        bec_ci_high = bec_results.bec_bca_high[j] if ci_type == "bca" else bec_results.bec_pct_high[j]
+        bec_ci_low = bec_results.get('bec_'+ci_type+'_low')[j]
+        bec_ci_high = bec_results.get('bec_'+ci_type+'_high')[j]
         
         # Plot the effect size marker regardless of show_baseline_ec
         if horizontal:

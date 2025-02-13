@@ -98,7 +98,8 @@ def get_unique_categories(names):
 
 def get_params(
         effectsize_df: object, 
-        plot_kwargs: dict
+        plot_kwargs: dict,
+        sankey_kwargs: dict
     ):
     """
     Extracts parameters from the `effectsize_df` and `plot_kwargs` objects for use in the plotter function.
@@ -109,6 +110,8 @@ def get_params(
         A `dabest` EffectSizeDataFrame object.
     plot_kwargs : dict
         Kwargs passed to the plot function.
+    sankey kwargs : dict
+        Kwargs relating to the sankey diagram plots
     """
     plot_data = effectsize_df._plot_data
     xvar = effectsize_df.xvar
@@ -140,7 +143,6 @@ def get_params(
     # Disable Gardner-Altman plotting if any of the idxs comprise of more than
     # two groups or if it is a delta-delta plot.
     float_contrast = plot_kwargs["float_contrast"]
-    # effect_size_type = effectsize_df.effect_size
     if len(idx) > 1 or len(idx[0]) > 2:
         float_contrast = False
 
@@ -176,10 +178,30 @@ def get_params(
         
     # Boolean for showing Baseline Curve
     show_baseline_ec = plot_kwargs["show_baseline_ec"]
+
+    # Sankey details
+    # We need to extract the `sankey` and `flow` from the kwargs
+    # to use for varying different kinds of paired proportional plots
+    # We also don't want to pop the parameter from the kwargs
+    one_sankey = (
+        False if is_paired is not None else None
+    )  # Flag to indicate if only one sankey is plotted.
+    two_col_sankey = (
+        True if proportional and not one_sankey and sankey_kwargs["sankey"] and not sankey_kwargs["flow"] else False
+    )
+
+    # Asymmetric side for swarmplots
+    asymmetric_side = (
+        plot_kwargs["swarm_side"]  # Default asymmetric side is right
+        if plot_kwargs["swarm_side"] is not None
+        else "right" if not horizontal
+        else "left"
+    )  
         
-    return (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, idx, 
-            show_delta2, show_mini_meta, float_contrast, show_pairs, group_summaries, err_color, horizontal,
-            results, halfviolin_alpha, ci_type, x1_level, experiment_label, show_baseline_ec)
+    return (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, 
+            idx, show_delta2, show_mini_meta, float_contrast, show_pairs, group_summaries, err_color, 
+            horizontal, results, halfviolin_alpha, ci_type, x1_level, experiment_label, show_baseline_ec, 
+            one_sankey, two_col_sankey, asymmetric_side)
 
 def get_kwargs(
         plot_kwargs: dict, 
@@ -1133,7 +1155,8 @@ def set_xaxis_ticks_and_lims(
         contrast_xtick_labels: list, 
         plot_kwargs: dict, 
         proportional: bool, 
-        horizontal: bool):
+        horizontal: bool
+    ):
     """
     Set the x-axis/yaxis ticks and limits for the plotter function.
 
@@ -1709,41 +1732,28 @@ def Redraw_Spines(
     og_xlim_raw, og_ylim_raw = rawdata_axes.get_xlim(), rawdata_axes.get_ylim()
     og_xlim_contrast, og_ylim_contrast = contrast_axes.get_xlim(), contrast_axes.get_ylim()
     if horizontal:
-        ## Raw axes x spine 
-        rawdata_axes.hlines(
-            og_ylim_raw[0], 
-            og_xlim_raw[0], 
-            og_xlim_raw[1], 
-            **redraw_axes_kwargs
-        )
-        ## Contrast axes x spine
-        contrast_axes.hlines(
-            og_ylim_contrast[0], 
-            og_xlim_contrast[0], 
-            og_xlim_contrast[1], 
-            **redraw_axes_kwargs
-        )
+        for current_ax, current_ylim, current_xlim in zip((rawdata_axes, contrast_axes), (og_ylim_raw, og_ylim_contrast), 
+                                                          (og_xlim_raw, og_xlim_contrast)):
+            current_ax.hlines(
+                current_ylim[0], 
+                current_xlim[0], 
+                current_xlim[1], 
+                **redraw_axes_kwargs
+            )    
     else:
-        ## Raw axes y spine 
-        rawdata_axes.vlines(
-            og_xlim_raw[0], 
-            og_ylim_raw[0], 
-            og_ylim_raw[1], 
-            **redraw_axes_kwargs
-        )
-        ## Contrast axes y spine
-        xpos = og_xlim_contrast[1] if float_contrast else og_xlim_contrast[0]
-        contrast_axes.vlines(
-            xpos, 
-            og_ylim_contrast[0], 
-            og_ylim_contrast[1], 
-            **redraw_axes_kwargs
-        )
+        for current_ax, current_ylim, current_xlim in zip((rawdata_axes, contrast_axes), (og_ylim_raw, og_ylim_contrast), 
+                                                          (og_xlim_raw[0], og_xlim_contrast[1] if float_contrast else og_xlim_contrast[0])):
+            current_ax.vlines(
+                current_xlim, 
+                current_ylim[0], 
+                current_ylim[1], 
+                **redraw_axes_kwargs
+            )
 
         if show_delta2:
             og_xlim_delta, og_ylim_delta = contrast_axes.get_xlim(), contrast_axes.get_ylim()
             delta2_axes.set_ylim(og_ylim_delta)
-
+            
             delta2_axes.vlines(
                 og_xlim_delta[1], 
                 og_ylim_delta[0], 
@@ -1751,9 +1761,9 @@ def Redraw_Spines(
                 **redraw_axes_kwargs
             )
 
-    for ax, xlim, ylim in zip([rawdata_axes, contrast_axes], [og_xlim_raw, og_xlim_contrast], [og_ylim_raw, og_ylim_contrast]):
-        ax.set_xlim(xlim)
-        ax.set_ylim(ylim)
+    for current_ax, xlim, ylim in zip([rawdata_axes, contrast_axes], [og_xlim_raw, og_xlim_contrast], [og_ylim_raw, og_ylim_contrast]):
+        current_ax.set_xlim(xlim)
+        current_ax.set_ylim(ylim)
 
 def extract_group_summaries(
         proportional: bool, 
