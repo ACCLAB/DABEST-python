@@ -76,10 +76,12 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
         extract_contrast_plotting_ticks,
         set_xaxis_ticks_and_lims,
         show_legend,
-        Gardner_Altman_Plot_Aesthetic_Adjustments,
-        Cumming_Plot_Aesthetic_Adjustments,
-        Redraw_Spines,
-        extract_group_summaries
+        gardner_altman_adjustments,
+        # Cumming_Plot_Aesthetic_Adjustments,
+        extract_group_summaries,
+        draw_zeroline,
+        redraw_dependent_spines,
+        redraw_independent_spines
     )
     from .plot_tools import (
         error_bar,
@@ -452,46 +454,65 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
     )
 
     # Plot aesthetic adjustments.
-    if float_contrast and not horizontal:  ## For Gardner-Altman plots only.
-        Gardner_Altman_Plot_Aesthetic_Adjustments(
-                                            effect_size_type = effect_size, 
-                                            plot_data = plot_data, 
-                                            xvar = xvar, 
-                                            yvar = yvar, 
-                                            current_control = current_control, 
-                                            current_group = current_group,
-                                            rawdata_axes = rawdata_axes, 
-                                            contrast_axes = contrast_axes, 
-                                            results = results, 
-                                            current_effsize = current_effsize, 
-                                            is_paired = is_paired, 
-                                            one_sankey = one_sankey,
-                                            reflines_kwargs = reflines_kwargs, 
-                                            redraw_axes_kwargs = redraw_axes_kwargs, 
+    if float_contrast: # For Gardner-Altman (float contrast) plots only.
+        gardner_altman_adjustments(
+                                effect_size_type = effect_size, 
+                                plot_data = plot_data, 
+                                xvar = xvar, 
+                                yvar = yvar, 
+                                current_control = current_control, 
+                                current_group = current_group,
+                                rawdata_axes = rawdata_axes, 
+                                contrast_axes = contrast_axes, 
+                                results = results, 
+                                current_effsize = current_effsize, 
+                                is_paired = is_paired, 
+                                one_sankey = one_sankey,
+                                reflines_kwargs = reflines_kwargs, 
+                                redraw_axes_kwargs = redraw_axes_kwargs, 
         )
-    else:  ## For Cumming plots only.
-        Cumming_Plot_Aesthetic_Adjustments(
-                                    contrast_axes = contrast_axes, 
-                                    reflines_kwargs = reflines_kwargs, 
-                                    is_paired = is_paired, 
-                                    show_pairs = show_pairs, 
-                                    two_col_sankey = two_col_sankey, 
-                                    idx = idx, 
-                                    ticks_to_start_twocol_sankey = ticks_to_start_twocol_sankey,
-                                    proportional = proportional, 
-                                    ticks_to_skip = ticks_to_skip, 
-                                    temp_idx = temp_idx if is_paired == "baseline" and show_pairs else None, 
-                                    rawdata_axes = rawdata_axes, 
-                                    redraw_axes_kwargs = redraw_axes_kwargs,
-                                    ticks_to_skip_contrast = ticks_to_skip_contrast,
-                                    show_delta2 = show_delta2,
-                                    show_mini_meta = show_mini_meta,
-                                    horizontal = horizontal,
-                                    skip_redraw_lines = True if plot_kwargs["gridkey_rows"] is not None else False,
+    else: # For Cumming plots only.
+        ## Add Zero line if lies within the ylim of contrast axes
+        draw_zeroline(
+                ax = contrast_axes,
+                horizontal = horizontal,
+                reflines_kwargs = reflines_kwargs
         )
+        ## Axes independent spine lines
+        is_gridkey = True if plot_kwargs["gridkey_rows"] is not None else False
+        if not is_gridkey:
+            redraw_independent_spines(
+                        rawdata_axes = rawdata_axes,
+                        contrast_axes = contrast_axes,
+                        horizontal = horizontal,
+                        two_col_sankey = two_col_sankey,
+                        ticks_to_start_twocol_sankey = ticks_to_start_twocol_sankey,
+                        idx = idx,
+                        is_paired = is_paired,
+                        show_pairs = show_pairs,
+                        proportional = proportional,
+                        ticks_to_skip = ticks_to_skip,
+                        temp_idx = temp_idx if is_paired == "baseline" and show_pairs else None,
+                        ticks_to_skip_contrast = ticks_to_skip_contrast,
+                        extra_delta = True if (show_delta2 or show_mini_meta) else False,
+                        redraw_axes_kwargs = redraw_axes_kwargs
+            )
+
+    # Modify ylims of axes to flip the plot for horizontal format
+    if horizontal:
+        if not proportional or (proportional and show_pairs):
+            swarm_ylim, contrast_ylim = rawdata_axes.get_ylim(), contrast_axes.get_ylim()
+            rawdata_axes.set_ylim(swarm_ylim[1], swarm_ylim[0])
+            contrast_axes.set_ylim(contrast_ylim[1], contrast_ylim[0])
+
+        ## Modify the ylim to reduce whitespace in specific plots.
+        if show_delta2 or show_mini_meta or (proportional and show_pairs):
+            swarm_ylim, contrast_ylim = rawdata_axes.get_ylim(), contrast_axes.get_ylim()
+            rawdata_axes.set_ylim(swarm_ylim[0]-0.5, swarm_ylim[1])
+            contrast_axes.set_ylim(contrast_ylim[0]-0.5, contrast_ylim[1])
 
     # Add the dependent axes spines back in.
-    Redraw_Spines(
+    redraw_dependent_spines(
         rawdata_axes = rawdata_axes, 
         contrast_axes = contrast_axes, 
         redraw_axes_kwargs = redraw_axes_kwargs, 
