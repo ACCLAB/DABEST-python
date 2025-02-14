@@ -242,6 +242,15 @@ class Dabest(object):
         """
         return self.__cliffs_delta
 
+
+    @property
+    def delta_g(self):
+        """
+        Returns an :py:class:`EffectSizeDataFrame` for deltas' g, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
+        """
+        raise DeprecationWarning("delta_g has been depreciated  - Please use hedges_g (with delta2=True) for deltas' g experiments")
+
+
     @property
     def input_data(self):
         """
