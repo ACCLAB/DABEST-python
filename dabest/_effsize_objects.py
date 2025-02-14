@@ -98,7 +98,6 @@ class TwoGroupsEffectSize(object):
             "cohens_h": "Cohen's h",
             "hedges_g": "Hedges' g",
             "cliffs_delta": "Cliff's delta",
-            "delta_g": "deltas' g",
         }
 
         self.__is_paired = is_paired
@@ -106,7 +105,7 @@ class TwoGroupsEffectSize(object):
         self.__effect_size = effect_size
         self.__random_seed = random_seed
         self.__ci = ci
-        self.__proportional = proportional
+        self.__is_proportional = proportional
         self._check_errors(control, test)
 
         # Convert to numpy arrays for speed.
@@ -237,7 +236,7 @@ class TwoGroupsEffectSize(object):
             return "{}\n{}\n\n{}\n{}".format(out, pvalue, bs, pval_def)
         elif not show_resample_count and define_pval:
             return "{}\n{}\n\n{}".format(out, pvalue, pval_def)
-        elif show_resample_count and ~define_pval:
+        elif show_resample_count and not define_pval:
             return "{}\n{}\n\n{}".format(out, pvalue, bs)
         else:
             return "{}\n{}".format(out, pvalue)
@@ -256,16 +255,15 @@ class TwoGroupsEffectSize(object):
             err1 = "`paired` is not None; therefore Cliff's delta is not defined."
             raise ValueError(err1)
 
-        if self.__proportional and self.__effect_size not in ["mean_diff", "cohens_h"]:
-            err1 = "`proportional` is True; therefore effect size other than mean_diff and cohens_h is not defined." + \
-                    "If you are calculating deltas' g, it's the same as delta-delta when `proportional` is True"
+        if self.__is_proportional and self.__effect_size not in ["mean_diff", "cohens_h"]:
+            err1 = "`is_proportional` is True; therefore effect size other than mean_diff and cohens_h is not defined."
             raise ValueError(err1)
 
-        if self.__proportional and (
+        if self.__is_proportional and (
             isin(control, [0, 1]).all() == False or isin(test, [0, 1]).all() == False
         ):
             err1 = (
-                "`proportional` is True; Only accept binary data consisting of 0 and 1."
+                "`is_proportional` is True; Only accept binary data consisting of 0 and 1."
             )
             raise ValueError(err1)
 
@@ -333,7 +331,7 @@ class TwoGroupsEffectSize(object):
             self.__permutation_count,
         )
 
-        if self.__is_paired and not self.__proportional:
+        if self.__is_paired and not self.__is_proportional:
             # Wilcoxon, a non-parametric version of the paired T-test.
             try:
                 wilcoxon = spstats.wilcoxon(self.__control, self.__test)
@@ -354,7 +352,7 @@ class TwoGroupsEffectSize(object):
                 self.__pvalue_paired_students_t = paired_t.pvalue
                 self.__statistic_paired_students_t = paired_t.statistic
 
-        elif self.__is_paired and self.__proportional:
+        elif self.__is_paired and self.__is_proportional:
             # for binary paired data, use McNemar's test
             # References:
             # https://en.wikipedia.org/wiki/McNemar%27s_test
@@ -368,7 +366,7 @@ class TwoGroupsEffectSize(object):
             self.__pvalue_mcnemar = _mcnemar.pvalue
             self.__statistic_mcnemar = _mcnemar.statistic
 
-        elif self.__proportional:
+        elif self.__is_proportional:
             # The Cohen's h calculation is for binary categorical data
             try:
                 self.__proportional_difference = es.cohens_h(
@@ -544,8 +542,8 @@ class TwoGroupsEffectSize(object):
         return self.__is_paired
 
     @property
-    def proportional(self):
-        return self.__proportional
+    def is_proportional(self):
+        return self.__is_proportional
 
     @property
     def ci(self):
@@ -842,12 +840,12 @@ class EffectSizeDataFrame(object):
         self.__resamples = resamples
         self.__permutation_count = permutation_count
         self.__random_seed = random_seed
-        self.__proportional = proportional
+        self.__is_proportional = proportional
         self.__x1_level = x1_level
         self.__experiment_label = experiment_label
         self.__x2 = x2
         self.__delta2 = delta2
-        self.__mini_meta = mini_meta
+        self.__is_mini_meta = mini_meta
 
     def __pre_calc(self):
         from .misc_tools import print_greeting, get_varname
@@ -885,7 +883,7 @@ class EffectSizeDataFrame(object):
                 self.__is_paired,
                 self.__resamples,
                 self.__random_seed,
-                self.__proportional,
+                self.__is_proportional,
             )
 
         for j, current_tuple in enumerate(idx):
@@ -903,7 +901,7 @@ class EffectSizeDataFrame(object):
                     control,
                     test,
                     self.__effect_size,
-                    self.__proportional,
+                    self.__is_proportional,
                     self.__is_paired,
                     self.__ci,
                     self.__resamples,
@@ -917,10 +915,10 @@ class EffectSizeDataFrame(object):
                 r_dict["test_N"] = int(len(test))
                 out.append(r_dict)
                 if j == len(idx) - 1 and ix == len(current_tuple) - 2:
-                    if self.__delta2 and self.__effect_size in ["mean_diff", "delta_g"]:
+                    if self.__delta2 and self.__effect_size in ["mean_diff", "hedges_g"]:
                         resamp_count = False
                         def_pval = False
-                    elif self.__mini_meta and self.__effect_size == "mean_diff":
+                    elif self.__is_mini_meta and self.__effect_size == "mean_diff":
                         resamp_count = False
                         def_pval = False
                     else:
@@ -1001,32 +999,33 @@ class EffectSizeDataFrame(object):
             )
 
         # Create and compute the delta-delta statistics
-        if self.__delta2:
+        if self.__delta2 and self.__effect_size not in ["mean_diff", "hedges_g"]:
+            self.__delta_delta = "Delta-delta is not supported for {}.".format(
+                self.__effect_size
+            )
+        elif self.__delta2:
             self.__delta_delta = DeltaDelta(
                 self, self.__permutation_count, bootstraps_delta_delta, self.__ci
             )
             reprs.append(self.__delta_delta.__repr__(header=False))
-        elif self.__delta2 and self.__effect_size not in ["mean_diff", "delta_g"]:
-            self.__delta_delta = "Delta-delta is not supported for {}.".format(
-                self.__effect_size
-            )
+
         else:
             self.__delta_delta = (
                 "`delta2` is False; delta-delta is therefore not calculated."
             )
 
         # Create and compute the weighted average statistics
-        if self.__mini_meta and self.__effect_size == "mean_diff":
-            self.__mini_meta_delta = MiniMetaDelta(
+        if self.__is_mini_meta and self.__effect_size == "mean_diff":
+            self.__mini_meta = MiniMetaDelta(
                 self, self.__permutation_count, self.__ci
             )
-            reprs.append(self.__mini_meta_delta.__repr__(header=False))
-        elif self.__mini_meta and self.__effect_size != "mean_diff":
-            self.__mini_meta_delta = "Weighted delta is not supported for {}.".format(
+            reprs.append(self.__mini_meta.__repr__(header=False))
+        elif self.__is_mini_meta and self.__effect_size != "mean_diff":
+            self.__mini_meta = "Weighted delta is not supported for {}.".format(
                 self.__effect_size
             )
         else:
-            self.__mini_meta_delta = (
+            self.__mini_meta = (
                 "`mini_meta` is False; weighted delta is therefore not calculated."
             )
 
@@ -1300,7 +1299,7 @@ class EffectSizeDataFrame(object):
             passed to plot() : {'linewidth':1, 'alpha':0.5, 'jitter':0, 'jitter_seed':9876543210}.
         sankey_kwargs: dict, default None
             Whis will change the appearance of the sankey diagram used to depict
-            paired proportional data when `show_pairs=True` and `proportional=True`.
+            paired proportional data when `show_pairs=True` and `is_proportional=True`.
             Pass any keyword arguments accepted by plot_tools.sankeydiag() function
             here, as a dict. If None, the following keywords are passed to sankey diagram:
             {"width": 0.5, "align": "center", "alpha": 0.4, "bar_width": 0.1, "rightColor": False}
@@ -1320,8 +1319,7 @@ class EffectSizeDataFrame(object):
         legend_kwargs : dict, default None
             Pass any keyword arguments accepted by the matplotlib Axes
             `legend` command here, as a dict. If None, the following keywords
-            are passed to matplotlib.Axes.legend : {'loc':'upper left',
-            'frameon':False}.
+            are passed to matplotlib.Axes.legend : {'frameon':False}.
         title : string, default None
             Title for the plot. If None, no title will be displayed. Pass any
             keyword arguments accepted by the matplotlib.pyplot.suptitle `t` command here,
@@ -1372,7 +1370,7 @@ class EffectSizeDataFrame(object):
             Whether or not to display the delta dots on paired or repeated measure plots.
         delta_dot_kwargs : dict, default None
             Pass relevant keyword arguments. If None, the following keywords are passed:
-            {"color": 'k', "marker": "^", "alpha": 0.5, "zorder": -1, "size": 3, "side": "right"}
+            {"color": 'k', "marker": "^", "alpha": 0.5, "zorder": 2, "size": 3, "side": "right"}
 
         horizontal_table_kwargs : dict, default None
             {'show: True, 'color' : 'yellow', 'alpha' :0.2, 'fontsize' : 12, 'text_color' : 'black', 
@@ -1437,9 +1435,6 @@ class EffectSizeDataFrame(object):
         if self.__delta2 and not empty_circle:
             color_col = self.__x2
 
-        # if self.__proportional:
-        #     raw_marker_size = 0.01
-
         # Modification incurred due to update of Seaborn
         ci = ("ci", ci) if ci is not None else None
 
@@ -1450,12 +1445,12 @@ class EffectSizeDataFrame(object):
         return out
 
     @property
-    def proportional(self):
+    def is_proportional(self):
         """
         Returns the proportional parameter
         class.
         """
-        return self.__proportional
+        return self.__is_proportional
 
     @property
     def results(self):
@@ -1538,10 +1533,6 @@ class EffectSizeDataFrame(object):
         return self.__experiment_label
 
     @property
-    def delta2(self):
-        return self.__delta2
-
-    @property
     def resamples(self):
         """
         The number of resamples (with replacement) during bootstrap resampling."
@@ -1568,13 +1559,6 @@ class EffectSizeDataFrame(object):
         """
         return self.__dabest_obj
 
-    @property
-    def proportional(self):
-        """
-        Returns the proportional parameter
-        class.
-        """
-        return self.__proportional
 
     @property
     def lqrt(self):
@@ -1590,33 +1574,41 @@ class EffectSizeDataFrame(object):
             return self.__lqrt_results
 
     @property
-    def mini_meta(self):
+    def is_mini_meta(self):
         """
         Returns the mini_meta boolean parameter.
         """
-        return self.__mini_meta
+        return self.__is_mini_meta
 
     @property
-    def mini_meta_delta(self):
+    def mini_meta(self):
         """
         Returns the mini_meta results.
         """
         try:
-            return self.__mini_meta_delta
+            return self.__mini_meta
         except AttributeError:
             self.__pre_calc()
-            return self.__mini_meta_delta
+            return self.__mini_meta
 
     @property
     def delta_delta(self):
         """
-        Returns the mini_meta results.
+        Returns the delta_delta results.
         """
         try:
             return self.__delta_delta
         except AttributeError:
             self.__pre_calc()
             return self.__delta_delta
+    
+    @property
+    def delta2(self):
+        return self.__delta2
+    
+    @property
+    def is_delta_delta(self):
+        return self.__delta2
 
 # %% ../nbs/API/effsize_objects.ipynb 29
 class PermutationTest:
@@ -1630,7 +1622,7 @@ class PermutationTest:
         These should be numerical iterables.
     effect_size : string.
         Any one of the following are accepted inputs:
-        'mean_diff', 'median_diff', 'cohens_d', 'hedges_g', 'delta_g" or 'cliffs_delta'
+        'mean_diff', 'median_diff', 'cohens_d', 'hedges_g', or 'cliffs_delta'
     is_paired : string, default None
     permutation_count : int, default 10000
         The number of permutations (reshuffles) to perform.

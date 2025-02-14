@@ -225,11 +225,19 @@ def test_505_deltadelta_insert_ax_forest():
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
-def test_506_deltadelta_mediandiff_forest():
+def test_506a_deltadelta_delta_g_using_hedges_g_forest():
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
-                effect_size='median_diff'
+                effect_size='hedges_g'
+            )
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_506b_deltadelta_delta_g_using_delta_g_forest():
+    return forest_plot(
+                contrasts, 
+                labels=['Drug1', 'Drug2', 'Drug3'],
+                effect_size='delta_g'
             )
 
 @pytest.mark.mpl_image_compare(tolerance=8)

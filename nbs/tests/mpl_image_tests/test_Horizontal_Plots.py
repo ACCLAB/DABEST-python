@@ -641,15 +641,15 @@ def test_374_delta_axes_invert_ylim_not_showing_delta2():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_375_unpaired_delta_g():
-    return delta_delta_unpaired.delta_g.plot(horizontal=True);
+    return delta_delta_unpaired.hedges_g.plot(horizontal=True);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_376_sequential_delta_g():
-    return delta_delta_paired_sequential.mean_diff.plot(horizontal=True);
+    return delta_delta_paired_sequential.hedges_g.plot(horizontal=True);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_377_baseline_delta_g():
-    return delta_delta_paired_baseline.mean_diff.plot(horizontal=True);
+    return delta_delta_paired_baseline.hedges_g.plot(horizontal=True);
 
 
 # mini_meta

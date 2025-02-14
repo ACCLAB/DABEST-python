@@ -54,116 +54,17 @@ class Dabest(object):
         self.__is_paired = paired
         self.__resamples = resamples
         self.__random_seed = random_seed
-        self.__proportional = proportional
-        self.__mini_meta = mini_meta
+        self.__is_proportional = proportional
+        self.__is_mini_meta = mini_meta
 
         # after this call the attributes self.__experiment_label and self.__x1_level are updated
         self._check_errors(x, y, idx, experiment, experiment_label, x1_level)
-        
-
-        # Check if there is NaN under any of the paired settings
-        if self.__is_paired and self.__output_data.isnull().values.any():
-            warn1 = f"NaN values detected under paired setting and removed,"
-            warn2 = f" please check your data."
-            warnings.warn(warn1 + warn2)
-            if x is not None and y is not None:
-                rmname = self.__output_data[self.__output_data[y].isnull()][self.__id_col].tolist()
-                self.__output_data = self.__output_data[~self.__output_data[self.__id_col].isin(rmname)]
-            elif x is None and y is None:
-                self.__output_data.dropna(inplace=True)
 
         # create new x & idx and record the second variable if this is a valid 2x2 ANOVA case
-        if idx is None and x is not None and y is not None:
-            # Add a length check for unique values in the first element in list x,
-            # if the length is greater than 2, force delta2 to be False
-            # Should be removed if delta2 for situations other than 2x2 is supported
-            if len(self.__output_data[x[0]].unique()) > 2 and self.__x1_level is None:
-                self.__delta2 = False
-                # stop the loop if delta2 is False
-
-            # add a new column which is a combination of experiment and the first variable
-            new_col_name = experiment + x[0]
-            while new_col_name in self.__output_data.columns:
-                new_col_name += "_"
-
-            self.__output_data[new_col_name] = (
-                self.__output_data[x[0]].astype(str)
-                + " "
-                + self.__output_data[experiment].astype(str)
-            )
-
-            # create idx and record the first and second x variable
-            idx = []
-            for i in list(map(lambda x: str(x), self.__experiment_label)):
-                temp = []
-                for j in list(map(lambda x: str(x), self.__x1_level)):
-                    temp.append(j + " " + i)
-                idx.append(temp)
-
-            self.__idx = idx
-            self.__x1 = x[0]
-            self.__x2 = x[1]
-            x = new_col_name
-        else:
-            self.__idx = idx
-            self.__x1 = None
-            self.__x2 = None
-
-        # Determine the kind of estimation plot we need to produce.
-        if all([isinstance(i, (str, int, float)) for i in idx]):
-            # flatten out idx.
-            all_plot_groups = pd.Series([t for t in idx]).unique().tolist()
-            if len(idx) > len(all_plot_groups):
-                err0 = "`idx` contains duplicated groups. Please remove any duplicates and try again."
-                raise ValueError(err0)
-
-            # We need to re-wrap this idx inside another tuple so as to
-            # easily loop thru each pairwise group later on.
-            self.__idx = (idx,)
-
-        elif all([isinstance(i, (tuple, list)) for i in idx]):
-            all_plot_groups = pd.Series([tt for t in idx for tt in t]).unique().tolist()
-
-            actual_groups_given = sum([len(i) for i in idx])
-
-            if actual_groups_given > len(all_plot_groups):
-                err0 = "Groups are repeated across tuples,"
-                err1 = " or a tuple has repeated groups in it."
-                err2 = " Please remove any duplicates and try again."
-                raise ValueError(err0 + err1 + err2)
-
-        else:  # mix of string and tuple?
-            err = "There seems to be a problem with the idx you " "entered--{}.".format(
-                idx
-            )
-            raise ValueError(err)
-
-        # Check if there is a typo on paired
-        if self.__is_paired and self.__is_paired not in ("baseline", "sequential"):
-            err = "{} assigned for `paired` is not valid.".format(self.__is_paired)
-            raise ValueError(err)
-
-        # Determine the type of data: wide or long.
-        if x is None and y is not None:
-            err = "You have only specified `y`. Please also specify `x`."
-            raise ValueError(err)
-
-        if x is not None and y is None:
-            err = "You have only specified `x`. Please also specify `y`."
-            raise ValueError(err)
+        idx, x, all_plot_groups = self._prep_idx(idx, x, y, experiment)
 
         self.__plot_data = self._get_plot_data(x, y, all_plot_groups)
         self.__all_plot_groups = all_plot_groups
-
-        # Check if `id_col` is valid
-        if self.__is_paired:
-            if id_col is None:
-                err = "`id_col` must be specified if `paired` is assigned with a not NoneType value."
-                raise IndexError(err)
-
-            if id_col not in self.__plot_data.columns:
-                err = "{} is not a column in `data`. ".format(id_col)
-                raise IndexError(err)
 
         self._compute_effectsize_dfs()
 
@@ -213,7 +114,7 @@ class Dabest(object):
                 )
             )
 
-        if self.__mini_meta:
+        if self.__is_mini_meta:
             comparisons.append("weighted delta (only for mean difference)")
 
         for j, g in enumerate(comparisons):
@@ -224,6 +125,74 @@ class Dabest(object):
         out.append(resamples_line1 + resamples_line2)
 
         return "\n".join(out)
+
+
+    def _prep_idx(self, idx, x, y, experiment):
+        """
+        Function to prepare the idx.
+        """
+        if idx is None and x is not None and y is not None:
+            # Add a length check for unique values in the first element in list x,
+            # if the length is greater than 2, force delta2 to be False
+            # Should be removed if delta2 for situations other than 2x2 is supported
+            if len(self.__output_data[x[0]].unique()) > 2:
+                self.__delta2 = False
+
+            # add a new column which is a combination of experiment and the first variable
+            new_col_name = experiment + x[0]
+            while new_col_name in self.__output_data.columns:
+                new_col_name += "_"
+
+            self.__output_data[new_col_name] = (
+                self.__output_data[x[0]].astype(str)
+                + " "
+                + self.__output_data[experiment].astype(str)
+            )
+
+            # create idx and record the first and second x variable
+            idx = []
+            for i in list(map(lambda x: str(x), self.__experiment_label)):
+                temp = []
+                for j in list(map(lambda x: str(x), self.__x1_level)):
+                    temp.append(j + " " + i)
+                idx.append(temp)
+
+            self.__idx = idx
+            self.__x1 = x[0]
+            self.__x2 = x[1]
+            x = new_col_name
+        else:
+            self.__idx = idx
+            self.__x1 = None
+            self.__x2 = None
+
+        # Determine the kind of estimation plot we need to produce.
+        if all([isinstance(i, (str, int, float)) for i in self.__idx]):
+            # flatten out idx.
+            all_plot_groups = pd.Series([t for t in self.__idx]).unique().tolist()
+            if len(self.__idx) > len(all_plot_groups):
+                err0 = "`idx` contains duplicated groups. Please remove any duplicates and try again."
+                raise ValueError(err0)
+
+            # We need to re-wrap this idx inside another tuple so as to
+            # easily loop thru each pairwise group later on.
+            self.__idx = (idx,)
+
+        elif all([isinstance(i, (tuple, list)) for i in self.__idx]):
+            all_plot_groups = pd.Series([tt for t in self.__idx for tt in t]).unique().tolist()
+            actual_groups_given = sum([len(i) for i in self.__idx])
+
+            if actual_groups_given > len(all_plot_groups):
+                err0 = "Groups are repeated across tuples,"
+                err1 = " or a tuple has repeated groups in it."
+                err2 = " Please remove any duplicates and try again."
+                raise ValueError(err0 + err1 + err2)
+
+        else:  # mix of string and tuple?
+            err = "There seems to be a problem with the idx you " "entered--{}.".format(self.__idx)
+            raise ValueError(err)
+        
+        return idx, x, all_plot_groups
 
     @property
     def mean_diff(self):
@@ -273,12 +242,14 @@ class Dabest(object):
         """
         return self.__cliffs_delta
 
+
     @property
     def delta_g(self):
         """
         Returns an :py:class:`EffectSizeDataFrame` for deltas' g, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
         """
-        return self.__delta_g
+        raise DeprecationWarning("delta_g has been depreciated  - Please use hedges_g (with delta2=True) for deltas' g experiments")
+
 
     @property
     def input_data(self):
@@ -338,6 +309,14 @@ class Dabest(object):
 
     @property
     def delta2(self):
+        """
+        Returns the boolean parameter indicating if this is a delta-delta
+        situation.
+        """
+        return self.__delta2
+    
+    @property
+    def is_delta_delta(self):
         """
         Returns the boolean parameter indicating if this is a delta-delta
         situation.
@@ -419,18 +398,18 @@ class Dabest(object):
         return self.__plot_data
 
     @property
-    def proportional(self):
+    def is_proportional(self):
         """
         Returns the proportional parameter class.
         """
-        return self.__proportional
+        return self.__is_proportional
 
     @property
-    def mini_meta(self):
+    def is_mini_meta(self):
         """
         Returns the mini_meta boolean parameter.
         """
-        return self.__mini_meta
+        return self.__is_mini_meta
 
     @property
     def _all_plot_groups(self):
@@ -445,10 +424,17 @@ class Dabest(object):
         At the end of this function these two class attributes are updated
                 self.__experiment_label and self.__x1_level
         '''
+
+        # Check if idx is present (if not a 2x2 Anova case)
+        if idx is None:
+            if not self.__delta2:
+                err0 = "Please specify `idx`."
+                raise ValueError(err0)
+
         # Check if it is a valid mini_meta case
-        if self.__mini_meta:
+        if self.__is_mini_meta:
             # Only mini_meta calculation but not proportional and delta-delta function
-            if self.__proportional:
+            if self.__is_proportional:
                 err0 = "`proportional` and `mini_meta` cannot be True at the same time."
                 raise ValueError(err0)
             if self.__delta2:
@@ -501,7 +487,7 @@ class Dabest(object):
                 error_msg = "If `delta2` is True. `x` parameter cannot be None. String or list expected"
                 raise ValueError(error_msg)
             
-            if self.__proportional:
+            if self.__is_proportional:
                 mes1 = "Only mean_diff is supported for proportional data when `delta2` is True"
                 warnings.warn(message=mes1, category=UserWarning)
 
@@ -565,7 +551,6 @@ class Dabest(object):
                             i, experiment
                         )
                         raise IndexError(err)
-
             else:
                 x1_level = self.__output_data[x[0]].unique()
 
@@ -575,34 +560,65 @@ class Dabest(object):
         self.__experiment_label = experiment_label
         self.__x1_level = x1_level
 
-    def _get_plot_data(self, x, y, all_plot_groups):
-        """
-        Function to prepare some attributes for plotting
-        """
-        # Check if there is NaN under any of the paired settings
-        if self.__is_paired is not None and self.__output_data.isnull().values.any():
+        if self.__is_paired and self.__output_data.isnull().values.any():
             warn1 = f"NaN values detected under paired setting and removed,"
             warn2 = f" please check your data."
             warnings.warn(warn1 + warn2)
-            rmname = self.__output_data[self.__output_data[y].isnull()][self.__id_col].tolist()
-            self.__output_data = self.__output_data[~self.__output_data[self.__id_col].isin(rmname)]
-                
-        # Identify the type of data that was passed in.
+            if x is not None and y is not None:
+                rmname = self.__output_data[self.__output_data[y].isnull()][self.__id_col].tolist()
+                self.__output_data = self.__output_data[~self.__output_data[self.__id_col].isin(rmname)]
+            elif x is None and y is None:
+                self.__output_data.dropna(inplace=True)
+
+        # Check if there is a typo on paired
+        if self.__is_paired and self.__is_paired not in ("baseline", "sequential"):
+            err = "'{}' assigned for `paired` is not valid. Please use either 'baseline' or 'sequential'.".format(self.__is_paired)
+            raise ValueError(err)
+        
+        # Check if `id_col` is valid
+        if self.__is_paired:
+            if self.__id_col is None:
+                err = "`id_col` must be specified if `paired` is assigned with a not NoneType value."
+                raise IndexError(err)
+
+            if self.__id_col not in self.__output_data.columns:
+                err = "`id_col` was given as '{}'; however, '{}' is not a column in `data`.".format(self.__id_col, self.__id_col)
+                raise IndexError(err)
+            
+        # Check if x and y are supplied (relevant to long format data)
+        if x is None and y is not None:
+            err = "You have only specified `y`. Please also specify `x` (for long format data)."
+            raise ValueError(err)
+
+        if x is not None and y is None:
+            err = "You have only specified `x`. Please also specify `y` (for long format data)."
+            raise ValueError(err)
+        
         if x is not None and y is not None:
             # Assume we have a long dataset.
             # check both x and y are column names in data.
-            if x not in self.__output_data.columns:
-                err = "{0} is not a column in `data`. Please check.".format(x)
-                raise IndexError(err)
-            if y not in self.__output_data.columns:
-                err = "{0} is not a column in `data`. Please check.".format(y)
-                raise IndexError(err)
-
-            # check y is numeric.
+            if not self.__delta2:
+                if x not in self.__output_data.columns:
+                    err = "'{0}' is not a column in `data`. Please check.".format(x)
+                    raise IndexError(err)
+                if y not in self.__output_data.columns:
+                    err = "'{0}' is not a column in `data`. Please check.".format(y)
+                    raise IndexError(err)
+            # Check that the `y` column is numeric.
             if not issubdtype(self.__output_data[y].dtype, number):
-                err = "{0} is a column in `data`, but it is not numeric.".format(y)
+                err = "The `y` column in `data` is not numeric. Please check."
                 raise ValueError(err)
 
+
+    def _get_plot_data(self, x, y, all_plot_groups):
+    # def _get_plot_data(self, x, y):
+        """
+        Function to prepare some attributes for plotting
+        """
+        # all_plot_groups = self.__all_plot_groups
+        # Identify the type of data that was passed in.
+        if x is not None and y is not None:
+            # Assume we have a long dataset.
             # check all the idx can be found in self.__output_data[x]
             for g in all_plot_groups:
                 if g not in self.__output_data[x].unique():
@@ -628,13 +644,7 @@ class Dabest(object):
             self.__x = None
             self.__y = None
             self.__xvar = "group"
-            self.__yvar = "value"
-
-            # Check if there is NaN under any of the paired settings
-            if self.__is_paired is not None and self.__output_data.isnull().values.any():
-                warn1 = f"NaN values detected under paired setting and removed,"
-                warn2 = f" please check your data."
-                warnings.warn(warn1 + warn2)
+            self.__yvar = "Value"
 
             # First, check we have all columns in the dataset.
             for g in all_plot_groups:
@@ -683,12 +693,12 @@ class Dabest(object):
             is_paired=self.__is_paired,
             random_seed=self.__random_seed,
             resamples=self.__resamples,
-            proportional=self.__proportional,
+            proportional=self.__is_proportional,
             delta2=self.__delta2,
             experiment_label=self.__experiment_label,
             x1_level=self.__x1_level,
             x2=self.__x2,
-            mini_meta=self.__mini_meta,
+            mini_meta=self.__is_mini_meta,
         )
 
         self.__mean_diff = EffectSizeDataFrame(
@@ -704,8 +714,6 @@ class Dabest(object):
         self.__cohens_h = EffectSizeDataFrame(self, "cohens_h", **effectsize_df_kwargs)
 
         self.__hedges_g = EffectSizeDataFrame(self, "hedges_g", **effectsize_df_kwargs)
-
-        self.__delta_g = EffectSizeDataFrame(self, "delta_g", **effectsize_df_kwargs)
 
         if not self.__is_paired:
             self.__cliffs_delta = EffectSizeDataFrame(

@@ -64,9 +64,9 @@ def two_group_difference(control:list|tuple|np.ndarray, #Accepts lists, tuples, 
 
     """
 
-    if ~isinstance(control, np.ndarray):
+    if not isinstance(control, np.ndarray):
         control = np.array(control)
-    if ~isinstance(test, np.ndarray):
+    if not isinstance(test, np.ndarray):
         test    = np.array(test)
 
     if effect_size == "mean_diff":
@@ -88,7 +88,7 @@ def two_group_difference(control:list|tuple|np.ndarray, #Accepts lists, tuples, 
     if effect_size == "cohens_h":
         return cohens_h(control, test)
 
-    if effect_size == "hedges_g" or effect_size == "delta_g":
+    if effect_size == "hedges_g":
         return hedges_g(control, test, is_paired)
 
     if effect_size == "cliffs_delta":
@@ -113,9 +113,9 @@ def func_difference(control:list|tuple|np.ndarray, # NaNs are automatically disc
 
     # Convert to numpy arrays for speed.
     # NaNs are automatically dropped.
-    if ~isinstance(control, np.ndarray):
+    if not isinstance(control, np.ndarray):
         control = np.array(control)
-    if ~isinstance(test, np.ndarray):
+    if not isinstance(test, np.ndarray):
         test    = np.array(test)
 
     if is_paired:
