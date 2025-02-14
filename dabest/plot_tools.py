@@ -8,7 +8,7 @@ from __future__ import annotations
 # %% auto 0
 __all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'width_determine',
            'single_sankey', 'sankeydiag', 'summary_bars_plotter', 'color_picker', 'swarm_contrast_bar_plotter',
-           'delta_text_plotter', 'DeltaDotsPlotter', 'slopegraph_plotter', 'plot_minimeta_or_deltadelta_violins',
+           'delta_text_plotter', 'delta_dots_plotter', 'slopegraph_plotter', 'plot_minimeta_or_deltadelta_violins',
            'effect_size_curve_plotter', 'gridkey_plotter', 'barplotter', 'table_for_horizontal_plots',
            'add_counts_to_prop_plots', 'swarmplot', 'SwarmPlot']
 
@@ -1172,7 +1172,7 @@ def delta_text_plotter(
         ax_to_plot.text(x, y, Delta_Text, color=delta_text_colors[idx_selector], zorder=5, **delta_text_kwargs)
 
 
-def DeltaDotsPlotter(
+def delta_dots_plotter(
         plot_data: pd.DataFrame, 
         contrast_axes: axes.Axes, 
         delta_id_col: str, 

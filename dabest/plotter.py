@@ -89,7 +89,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
         swarmplot,
         summary_bars_plotter,
         delta_text_plotter,
-        DeltaDotsPlotter,
+        delta_dots_plotter,
         slopegraph_plotter,
         plot_minimeta_or_deltadelta_violins,
         effect_size_curve_plotter,
@@ -206,7 +206,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
             show_delta_dots = plot_kwargs["delta_dot"]
             unavailable_effect_sizes = ["hedges_g", "delta_g", "cohens_d"]
             if show_delta_dots and is_paired and not any([es in effect_size for es in unavailable_effect_sizes]):
-                DeltaDotsPlotter(
+                delta_dots_plotter(
                     plot_data = plot_data, 
                     contrast_axes = contrast_axes, 
                     delta_id_col = dabest_obj.id_col, 
