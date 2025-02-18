@@ -1227,7 +1227,15 @@ def set_xaxis_ticks_and_lims(
 
         if float_contrast:
             contrast_axes.set_xlim(0.5, 1.5)
-        elif show_delta2 or show_mini_meta:
+
+        if show_delta2:
+            if show_pairs:
+                rawdata_axes.set_xlim(-0.375, 5.5)
+            else:
+                rawdata_axes.set_xlim(-0.5, 5.5)
+            contrast_axes.set_xlim(rawdata_axes.get_xlim())
+
+        elif show_mini_meta:
             # Increase the xlim of raw data by 2
             temp = rawdata_axes.get_xlim()
             if show_pairs:
@@ -1529,19 +1537,33 @@ def gardner_altman_adjustments(
 def draw_zeroline(
         ax : axes.Axes,
         horizontal : bool,
-        reflines_kwargs : dict
+        reflines_kwargs : dict,
+        extra_delta : bool,
     ):
     # If 0 lies within the ylim of the contrast axes, draw a zero reference line.
-    ax_lim = ax.get_xlim() if horizontal else ax.get_ylim()
-    method = ax.axvline if horizontal else ax.axhline
+    if extra_delta and not horizontal:
+        contrast_xlim = [-0.5, 3.5]
+        delta2_xlim = [4, 5.5]
+        
+        if ax.get_ylim()[0] < ax.get_ylim()[1]:
+            contrast_lim_low, contrast_lim_high = ax.get_ylim()
+        else:
+            contrast_lim_high, contrast_lim_low = ax.get_ylim()
 
-    if ax_lim[0] < ax_lim[1]:
-        contrast_lim_low, contrast_lim_high = ax_lim
+        if contrast_lim_low < 0 < contrast_lim_high:
+            ax.hlines(y=0, xmin=contrast_xlim[0], xmax=contrast_xlim[1], **reflines_kwargs)
+            ax.hlines(y=0, xmin=delta2_xlim[0], xmax=delta2_xlim[1], **reflines_kwargs)
     else:
-        contrast_lim_high, contrast_lim_low = ax_lim
+        ax_lim = ax.get_xlim() if horizontal else ax.get_ylim()
+        method = ax.axvline if horizontal else ax.axhline
 
-    if contrast_lim_low < 0 < contrast_lim_high:
-        method(0, **reflines_kwargs)
+        if ax_lim[0] < ax_lim[1]:
+            contrast_lim_low, contrast_lim_high = ax_lim
+        else:
+            contrast_lim_high, contrast_lim_low = ax_lim
+
+        if contrast_lim_low < 0 < contrast_lim_high:
+            method(0, **reflines_kwargs)
 
 def redraw_independent_spines(
         rawdata_axes : axes.Axes,

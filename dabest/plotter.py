@@ -394,7 +394,6 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                                                                 es_marker_kwargs = es_marker_kwargs,
                                                                 es_errorbar_kwargs = es_errorbar_kwargs
         )
-
     ## Contrast bars
     contrast_bars = plot_kwargs["contrast_bars"]
     if contrast_bars:
@@ -452,7 +451,6 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                     proportional = proportional,
                     horizontal = horizontal,
     )
-
     # Plot aesthetic adjustments.
     if float_contrast: # For Gardner-Altman (float contrast) plots only.
         gardner_altman_adjustments(
@@ -476,7 +474,8 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
         draw_zeroline(
                 ax = contrast_axes,
                 horizontal = horizontal,
-                reflines_kwargs = reflines_kwargs
+                reflines_kwargs = reflines_kwargs,
+                extra_delta = True if show_delta2 else False,
         )
         ## Axes independent spine lines
         is_gridkey = True if plot_kwargs["gridkey_rows"] is not None else False
