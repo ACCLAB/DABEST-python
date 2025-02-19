@@ -1638,14 +1638,6 @@ def redraw_independent_spines(
             ax.set_xlim(xlim)
             ax.set_ylim(ylim)
             del redraw_axes_kwargs["y"]
-
-        # Add x-spine line for delta2/mini meta.
-        # if extra_delta:
-        #     ylim = contrast_axes.get_ylim()
-        #     redraw_axes_kwargs["y"] = ylim[0]
-        #     x_ticks = contrast_axes.get_xticks()
-        #     contrast_axes.hlines(xmin=x_ticks[-2], xmax=x_ticks[-1], **redraw_axes_kwargs)
-        #     del redraw_axes_kwargs["y"]
             
 def redraw_dependent_spines(
         rawdata_axes: axes.Axes, 
