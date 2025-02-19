@@ -1448,12 +1448,11 @@ def plot_minimeta_or_deltadelta_violins(
 
     if horizontal:  
         violinplot_kwargs.update({'vert': False, 'widths': 1})
-        position = max(rawdata_axes.get_yticks()) + 2
+        position = max(rawdata_axes.get_yticks()) + 1
         half = "bottom"
         effsize_x, effsize_y = difference, [position]
         ci_x, ci_y = [ci_low, ci_high], [position, position]
     else:
-        # position = max(rawdata_axes.get_xticks()) + 2
         position = max(rawdata_axes.get_xticks()) + 1
         half = "right"
         effsize_x, effsize_y = [position], difference
@@ -1881,9 +1880,9 @@ def gridkey_plotter(
     # Add delta-delta or mini_meta details to the table
     if show_mini_meta or show_delta2:
         if show_delta2:
-            added_group_name = ["deltas' g"] if effect_size == "hedges_g" else ["delta-delta"]
+            added_group_name = ["Deltas' g"] if effect_size == "hedges_g" else ["Delta-Delta"]
         else:
-            added_group_name = ["Weighted delta"]
+            added_group_name = ["Weighted Delta"]
         gridkey_rows = added_group_name + gridkey_rows
         table_cellcols = [[""]*len(table_cellcols[0])] + table_cellcols
 
@@ -1911,7 +1910,7 @@ def gridkey_plotter(
         elif horizontal or show_mini_meta:
             for group_idx, group_vals in enumerate(table_cellcols):
                 if group_idx == 0:
-                    added_group = [gridkey_marker] if not horizontal else [" ", gridkey_marker] 
+                    added_group = [gridkey_marker]
                 elif gridkey_show_es and (group_idx == len(table_cellcols)-1) and not horizontal:
                     added_delta_effectsize = delta_delta.difference if show_delta2 else mini_meta.difference
                     added_delta_effectsize_str = np.format_float_positional(
@@ -1921,9 +1920,9 @@ def gridkey_plotter(
                                                                             trim="k",
                                                                             min_digits=2,
                                                                         )
-                    added_group = [added_delta_effectsize_str] if not horizontal else ['', added_delta_effectsize_str]
+                    added_group = [added_delta_effectsize_str]
                 else:
-                    added_group = [''] if not horizontal else ['', '']
+                    added_group = ['']
                 for n in added_group:
                     group_vals.append(n)
 
@@ -2204,7 +2203,7 @@ def table_for_horizontal_plots(
 
     ### Plot the text
     if show_mini_meta or show_delta2:
-        new_ticks = ticks_to_plot + [max(ticks_to_plot)+2]
+        new_ticks = ticks_to_plot + [max(ticks_to_plot)+1]
     else:
         new_ticks = ticks_to_plot.copy()
     for i,loc in zip(tab.index, new_ticks):
