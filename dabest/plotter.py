@@ -391,6 +391,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                                                                 show_delta2 = show_delta2, 
                                                                 plot_kwargs = plot_kwargs, 
                                                                 horizontal = horizontal,
+                                                                show_pairs = show_pairs,
                                                                 es_marker_kwargs = es_marker_kwargs,
                                                                 es_errorbar_kwargs = es_errorbar_kwargs
         )

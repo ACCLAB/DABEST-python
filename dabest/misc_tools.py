@@ -734,7 +734,7 @@ def initialize_fig(
         all_groups_count = np.sum([len(i) for i in dabest_obj.idx])
         # Increase the width (vertical layout) or height (horizontal layout) for delta-delta or mini-meta graph
         if show_delta2 or show_mini_meta:
-            all_groups_count += 2
+            all_groups_count += 1
    
         if horizontal:
             frac = 0.3 if is_paired or show_mini_meta else 0.5
@@ -1217,7 +1217,7 @@ def set_xaxis_ticks_and_lims(
             contrast_axes.set_xticks(rawdata_axes.get_xticks())
         else:
             temp = rawdata_axes.get_xticks()
-            temp = np.append(temp, [max(temp) + 1, max(temp) + 2])
+            temp = np.append(temp, [max(temp) + 1])
             contrast_axes.set_xticks(temp)
 
         # Lims
@@ -1230,9 +1230,9 @@ def set_xaxis_ticks_and_lims(
 
         if show_delta2:
             if show_pairs:
-                rawdata_axes.set_xlim(-0.375, 5.5)
+                rawdata_axes.set_xlim(-0.375, 4.75)
             else:
-                rawdata_axes.set_xlim(-0.5, 5.5)
+                rawdata_axes.set_xlim(-0.5, 4.75)
             contrast_axes.set_xlim(rawdata_axes.get_xlim())
 
         elif show_mini_meta:
@@ -1241,7 +1241,7 @@ def set_xaxis_ticks_and_lims(
             if show_pairs:
                 rawdata_axes.set_xlim(temp[0], temp[1] + 0.5)
             else:
-                rawdata_axes.set_xlim(temp[0], temp[1] + 2)
+                rawdata_axes.set_xlim(temp[0], temp[1] + 1)
             contrast_axes.set_xlim(rawdata_axes.get_xlim())
         else:
             contrast_axes.set_xlim(rawdata_axes.get_xlim())
@@ -1542,8 +1542,8 @@ def draw_zeroline(
     ):
     # If 0 lies within the ylim of the contrast axes, draw a zero reference line.
     if extra_delta and not horizontal:
-        contrast_xlim = [-0.5, 3.5]
-        delta2_xlim = [4, 5.5]
+        contrast_xlim = [-0.5, 3.4]
+        delta2_xlim = [3.6, 4.75]
         
         if ax.get_ylim()[0] < ax.get_ylim()[1]:
             contrast_lim_low, contrast_lim_high = ax.get_ylim()
@@ -1640,12 +1640,12 @@ def redraw_independent_spines(
             del redraw_axes_kwargs["y"]
 
         # Add x-spine line for delta2/mini meta.
-        if extra_delta:
-            ylim = contrast_axes.get_ylim()
-            redraw_axes_kwargs["y"] = ylim[0]
-            x_ticks = contrast_axes.get_xticks()
-            contrast_axes.hlines(xmin=x_ticks[-2], xmax=x_ticks[-1], **redraw_axes_kwargs)
-            del redraw_axes_kwargs["y"]
+        # if extra_delta:
+        #     ylim = contrast_axes.get_ylim()
+        #     redraw_axes_kwargs["y"] = ylim[0]
+        #     x_ticks = contrast_axes.get_xticks()
+        #     contrast_axes.hlines(xmin=x_ticks[-2], xmax=x_ticks[-1], **redraw_axes_kwargs)
+        #     del redraw_axes_kwargs["y"]
             
 def redraw_dependent_spines(
         rawdata_axes: axes.Axes, 

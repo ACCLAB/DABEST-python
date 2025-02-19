@@ -1042,7 +1042,7 @@ def swarm_contrast_bar_plotter(
         if horizontal:
             ax_to_plot.add_patch(mpatches.Rectangle((0, max(axes[0].get_yticks())-0.5), diff, 0.5, color='black', **bar_kwargs))
         else:
-            ax_to_plot.add_patch(mpatches.Rectangle((max(axes[0].get_xticks())+2-0.25, 0), 0.5, diff, color='black', **bar_kwargs))
+            ax_to_plot.add_patch(mpatches.Rectangle((max(axes[0].get_xticks())+1-0.25, 0), 0.5, diff, color='black', **bar_kwargs))
 
     ax_to_plot.set_xlim(og_xlim)
     ax_to_plot.set_ylim(og_ylim) 
@@ -1144,8 +1144,8 @@ def delta_text_plotter(
         X_Adjust = 0.48 if delta_text_x_location == 'right' else -0.38
         X_Adjust += delta_text_x_adjustment
         delta_text_x_coordinates = [x+X_Adjust for x in delta_text_x_coordinates]
-        if show_mini_meta: delta_text_x_coordinates.append(max(swarm_plot_ax.get_xticks())+2+X_Adjust)
-        if show_delta2: delta_text_x_coordinates.append(max(swarm_plot_ax.get_xticks())+2-0.35)
+        if show_mini_meta: delta_text_x_coordinates.append(max(swarm_plot_ax.get_xticks())+1+X_Adjust)
+        if show_delta2: delta_text_x_coordinates.append(max(swarm_plot_ax.get_xticks())+1+X_Adjust)
         if show_mini_meta or show_delta2: ticks_to_plot.append(max(ticks_to_plot)+1)
 
     # Collect the Y-coordinates for the delta text
@@ -1390,6 +1390,7 @@ def plot_minimeta_or_deltadelta_violins(
         show_delta2: bool, 
         plot_kwargs: dict, 
         horizontal: bool, 
+        show_pairs: bool,
         es_marker_kwargs: dict, 
         es_errorbar_kwargs: dict
     ):
@@ -1424,6 +1425,8 @@ def plot_minimeta_or_deltadelta_violins(
         Keyword arguments for the plot.
     horizontal : bool
         If the plot is horizontal.
+    show_pairs : bool
+        Whether the data is paired and shown in pairs.
     es_marker_kwargs: dict
         Keyword arguments for the effectsize marker.
     es_errorbar_kwargs: dict
@@ -1450,7 +1453,8 @@ def plot_minimeta_or_deltadelta_violins(
         effsize_x, effsize_y = difference, [position]
         ci_x, ci_y = [ci_low, ci_high], [position, position]
     else:
-        position = max(rawdata_axes.get_xticks()) + 2
+        # position = max(rawdata_axes.get_xticks()) + 2
+        position = max(rawdata_axes.get_xticks()) + 1
         half = "right"
         effsize_x, effsize_y = [position], difference
         ci_x, ci_y = [position, position], [ci_low, ci_high]
@@ -1489,18 +1493,21 @@ def plot_minimeta_or_deltadelta_violins(
 
     else:
         if show_mini_meta:
-            contrast_xtick_labels.extend(["", "Weighted Delta"])
+            if show_pairs:
+                contrast_xtick_labels.extend(["Weighted\n Delta"])
+            else:
+                contrast_xtick_labels.extend(["Weighted Delta"])
         elif effect_size == "hedges_g":
-            contrast_xtick_labels.extend(["", "Deltas' g"])
+            contrast_xtick_labels.extend(["Deltas' g"])
         else:
-            contrast_xtick_labels.extend(["", "Delta-Delta"])
+            contrast_xtick_labels.extend(["Delta-Delta"])
 
     # Create the delta-delta axes.
     if show_delta2 and not horizontal:
         if plot_kwargs["delta2_label"] is not None:
             delta2_label = plot_kwargs["delta2_label"]
         elif effect_size == "mean_diff":
-            delta2_label = "Delta - Delta"
+            delta2_label = "Delta-Delta"
         else:
             delta2_label = "Deltas' g"
         fontsize_delta2label = plot_kwargs["fontsize_delta2label"]
@@ -1880,23 +1887,45 @@ def gridkey_plotter(
         gridkey_rows = added_group_name + gridkey_rows
         table_cellcols = [[""]*len(table_cellcols[0])] + table_cellcols
 
-        for group_idx, group_vals in enumerate(table_cellcols):
-            if group_idx == 0:
-                added_group = ['', gridkey_marker]
-            elif gridkey_show_es and (group_idx == len(table_cellcols)-1) and not horizontal:
-                added_delta_effectsize = delta_delta.difference if show_delta2 else mini_meta.difference
-                added_delta_effectsize_str = np.format_float_positional(
-                                                                        added_delta_effectsize,
-                                                                        precision=2,
-                                                                        sign=True,
-                                                                        trim="k",
-                                                                        min_digits=2,
-                                                                    )
-                added_group = ['-', added_delta_effectsize_str]
-            else:
-                added_group = ['', '']
-            for n in added_group:
-                group_vals.append(n)
+        if not horizontal and show_delta2:
+            extra_table_cellcols = [[] for i in range(len(table_cellcols))]
+
+            for group_idx, group_vals in enumerate(extra_table_cellcols):
+                if group_idx == 0:
+                    added_group = [gridkey_marker]
+                elif gridkey_show_es and (group_idx == len(extra_table_cellcols)-1) and not horizontal:
+                    added_delta_effectsize = delta_delta.difference
+                    added_delta_effectsize_str = np.format_float_positional(
+                                                                            added_delta_effectsize,
+                                                                            precision=2,
+                                                                            sign=True,
+                                                                            trim="k",
+                                                                            min_digits=2,
+                                                                        )
+                    added_group = [added_delta_effectsize_str]
+                else:
+                    added_group = ['']
+                for n in added_group:
+                    group_vals.append(n)
+
+        elif horizontal or show_mini_meta:
+            for group_idx, group_vals in enumerate(table_cellcols):
+                if group_idx == 0:
+                    added_group = [gridkey_marker] if not horizontal else [" ", gridkey_marker] 
+                elif gridkey_show_es and (group_idx == len(table_cellcols)-1) and not horizontal:
+                    added_delta_effectsize = delta_delta.difference if show_delta2 else mini_meta.difference
+                    added_delta_effectsize_str = np.format_float_positional(
+                                                                            added_delta_effectsize,
+                                                                            precision=2,
+                                                                            sign=True,
+                                                                            trim="k",
+                                                                            min_digits=2,
+                                                                        )
+                    added_group = [added_delta_effectsize_str] if not horizontal else ['', added_delta_effectsize_str]
+                else:
+                    added_group = [''] if not horizontal else ['', '']
+                for n in added_group:
+                    group_vals.append(n)
 
     # Create the table object
     if horizontal:
@@ -1936,18 +1965,60 @@ def gridkey_plotter(
                     )
     else:
         # Plot the table for vertical format
-        gridkey = ax_to_plot.table(
-            cellText=table_cellcols,
-            rowLabels=gridkey_rows,
-            cellLoc="center",
-            bbox=[
-                0,
-                -len(gridkey_rows) * 0.1 - 0.05,
-                1,
-                len(gridkey_rows) * 0.1,
-            ],
-            **{"alpha": 0.5}
-        )
+        if show_mini_meta:
+            gridkey = ax_to_plot.table(
+                cellText=table_cellcols,
+                rowLabels=gridkey_rows,
+                cellLoc="center",
+                bbox=[
+                    0,
+                    -len(gridkey_rows) * 0.1 - 0.05,
+                    1,
+                    len(gridkey_rows) * 0.1,
+                ],
+                **{"alpha": 0.5}
+            )
+            
+        elif show_delta2:
+            gridkey = ax_to_plot.table(
+                cellText=table_cellcols,
+                rowLabels=gridkey_rows,
+                cellLoc="center",
+                bbox=[
+                    0,
+                    -len(gridkey_rows) * 0.1 - 0.05,
+                    0.75,
+                    len(gridkey_rows) * 0.1,
+                ],
+                **{"alpha": 0.5}
+            )
+
+            extra_gridkey = ax_to_plot.table(
+                cellText=extra_table_cellcols,
+                cellLoc="center",
+                bbox=[
+                    0.78,
+                    -len(gridkey_rows) * 0.1 - 0.05,
+                    0.15,
+                    len(gridkey_rows) * 0.1,
+                ],
+                **{"alpha": 0.5}
+            )
+                    
+        else:
+            gridkey = ax_to_plot.table(
+                cellText=table_cellcols,
+                rowLabels=gridkey_rows,
+                cellLoc="center",
+                bbox=[
+                    0,
+                    -len(gridkey_rows) * 0.1 - 0.05,
+                    1,
+                    len(gridkey_rows) * 0.1,
+                ],
+                **{"alpha": 0.5}
+            )
+
         # modifies row label cells
         for cell in gridkey._cells:
             if cell[1] == -1:
