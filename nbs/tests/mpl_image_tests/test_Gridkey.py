@@ -195,79 +195,97 @@ mini_meta_paired = load(df, idx=(("Control 1", "Test 1"), ("Control 2", "Test 2"
 # Two Group
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_250_2group_unpaired_meandiff_gridkey_autoparser():
+    plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(gridkey_rows='auto');
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_251_2group_unpaired_meandiff_gridkey_userdefinedrows():
+    plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(gridkey_rows=['Control', 'Test']);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_252_2group_paired_meandiff_gridkey_autoparser():
+    plt.rcdefaults()
     return two_groups_paired.mean_diff.plot(gridkey_rows='auto');
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_253_2group_paired_meandiff_gridkey_userdefinedrows():
+    plt.rcdefaults()
     return two_groups_paired.mean_diff.plot(gridkey_rows=['Control', 'Test']);
 
 # Multi 2 Group
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_254_multi_2group_unpaired_meandiff_gridkey_autoparser():
+    plt.rcdefaults()
     return multi_groups_unpaired.mean_diff.plot(gridkey_rows='auto');
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_255_multi_2group_unpaired_meandiff_gridkey_userdefinedrows():
+    plt.rcdefaults()
     return multi_groups_unpaired.mean_diff.plot(gridkey_rows=['Control', 'Test']);
 
 # Shared Control and Repeated Measures
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_256_shared_control_meandiff_gridkey_autoparser():
+    plt.rcdefaults()
     return shared_control.mean_diff.plot(gridkey_rows='auto');
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_257_shared_control_meandiff_gridkey_userdefinedrows():
+    plt.rcdefaults()
     return shared_control.mean_diff.plot(gridkey_rows=['Control', 'Test']);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_258_repeated_measures_meandiff_gridkey_autoparser():
+    plt.rcdefaults()
     return repeated_measures.mean_diff.plot(gridkey_rows='auto');
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_259_repeated_measures_meandiff_gridkey_userdefinedrows():
+    plt.rcdefaults()
     return repeated_measures.mean_diff.plot(gridkey_rows=['Control', 'Test']);
 
 
 # Multi groups
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_260_multigroups_unpaired_meandiff_gridkey_userdefinedrows():
+    plt.rcdefaults()
     return multi_groups_unpaired.mean_diff.plot(gridkey_rows=['Control', 'Test']);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_261_multigroups_unpaired_meandiff_gridkey_autoparser():
+    plt.rcdefaults()
     return multi_groups_unpaired.mean_diff.plot(gridkey_rows='auto');
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_262_multigroups_paired_meandiff_gridkey_userdefinedrows():
+    plt.rcdefaults()
     return multi_groups_paired.mean_diff.plot(gridkey_rows=['Control', 'Test']);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_263_multigroups_paired_meandiff_gridkey_autoparser():
+    plt.rcdefaults()
     return multi_groups_paired.mean_diff.plot(gridkey_rows='auto');
 
 # Proportions
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_264_multigroups_prop_unpaired_meandiff_gridkey_userdefinedrows():
+    plt.rcdefaults()
     return multi_groups_unpaired_prop.mean_diff.plot(gridkey_rows=['Control', 'Test']);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_265_multigroups_prop_unpaired_meandiff_gridkey_autoparser():
+    plt.rcdefaults()
     return multi_groups_unpaired_prop.mean_diff.plot(gridkey_rows='auto');
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_266_multigroups_prop_paired_meandiff_gridkey_userdefinedrows():
+    plt.rcdefaults()
     return multi_groups_paired_baseline_prop.mean_diff.plot(gridkey_rows=['Control', 'Test']);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_267_multigroups_prop_paired_meandiff_gridkey_autoparser():
+    plt.rcdefaults()
     return multi_groups_paired_baseline_prop.mean_diff.plot(gridkey_rows='auto');
 
 
@@ -275,28 +293,34 @@ def test_267_multigroups_prop_paired_meandiff_gridkey_autoparser():
 # delta-delta
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_268_delta_delta_unpaired_meandiff_gridkey_autoparser():
+    plt.rcdefaults()
     return delta_delta_unpaired.mean_diff.plot(gridkey_rows='auto');
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_269_delta_delta_paired_meandiff_gridkey_autoparser():
+    plt.rcdefaults()
     return delta_delta_paired.mean_diff.plot(gridkey_rows='auto');
 
 
 # mini-meta
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_270_mini_meta_unpaired_meandiff_gridkey_userdefinedrows():
+    plt.rcdefaults()
     return mini_meta_unpaired.mean_diff.plot(gridkey_rows=['Control', 'Test']);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_271_mini_meta_unpaired_meandiff_gridkey_autoparser():
+    plt.rcdefaults()
     return mini_meta_unpaired.mean_diff.plot(gridkey_rows='auto');
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_272_mini_meta_paired_meandiff_gridkey_userdefinedrows():
+    plt.rcdefaults()
     return mini_meta_paired.mean_diff.plot(gridkey_rows=['Control', 'Test']);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_273_mini_meta_paired_meandiff_gridkey_autoparser():
+    plt.rcdefaults()
     return mini_meta_paired.mean_diff.plot(gridkey_rows='auto');
 
 
@@ -304,10 +328,12 @@ def test_273_mini_meta_paired_meandiff_gridkey_autoparser():
 multi_2group_paired_test = load(df, idx=(("Control 1","Control 2",),("Test 1", "Test 2"),), paired='baseline', id_col='ID')
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_274_gridkey_merge_pairs_and_autoparser():
+    plt.rcdefaults()
     return multi_2group_paired_test.mean_diff.plot(gridkey_rows=['Control', 'Test'], gridkey_kwargs={'merge_pairs': True});
 
 gridkey_kwargs = {'show_es': False, 'show_Ns': False, 'marker': '√'}
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_275_gridkey_kwargs_and_autoparser():
+    plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(gridkey_rows='auto', gridkey_kwargs=gridkey_kwargs);
 

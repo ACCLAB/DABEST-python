@@ -177,31 +177,37 @@ one_in_separate_control = load(
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_101_gardner_altman_unpaired_propdiff():
+    plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_103_cummings_two_group_unpaired_propdiff():
+    plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(fig_size=(4, 6), float_contrast=False)
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_105_cummings_multi_group_unpaired_propdiff():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_106_cummings_shared_control_propdiff():
+    plt.rcdefaults()
     return shared_control.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_107_cummings_multi_groups_propdiff():
+    plt.rcdefaults()
     return multi_groups.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_109_gardner_altman_ylabel():
+    plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(
         bar_label="This is my\nrawdata", contrast_label="The bootstrap\ndistribtions!"
     )
@@ -209,11 +215,13 @@ def test_109_gardner_altman_ylabel():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_110_change_fig_size():
+    plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(fig_size=(6, 6), custom_palette="Dark2")
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_111_change_palette_b():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(custom_palette="Paired")
 
 
@@ -227,11 +235,13 @@ my_color_palette = {
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_112_change_palette_c():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(custom_palette=my_color_palette)
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_113_desat():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(
         custom_palette=my_color_palette, bar_desat=0.1, halfviolin_desat=0.25
     )
@@ -239,11 +249,13 @@ def test_113_desat():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_114_change_ylims():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(contrast_ylim=(-2, 2))
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_115_invert_ylim():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(
         contrast_ylim=(2, -2), contrast_label="More negative is better!"
     )
@@ -251,6 +263,7 @@ def test_115_invert_ylim():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_116_ticker_gardner_altman():
+    plt.rcdefaults()
     fig = two_groups_unpaired.mean_diff.plot()
 
     rawswarm_axes = fig.axes[0]
@@ -266,11 +279,13 @@ def test_116_ticker_gardner_altman():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_117_err_color():
+    plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(err_color="purple")
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_118_cummings_two_group_unpaired_meandiff_bar_width():
+    plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(bar_width=0.4, float_contrast=False)
 
 
@@ -295,6 +310,7 @@ long_df["dummy"] = np.repeat(np.nan, len(long_df))
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_119_wide_df_nan():
+    plt.rcdefaults()
     wide_df_dabest = load(
         wide_df, idx=("Control", "Test 1", "Test 2", "Test 3"), proportional=True
     )
@@ -304,6 +320,7 @@ def test_119_wide_df_nan():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_120_long_df_nan():
+    plt.rcdefaults()
     long_df_dabest = load(
         long_df,
         x="group",
@@ -317,111 +334,134 @@ def test_120_long_df_nan():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_121_cohens_h_gardner_altman():
+    plt.rcdefaults()
     return two_groups_unpaired.cohens_h.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_122_cohens_h_cummings():
+    plt.rcdefaults()
     return two_groups_unpaired.cohens_h.plot(float_contrast=False)
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_123_sankey_gardner_altman():
+    plt.rcdefaults()
     return two_groups_paired.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_124_sankey_cummings():
+    plt.rcdefaults()
     return two_groups_paired.mean_diff.plot(float_contrast=False)
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_125_sankey_2paired_groups():
+    plt.rcdefaults()
     return multi_2group_paired.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_126_sankey_2sequential_groups():
+    plt.rcdefaults()
     return multi_2group_sequential.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_127_sankey_multi_group_paired():
+    plt.rcdefaults()
     return multi_groups_paired.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_128_sankey_transparency():
+    plt.rcdefaults()
     return two_groups_paired.mean_diff.plot(sankey_kwargs={"alpha": 0.2})
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_129_zero_to_zero():
+    plt.rcdefaults()
     return zero_to_zero.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_130_zero_to_one():
+    plt.rcdefaults()
     return zero_to_one.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_131_one_to_zero():
+    plt.rcdefaults()
     return one_to_zero.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_132_shared_control_sankey_off():
+    plt.rcdefaults()
     return shared_control_paired.mean_diff.plot(sankey_kwargs={"sankey": False})
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_133_shared_control_flow_off():
+    plt.rcdefaults()
     return shared_control_paired.mean_diff.plot(sankey_kwargs={"flow": False})
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_134_separate_control_sankey_off():
+    plt.rcdefaults()
     return multi_groups_sequential.mean_diff.plot(sankey_kwargs={"sankey": False})
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_135_separate_control_flow_off():
+    plt.rcdefaults()
     return multi_groups_sequential.mean_diff.plot(sankey_kwargs={"flow": False})
 
 # Show sample counts
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_137_multi_2group_show_sample_counts():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(prop_sample_counts=True)
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_138_multi_groups_paired_show_sample_counts():
+    plt.rcdefaults()
     return multi_groups_paired.mean_diff.plot(prop_sample_counts=True)
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_139_multi_2group_show_sample_counts_and_kwargs():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(prop_sample_counts=True, prop_sample_counts_kwargs={
         "color": "red", "fontsize": 12, "fontweight": "bold"})
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_140_multi_groups_paired_show_sample_counts_with_sankey_off():
+    plt.rcdefaults()
     return multi_groups_paired.mean_diff.plot(prop_sample_counts=True, sankey_kwargs={"sankey": False})
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_141_sankey_change_palette_a():
+    plt.rcdefaults()
     return multi_groups_paired.mean_diff.plot(custom_palette="Dark2")
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_142_sankey_change_palette_b():
+    plt.rcdefaults()
     return multi_groups_paired.mean_diff.plot(custom_palette={1: 'red', 0: 'blue'})
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_143_sankey_change_palette_c():
+    plt.rcdefaults()
     return multi_groups_paired.mean_diff.plot(custom_palette=['red', 'blue'])
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_136_style_sheets():
     # Perform this test last so we don't have to reset the plot style.
+    plt.rcdefaults()
     plt.style.use("dark_background")
     return multi_2group.mean_diff.plot(face_color="black")

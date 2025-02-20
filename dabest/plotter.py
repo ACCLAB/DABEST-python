@@ -77,7 +77,6 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
         set_xaxis_ticks_and_lims,
         show_legend,
         gardner_altman_adjustments,
-        # Cumming_Plot_Aesthetic_Adjustments,
         extract_group_summaries,
         draw_zeroline,
         redraw_dependent_spines,

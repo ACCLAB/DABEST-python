@@ -158,6 +158,7 @@ from dabest.forest_plot import forest_plot
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_500_deltadelta_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3']
@@ -165,6 +166,7 @@ def test_500_deltadelta_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_501_deltadelta_with_deltas_idx_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts, 
                 labels=['Drug1 Delta', 'Drug1 Delta-Delta', 
@@ -176,6 +178,7 @@ def test_501_deltadelta_with_deltas_idx_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_502_minimeta_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts_mini_meta, 
                 labels=['mini_meta1', 'mini_meta2', 'mini_meta3']
@@ -185,6 +188,7 @@ def test_502_minimeta_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_503_deltadelta_custompalette_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
@@ -193,6 +197,7 @@ def test_503_deltadelta_custompalette_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_504_deltadelta_horizontal_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
@@ -201,6 +206,7 @@ def test_504_deltadelta_horizontal_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_505_deltadelta_insert_ax_forest():
+    plt.rcdefaults()
     f_forest_drug_profiles, axes  = plt.subplots(2, 2, figsize=[15, 14])
     f_forest_drug_profiles.subplots_adjust(hspace=0.3, wspace=0.3)
 
@@ -226,6 +232,7 @@ def test_505_deltadelta_insert_ax_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_506a_deltadelta_delta_g_using_hedges_g_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
@@ -234,6 +241,7 @@ def test_506a_deltadelta_delta_g_using_hedges_g_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_506b_deltadelta_delta_g_using_delta_g_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
@@ -242,6 +250,7 @@ def test_506b_deltadelta_delta_g_using_delta_g_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_507_deltadelta_fig_size_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
@@ -250,6 +259,7 @@ def test_507_deltadelta_fig_size_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_508_deltadelta_fig_size_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
@@ -258,6 +268,7 @@ def test_508_deltadelta_fig_size_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_509_deltadelta_halfviolin_aesthetics_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
@@ -268,6 +279,7 @@ def test_509_deltadelta_halfviolin_aesthetics_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_510_deltadelta_labels_and_title_aesthetics_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
@@ -281,6 +293,7 @@ def test_510_deltadelta_labels_and_title_aesthetics_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_511_deltadelta_lims_and_ticks_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
@@ -291,6 +304,7 @@ def test_511_deltadelta_lims_and_ticks_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_512_deltadelta_spines_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
@@ -299,6 +313,7 @@ def test_512_deltadelta_spines_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_513_deltadelta_violinkwargs_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
@@ -310,6 +325,7 @@ def test_513_deltadelta_violinkwargs_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_514_deltadelta_zerolinekwargs_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
@@ -318,6 +334,7 @@ def test_514_deltadelta_zerolinekwargs_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_515_deltadelta_esmarkerkwargs_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
@@ -329,6 +346,7 @@ def test_515_deltadelta_esmarkerkwargs_forest():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_516_deltadelta_eserrorbarkwargs_forest():
+    plt.rcdefaults()
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],

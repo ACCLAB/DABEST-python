@@ -2703,7 +2703,7 @@ class SwarmPlot:
                         bad_x_offsets.append(True)
                     else:
                         bad_x_offsets.append(False)
-                potential_x_offsets[bad_x_offsets] = np.infty
+                potential_x_offsets[bad_x_offsets] = np.inf
                 abs_potential_x_offsets = [abs(_) for _ in potential_x_offsets]
                 valid_x_offset = potential_x_offsets[
                     abs_potential_x_offsets.index(min(abs_potential_x_offsets))
