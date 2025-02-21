@@ -17,7 +17,7 @@ import datetime as dt
 
 # %% ../nbs/API/delta_objects.ipynb 6
 class DeltaDelta(object):
-    """
+    r"""
     A class to compute and store the delta-delta statistics for experiments with a 2-by-2 arrangement where two independent variables, A and B, each have two categorical values, 1 and 2. The data is divided into two pairs of two groups, and a primary delta is first calculated as the mean difference between each of the pairs:
 
 
