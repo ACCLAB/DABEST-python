@@ -161,17 +161,17 @@ page](https://github.com/ACCLAB/DABEST-python/issues/new).
 ## Contributing
 
 All contributions are welcome; please read the [Guidelines for
-contributing](CONTRIBUTING.md) first.
+contributing](../CONTRIBUTING.md) first.
 
-We also have a [Code of Conduct](CODE_OF_CONDUCT.md) to foster an
+We also have a [Code of Conduct](../CODE_OF_CONDUCT.md) to foster an
 inclusive and productive space.
 
 ### A wish list for new features
 
 If you have any specific comments and ideas for new features that you
 would like to share with us, please read the [Guidelines for
-contributing](CONTRIBUTING.md), create a new issue using Feature request
-template or create a new post in [our Google
+contributing](../CONTRIBUTING.md), create a new issue using Feature
+request template or create a new post in [our Google
 Group](https://groups.google.com/g/estimationstats).
 
 ## Acknowledgements
@@ -198,7 +198,7 @@ The test suite ensures that the bootstrapping functions and the plotting
 functions perform as expected.
 
 For detailed information, please refer to the [test
-folder](nbs/tests/README.md)
+folder](../nbs/tests/README.md)
 
 ## DABEST in other languages
 
