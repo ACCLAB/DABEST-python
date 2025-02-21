@@ -14,9 +14,9 @@ citation](https://zenodo.org/badge/DOI/10.1038/s41592-019-0470-3.svg)](https://r
 
 ## Recent Version Update
 
-We are proud to announce **DABEST Version TBC (v2025.03.14)** This new
+We are proud to announce **DABEST Version Dadar (v2025.03.14)** This new
 version of the DABEST Python library provides several new features and
-includes performance improvements. It’s a big one!
+performance improvements. It’s a big one!
 
 1.  **Python 3.13 Support**: DABEST now supports Python 3.10-3.13.
 
@@ -111,9 +111,9 @@ includes performance improvements. It’s a big one!
 
     - **Updated Tutorial Pages**: We have updated the tutorial pages to
       reflect the new features and changes. The tutorial pages are now
-      more comprehensive and hopefully more intuitive!.
+      more comprehensive and hopefully more intuitive!
 
-    - **Results Dataframe for Delta-delta and Mini-meta Plots**: A
+    - **Results Dataframe for Delta-Delta and Mini-Meta Plots**: A
       results dataframe can now be extracted for both the delta-delta
       and mini-meta effect size data (similar to the results dataframe
       for the regular effect sizes). These can be found via the
