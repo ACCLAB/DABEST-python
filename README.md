@@ -22,22 +22,35 @@ includes performance improvements. It’s a big one!
 
 2.  **Horizontal Plots**: This new feature allows users to create
     horizontal plots instead of the regular vertical plots, providing a
-    more compact visualization of data.
+    more compact visualization of data. This can be utilized by setting
+    `horizontal=True` in the `plot()` method. See the [Horizontal
+    Plots](../tutorials/08-horizontal_plot.html) tutorial for more
+    details.
 
 3.  **Forest Plots**: This new feature allows users to create forest
     plots! Forest plots provide a simple and intuitive way to visualize
     many delta-delta (or Deltas’ g) or mini-meta effect sizes at once
     from multiple different dabest objects without presenting the raw
-    data.
+    data. See the [Forest Plots](../tutorials/07-forest_plot.html)
+    tutorial for more details.
 
-4.  **Aesthetic Updates**: We have made several aesthetic improvements
+4.  **Gridkey**: This new feature allows users to create a gridkey to
+    represent the labels of the groups in the plot. This can be utilized
+    with the `gridkey_rows` argument in the `plot()` method. See the
+    gridkey section in the [Plot
+    Aesthetics](../tutorials/09-plot_aesthetics.html) tutorial for more
+    details.
+
+5.  **Aesthetic Updates**: We have made several aesthetic improvements
     to the plots, including:
 
     - **Swarm, Contrast, and Summary bars**: We have added bars to
       better highlight the various groups and their differences. These
       bars can be customized to suit the user’s needs. The swarm and
       contrast bars are provided by default, while the summary bars can
-      be added by the user.
+      be added by the user. See the relevant sections in the [Plot
+      Aesthetics](../tutorials/09-plot_aesthetics.html) tutorial for
+      more details.
 
     - **Delta-Delta Plots**: We have modified the delta-delta plot
       format to be more compact and easier to read. The new format
@@ -50,13 +63,15 @@ includes performance improvements. It’s a big one!
 
     - **Mini-Meta Plots**: We have modified the mini-meta plot format to
       be more compact and easier to read. The new format brings the
-      mini-meta effect size closer to the regular effect sizes
+      mini-meta effect size closer to the regular effect sizes.
 
     - **Proportion Plots Sample Sizes**: We have updated the proportion
-      plots to show sample sizes for each group.
+      plots to show sample sizes for each group. These can be toggled on
+      or off via the `prop_sample_counts` parameter.
 
     - **Effect Size Lines for Paired Plots**: Effect size lines for
-      paired plots are now available.
+      paired plots are now available. These can be toggled on or off via
+      the `es_paired_lines` parameter.
 
     - **Baseline Error Curves**: Plots now include a baseline error dot
       and curve to show the error of the baseline/control group. By
@@ -74,7 +89,7 @@ includes performance improvements. It’s a big one!
       modifies the two-group swarmplots to have empty circles for the
       control group and filled circles for the experimental group.
 
-5.  **Miscellaneous Improvements & Adjustments**
+6.  **Miscellaneous Improvements & Adjustments**
 
     - **Numba for Speed Improvements**: We have included Numba to speed
       up the various calculations in DABEST. This should make the
