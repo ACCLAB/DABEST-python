@@ -180,69 +180,84 @@ multi_2group_jitter = load(df, idx=(("Control 1","Test 1",), ("Control 2", "Test
 # Empty circle
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_207_gardner_altman_meandiff_empty_circle():
+    plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(empty_circle=True);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_208_cummings_two_group_unpaired_meandiff_empty_circle():
+    plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(empty_circle=True, float_contrast=False);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_209_cummings_shared_control_meandiff_empty_circle():
+    plt.rcdefaults()
     return shared_control.mean_diff.plot(empty_circle=True);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_210_cummings_multi_groups_meandiff_empty_circle():
+    plt.rcdefaults()
     return multi_groups.mean_diff.plot(empty_circle=True);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_211_cummings_multi_2_group_meandiff_empty_circle():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(empty_circle=True);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_212_cummings_unpaired_delta_delta_meandiff_empty_circle():
+    plt.rcdefaults()
     return unpaired_delta_delta.mean_diff.plot(empty_circle=True);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_213_cummings_unpaired_mini_meta_meandiff_empty_circle():
+    plt.rcdefaults()
     return unpaired_mini_meta.mean_diff.plot(empty_circle=True);
 
 
 # Change palette 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_214_change_idx_order_custom_palette_original():
+    plt.rcdefaults()
     return multi_groups_change_idx_original.mean_diff.plot(custom_palette=palette);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_215_change_idx_order_custom_palette_new():
+    plt.rcdefaults()
     return multi_groups_change_idx_new.mean_diff.plot(custom_palette=palette);
 
 # Swarm bars
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_216_cummings_shared_control_meandiff_showswarmbars():
+    plt.rcdefaults()
     return shared_control.mean_diff.plot(swarm_bars=True, contrast_bars=False);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_217_cummings_shared_control_meandiff_hideswarmbars():
+    plt.rcdefaults()
     return shared_control.mean_diff.plot(swarm_bars=False, contrast_bars=False);
 
 swarm_kwargs = {'color': "red", 'alpha': 0.2}
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_218_cummings_shared_control_meandiff_swarmbars_kwargs():
+    plt.rcdefaults()
     return shared_control.mean_diff.plot(swarm_bars=True, swarm_bars_kwargs = swarm_kwargs, contrast_bars=False);
 
 
 # Contrast bars
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_219_cummings_shared_control_meandiff_showcontrastbars():
+    plt.rcdefaults()
     return shared_control.mean_diff.plot(contrast_bars=True, swarm_bars=False);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_220_cummings_shared_control_meandiff_hidecontrastbars():
+    plt.rcdefaults()
     return shared_control.mean_diff.plot(contrast_bars=False, swarm_bars=False);
 
 contrast_kwargs = {'color': "red", 'alpha': 0.2}
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_221_cummings_shared_control_meandiff_contrastbars_kwargs():
+    plt.rcdefaults()
     return shared_control.mean_diff.plot(contrast_bars=True, contrast_bars_kwargs = contrast_kwargs, swarm_bars=False);
 
 
@@ -250,11 +265,13 @@ def test_221_cummings_shared_control_meandiff_contrastbars_kwargs():
 summary_bars=[0, 1]
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_222_cummings_shared_control_meandiff_summarybars():
+    plt.rcdefaults()
     return shared_control.mean_diff.plot(summary_bars=[0, 1], swarm_bars=False, contrast_bars=False,);
 
 summary_bars_kwargs = {'color': "black", 'alpha': 0.2, 'span_ax': True}
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_223_cummings_shared_control_meandiff_summarybars_kwargs():
+    plt.rcdefaults()
     return shared_control.mean_diff.plot(summary_bars=[0, 1], summary_bars_kwargs = summary_bars_kwargs,
                                          contrast_bars=False, swarm_bars=False);
 
@@ -262,56 +279,69 @@ def test_223_cummings_shared_control_meandiff_summarybars_kwargs():
 # Delta text
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_224_multi_2group_meandiff_showdeltatext():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(delta_text=True);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_225_multi_2group_meandiff_hidedeltatext():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(delta_text=False);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_226_multi_2group_meandiff_deltatext_kwargs():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(delta_text=True, delta_text_kwargs={"color":"red", "rotation":45, "va":"bottom", "alpha":0.7});
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_227_multi_2group_meandiff_deltatext_kwargs_specificy_coordinates():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(delta_text=True, delta_text_kwargs={"x_coordinates":(0.5, 2.75), "y_coordinates":(0.5, -1.7)});
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_228_multi_2group_meandiff_deltatext_kwargs_x_adjust():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(delta_text=True, delta_text_kwargs={"offset":0.1});
 
 # Jitter
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_229_samevalues_jitter():
+    plt.rcdefaults()
     return multi_2group_jitter.mean_diff.plot(slopegraph_kwargs={'jitter': 1});
 
 # Delta-dots
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_230_delta_dot_hide():
+    plt.rcdefaults()
     return multi_2group_paired.mean_diff.plot(delta_dot=False);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_231_delta_dot_kwargs():
+    plt.rcdefaults()
     return multi_2group_paired.mean_diff.plot(delta_dot_kwargs={"color":'red', "alpha":0.1, 'zorder': 2, 'size': 5, 'side': 'left'});
 
 # Effect size paired lines
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_232_repeatedmeasures_meandiff_show_es_paired_lines():
+    plt.rcdefaults()
     return repeated_measures.mean_diff.plot(es_paired_lines=True);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_233_repeatedmeasures_meandiff_hide_es_paired_lines():
+    plt.rcdefaults()
     return repeated_measures.mean_diff.plot(es_paired_lines=False);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_234_multigroups_paired_meandiff_es_paired_lines_kwargs():
+    plt.rcdefaults()
     return multi_groups_paired_baseline.mean_diff.plot(es_paired_lines=True, es_paired_lines_kwargs={'color':'red', 'linestyle': '--', 'linewidth': 2, 'alpha': 0.5});
 
 # Baseline Error Curve
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_235_cummings_multi_groups_meandiff_show_baseline_ec():
+    plt.rcdefaults()
     return multi_groups.mean_diff.plot(show_baseline_ec=True);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_236_cummings_multi_2_group_meandiff_show_baseline_ec():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(show_baseline_ec=True);

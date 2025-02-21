@@ -259,7 +259,7 @@ def get_kwargs(
     # Violinplot kwargs.
     default_violinplot_kwargs = {
         "widths": 0.5,
-        "vert": True,
+        "vert": 'vertical',
         "showextrema": False,
         "showmedians": False,
         

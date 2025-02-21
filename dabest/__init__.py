@@ -11,4 +11,4 @@ if os.environ.get('SKIP_NUMBA_COMPILE') != '1':
     if not _NUMBA_COMPILED:
         precompile_all()
 
-__version__ = "2024.03.30"
+__version__ = "2025.03.14"

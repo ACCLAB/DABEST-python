@@ -131,64 +131,75 @@ multi_groups_sequential = load(
     id_col="ID",
 )
 
-
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_01_gardner_altman_unpaired_meandiff():
+    plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_02_gardner_altman_unpaired_mediandiff():
+    plt.rcdefaults()
     return two_groups_unpaired.median_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_03_gardner_altman_unpaired_hedges_g():
+    plt.rcdefaults()
     return two_groups_unpaired.hedges_g.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_04_gardner_altman_paired_meandiff():
+    plt.rcdefaults()
     return two_groups_paired.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_04_gardner_altman_paired_hedges_g():
+    plt.rcdefaults()
     return two_groups_paired.hedges_g.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_05_cummings_two_group_unpaired_meandiff():
+    plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(fig_size=(4, 6), float_contrast=False)
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_06_cummings_two_group_paired_meandiff():
+    plt.rcdefaults()
     return two_groups_paired.mean_diff.plot(fig_size=(6, 6), float_contrast=False)
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_07_cummings_multi_group_unpaired():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_08_cummings_multi_group_paired():
+    plt.rcdefaults()
     return multi_2group_paired.mean_diff.plot(fig_size=(6, 6))
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_09_cummings_shared_control():
+    plt.rcdefaults()
     return shared_control.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_10_cummings_multi_groups():
+    plt.rcdefaults()
     return multi_groups.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_11_inset_plots():
+    plt.rcdefaults()
     # Load the iris dataset.
     try:
         # parent directory of the current working directory
@@ -244,6 +255,7 @@ def test_11_inset_plots():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_12_gardner_altman_ylabel():
+    plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(
         swarm_label="This is my\nrawdata", contrast_label="The bootstrap\ndistribtions!"
     )
@@ -251,16 +263,19 @@ def test_12_gardner_altman_ylabel():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_13_multi_2group_color():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(color_col="Gender")
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_14_gardner_altman_paired_color():
+    plt.rcdefaults()
     return two_groups_paired.mean_diff.plot(fig_size=(6, 6), color_col="Gender")
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_15_change_palette_a():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(
         fig_size=(8, 6), color_col="Gender", custom_palette="Dark2"
     )
@@ -268,6 +283,7 @@ def test_15_change_palette_a():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_16_change_palette_b():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(custom_palette="Paired")
 
 
@@ -281,11 +297,13 @@ my_color_palette = {
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_17_change_palette_c():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(custom_palette=my_color_palette)
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_18_desat():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(
         custom_palette=my_color_palette, swarm_desat=0.75, halfviolin_desat=0.25
     )
@@ -293,16 +311,19 @@ def test_18_desat():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_19_dot_sizes():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(raw_marker_size=3, es_marker_size=12)
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_20_change_ylims():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(swarm_ylim=(0, 5), contrast_ylim=(-2, 2))
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_21_invert_ylim():
+    plt.rcdefaults()
     return multi_2group.mean_diff.plot(
         contrast_ylim=(2, -2), contrast_label="More negative is better!"
     )
@@ -310,6 +331,7 @@ def test_21_invert_ylim():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_22_ticker_gardner_altman():
+    plt.rcdefaults()
     f = two_groups_unpaired.mean_diff.plot()
 
     rawswarm_axes = f.axes[0]
@@ -326,6 +348,7 @@ def test_22_ticker_gardner_altman():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_23_ticker_cumming():
+    plt.rcdefaults()
     f = multi_2group.mean_diff.plot(swarm_ylim=(0, 6), contrast_ylim=(-3, 1))
 
     rawswarm_axes = f.axes[0]
@@ -360,6 +383,7 @@ long_df["dummy"] = np.repeat(np.nan, len(long_df))
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_24_wide_df_nan():
+    plt.rcdefaults()
     wide_df_dabest = load(wide_df, idx=("Control", "Test 1", "Test 2", "Test 3"))
 
     return wide_df_dabest.mean_diff.plot()
@@ -367,6 +391,7 @@ def test_24_wide_df_nan():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_25_long_df_nan():
+    plt.rcdefaults()
     long_df_dabest = load(
         long_df, x="group", y="value", idx=("Control", "Test 1", "Test 2", "Test 3")
     )
@@ -376,16 +401,19 @@ def test_25_long_df_nan():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_26_slopegraph_kwargs():
+    plt.rcdefaults()
     return two_groups_paired.mean_diff.plot(slopegraph_kwargs=dict(linestyle="dotted"))
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_27_gardner_altman_reflines_kwargs():
+    plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(reflines_kwargs=dict(linestyle="dotted"))
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_28_unpaired_cumming_reflines_kwargs():
+    plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(
         fig_size=(12, 10),
         float_contrast=False,
@@ -396,6 +424,7 @@ def test_28_unpaired_cumming_reflines_kwargs():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_29_paired_cumming_slopegraph_reflines_kwargs():
+    plt.rcdefaults()
     return two_groups_paired.mean_diff.plot(
         float_contrast=False,
         color_col="Gender",
@@ -407,17 +436,20 @@ def test_29_paired_cumming_slopegraph_reflines_kwargs():
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_30_sequential_cumming_slopegraph():
+    plt.rcdefaults()
     return multi_groups_sequential.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_31_baseline_cumming_slopegraph():
+    plt.rcdefaults()
     return multi_groups_baseline.mean_diff.plot()
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_99_style_sheets():
     # Perform this test last so we don't have to reset the plot style.
+    plt.rcdefaults()
     plt.style.use("dark_background")
 
-    return multi_2group.mean_diff.plot()
+    return multi_2group.mean_diff.plot(face_color="black")

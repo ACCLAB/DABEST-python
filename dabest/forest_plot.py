@@ -223,7 +223,7 @@ def get_kwargs(
         "widths": 0.5,
         "showextrema": False,
         "showmedians": False,
-        "vert": not horizontal
+        "vert": not horizontal,
     }
     if violin_kwargs is None:
         violin_kwargs = default_violin_kwargs
