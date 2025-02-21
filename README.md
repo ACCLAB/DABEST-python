@@ -150,7 +150,7 @@ allowing everyone access to high-quality estimation plots.
 
 ## Installation
 
-This package is tested on Python 3.8 and onwards. It is highly
+This package is tested on Python 3.10 and onwards. It is highly
 recommended to download the [Anaconda
 distribution](https://www.continuum.io/downloads) of Python in order to
 obtain the dependencies easily.
