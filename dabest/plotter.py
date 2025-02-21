@@ -39,6 +39,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
         ci=None, ci_type='bca', err_color=None,
         float_contrast=True,
         show_pairs=True,
+        show_sample_size=True,
         show_delta2=True,
         group_summaries=None,
         fig_size=None,
@@ -290,15 +291,16 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
             )
 
     # Add the counts to the rawdata axes xticks.
-    add_counts_to_ticks(
-            plot_data = plot_data, 
-            xvar = xvar, 
-            yvar = yvar, 
-            rawdata_axes = rawdata_axes, 
-            plot_kwargs = plot_kwargs,
-            flow = sankey_kwargs["flow"],
-            horizontal = horizontal,
-    )
+    if plot_kwargs['show_sample_size']:
+        add_counts_to_ticks(
+                plot_data = plot_data, 
+                xvar = xvar, 
+                yvar = yvar, 
+                rawdata_axes = rawdata_axes, 
+                plot_kwargs = plot_kwargs,
+                flow = sankey_kwargs["flow"],
+                horizontal = horizontal,
+        )
 
     # Add counts to prop plots (embedded in the plot bars)
     if proportional and plot_kwargs['prop_sample_counts'] and sankey_kwargs["flow"]:

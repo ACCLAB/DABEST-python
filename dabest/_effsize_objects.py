@@ -1138,6 +1138,7 @@ class EffectSizeDataFrame(object):
         err_color=None,
         float_contrast=True,
         show_pairs=True,
+        show_sample_size=True,
         show_delta2=True,
         show_mini_meta=True,
         group_summaries=None,
@@ -1263,6 +1264,8 @@ class EffectSizeDataFrame(object):
             If the data is paired, whether or not to show the raw data as a
             swarmplot, or as slopegraph, with a line joining each pair of
             observations.
+        show_sample_size : boolean, default True
+            Whether or not to display the sample size of each group in the axis label.
         show_delta2, show_mini_meta : boolean, default True
             If delta-delta or mini-meta delta is calculated, whether or not to
             show the delta-delta plot or mini-meta plot.
