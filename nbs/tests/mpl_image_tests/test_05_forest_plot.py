@@ -319,7 +319,7 @@ def test_513_deltadelta_violinkwargs_forest():
                 labels=['Drug1', 'Drug2', 'Drug3'],
                 violin_kwargs={
                     "widths": 0.8, "showextrema": True, 
-                    "showmedians": True, "vert": True
+                    "showmedians": True, "orientation": 'vertical'
                 }
             )
 

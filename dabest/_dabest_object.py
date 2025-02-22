@@ -486,10 +486,6 @@ class Dabest(object):
             if x is None:
                 error_msg = "If `delta2` is True. `x` parameter cannot be None. String or list expected"
                 raise ValueError(error_msg)
-            
-            if self.__is_proportional:
-                mes1 = "Only mean_diff is supported for proportional data when `delta2` is True"
-                warnings.warn(message=mes1, category=UserWarning)
 
             # idx should not be specified
             if idx:

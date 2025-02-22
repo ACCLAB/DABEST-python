@@ -1317,7 +1317,7 @@ def slopegraph_plotter(
     # Jitter Kwargs 
     # With help from GitHub user: devMJBL
     jitter = slopegraph_kwargs.pop("jitter")
-    if jitter >= 1:
+    if jitter > 1:
         err0 = "Jitter value is too high. Defaulting to 1."
         warnings.warn(err0)
         jitter = 1
@@ -1447,7 +1447,7 @@ def plot_minimeta_or_deltadelta_violins(
     data, difference, ci_low, ci_high = extract_curve_data(dabest_object)
 
     if horizontal:  
-        violinplot_kwargs.update({'vert': False, 'widths': 1})
+        violinplot_kwargs.update({'orientation': 'horizontal', 'widths': 1})
         position = max(rawdata_axes.get_yticks()) + 1
         half = "bottom"
         effsize_x, effsize_y = difference, [position]
@@ -1586,7 +1586,7 @@ def effect_size_curve_plotter(
     def plot_effect_size(tick, group, control, bootstrap, effsize, ci_low, ci_high):
         # Create the violinplot
         if horizontal:  
-            violinplot_kwargs.update({'vert': False, 'widths': 1})
+            violinplot_kwargs.update({'orientation': 'horizontal', 'widths': 1})
             
         v = contrast_axes.violinplot(
             bootstrap[~np.isinf(bootstrap)],
@@ -2112,14 +2112,15 @@ def barplotter(
         zorder=1,
         orient=orient,
     )
+
     bar2 = sns.barplot(
         data=plot_data,
         x=yvar if horizontal else xvar,
         y=xvar if horizontal else yvar,
+        hue=xvar if color_col is None else color_col,
         ax=rawdata_axes,
         order=all_plot_groups,
         palette=plot_palette_bar,
-        hue=color_col,
         dodge=False,
         zorder=1,
         orient=orient,
