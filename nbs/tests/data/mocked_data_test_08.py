@@ -28,4 +28,5 @@ dabest_default_kwargs = dict(
     x1_level=None,
     paired=None,
     id_col=None,
+    ps_adjust=False,
 )

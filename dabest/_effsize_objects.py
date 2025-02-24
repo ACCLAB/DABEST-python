@@ -10,6 +10,10 @@ import pandas as pd
 import lqrt
 from scipy.stats import norm
 import numpy as np
+from scipy.special import binom as binomcoeff  # devMJBL
+from scipy.stats import binom  # devMJBL
+from scipy.integrate import fixed_quad  # devMJBL
+from numpy import arange, mean  # devMJBL
 from numpy import array, isnan, isinf, repeat, random, isin, abs, var
 from numpy import sort as npsort
 from numpy import nan as npnan
@@ -50,6 +54,10 @@ class TwoGroupsEffectSize(object):
             `random_seed` is used to seed the random number generator during
             bootstrap resampling. This ensures that the confidence intervals
             reported are replicable.
+        ps_adjust : boolean, default False.
+            If True, adjust calculated p-value according to Phipson & Smyth (2010)
+            # https://doi.org/10.2202/1544-6115.1585
+            
 
         Returns
         -------
@@ -87,6 +95,7 @@ class TwoGroupsEffectSize(object):
         resamples=5000,
         permutation_count=5000,
         random_seed=12345,
+        ps_adjust=False,
     ):
         from ._stats_tools import confint_2group_diff as ci2g
         from ._stats_tools import effsize as es
@@ -99,13 +108,14 @@ class TwoGroupsEffectSize(object):
             "hedges_g": "Hedges' g",
             "cliffs_delta": "Cliff's delta",
         }
-
+  
         self.__is_paired = is_paired
         self.__resamples = resamples
         self.__effect_size = effect_size
         self.__random_seed = random_seed
         self.__ci = ci
         self.__is_proportional = proportional
+        self.__ps_adjust = ps_adjust
         self._check_errors(control, test)
 
         # Convert to numpy arrays for speed.
@@ -329,6 +339,7 @@ class TwoGroupsEffectSize(object):
             self.__effect_size,
             self.__is_paired,
             self.__permutation_count,
+            ps_adjust = self.__ps_adjust,
         )
 
         if self.__is_paired and not self.__is_proportional:
@@ -827,6 +838,7 @@ class EffectSizeDataFrame(object):
         delta2=False,
         experiment_label=None,
         mini_meta=False,
+        ps_adjust=False,
     ):
         """
         Parses the data from a Dabest object, enabling plotting and printing
@@ -846,6 +858,7 @@ class EffectSizeDataFrame(object):
         self.__x2 = x2
         self.__delta2 = delta2
         self.__is_mini_meta = mini_meta
+        self.__ps_adjust = ps_adjust
 
     def __pre_calc(self):
         from .misc_tools import print_greeting, get_varname
@@ -896,7 +909,6 @@ class EffectSizeDataFrame(object):
                     cname = current_tuple[ix]
                     control = grouped_data[cname]
                 test = grouped_data[tname]
-
                 result = TwoGroupsEffectSize(
                     control,
                     test,
@@ -907,6 +919,7 @@ class EffectSizeDataFrame(object):
                     self.__resamples,
                     self.__permutation_count,
                     self.__random_seed,
+                    self.__ps_adjust
                 )
                 r_dict = result.to_dict()
                 r_dict["control"] = cname
@@ -1633,6 +1646,10 @@ class PermutationTest:
         `random_seed` is used to seed the random number generator during
         bootstrap resampling. This ensures that the generated permutations
         are replicable.
+    ps_adjust : bool, default False
+        If True, the p-value is adjusted according to Phipson & Smyth (2010).
+        # https://doi.org/10.2202/1544-6115.1585
+
         
     Returns
     -------
@@ -1651,6 +1668,7 @@ class PermutationTest:
                  is_paired:str=None,
                  permutation_count:int=5000, # The number of permutations (reshuffles) to perform.
                  random_seed:int=12345,#`random_seed` is used to seed the random number generator during bootstrap resampling. This ensures that the generated permutations are replicable.
+                 ps_adjust:bool=False,
                  **kwargs):
         from ._stats_tools.effsize import two_group_difference
         from ._stats_tools.confint_2group_diff import calculate_group_var
@@ -1675,6 +1693,7 @@ class PermutationTest:
 
         BAG = array([*control, *test])
         CONTROL_LEN = int(len(control))
+        TEST_LEN = int(len(test)) # devMJBL
         EXTREME_COUNT = 0.
         THRESHOLD = abs(two_group_difference(control, test, 
                                                 is_paired, effect_size))
@@ -1714,12 +1733,42 @@ class PermutationTest:
 
             if abs(es) > THRESHOLD:
                 EXTREME_COUNT += 1.
+                
+        if ps_adjust:
+            # devMJBL
+            # adjust calculated p-value according to Phipson & Smyth (2010)
+            # https://doi.org/10.2202/1544-6115.1585
+            # as per R code in statmod::permp
+            # https://rdrr.io/cran/statmod/src/R/permp.R
+            # (assumes two-sided test)
 
+            if CONTROL_LEN == TEST_LEN:
+                totalPermutations = binomcoeff(CONTROL_LEN + TEST_LEN, TEST_LEN)/2
+            else:
+                totalPermutations = binomcoeff(CONTROL_LEN + TEST_LEN, TEST_LEN)
+
+            if totalPermutations <= 10e3:
+                # use exact calculation
+                p = arange(1, totalPermutations + 1)/totalPermutations
+                x2 = repeat(EXTREME_COUNT, repeats=totalPermutations)
+                Y = binom.cdf(k=x2, n=permutation_count, p=p)
+                self.pvalue = mean(Y)
+            else:
+                # use integral approximation
+                def binomcdf(p, k, n):
+                    return binom.cdf(k, n, p)
+
+                integrationVal, _ = fixed_quad(binomcdf,
+                                            a=0, b=0.5/totalPermutations,
+                                            args=(EXTREME_COUNT, permutation_count),
+                                            n=128)
+
+                self.pvalue = (EXTREME_COUNT + 1)/(permutation_count + 1) - integrationVal
+        else:
+            self.pvalue = EXTREME_COUNT / self.__permutation_count
+            
         self.__permutations = array(self.__permutations)
         self.__permutations_var = array(self.__permutations_var)
-
-        self.pvalue = EXTREME_COUNT / self.__permutation_count
-
 
     def __repr__(self):
         return("{} permutations were taken. The p-value is {}.".format(self.__permutation_count, 

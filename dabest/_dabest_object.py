@@ -38,6 +38,7 @@ class Dabest(object):
         experiment_label,
         x1_level,
         mini_meta,
+        ps_adjust,
     ):
         """
         Parses and stores pandas DataFrames in preparation for estimation
@@ -56,6 +57,7 @@ class Dabest(object):
         self.__random_seed = random_seed
         self.__is_proportional = proportional
         self.__is_mini_meta = mini_meta
+        self.__ps_adjust = ps_adjust
 
         # after this call the attributes self.__experiment_label and self.__x1_level are updated
         self._check_errors(x, y, idx, experiment, experiment_label, x1_level)
@@ -695,6 +697,7 @@ class Dabest(object):
             x1_level=self.__x1_level,
             x2=self.__x2,
             mini_meta=self.__is_mini_meta,
+            ps_adjust=self.__ps_adjust,
         )
 
         self.__mean_diff = EffectSizeDataFrame(
