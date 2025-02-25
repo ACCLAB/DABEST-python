@@ -1766,6 +1766,8 @@ def gridkey_plotter(
     gridkey_merge_pairs = gridkey_kwargs["merge_pairs"]
     gridkey_marker = gridkey_kwargs["marker"]
     gridkey_delimiters = gridkey_kwargs["delimiters"] 
+    labels_fontsize = gridkey_kwargs.get('labels_fontsize')
+    fontsize = gridkey_kwargs.get('fontsize')
 
     # Auto parser for gridkey - implemented by SangyuXu
     if gridkey_rows == "auto":
@@ -1946,7 +1948,6 @@ def gridkey_plotter(
                 len(gridkey_rows) * 0.2, 
                 1
             ],
-            **{"alpha": 0.5, "zorder": 5}
             )
         
         # Add the column labels as text below the table
@@ -1957,9 +1958,9 @@ def gridkey_plotter(
                         -0.01, 
                         txt, 
                         transform=ax_to_plot.transAxes, 
-                        fontsize=10,
                         ha='right',
                         rotation=45,
+                        fontsize=labels_fontsize if labels_fontsize is not None else 10,
                         va='top',
                     )
     else:
@@ -1975,7 +1976,7 @@ def gridkey_plotter(
                     1,
                     len(gridkey_rows) * 0.1,
                 ],
-                **{"alpha": 0.5}
+
             )
             
         elif show_delta2:
@@ -1989,7 +1990,6 @@ def gridkey_plotter(
                     0.75,
                     len(gridkey_rows) * 0.1,
                 ],
-                **{"alpha": 0.5}
             )
 
             extra_gridkey = ax_to_plot.table(
@@ -2001,7 +2001,6 @@ def gridkey_plotter(
                     0.15,
                     len(gridkey_rows) * 0.1,
                 ],
-                **{"alpha": 0.5}
             )
                     
         else:
@@ -2015,7 +2014,6 @@ def gridkey_plotter(
                     1,
                     len(gridkey_rows) * 0.1,
                 ],
-                **{"alpha": 0.5}
             )
 
         # modifies row label cells
@@ -2023,6 +2021,19 @@ def gridkey_plotter(
             if cell[1] == -1:
                 gridkey._cells[cell].visible_edges = "open"
                 gridkey._cells[cell].set_text_props(**{"ha": "right"})
+
+    if fontsize is not None:
+        gridkey.auto_set_font_size(False)
+        gridkey.set_fontsize(fontsize)
+        if show_delta2 and not horizontal:
+            extra_gridkey.auto_set_font_size(False)
+            extra_gridkey.set_fontsize(fontsize)
+
+    if labels_fontsize is not None and not horizontal:
+        gridkey.auto_set_font_size(False)
+        for cell in gridkey._cells:
+            if cell[1] == -1:
+                gridkey._cells[cell].set_text_props(**{"fontsize": labels_fontsize})
 
     # turns off both x axes
     if horizontal:

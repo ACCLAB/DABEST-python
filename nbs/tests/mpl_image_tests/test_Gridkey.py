@@ -337,3 +337,18 @@ def test_275_gridkey_kwargs_and_autoparser():
     plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(gridkey_rows='auto', gridkey_kwargs=gridkey_kwargs);
 
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_276_gridkey_fontsize_and_autoparser():
+    plt.rcdefaults()
+    return two_groups_unpaired.mean_diff.plot(gridkey_rows='auto', gridkey_kwargs={'fontsize': 15});
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_277_gridkey_labels_fontsize_and_autoparser():
+    plt.rcdefaults()
+    return two_groups_unpaired.mean_diff.plot(gridkey_rows='auto', gridkey_kwargs={'labels_fontsize': 15});
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_278_gridkey_labels_fontsize_and_fontsize_and_autoparser():
+    plt.rcdefaults()
+    return two_groups_unpaired.mean_diff.plot(gridkey_rows='auto', 
+                                              gridkey_kwargs={'fontsize': 8, 'labels_fontsize': 15});

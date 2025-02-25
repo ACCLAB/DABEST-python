@@ -941,6 +941,23 @@ def test_414_gridkey_kwargs_and_autoparser():
     plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(horizontal=True, gridkey_rows='auto', gridkey_kwargs=gridkey_kwargs);
 
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_429_gridkey_fontsize_and_autoparser():
+    plt.rcdefaults()
+    return two_groups_unpaired.mean_diff.plot(horizontal=True, gridkey_rows='auto', gridkey_kwargs={'fontsize': 15});
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_430_gridkey_labels_fontsize_and_autoparser():
+    plt.rcdefaults()
+    return two_groups_unpaired.mean_diff.plot(horizontal=True, gridkey_rows='auto',
+                                               gridkey_kwargs={'labels_fontsize': 15});
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_431_gridkey_labels_fontsize_and_fontsize_and_autoparser():
+    plt.rcdefaults()
+    return two_groups_unpaired.mean_diff.plot(horizontal=True, gridkey_rows='auto', 
+                                              gridkey_kwargs={'fontsize': 8, 'labels_fontsize': 15});
+
 # Table hide
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_415_Horizontal_Table_hide():
