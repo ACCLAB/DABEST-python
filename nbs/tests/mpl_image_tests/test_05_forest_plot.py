@@ -153,6 +153,14 @@ contrast_mini_meta03 = load(data = df_mini_meta03,
 contrasts_mini_meta = [contrast_mini_meta01, contrast_mini_meta02, contrast_mini_meta03]    
 
 
+delta1 = load(data = df_mini_meta01,
+                                   idx=(("Control 1", "Test 1"), ("Control 2", "Test 2"), ("Control 3", "Test 3")))
+delta2 = load(data = df_mini_meta02,
+                                    idx=(("Control 1", "Test 1"), ("Control 2", "Test 2"), ("Control 3", "Test 3")))
+delta3 = load(data = df_mini_meta03,
+                                   idx=(("Control 1", "Test 1"), ("Control 2", "Test 2"), ("Control 3", "Test 3")))
+contrasts_deltas = [delta1, delta2, delta3]  
+
 # Import your forest_plot function here
 from dabest.forest_plot import forest_plot
 
@@ -353,4 +361,21 @@ def test_516_deltadelta_eserrorbarkwargs_forest():
                 es_errorbar_kwargs={
                     'color': 'red', 'lw': 4, 'linestyle': '--', 'alpha': 0.6,
                 }
+            )
+
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_517_regular_delta_no_idx():
+    plt.rcdefaults()
+    return forest_plot(
+                contrasts_deltas,
+            )
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_518_regular_delta_idx():
+    plt.rcdefaults()
+    return forest_plot(
+                contrasts_deltas,
+                idx = [(0,), (0,), (0,)],
+                labels=['Drug1 \nTest 1 - Control 1', 'Drug2 \nTest 2 - Control 2', 'Drug3 \nTest 3 - Control 3']
             )

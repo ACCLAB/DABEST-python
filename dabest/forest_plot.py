@@ -16,7 +16,7 @@ from typing import List, Optional, Union
 def load_plot_data(
             data: List, 
             effect_size: str = "mean_diff", 
-            contrast_type: str = 'delta2',
+            contrast_type: str = None,
             idx: Optional[List[int]] = None
 ) -> List:
     """
@@ -29,7 +29,7 @@ def load_plot_data(
     effect_size: str
         Type of effect size ('mean_diff', 'median_diff', etc.).
     contrast_type: str
-        Type of dabest object to plot ('delta2' or 'mini-meta')
+        Type of dabest object to plot ('delta2' or 'mini-meta' or 'delta').
     idx: Optional[List[int]], default=None
         List of indices to select from the contrast objects if delta-delta experiment. 
         If None, only the delta-delta objects are plotted.
@@ -40,37 +40,61 @@ def load_plot_data(
     """
     # Effect size and contrast types
     effect_attr = "hedges_g" if effect_size == 'delta_g' else effect_size
-    contrast_attr = {"delta2": "delta_delta", "mini_meta": "mini_meta"}.get(contrast_type)
 
-    if idx is not None:
-        bootstraps, differences, bcalows, bcahighs = [], [], [], []
-        for current_idx, index_group in enumerate(idx):
-            current_contrast = data[current_idx]
-            if len(index_group)>0:
-                for index in index_group:
-                    if index == 2:
-                        current_plot_data = getattr(getattr(current_contrast, effect_attr), contrast_attr)
-                        bootstraps.append(current_plot_data.bootstraps_delta_delta)
-                        differences.append(current_plot_data.difference)
-                        bcalows.append(current_plot_data.bca_low)
-                        bcahighs.append(current_plot_data.bca_high)
-                    elif index == 0 or index == 1:
+    if contrast_type == "delta":
+        if idx is not None:
+            bootstraps, differences, bcalows, bcahighs = [], [], [], []
+            for current_idx, index_group in enumerate(idx):
+                current_contrast = data[current_idx]
+                if len(index_group)>0:
+                    for index in index_group:
                         current_plot_data = getattr(current_contrast, effect_attr)
                         bootstraps.append(current_plot_data.results.bootstraps[index])
                         differences.append(current_plot_data.results.difference[index])
                         bcalows.append(current_plot_data.results.bca_low[index])
                         bcahighs.append(current_plot_data.results.bca_high[index])
-                    else:
-                        raise ValueError("The selected indices must be 0, 1, or 2.")
+        else:
+            contrast_plot_data = [getattr(contrast, effect_attr)  for contrast in data]
+            bootstraps_nested = [result.results.bootstraps.to_list() for result in contrast_plot_data]
+            differences_nested = [result.results.difference.to_list() for result in contrast_plot_data]
+            bcalows_nested = [result.results.bca_low.to_list() for result in contrast_plot_data]
+            bcahighs_nested = [result.results.bca_high.to_list() for result in contrast_plot_data]
+            
+            bootstraps = [element for innerList in bootstraps_nested for element in innerList]
+            differences = [element for innerList in differences_nested for element in innerList]
+            bcalows = [element for innerList in bcalows_nested for element in innerList]
+            bcahighs = [element for innerList in bcahighs_nested for element in innerList]
     else:
-        contrast_plot_data = [getattr(getattr(contrast, effect_attr), contrast_attr) for contrast in data]
+        contrast_attr = {"delta2": "delta_delta", "mini_meta": "mini_meta"}.get(contrast_type)
+        if idx is not None:
+            bootstraps, differences, bcalows, bcahighs = [], [], [], []
+            for current_idx, index_group in enumerate(idx):
+                current_contrast = data[current_idx]
+                if len(index_group)>0:
+                    for index in index_group:
+                        if index == 2:
+                            current_plot_data = getattr(getattr(current_contrast, effect_attr), contrast_attr)
+                            bootstraps.append(current_plot_data.bootstraps_delta_delta)
+                            differences.append(current_plot_data.difference)
+                            bcalows.append(current_plot_data.bca_low)
+                            bcahighs.append(current_plot_data.bca_high)
+                        elif index == 0 or index == 1:
+                            current_plot_data = getattr(current_contrast, effect_attr)
+                            bootstraps.append(current_plot_data.results.bootstraps[index])
+                            differences.append(current_plot_data.results.difference[index])
+                            bcalows.append(current_plot_data.results.bca_low[index])
+                            bcahighs.append(current_plot_data.results.bca_high[index])
+                        else:
+                            raise ValueError("The selected indices must be 0, 1, or 2.")
+        else:
+            contrast_plot_data = [getattr(getattr(contrast, effect_attr), contrast_attr) for contrast in data]
 
-        attribute_suffix = "weighted_delta" if contrast_type == "mini_meta" else "delta_delta"
+            attribute_suffix = "weighted_delta" if contrast_type == "mini_meta" else "delta_delta"
 
-        bootstraps = [getattr(result, f"bootstraps_{attribute_suffix}") for result in contrast_plot_data]
-        differences = [result.difference for result in contrast_plot_data]
-        bcalows = [result.bca_low for result in contrast_plot_data]
-        bcahighs = [result.bca_high for result in contrast_plot_data]
+            bootstraps = [getattr(result, f"bootstraps_{attribute_suffix}") for result in contrast_plot_data]
+            differences = [result.difference for result in contrast_plot_data]
+            bcalows = [result.bca_low for result in contrast_plot_data]
+            bcahighs = [result.bca_high for result in contrast_plot_data]
 
     return bootstraps, differences, bcalows, bcahighs
 
@@ -103,11 +127,20 @@ def check_for_errors(
         raise ValueError("The `data` argument must be a non-empty list of dabest objects.")
     
     ## Check if all contrasts are delta-delta or all are mini-meta
-    contrast_type = "delta2" if data[0].delta2 else "mini_meta"
+
+    contrast_type = ("delta2" if data[0].delta2 
+                     else "mini_meta" if data[0].is_mini_meta
+                     else "delta"
+                    )
+
+    # contrast_type = "delta2" if data[0].delta2 else "mini_meta"
     for contrast in data:
-        check_contrast_type = "delta2" if contrast.delta2 else "mini_meta"
+        check_contrast_type = ("delta2" if contrast.delta2 
+                               else "mini_meta" if contrast.is_mini_meta
+                               else "delta"
+                              )
         if check_contrast_type != contrast_type:
-            raise ValueError("Each dabest object supplied must be the same experimental type (mini-meta or delta-delta)")
+            raise ValueError("Each dabest object supplied must be the same experimental type (mini-meta or delta-delta or neither.)")
 
     # Idx
     if idx is not None:
@@ -426,7 +459,8 @@ def forest_plot(
     )
 
     # Adjust figure size based on orientation
-    number_of_curves_to_plot = sum([len(i) for i in idx]) if idx is not None else len(data)
+    number_of_curves_to_plot = len(bootstraps)
+    # number_of_curves_to_plot = sum([len(i) for i in idx]) if idx is not None else len(data)
     if ax is not None:
         fig = ax.figure
     else:
