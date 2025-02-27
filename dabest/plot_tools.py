@@ -1139,6 +1139,7 @@ def delta_text_plotter(
             raise TypeError("delta_text_kwargs['x_coordinates'] must be a list of x-coordinates.")
         if len(delta_text_x_coordinates) != total_ticks:
             raise ValueError("delta_text_kwargs['x_coordinates'] must have the same length as the number of ticks to plot.")
+        if show_mini_meta or show_delta2: ticks_to_plot.append(max(ticks_to_plot)+1)
     else:
         delta_text_x_coordinates = ticks_to_plot
         X_Adjust = 0.48 if delta_text_x_location == 'right' else -0.38
