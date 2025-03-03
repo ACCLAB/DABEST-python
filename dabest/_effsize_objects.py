@@ -1206,7 +1206,7 @@ class EffectSizeDataFrame(object):
         es_paired_lines=True,
         es_paired_lines_kwargs=None,
 		
-		# Basline EffectSize Curve
+		# Baseline Effect Size Curve
 		show_baseline_ec=False,
     ):
         """
