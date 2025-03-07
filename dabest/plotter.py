@@ -176,7 +176,8 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                                                             effect_size_type = effect_size,
                                                             yvar = yvar,
                                                             horizontal = horizontal,
-                                                            show_table = table_kwargs['show']
+                                                            show_table = table_kwargs['show'],
+                                                            color_col = color_col
     )
     
     # Plotting the rawdata.

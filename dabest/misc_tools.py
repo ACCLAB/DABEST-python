@@ -685,7 +685,8 @@ def initialize_fig(
         effect_size_type: str, 
         yvar: str, 
         horizontal: bool, 
-        show_table: bool
+        show_table: bool,
+        color_col: str,
     ):
     """
     Initialize the figure and axes for the plotter function.
@@ -716,6 +717,8 @@ def initialize_fig(
         A boolean flag to determine if the plot is for horizontal plotting.
     show_table : dict
         A boolean flag to determine if the table will be shown in horizontal plot.
+    color_col : str
+        The column name for coloring the data points.
     """
     # Params
     fig_size = plot_kwargs["fig_size"]
@@ -735,7 +738,10 @@ def initialize_fig(
             fig_size = (7, 1 + (frac * all_groups_count))
         else:
             if is_paired and show_pairs and proportional is False:
-                frac = 0.8
+                if color_col is not None and float_contrast:
+                    frac = 0.9
+                else:
+                    frac = 0.8
             else:
                 frac = 1
             if float_contrast:
