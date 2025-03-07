@@ -312,7 +312,7 @@ def test_313_multigroups_paired_sequential():
 def test_314_2group_unpaired_ylabel():
     plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(horizontal=True,
-        swarm_label="This is my\nrawdata", contrast_label="The bootstrap\ndistribtions!"
+        raw_label="This is my\nrawdata", contrast_label="The bootstrap\ndistribtions!"
     )
 
 @pytest.mark.mpl_image_compare(tolerance=8)
@@ -351,18 +351,18 @@ def test_319_multi2group_unpaired_change_palette_c():
 def test_320_multi2group_unpaired_desat():
     plt.rcdefaults()
     return multi_2group_unpaired.mean_diff.plot(horizontal=True, 
-        custom_palette=my_color_palette, swarm_desat=0.75, halfviolin_desat=0.25
+        custom_palette=my_color_palette, raw_desat=0.75, contrast_desat=0.25
     )
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_321_multi2group_unpaired_dot_sizes():
     plt.rcdefaults()
-    return multi_2group_unpaired.mean_diff.plot(horizontal=True, raw_marker_size=3, es_marker_size=12)
+    return multi_2group_unpaired.mean_diff.plot(horizontal=True, raw_marker_size=3, contrast_marker_size=12)
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_322_multi2group_unpaired_change_ylims():
     plt.rcdefaults()
-    return multi_2group_unpaired.mean_diff.plot(horizontal=True, swarm_ylim=(0, 5), contrast_ylim=(-2, 2))
+    return multi_2group_unpaired.mean_diff.plot(horizontal=True, raw_ylim=(0, 5), contrast_ylim=(-2, 2))
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_323_2group_unpaired_ticker():
@@ -383,7 +383,7 @@ def test_323_2group_unpaired_ticker():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_324_multi2group_unpaired_ticker():
     plt.rcdefaults()
-    f = multi_2group_unpaired.mean_diff.plot(horizontal=True, swarm_ylim=(0, 6), contrast_ylim=(-3, 1))
+    f = multi_2group_unpaired.mean_diff.plot(horizontal=True, raw_ylim=(0, 6), contrast_ylim=(-3, 1))
 
     rawswarm_axes = f.axes[0]
     contrast_axes = f.axes[1]
@@ -460,9 +460,7 @@ def test_330_2group_paired_cumming_slopegraph_reflines_kwargs():
     )
 
 
-
 # Proportion plots
-
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_331_2group_unpaired_propdiff():
     plt.rcdefaults()
@@ -539,13 +537,13 @@ def test_342_multi2group_unpaired_prop_change_palette_c():
 def test_343_multi2group_unpaired_prop_desat():
     plt.rcdefaults()
     return multi_2group_unpaired_prop.mean_diff.plot(horizontal=True,
-        custom_palette=my_color_palette, bar_desat=0.1, halfviolin_desat=0.25
+        custom_palette=my_color_palette, raw_desat=0.1, contrast_desat=0.25
     )
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_344_2group_unpaired_prop_err_color():
     plt.rcdefaults()
-    return two_groups_unpaired_prop.mean_diff.plot(horizontal=True, err_color="purple")
+    return two_groups_unpaired_prop.mean_diff.plot(horizontal=True, barplot_kwargs={"err_kws": {"color": "purple"}})
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_345_2group_unpaired_cummings_meandiff_bar_width():
@@ -658,7 +656,7 @@ def test_364_cummings_baseline_delta_delta_meandiff():
 def test_365_delta_plot_ylabel():
     plt.rcdefaults()
     return delta_delta_paired_baseline.mean_diff.plot(horizontal=True,
-                                                    swarm_label="This is my\nrawdata",
+                                                    raw_label="This is my\nrawdata",
                                                     contrast_label="The bootstrap\ndistribtions!", 
                                                     delta2_label="This is delta!");
 
@@ -675,7 +673,7 @@ def test_367_delta_specified():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_368_delta_change_ylims():
     plt.rcdefaults()
-    return delta_delta_paired_sequential.mean_diff.plot(horizontal=True, swarm_ylim=(0, 9),
+    return delta_delta_paired_sequential.mean_diff.plot(horizontal=True, raw_ylim=(0, 9),
                                                         contrast_ylim=(-2, 2),
                                                         fig_size=(15,6));
 
@@ -749,7 +747,7 @@ def test_380_cummings_baseline_mini_meta_meandiff():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_381_mini_meta_plot_ylabel():
     plt.rcdefaults()
-    return mini_meta_paired_baseline.mean_diff.plot(horizontal=True, swarm_label="This is my\nrawdata",
+    return mini_meta_paired_baseline.mean_diff.plot(horizontal=True, raw_label="This is my\nrawdata",
                                                     contrast_label="The bootstrap\ndistribtions!");
 
 @pytest.mark.mpl_image_compare(tolerance=8)
@@ -761,12 +759,12 @@ def test_382_mini_meta_plot_change_palette_a():
 def test_383_mini_meta_dot_sizes():
     plt.rcdefaults()
     return mini_meta_paired_sequential.mean_diff.plot(horizontal=True, show_pairs=False,raw_marker_size=3,
-                                                    es_marker_size=12);
+                                                    contrast_marker_size=12);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_384_mini_meta_change_ylims():
     plt.rcdefaults()
-    return mini_meta_paired_sequential.mean_diff.plot(horizontal=True, swarm_ylim=(0, 5),
+    return mini_meta_paired_sequential.mean_diff.plot(horizontal=True, raw_ylim=(0, 5),
                                                         contrast_ylim=(-2, 2),
                                                         fig_size=(15,6));
 
@@ -827,135 +825,135 @@ def test_393_Horizontal_Table_Kwargs():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_394_2group_unpaired_meandiff_gridkey_autoparser():
     plt.rcdefaults()
-    return two_groups_unpaired.mean_diff.plot(horizontal=True, gridkey_rows='auto');
+    return two_groups_unpaired.mean_diff.plot(horizontal=True, gridkey='auto');
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_395_2group_paired_meandiff_gridkey_autoparser():
     plt.rcdefaults()
-    return two_groups_paired.mean_diff.plot(horizontal=True, gridkey_rows='auto');
+    return two_groups_paired.mean_diff.plot(horizontal=True, gridkey='auto');
 
 # Multi 2 Group
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_396_multi_2group_unpaired_meandiff_gridkey_userdefinedrows():
     plt.rcdefaults()
-    return multi_groups_unpaired.mean_diff.plot(horizontal=True, gridkey_rows=['Control', 'Test']);
+    return multi_groups_unpaired.mean_diff.plot(horizontal=True, gridkey=['Control', 'Test']);
 
 # Shared Control and Repeated Measures
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_397_shared_control_meandiff_gridkey_autoparser():
     plt.rcdefaults()
-    return shared_control.mean_diff.plot(horizontal=True, gridkey_rows='auto');
+    return shared_control.mean_diff.plot(horizontal=True, gridkey='auto');
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_398_repeated_measures_meandiff_gridkey_autoparser():
     plt.rcdefaults()
-    return repeated_measures.mean_diff.plot(horizontal=True, gridkey_rows='auto');
+    return repeated_measures.mean_diff.plot(horizontal=True, gridkey='auto');
 
 
 # Multi groups
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_399_multigroups_unpaired_meandiff_gridkey_userdefinedrows():
     plt.rcdefaults()
-    return multi_groups_unpaired.mean_diff.plot(horizontal=True, gridkey_rows=['Control', 'Test']);
+    return multi_groups_unpaired.mean_diff.plot(horizontal=True, gridkey=['Control', 'Test']);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_400_multigroups_unpaired_meandiff_gridkey_autoparser():
     plt.rcdefaults()
-    return multi_groups_unpaired.mean_diff.plot(horizontal=True, gridkey_rows='auto');
+    return multi_groups_unpaired.mean_diff.plot(horizontal=True, gridkey='auto');
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_401_multigroups_paired_meandiff_gridkey_userdefinedrows():
     plt.rcdefaults()
-    return multi_groups_paired_baseline.mean_diff.plot(horizontal=True, gridkey_rows=['Control', 'Test']);
+    return multi_groups_paired_baseline.mean_diff.plot(horizontal=True, gridkey=['Control', 'Test']);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_402_multigroups_paired_meandiff_gridkey_autoparser():
     plt.rcdefaults()
-    return multi_groups_paired_baseline.mean_diff.plot(horizontal=True, gridkey_rows='auto');
+    return multi_groups_paired_baseline.mean_diff.plot(horizontal=True, gridkey='auto');
 
 # Proportions
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_403_multigroups_prop_unpaired_meandiff_gridkey_userdefinedrows():
     plt.rcdefaults()
-    return multi_groups_unpaired_prop.mean_diff.plot(horizontal=True, gridkey_rows=['Control', 'Test']);
+    return multi_groups_unpaired_prop.mean_diff.plot(horizontal=True, gridkey=['Control', 'Test']);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_404_multigroups_prop_unpaired_meandiff_gridkey_autoparser():
     plt.rcdefaults()
-    return multi_groups_unpaired_prop.mean_diff.plot(horizontal=True, gridkey_rows='auto');
+    return multi_groups_unpaired_prop.mean_diff.plot(horizontal=True, gridkey='auto');
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_405_multigroups_prop_paired_meandiff_gridkey_userdefinedrows():
     plt.rcdefaults()
-    return multi_groups_paired_baseline_prop.mean_diff.plot(horizontal=True, gridkey_rows=['Control', 'Test']);
+    return multi_groups_paired_baseline_prop.mean_diff.plot(horizontal=True, gridkey=['Control', 'Test']);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_406_multigroups_prop_paired_meandiff_gridkey_autoparser():
     plt.rcdefaults()
-    return multi_groups_paired_baseline_prop.mean_diff.plot(horizontal=True, gridkey_rows='auto');
+    return multi_groups_paired_baseline_prop.mean_diff.plot(horizontal=True, gridkey='auto');
 
 
 # delta-delta
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_407_delta_delta_unpaired_meandiff_gridkey_autoparser():
     plt.rcdefaults()
-    return delta_delta_unpaired.mean_diff.plot(horizontal=True, gridkey_rows='auto');
+    return delta_delta_unpaired.mean_diff.plot(horizontal=True, gridkey='auto');
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_408_delta_delta_paired_meandiff_gridkey_autoparser():
     plt.rcdefaults()
-    return delta_delta_paired_baseline.mean_diff.plot(horizontal=True, gridkey_rows='auto');
+    return delta_delta_paired_baseline.mean_diff.plot(horizontal=True, gridkey='auto');
 
 
 # mini-meta
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_409_mini_meta_unpaired_meandiff_gridkey_userdefinedrows():
     plt.rcdefaults()
-    return mini_meta_unpaired.mean_diff.plot(horizontal=True, gridkey_rows=['Control', 'Test']);
+    return mini_meta_unpaired.mean_diff.plot(horizontal=True, gridkey=['Control', 'Test']);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_410_mini_meta_unpaired_meandiff_gridkey_autoparser():
     plt.rcdefaults()
-    return mini_meta_unpaired.mean_diff.plot(horizontal=True, gridkey_rows='auto');
+    return mini_meta_unpaired.mean_diff.plot(horizontal=True, gridkey='auto');
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_411_mini_meta_paired_meandiff_gridkey_userdefinedrows():
     plt.rcdefaults()
-    return mini_meta_paired_baseline.mean_diff.plot(horizontal=True, gridkey_rows=['Control', 'Test']);
+    return mini_meta_paired_baseline.mean_diff.plot(horizontal=True, gridkey=['Control', 'Test']);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_412_mini_meta_paired_meandiff_gridkey_autoparser():
     plt.rcdefaults()
-    return mini_meta_paired_baseline.mean_diff.plot(horizontal=True, gridkey_rows='auto');
+    return mini_meta_paired_baseline.mean_diff.plot(horizontal=True, gridkey='auto');
 
 # Gridkey kwargs
 multi_2group_paired_test = load(df, idx=(("Control 1","Control 2",),("Test 1", "Test 2"),), paired='baseline', id_col='ID')
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_413_gridkey_merge_pairs_and_autoparser():
     plt.rcdefaults()
-    return multi_2group_paired_test.mean_diff.plot(horizontal=True, gridkey_rows=['Control', 'Test'], gridkey_kwargs={'merge_pairs': True});
+    return multi_2group_paired_test.mean_diff.plot(horizontal=True, gridkey=['Control', 'Test'], gridkey_kwargs={'merge_pairs': True});
 
 gridkey_kwargs = {'show_es': False, 'show_Ns': False, 'marker': '√'}
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_414_gridkey_kwargs_and_autoparser():
     plt.rcdefaults()
-    return two_groups_unpaired.mean_diff.plot(horizontal=True, gridkey_rows='auto', gridkey_kwargs=gridkey_kwargs);
+    return two_groups_unpaired.mean_diff.plot(horizontal=True, gridkey='auto', gridkey_kwargs=gridkey_kwargs);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_429_gridkey_fontsize_and_autoparser():
     plt.rcdefaults()
-    return two_groups_unpaired.mean_diff.plot(horizontal=True, gridkey_rows='auto', gridkey_kwargs={'fontsize': 15});
+    return two_groups_unpaired.mean_diff.plot(horizontal=True, gridkey='auto', gridkey_kwargs={'fontsize': 15});
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_430_gridkey_labels_fontsize_and_autoparser():
     plt.rcdefaults()
-    return two_groups_unpaired.mean_diff.plot(horizontal=True, gridkey_rows='auto',
+    return two_groups_unpaired.mean_diff.plot(horizontal=True, gridkey='auto',
                                                gridkey_kwargs={'labels_fontsize': 15});
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_431_gridkey_labels_fontsize_and_fontsize_and_autoparser():
     plt.rcdefaults()
-    return two_groups_unpaired.mean_diff.plot(horizontal=True, gridkey_rows='auto', 
+    return two_groups_unpaired.mean_diff.plot(horizontal=True, gridkey='auto', 
                                               gridkey_kwargs={'fontsize': 8, 'labels_fontsize': 15});
 
 # Table hide
@@ -979,32 +977,32 @@ def test_417_delta_dot_kwargs():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_418_shared_control_meandiff_showcontrastbars():
     plt.rcdefaults()
-    return shared_control.mean_diff.plot(horizontal=True, contrast_bars=True, swarm_bars=False);
+    return shared_control.mean_diff.plot(horizontal=True, contrast_bars=True, raw_bars=False);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_419_shared_control_meandiff_hidecontrastbars():
     plt.rcdefaults()
-    return shared_control.mean_diff.plot(horizontal=True, contrast_bars=False, swarm_bars=False);
+    return shared_control.mean_diff.plot(horizontal=True, contrast_bars=False, raw_bars=False);
 
 contrast_kwargs = {'color': "red", 'alpha': 0.2}
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_420_shared_control_meandiff_contrastbars_kwargs():
     plt.rcdefaults()
-    return shared_control.mean_diff.plot(horizontal=True, contrast_bars=True, contrast_bars_kwargs = contrast_kwargs, swarm_bars=False);
+    return shared_control.mean_diff.plot(horizontal=True, contrast_bars=True, contrast_bars_kwargs = contrast_kwargs, raw_bars=False);
 
 # Summary bars
 summary_bars=[0, 1]
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_421_shared_control_meandiff_summarybars():
     plt.rcdefaults()
-    return shared_control.mean_diff.plot(horizontal=True, summary_bars=[0, 1], swarm_bars=False, contrast_bars=False,);
+    return shared_control.mean_diff.plot(horizontal=True, summary_bars=[0, 1], raw_bars=False, contrast_bars=False,);
 
 summary_bars_kwargs = {'color': "black", 'alpha': 0.2, 'span_ax': True}
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_422_shared_control_meandiff_summarybars_kwargs():
     plt.rcdefaults()
     return shared_control.mean_diff.plot(horizontal=True, summary_bars=[0, 1], summary_bars_kwargs = summary_bars_kwargs,
-                                         contrast_bars=False, swarm_bars=False);
+                                         contrast_bars=False, raw_bars=False);
 
 # Add counts to prop plots
 @pytest.mark.mpl_image_compare(tolerance=8)
@@ -1027,14 +1025,14 @@ def test_425_repeated_measures_baseline_propdiff_show_counts_and_kwargs():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_426_repeatedmeasures_meandiff_show_es_paired_lines():
     plt.rcdefaults()
-    return repeated_measures.mean_diff.plot(horizontal=True, es_paired_lines=True);
+    return repeated_measures.mean_diff.plot(horizontal=True, contrast_paired_lines=True);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_427_repeatedmeasures_meandiff_hide_es_paired_lines():
     plt.rcdefaults()
-    return repeated_measures.mean_diff.plot(horizontal=True, es_paired_lines=False);
+    return repeated_measures.mean_diff.plot(horizontal=True, contrast_paired_lines=False);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_428_multigroups_paired_meandiff_es_paired_lines_kwargs():
     plt.rcdefaults()
-    return multi_groups_paired_baseline.mean_diff.plot(horizontal=True, es_paired_lines=True, es_paired_lines_kwargs={'color':'red', 'linestyle': '--', 'linewidth': 2, 'alpha': 0.5});
+    return multi_groups_paired_baseline.mean_diff.plot(horizontal=True, contrast_paired_lines=True, contrast_paired_lines_kwargs={'color':'red', 'linestyle': '--', 'linewidth': 2, 'alpha': 0.5});

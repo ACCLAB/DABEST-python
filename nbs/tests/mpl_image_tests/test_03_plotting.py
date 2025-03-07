@@ -257,7 +257,7 @@ def test_11_inset_plots():
 def test_12_gardner_altman_ylabel():
     plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(
-        swarm_label="This is my\nrawdata", contrast_label="The bootstrap\ndistribtions!"
+        raw_label="This is my\nrawdata", contrast_label="The bootstrap\ndistribtions!"
     )
 
 
@@ -305,20 +305,20 @@ def test_17_change_palette_c():
 def test_18_desat():
     plt.rcdefaults()
     return multi_2group.mean_diff.plot(
-        custom_palette=my_color_palette, swarm_desat=0.75, halfviolin_desat=0.25
+        custom_palette=my_color_palette, raw_desat=0.75, contrast_desat=0.25
     )
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_19_dot_sizes():
     plt.rcdefaults()
-    return multi_2group.mean_diff.plot(raw_marker_size=3, es_marker_size=12)
+    return multi_2group.mean_diff.plot(raw_marker_size=3, contrast_marker_size=12)
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_20_change_ylims():
     plt.rcdefaults()
-    return multi_2group.mean_diff.plot(swarm_ylim=(0, 5), contrast_ylim=(-2, 2))
+    return multi_2group.mean_diff.plot(raw_ylim=(0, 5), contrast_ylim=(-2, 2))
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
@@ -349,7 +349,7 @@ def test_22_ticker_gardner_altman():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_23_ticker_cumming():
     plt.rcdefaults()
-    f = multi_2group.mean_diff.plot(swarm_ylim=(0, 6), contrast_ylim=(-3, 1))
+    f = multi_2group.mean_diff.plot(raw_ylim=(0, 6), contrast_ylim=(-3, 1))
 
     rawswarm_axes = f.axes[0]
     contrast_axes = f.axes[1]

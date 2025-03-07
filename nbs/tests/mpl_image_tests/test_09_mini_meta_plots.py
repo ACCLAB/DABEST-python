@@ -92,7 +92,7 @@ def test_62_cummings_baseline_mini_meta_meandiff():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_63_mini_meta_plot_ylabel():
     plt.rcdefaults()
-    return baseline.mean_diff.plot(swarm_label="This is my\nrawdata",
+    return baseline.mean_diff.plot(raw_label="This is my\nrawdata",
                                    contrast_label="The bootstrap\ndistribtions!");
 
 
@@ -106,13 +106,13 @@ def test_64_mini_meta_plot_change_palette_a():
 def test_65_mini_meta_dot_sizes():
     plt.rcdefaults()
     return sequential.mean_diff.plot(show_pairs=False,raw_marker_size=3,
-                                       es_marker_size=12);
+                                       contrast_marker_size=12);
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_66_mini_meta_change_ylims():
     plt.rcdefaults()
-    return sequential.mean_diff.plot(swarm_ylim=(0, 5),
+    return sequential.mean_diff.plot(raw_ylim=(0, 5),
                                     contrast_ylim=(-2, 2),
                                     fig_size=(15,6));
 

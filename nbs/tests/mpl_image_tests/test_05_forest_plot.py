@@ -222,7 +222,7 @@ def test_505_deltadelta_insert_ax_forest():
         contrast.mean_diff.plot(                  
                         contrast_label='Mean Diff',
                         raw_marker_size = 1,
-                        es_marker_size = 5,
+                        contrast_marker_size = 5,
                         color_col='Genotype',
                         ax = ax
         )
