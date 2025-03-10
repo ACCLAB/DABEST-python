@@ -346,7 +346,7 @@ def test_515_deltadelta_esmarkerkwargs_forest():
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
-                es_marker_kwargs={
+                marker_kwargs={
                     'marker': '^', 'markersize': 15,'color': 'blue',
                     'alpha': 0.5,
                     }
@@ -358,7 +358,7 @@ def test_516_deltadelta_eserrorbarkwargs_forest():
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
-                es_errorbar_kwargs={
+                errorbar_kwargs={
                     'color': 'red', 'lw': 4, 'linestyle': '--', 'alpha': 0.6,
                 }
             )
@@ -378,4 +378,15 @@ def test_518_regular_delta_idx():
                 contrasts_deltas,
                 idx = [(0,), (0,), (0,)],
                 labels=['Drug1 \nTest 1 - Control 1', 'Drug2 \nTest 2 - Control 2', 'Drug3 \nTest 3 - Control 3']
+            )
+
+
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_519_minimeta_with_deltas_forest():
+    plt.rcdefaults()
+    return forest_plot(
+                contrasts_mini_meta, 
+                idx=[(0, 3),(0, 3),(0, 3)],
+                labels=['Contrast A1', 'Mini_Meta A', 'Contrast B1', 'Mini_Meta B', 'Contrast C1', 'Mini_Meta C']
             )

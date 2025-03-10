@@ -72,23 +72,41 @@ def load_plot_data(
                 current_contrast = data[current_idx]
                 if len(index_group)>0:
                     for index in index_group:
-                        if index == 2:
-                            current_plot_data = getattr(getattr(current_contrast, effect_attr), contrast_attr)
-                            bootstraps.append(current_plot_data.bootstraps_delta_delta)
-                            differences.append(current_plot_data.difference)
-                            bcalows.append(current_plot_data.bca_low)
-                            bcahighs.append(current_plot_data.bca_high)
-                        elif index == 0 or index == 1:
-                            current_plot_data = getattr(current_contrast, effect_attr)
-                            bootstraps.append(current_plot_data.results.bootstraps[index])
-                            differences.append(current_plot_data.results.difference[index])
-                            bcalows.append(current_plot_data.results.bca_low[index])
-                            bcahighs.append(current_plot_data.results.bca_high[index])
+                        if contrast_type == 'delta2':
+                            if index == 2:
+                                current_plot_data = getattr(getattr(current_contrast, effect_attr), contrast_attr)
+                                bootstraps.append(current_plot_data.bootstraps_delta_delta)
+                                differences.append(current_plot_data.difference)
+                                bcalows.append(current_plot_data.bca_low)
+                                bcahighs.append(current_plot_data.bca_high)
+                            elif index == 0 or index == 1:
+                                current_plot_data = getattr(current_contrast, effect_attr)
+                                bootstraps.append(current_plot_data.results.bootstraps[index])
+                                differences.append(current_plot_data.results.difference[index])
+                                bcalows.append(current_plot_data.results.bca_low[index])
+                                bcahighs.append(current_plot_data.results.bca_high[index])
+                            else:
+                                raise ValueError("The selected indices must be 0, 1, or 2.")
                         else:
-                            raise ValueError("The selected indices must be 0, 1, or 2.")
+                            num_of_groups = len(getattr(current_contrast, effect_attr).results)
+                            if index == num_of_groups:
+                                current_plot_data = getattr(getattr(current_contrast, effect_attr), contrast_attr)
+                                bootstraps.append(current_plot_data.bootstraps_weighted_delta)
+                                differences.append(current_plot_data.difference)
+                                bcalows.append(current_plot_data.results.bca_low)
+                                bcahighs.append(current_plot_data.results.bca_high)
+                            elif index < num_of_groups:
+                                current_plot_data = getattr(current_contrast, effect_attr)
+                                bootstraps.append(current_plot_data.results.bootstraps[index])
+                                differences.append(current_plot_data.results.difference[index])
+                                bcalows.append(current_plot_data.results.bca_low[index])
+                                bcahighs.append(current_plot_data.results.bca_high[index])
+                            else:
+                                msg1 = "There are only {} groups (starting from zero) in this dabest object. ".format(num_of_groups)
+                                msg2 = "The idx given is {}.".format(index)
+                                raise ValueError(msg1+msg2)
         else:
             contrast_plot_data = [getattr(getattr(contrast, effect_attr), contrast_attr) for contrast in data]
-
             attribute_suffix = "weighted_delta" if contrast_type == "mini_meta" else "delta_delta"
 
             bootstraps = [getattr(result, f"bootstraps_{attribute_suffix}") for result in contrast_plot_data]
@@ -146,8 +164,8 @@ def check_for_errors(
     if idx is not None:
         if not isinstance(idx, (tuple, list)):
             raise TypeError("`idx` must be a tuple or list of integers.")
-        if contrast_type == "mini_meta":
-            raise ValueError("The `idx` argument is not applicable to mini-meta analyses.")
+        # if contrast_type == "mini_meta":
+        #     raise ValueError("The `idx` argument is not applicable to mini-meta analyses.")
 
     # Axes
     if ax is not None and not isinstance(ax, plt.Axes):
@@ -245,8 +263,8 @@ def get_kwargs(
         violin_kwargs,
         zeroline_kwargs,
         horizontal,
-        es_marker_kwargs,
-        es_errorbar_kwargs,
+        marker_kwargs,
+        errorbar_kwargs,
         marker_size
     ):
     from .misc_tools import merge_two_dicts
@@ -274,32 +292,32 @@ def get_kwargs(
         zeroline_kwargs = merge_two_dicts(default_zeroline_kwargs, zeroline_kwargs)
 
     # Effect size marker kwargs
-    default_es_marker_kwargs = {
+    default_marker_kwargs = {
                 'marker': 'o',
                 'markersize': marker_size,
                 'color': 'black',
                 'alpha': 1,
                 'zorder': 2,
     }
-    if es_marker_kwargs is None:
-        es_marker_kwargs = default_es_marker_kwargs
+    if marker_kwargs is None:
+        marker_kwargs = default_marker_kwargs
     else:
-        es_marker_kwargs = merge_two_dicts(default_es_marker_kwargs, es_marker_kwargs)
+        marker_kwargs = merge_two_dicts(default_marker_kwargs, marker_kwargs)
 
     # Effect size error bar kwargs
-    default_es_errorbar_kwargs = {
+    default_errorbar_kwargs = {
                 'color': 'black',
                 'lw': 2.5,
                 'linestyle': '-',
                 'alpha': 1,
                 'zorder': 1,
     }
-    if es_errorbar_kwargs is None:
-        es_errorbar_kwargs = default_es_errorbar_kwargs
+    if errorbar_kwargs is None:
+        errorbar_kwargs = default_errorbar_kwargs
     else:
-        es_errorbar_kwargs = merge_two_dicts(default_es_errorbar_kwargs, es_errorbar_kwargs)
+        errorbar_kwargs = merge_two_dicts(default_errorbar_kwargs, errorbar_kwargs)
 
-    return violin_kwargs, zeroline_kwargs, es_marker_kwargs, es_errorbar_kwargs
+    return violin_kwargs, zeroline_kwargs, marker_kwargs, errorbar_kwargs
 
 
 def color_palette(
@@ -355,8 +373,8 @@ def forest_plot(
 
     violin_kwargs: Optional[dict] = None,
     zeroline_kwargs: Optional[dict] = None,
-    es_marker_kwargs: Optional[dict] = None,
-    es_errorbar_kwargs: Optional[dict] = None,
+    marker_kwargs: Optional[dict] = None,
+    errorbar_kwargs: Optional[dict] = None,
 )-> plt.Figure:
     """  
     Custom function that generates a forest plot from given contrast objects, suitable for a range of data analysis types, including those from packages like DABEST-python.
@@ -412,9 +430,9 @@ def forest_plot(
         Additional arguments for violin plot customization.
     zeroline_kwargs : Optional[dict], default=None
         Additional arguments for the zero line customization.
-    es_marker_kwargs : Optional[dict], default=None
+    marker_kwargs : Optional[dict], default=None
         Additional arguments for the effect size marker customization.
-    es_errorbar_kwargs : Optional[dict], default=None
+    errorbar_kwargs : Optional[dict], default=None
         Additional arguments for the effect size error bar customization.
 
     Returns
@@ -469,12 +487,12 @@ def forest_plot(
         fig, ax = plt.subplots(figsize=fig_size)
 
     # Get Kwargs
-    violin_kwargs, zeroline_kwargs, es_marker_kwargs, es_errorbar_kwargs = get_kwargs(
+    violin_kwargs, zeroline_kwargs, marker_kwargs, errorbar_kwargs = get_kwargs(
                                                                                 violin_kwargs = violin_kwargs,
                                                                                 zeroline_kwargs = zeroline_kwargs,
                                                                                 horizontal = horizontal,
-                                                                                es_marker_kwargs = es_marker_kwargs,
-                                                                                es_errorbar_kwargs = es_errorbar_kwargs,
+                                                                                marker_kwargs = marker_kwargs,
+                                                                                errorbar_kwargs = errorbar_kwargs,
                                                                                 marker_size = marker_size
     )
                                             
@@ -492,11 +510,11 @@ def forest_plot(
     ## Plotting the effect sizes and confidence intervals
     for k in range(1, number_of_curves_to_plot + 1):
         if horizontal:
-            ax.plot(differences[k - 1], k, **es_marker_kwargs)  
-            ax.plot([bcalows[k - 1], bcahighs[k - 1]], [k, k], **es_errorbar_kwargs) 
+            ax.plot(differences[k - 1], k, **marker_kwargs)  
+            ax.plot([bcalows[k - 1], bcahighs[k - 1]], [k, k], **errorbar_kwargs) 
         else:
-            ax.plot(k, differences[k - 1], **es_marker_kwargs)
-            ax.plot([k, k], [bcalows[k - 1], bcahighs[k - 1]], **es_errorbar_kwargs)
+            ax.plot(k, differences[k - 1], **marker_kwargs)
+            ax.plot([k, k], [bcalows[k - 1], bcahighs[k - 1]], **errorbar_kwargs)
     
     # Aesthetic Adjustments
     ## Handle the custom color palette
