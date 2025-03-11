@@ -390,3 +390,15 @@ def test_519_minimeta_with_deltas_forest():
                 idx=[(0, 3),(0, 3),(0, 3)],
                 labels=['Contrast A1', 'Mini_Meta A', 'Contrast B1', 'Mini_Meta B', 'Contrast C1', 'Mini_Meta C']
             )
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_520_minimeta_with_deltas_and_delta_text_kwargs_forest():
+    plt.rcdefaults()
+    return forest_plot(
+                contrasts_mini_meta, 
+                idx=[(0, 3),(0, 3),(0, 3)],
+                labels=['Contrast A1', 'Mini_Meta A', 'Contrast B1', 'Mini_Meta B', 'Contrast C1', 'Mini_Meta C'],
+                delta_text_kwargs={'color': 'black','fontsize': 8, 'rotation': 45, 'va': 'bottom',
+                                   'x_coordinates': [1.4, 2.4, 3.4, 4.4, 5.4, 6.4], 
+                                   'y_coordinates': [0.6, 0.1, -2, -1.5, -1.5, -1.5]}
+            )

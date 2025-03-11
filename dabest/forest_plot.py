@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 # %matplotlib inline
 import seaborn as sns
 from typing import List, Optional, Union
-
+import numpy as np
 
 # %% ../nbs/API/forest_plot.ipynb 6
 def load_plot_data(
@@ -265,6 +265,7 @@ def get_kwargs(
         horizontal,
         marker_kwargs,
         errorbar_kwargs,
+        delta_text_kwargs,
         marker_size
     ):
     from .misc_tools import merge_two_dicts
@@ -317,7 +318,25 @@ def get_kwargs(
     else:
         errorbar_kwargs = merge_two_dicts(default_errorbar_kwargs, errorbar_kwargs)
 
-    return violin_kwargs, zeroline_kwargs, marker_kwargs, errorbar_kwargs
+
+    # Delta text kwargs
+    default_delta_text_kwargs = {
+                "color": None, 
+                "alpha": 1,
+                "fontsize": 10, 
+                "ha": 'center', 
+                "va": 'center', 
+                "rotation": 0, 
+                "x_coordinates": None, 
+                "y_coordinates": None,
+                "offset": 0
+    }
+    if delta_text_kwargs is None:
+        delta_text_kwargs = default_delta_text_kwargs
+    else:
+        delta_text_kwargs = merge_two_dicts(default_delta_text_kwargs, delta_text_kwargs)
+
+    return violin_kwargs, zeroline_kwargs, marker_kwargs, errorbar_kwargs, delta_text_kwargs
 
 
 def color_palette(
@@ -370,6 +389,9 @@ def forest_plot(
     yticks: Optional[list[float]] = None,
     yticklabels: Optional[list[str]] = None,
     remove_spines: bool = True,
+
+    delta_text: bool = True,
+    delta_text_kwargs: dict = None,
 
     violin_kwargs: Optional[dict] = None,
     zeroline_kwargs: Optional[dict] = None,
@@ -426,6 +448,9 @@ def forest_plot(
         Custom y-tick labels for the plot.
     remove_spines : bool, default=True
         If True, removes plot spines (except the relevant dependent variable spine).
+
+
+
     violin_kwargs : Optional[dict], default=None
         Additional arguments for violin plot customization.
     zeroline_kwargs : Optional[dict], default=None
@@ -487,13 +512,15 @@ def forest_plot(
         fig, ax = plt.subplots(figsize=fig_size)
 
     # Get Kwargs
-    violin_kwargs, zeroline_kwargs, marker_kwargs, errorbar_kwargs = get_kwargs(
-                                                                                violin_kwargs = violin_kwargs,
-                                                                                zeroline_kwargs = zeroline_kwargs,
-                                                                                horizontal = horizontal,
-                                                                                marker_kwargs = marker_kwargs,
-                                                                                errorbar_kwargs = errorbar_kwargs,
-                                                                                marker_size = marker_size
+    (violin_kwargs, zeroline_kwargs, 
+    marker_kwargs, errorbar_kwargs, delta_text_kwargs) = get_kwargs(
+                                                            violin_kwargs = violin_kwargs,
+                                                            zeroline_kwargs = zeroline_kwargs,
+                                                            horizontal = horizontal,
+                                                            marker_kwargs = marker_kwargs,
+                                                            errorbar_kwargs = errorbar_kwargs,
+                                                            delta_text_kwargs = delta_text_kwargs,
+                                                            marker_size = marker_size
     )
                                             
     # Plot the violins and make adjustments
@@ -591,6 +618,48 @@ def forest_plot(
     if remove_spines:
         spines = ["top", "right", "left"] if horizontal else ["top", "right", "bottom"]
         ax.spines[spines].set_visible(False)
+
+    # Delta Text
+    if delta_text:
+        if delta_text_kwargs.get('color') is not None:
+            delta_text_colors = [delta_text_kwargs.pop('color')] * number_of_curves_to_plot
+        else:
+            delta_text_colors = violin_colors
+            delta_text_kwargs.pop('color')
+
+        # Collect the X-coordinates for the delta text
+        delta_text_x_coordinates = delta_text_kwargs.pop('x_coordinates')
+        delta_text_x_adjustment = delta_text_kwargs.pop('offset')
+
+        if delta_text_x_coordinates is not None:
+            if not isinstance(delta_text_x_coordinates, (list, tuple)) or not all(isinstance(x, (int, float)) for x in delta_text_x_coordinates):
+                raise TypeError("delta_text_kwargs['x_coordinates'] must be a list of x-coordinates.")
+            if len(delta_text_x_coordinates) != number_of_curves_to_plot:
+                raise ValueError("delta_text_kwargs['x_coordinates'] must have the same length as the number of ticks to plot.")
+        else:
+            delta_text_x_coordinates = (np.arange(1, number_of_curves_to_plot + 1) 
+                                        + (0.5 if not horizontal else -0.4)
+                                        + delta_text_x_adjustment
+                                    )
+
+        # Collect the Y-coordinates for the delta text
+        delta_text_y_coordinates = delta_text_kwargs.pop('y_coordinates')
+
+        if delta_text_y_coordinates is not None:
+            if not isinstance(delta_text_y_coordinates, (list, tuple)) or not all(isinstance(y, (int, float)) for y in delta_text_y_coordinates):
+                raise TypeError("delta_text_kwargs['y_coordinates'] must be a list of y-coordinates.")
+            if len(delta_text_y_coordinates) != number_of_curves_to_plot:
+                raise ValueError("delta_text_kwargs['y_coordinates'] must have the same length as the number of ticks to plot.")
+        else:
+            delta_text_y_coordinates = differences
+
+        if horizontal:
+            delta_text_x_coordinates, delta_text_y_coordinates = delta_text_y_coordinates, delta_text_x_coordinates
+
+        for idx, x, y, delta in zip(np.arange(0, number_of_curves_to_plot, 1), delta_text_x_coordinates, 
+                                    delta_text_y_coordinates, differences):
+            delta_text = np.format_float_positional(delta, precision=2, sign=True, trim="k", min_digits=2)
+            ax.text(x, y, delta_text, color=delta_text_colors[idx], zorder=5, **delta_text_kwargs)
 
     ## Invert Y-axis if horizontal 
     if horizontal:

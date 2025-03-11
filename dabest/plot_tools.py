@@ -1164,13 +1164,13 @@ def delta_text_plotter(
 
     # Plot the delta text
     for x,y,t,tick in zip(delta_text_x_coordinates, delta_text_y_coordinates,Delta_Values,ticks_to_plot):
-        Delta_Text = np.format_float_positional(t, precision=2, sign=True, trim="k", min_digits=2)
+        delta_text = np.format_float_positional(t, precision=2, sign=True, trim="k", min_digits=2)
         idx_selector = (
             int(tick)
             if type(delta_text_colors) == list 
             else unpacked_idx[int(tick)]
             )
-        ax_to_plot.text(x, y, Delta_Text, color=delta_text_colors[idx_selector], zorder=5, **delta_text_kwargs)
+        ax_to_plot.text(x, y, delta_text, color=delta_text_colors[idx_selector], zorder=5, **delta_text_kwargs)
 
 
 def delta_dots_plotter(
