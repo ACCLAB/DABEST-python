@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from typing import List, Optional, Union
 import numpy as np
+import matplotlib.axes as axes
+import matplotlib.patches as mpatches
 
 # %% ../nbs/API/forest_plot.ipynb 6
 def load_plot_data(
@@ -266,6 +268,7 @@ def get_kwargs(
         marker_kwargs,
         errorbar_kwargs,
         delta_text_kwargs,
+        contrast_bars_kwargs,
         marker_size
     ):
     from .misc_tools import merge_two_dicts
@@ -336,7 +339,21 @@ def get_kwargs(
     else:
         delta_text_kwargs = merge_two_dicts(default_delta_text_kwargs, delta_text_kwargs)
 
-    return violin_kwargs, zeroline_kwargs, marker_kwargs, errorbar_kwargs, delta_text_kwargs
+    # Contrast bars kwargs.
+    default_contrast_bars_kwargs = {
+                    "color": None, 
+                    "zorder":-3,
+                    'alpha': 0.15
+    }
+    if contrast_bars_kwargs is None:
+        contrast_bars_kwargs = default_contrast_bars_kwargs
+    else:
+        contrast_bars_kwargs = merge_two_dicts(default_contrast_bars_kwargs, contrast_bars_kwargs)
+
+
+    return (violin_kwargs, zeroline_kwargs, marker_kwargs, errorbar_kwargs, 
+            delta_text_kwargs, contrast_bars_kwargs)
+
 
 
 def color_palette(
@@ -392,6 +409,9 @@ def forest_plot(
 
     delta_text: bool = True,
     delta_text_kwargs: dict = None,
+
+    contrast_bars: bool = True,
+    contrast_bars_kwargs: dict = None,
 
     violin_kwargs: Optional[dict] = None,
     zeroline_kwargs: Optional[dict] = None,
@@ -512,14 +532,15 @@ def forest_plot(
         fig, ax = plt.subplots(figsize=fig_size)
 
     # Get Kwargs
-    (violin_kwargs, zeroline_kwargs, 
-    marker_kwargs, errorbar_kwargs, delta_text_kwargs) = get_kwargs(
+    (violin_kwargs, zeroline_kwargs, marker_kwargs, 
+     errorbar_kwargs, delta_text_kwargs, contrast_bars_kwargs) = get_kwargs(
                                                             violin_kwargs = violin_kwargs,
                                                             zeroline_kwargs = zeroline_kwargs,
                                                             horizontal = horizontal,
                                                             marker_kwargs = marker_kwargs,
                                                             errorbar_kwargs = errorbar_kwargs,
                                                             delta_text_kwargs = delta_text_kwargs,
+                                                            contrast_bars_kwargs = contrast_bars_kwargs,
                                                             marker_size = marker_size
     )
                                             
@@ -660,6 +681,19 @@ def forest_plot(
                                     delta_text_y_coordinates, differences):
             delta_text = np.format_float_positional(delta, precision=2, sign=True, trim="k", min_digits=2)
             ax.text(x, y, delta_text, color=delta_text_colors[idx], zorder=5, **delta_text_kwargs)
+
+    # Contrast bars
+    if contrast_bars:
+        _bar_color = contrast_bars_kwargs.pop('color')
+        if _bar_color is not None:
+            bar_colors = [_bar_color] * number_of_curves_to_plot
+        else:
+            bar_colors = violin_colors
+        for x, y in zip(np.arange(1, number_of_curves_to_plot + 1), differences):
+            if horizontal:
+                ax.add_patch(mpatches.Rectangle((0, x-0.25), y, 0.25, color=bar_colors[x-1], **contrast_bars_kwargs))
+            else:
+                ax.add_patch(mpatches.Rectangle((x, 0), 0.25, y, color=bar_colors[x-1], **contrast_bars_kwargs))
 
     ## Invert Y-axis if horizontal 
     if horizontal:
