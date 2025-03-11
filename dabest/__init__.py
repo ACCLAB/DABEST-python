@@ -3,6 +3,7 @@ from ._stats_tools import effsize as effsize
 from ._stats_tools import confint_2group_diff as ci_2g
 from ._effsize_objects import TwoGroupsEffectSize, PermutationTest
 from ._dabest_object import Dabest
+from .forest_plot import forest_plot
 
 
 import os
