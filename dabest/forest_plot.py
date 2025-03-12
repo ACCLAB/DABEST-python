@@ -127,8 +127,8 @@ def check_for_errors(
                 horizontal,
                 marker_size,
                 custom_palette,
-                halfviolin_alpha,
-                halfviolin_desat,
+                contrast_alpha,
+                contrast_desat,
                 labels,
                 labels_rotation,
                 labels_fontsize,
@@ -166,8 +166,26 @@ def check_for_errors(
     if idx is not None:
         if not isinstance(idx, (tuple, list)):
             raise TypeError("`idx` must be a tuple or list of integers.")
-        # if contrast_type == "mini_meta":
-        #     raise ValueError("The `idx` argument is not applicable to mini-meta analyses.")
+
+        msg1 = "The `idx` argument must have the same length as the number of dabest objects. "
+        msg2 = "E.g., If two dabest objects are supplied, there should be two lists within `idx`. "
+        msg3 = "E.g., `idx` = [[1,2],[0,1]]."
+        _total = 0
+        for _group in idx:
+            if isinstance(_group, int | float):
+                raise ValueError(msg1+msg2+msg3)
+            else:
+                _total += 1
+        if _total != len(data):
+            raise ValueError(msg1+msg2+msg3)
+        
+    if idx is not None:
+        number_of_curves_to_plot = sum([len(i) for i in idx])
+    else:
+        if contrast_type == 'delta':
+            number_of_curves_to_plot = sum(len(getattr(i, effect_size).results) for i in data)
+        else:
+            number_of_curves_to_plot = len(data)
 
     # Axes
     if ax is not None and not isinstance(ax, plt.Axes):
@@ -195,25 +213,26 @@ def check_for_errors(
         raise TypeError("`marker_size` must be a positive integer or float.")
 
     # Custom palette
-    if custom_palette is not None and not isinstance(custom_palette, (dict, list, str, type(None))):
+    if custom_palette is not None and not isinstance(custom_palette, (dict, list, tuple, str, type(None))):
         raise TypeError("The `custom_palette` must be either a dictionary, list, string, or `None`.")
     if isinstance(custom_palette, dict) and labels is None:
         raise ValueError("The `labels` argument must be provided if `custom_palette` is a dictionary.")
+    if isinstance(custom_palette, (list, tuple)) and len(custom_palette) < number_of_curves_to_plot:
+        raise ValueError("The `custom_palette` list/tuple must have the same length as the number of `data` provided.")
 
-
-    # Halfviolin alpha and desat
-    if not isinstance(halfviolin_alpha, float) or not 0 <= halfviolin_alpha <= 1:
-        raise TypeError("`halfviolin_alpha` must be a float between 0 and 1.")
+    # Contrast alpha and desat
+    if not isinstance(contrast_alpha, float) or not 0 <= contrast_alpha <= 1:
+        raise TypeError("`contrast_alpha` must be a float between 0 and 1.")
     
-    if not isinstance(halfviolin_desat, (float, int)) or not 0 <= halfviolin_desat <= 1:
-        raise TypeError("`halfviolin_desat` must be a float between 0 and 1 or an int (1).")
+    if not isinstance(contrast_desat, (float, int)) or not 0 <= contrast_desat <= 1:
+        raise TypeError("`contrast_desat` must be a float between 0 and 1 or an int (1).")
     
 
     # Contrast labels
     if labels is not None and not all(isinstance(label, str) for label in labels):
         raise TypeError("The `labels` must be a list of strings or `None`.")
     
-    number_of_curves_to_plot = sum([len(i) for i in idx]) if idx is not None else len(data)
+    
     if labels is not None and len(labels) != number_of_curves_to_plot:
         raise ValueError("`labels` must match the number of `data` provided.")
     
@@ -360,7 +379,7 @@ def color_palette(
         custom_palette, 
         labels, 
         number_of_curves_to_plot,
-        halfviolin_desat
+        contrast_desat
     ):
     if custom_palette is not None:
         if isinstance(custom_palette, dict):
@@ -378,7 +397,7 @@ def color_palette(
                 )
     else:
         violin_colors = sns.color_palette(n_colors=number_of_curves_to_plot)
-    violin_colors = [sns.desaturate(color, halfviolin_desat) for color in violin_colors]
+    violin_colors = [sns.desaturate(color, contrast_desat) for color in violin_colors]
     return violin_colors
 
 
@@ -392,8 +411,8 @@ def forest_plot(
 
     marker_size: int = 10,
     custom_palette: Optional[Union[dict, list, str]] = None,
-    halfviolin_alpha: float = 0.8,
-    halfviolin_desat: float = 1,
+    contrast_alpha: float = 0.8,
+    contrast_desat: float = 1,
 
     labels: list[str] = None,
     labels_rotation: int = None,
@@ -442,9 +461,9 @@ def forest_plot(
         Marker size for plotting effect size dots.
     custom_palette : Optional[Union[dict, list, str]], default=None
         Custom color palette for the plot.
-    halfviolin_alpha : float, default=0.8
+    contrast_alpha : float, default=0.8
         Transparency level for violin plots.
-    halfviolin_desat : float, default=1
+    contrast_desat : float, default=1
         Saturation level for violin plots.
     labels : List[str]
         Labels for each contrast. If None, defaults to 'Contrast 1', 'Contrast 2', etc.
@@ -468,9 +487,14 @@ def forest_plot(
         Custom y-tick labels for the plot.
     remove_spines : bool, default=True
         If True, removes plot spines (except the relevant dependent variable spine).
-
-
-
+    delta_text : bool, default=True
+        If True, it adds text next to each curve representing the effect size value.
+    delta_text_kwargs : dict, default=None
+        Additional keyword arguments for the delta_text.
+    contrast_bars : bool, default=True
+        If True, it adds bars from the zeroline to the effect size curve.
+    contrast_bars_kwargs : dict, default=None
+        Additional keyword arguments for the contrast_bars.
     violin_kwargs : Optional[dict], default=None
         Additional arguments for violin plot customization.
     zeroline_kwargs : Optional[dict], default=None
@@ -498,8 +522,8 @@ def forest_plot(
                             horizontal = horizontal,
                             marker_size = marker_size,
                             custom_palette = custom_palette,
-                            halfviolin_alpha = halfviolin_alpha,
-                            halfviolin_desat = halfviolin_desat,
+                            contrast_alpha = contrast_alpha,
+                            contrast_desat = contrast_desat,
                             labels = labels,
                             labels_rotation = labels_rotation,
                             labels_fontsize = labels_fontsize,
@@ -551,7 +575,7 @@ def forest_plot(
     )
     halfviolin(
             v, 
-            alpha = halfviolin_alpha, 
+            alpha = contrast_alpha, 
             half = "bottom" if horizontal else "right",
         )
     
@@ -570,7 +594,7 @@ def forest_plot(
                         custom_palette = custom_palette, 
                         labels = labels, 
                         number_of_curves_to_plot = number_of_curves_to_plot,
-                        halfviolin_desat = halfviolin_desat
+                        contrast_desat = contrast_desat
                     )
     
     for patch, color in zip(v["bodies"], violin_colors):

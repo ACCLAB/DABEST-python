@@ -280,8 +280,8 @@ def test_509_deltadelta_halfviolin_aesthetics_forest():
     return forest_plot(
                 contrasts, 
                 labels=['Drug1', 'Drug2', 'Drug3'],
-                halfviolin_alpha=0.2,
-                halfviolin_desat=0.2
+                contrast_alpha=0.2,
+                contrast_desat=0.2
             )
 
 
