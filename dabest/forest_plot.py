@@ -19,6 +19,7 @@ def load_plot_data(
             data: List, 
             effect_size: str = "mean_diff", 
             contrast_type: str = None,
+            ci_type: str = "bca",
             idx: Optional[List[int]] = None
 ) -> List:
     """
@@ -32,6 +33,8 @@ def load_plot_data(
         Type of effect size ('mean_diff', 'median_diff', etc.).
     contrast_type: str
         Type of dabest object to plot ('delta2' or 'mini-meta' or 'delta').
+    ci_type: str
+        Type of confidence interval to plot ('bca' or 'pct')
     idx: Optional[List[int]], default=None
         List of indices to select from the contrast objects if delta-delta experiment. 
         If None, only the delta-delta objects are plotted.
@@ -53,14 +56,14 @@ def load_plot_data(
                         current_plot_data = getattr(current_contrast, effect_attr)
                         bootstraps.append(current_plot_data.results.bootstraps[index])
                         differences.append(current_plot_data.results.difference[index])
-                        bcalows.append(current_plot_data.results.bca_low[index])
-                        bcahighs.append(current_plot_data.results.bca_high[index])
+                        bcalows.append(current_plot_data.results.get(ci_type+'_low')[index])
+                        bcahighs.append(current_plot_data.results.get(ci_type+'_high')[index])
         else:
             contrast_plot_data = [getattr(contrast, effect_attr)  for contrast in data]
             bootstraps_nested = [result.results.bootstraps.to_list() for result in contrast_plot_data]
             differences_nested = [result.results.difference.to_list() for result in contrast_plot_data]
-            bcalows_nested = [result.results.bca_low.to_list() for result in contrast_plot_data]
-            bcahighs_nested = [result.results.bca_high.to_list() for result in contrast_plot_data]
+            bcalows_nested = [result.results.get(ci_type+'_low').to_list() for result in contrast_plot_data]
+            bcahighs_nested = [result.results.get(ci_type+'_high').to_list() for result in contrast_plot_data]
             
             bootstraps = [element for innerList in bootstraps_nested for element in innerList]
             differences = [element for innerList in differences_nested for element in innerList]
@@ -79,14 +82,14 @@ def load_plot_data(
                                 current_plot_data = getattr(getattr(current_contrast, effect_attr), contrast_attr)
                                 bootstraps.append(current_plot_data.bootstraps_delta_delta)
                                 differences.append(current_plot_data.difference)
-                                bcalows.append(current_plot_data.bca_low)
-                                bcahighs.append(current_plot_data.bca_high)
+                                bcalows.append(current_plot_data.results.get(ci_type+'_low')[0])
+                                bcahighs.append(current_plot_data.results.get(ci_type+'_high')[0])
                             elif index == 0 or index == 1:
                                 current_plot_data = getattr(current_contrast, effect_attr)
                                 bootstraps.append(current_plot_data.results.bootstraps[index])
                                 differences.append(current_plot_data.results.difference[index])
-                                bcalows.append(current_plot_data.results.bca_low[index])
-                                bcahighs.append(current_plot_data.results.bca_high[index])
+                                bcalows.append(current_plot_data.results.get(ci_type+'_low')[index])
+                                bcahighs.append(current_plot_data.results.get(ci_type+'_high')[index])
                             else:
                                 raise ValueError("The selected indices must be 0, 1, or 2.")
                         else:
@@ -95,14 +98,14 @@ def load_plot_data(
                                 current_plot_data = getattr(getattr(current_contrast, effect_attr), contrast_attr)
                                 bootstraps.append(current_plot_data.bootstraps_weighted_delta)
                                 differences.append(current_plot_data.difference)
-                                bcalows.append(current_plot_data.results.bca_low)
-                                bcahighs.append(current_plot_data.results.bca_high)
+                                bcalows.append(current_plot_data.results.get(ci_type+'_low')[0])
+                                bcahighs.append(current_plot_data.results.get(ci_type+'_high')[0])
                             elif index < num_of_groups:
                                 current_plot_data = getattr(current_contrast, effect_attr)
                                 bootstraps.append(current_plot_data.results.bootstraps[index])
                                 differences.append(current_plot_data.results.difference[index])
-                                bcalows.append(current_plot_data.results.bca_low[index])
-                                bcahighs.append(current_plot_data.results.bca_high[index])
+                                bcalows.append(current_plot_data.results.get(ci_type+'_low')[index])
+                                bcahighs.append(current_plot_data.results.get(ci_type+'_high')[index])
                             else:
                                 msg1 = "There are only {} groups (starting from zero) in this dabest object. ".format(num_of_groups)
                                 msg2 = "The idx given is {}.".format(index)
@@ -113,8 +116,8 @@ def load_plot_data(
 
             bootstraps = [getattr(result, f"bootstraps_{attribute_suffix}") for result in contrast_plot_data]
             differences = [result.difference for result in contrast_plot_data]
-            bcalows = [result.bca_low for result in contrast_plot_data]
-            bcahighs = [result.bca_high for result in contrast_plot_data]
+            bcalows = [result.results.get(ci_type+'_low')[0] for result in contrast_plot_data]
+            bcahighs = [result.results.get(ci_type+'_high')[0] for result in contrast_plot_data]
 
     return bootstraps, differences, bcalows, bcahighs
 
@@ -124,6 +127,7 @@ def check_for_errors(
                 ax,
                 fig_size,
                 effect_size,
+                ci_type,
                 horizontal,
                 marker_size,
                 custom_palette,
@@ -140,6 +144,7 @@ def check_for_errors(
                 yticks,
                 yticklabels,
                 remove_spines,
+                summary_bars,
     ) -> str:
 
     # Contrasts
@@ -203,6 +208,10 @@ def check_for_errors(
         raise ValueError("The `effect_size` argument must be `mean_diff` for mini-meta analyses.")
     if data[0].delta2 and effect_size not in ['mean_diff', 'hedges_g', 'delta_g']:
         raise ValueError("The `effect_size` argument must be `mean_diff`, `hedges_g`, or `delta_g` for delta-delta analyses.")
+    
+    # CI type
+    if ci_type not in ('bca', 'pct'):
+        raise TypeError("`ci_type` must be either 'bca' or 'pct'.")
 
     # Horizontal
     if not isinstance(horizontal, bool):
@@ -277,6 +286,15 @@ def check_for_errors(
     if not isinstance(remove_spines, bool):
         raise TypeError("`remove_spines` must be a boolean value.")
     
+    # Summary bars
+    if summary_bars is not None:
+        if not isinstance(summary_bars, list | tuple):
+            raise TypeError("summary_bars must be a list/tuple of indices (ints).")
+        if not all(isinstance(i, int) for i in summary_bars):
+            raise TypeError("summary_bars must be a list/tuple of indices (ints).")
+        if any(i >= number_of_curves_to_plot for i in summary_bars):
+            raise ValueError("Index {} chosen is out of range for the contrast objects.".format([i for i in summary_bars if i >= number_of_curves_to_plot]))
+    
     return contrast_type
     
 
@@ -288,6 +306,7 @@ def get_kwargs(
         errorbar_kwargs,
         delta_text_kwargs,
         contrast_bars_kwargs,
+        summary_bars_kwargs,
         marker_size
     ):
     from .misc_tools import merge_two_dicts
@@ -369,9 +388,21 @@ def get_kwargs(
     else:
         contrast_bars_kwargs = merge_two_dicts(default_contrast_bars_kwargs, contrast_bars_kwargs)
 
+    # Summary bars kwargs.
+    default_summary_bars_kwargs = {
+                    "span_ax": False,
+                    "color": None, 
+                    "alpha": 0.15,
+                    "zorder":-3
+    }
+    if summary_bars_kwargs is None:
+        summary_bars_kwargs = default_summary_bars_kwargs
+    else:
+        summary_bars_kwargs = merge_two_dicts(default_summary_bars_kwargs, summary_bars_kwargs)
+
 
     return (violin_kwargs, zeroline_kwargs, marker_kwargs, errorbar_kwargs, 
-            delta_text_kwargs, contrast_bars_kwargs)
+            delta_text_kwargs, contrast_bars_kwargs, summary_bars_kwargs)
 
 
 
@@ -407,6 +438,7 @@ def forest_plot(
     ax: Optional[plt.Axes] = None,
     fig_size: tuple[int, int] = None,
     effect_size: str = "mean_diff",
+    ci_type='bca',
     horizontal: bool = False, 
 
     marker_size: int = 10,
@@ -431,6 +463,8 @@ def forest_plot(
 
     contrast_bars: bool = True,
     contrast_bars_kwargs: dict = None,
+    summary_bars: list|tuple = None,
+    summary_bars_kwargs: dict = None,
 
     violin_kwargs: Optional[dict] = None,
     zeroline_kwargs: Optional[dict] = None,
@@ -455,6 +489,8 @@ def forest_plot(
         Figure size for the plot.
     effect_size : str
         Type of effect size to plot (e.g., 'mean_diff', `hedges_g` or 'delta_g').
+    ci_type : str
+        Type of confidence interval to plot (bca' or 'pct')
     horizontal : bool, default=False
         If True, the plot will be horizontal.
     marker_size : int, default=12
@@ -495,6 +531,10 @@ def forest_plot(
         If True, it adds bars from the zeroline to the effect size curve.
     contrast_bars_kwargs : dict, default=None
         Additional keyword arguments for the contrast_bars.
+    summary_bars: list | tuple, default=None,
+        If True, it adds summary bars to the relevant effect size curves.
+    summary_bars_kwargs : dict, default=None,
+        Additional keyword arguments for the summary_bars.
     violin_kwargs : Optional[dict], default=None
         Additional arguments for violin plot customization.
     zeroline_kwargs : Optional[dict], default=None
@@ -519,6 +559,7 @@ def forest_plot(
                             ax = ax,
                             fig_size = fig_size,
                             effect_size = effect_size,
+                            ci_type = ci_type,
                             horizontal = horizontal,
                             marker_size = marker_size,
                             custom_palette = custom_palette,
@@ -535,6 +576,7 @@ def forest_plot(
                             yticks = yticks,
                             yticklabels = yticklabels,
                             remove_spines = remove_spines,
+                            summary_bars = summary_bars,
     )
 
     # Load plot data and extract info
@@ -542,9 +584,9 @@ def forest_plot(
                                                         data = data, 
                                                         effect_size = effect_size, 
                                                         contrast_type = contrast_type,
+                                                        ci_type = ci_type,
                                                         idx = idx
     )
-
     # Adjust figure size based on orientation
     number_of_curves_to_plot = len(bootstraps)
     # number_of_curves_to_plot = sum([len(i) for i in idx]) if idx is not None else len(data)
@@ -556,16 +598,17 @@ def forest_plot(
         fig, ax = plt.subplots(figsize=fig_size)
 
     # Get Kwargs
-    (violin_kwargs, zeroline_kwargs, marker_kwargs, 
-     errorbar_kwargs, delta_text_kwargs, contrast_bars_kwargs) = get_kwargs(
-                                                            violin_kwargs = violin_kwargs,
-                                                            zeroline_kwargs = zeroline_kwargs,
-                                                            horizontal = horizontal,
-                                                            marker_kwargs = marker_kwargs,
-                                                            errorbar_kwargs = errorbar_kwargs,
-                                                            delta_text_kwargs = delta_text_kwargs,
-                                                            contrast_bars_kwargs = contrast_bars_kwargs,
-                                                            marker_size = marker_size
+    (violin_kwargs, zeroline_kwargs, marker_kwargs, errorbar_kwargs, 
+     delta_text_kwargs, contrast_bars_kwargs, summary_bars_kwargs) = get_kwargs(
+                                                                violin_kwargs = violin_kwargs,
+                                                                zeroline_kwargs = zeroline_kwargs,
+                                                                horizontal = horizontal,
+                                                                marker_kwargs = marker_kwargs,
+                                                                errorbar_kwargs = errorbar_kwargs,
+                                                                delta_text_kwargs = delta_text_kwargs,
+                                                                contrast_bars_kwargs = contrast_bars_kwargs,
+                                                                summary_bars_kwargs = summary_bars_kwargs,
+                                                                marker_size = marker_size
     )
                                             
     # Plot the violins and make adjustments
@@ -718,6 +761,42 @@ def forest_plot(
                 ax.add_patch(mpatches.Rectangle((0, x-0.25), y, 0.25, color=bar_colors[x-1], **contrast_bars_kwargs))
             else:
                 ax.add_patch(mpatches.Rectangle((x, 0), 0.25, y, color=bar_colors[x-1], **contrast_bars_kwargs))
+
+    # Summary bars
+    if summary_bars:
+        _bar_color = summary_bars_kwargs.pop('color')
+        if _bar_color is not None:
+            bar_colors = [_bar_color] * number_of_curves_to_plot
+        else:
+            bar_colors = violin_colors
+
+        span_ax = summary_bars_kwargs.pop("span_ax")
+        summary_xmin, summary_xmax = ax.get_xlim()
+        summary_ymin, summary_ymax = ax.get_ylim()
+
+        for summary_index in summary_bars:
+            if span_ax == True:
+                starting_location = summary_ymin if horizontal else summary_xmin
+            else:
+                starting_location = summary_index+1   
+
+            summary_color = bar_colors[summary_index]
+            summary_ci_low, summary_ci_high = bcalows[summary_index], bcahighs[summary_index]
+
+            if horizontal:
+                ax.add_patch(mpatches.Rectangle(
+                    (summary_ci_low, starting_location),
+                    summary_ci_high-summary_ci_low, summary_ymax+1, 
+                    color=summary_color, 
+                    **summary_bars_kwargs)
+                    )
+            else:
+                ax.add_patch(mpatches.Rectangle(
+                    (starting_location, summary_ci_low),
+                    summary_xmax+1, summary_ci_high-summary_ci_low, 
+                    color=summary_color, 
+                    **summary_bars_kwargs)
+                    )
 
     ## Invert Y-axis if horizontal 
     if horizontal:
