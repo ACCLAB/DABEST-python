@@ -247,7 +247,6 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                 raw_colors = raw_colors, 
                 plot_palette_raw = plot_palette_raw, 
                 color_col = color_col,
-                plot_kwargs = plot_kwargs, 
                 barplot_kwargs = barplot_kwargs,
                 horizontal = horizontal,
             )
@@ -440,7 +439,6 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                     color_col = color_col, 
                     plot_palette_raw = plot_palette_raw, 
                     show_pairs = show_pairs,
-                    proportional = proportional, 
                     float_contrast = float_contrast, 
                     show_mini_meta = show_mini_meta, 
                     mini_meta = effectsize_df.mini_meta if show_mini_meta else None, 
@@ -507,7 +505,6 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                         ticks_to_skip = ticks_to_skip,
                         temp_idx = temp_idx if is_paired == "baseline" and show_pairs else None,
                         ticks_to_skip_contrast = ticks_to_skip_contrast,
-                        extra_delta = True if (show_delta2 or show_mini_meta) else False,
                         redraw_axes_kwargs = redraw_axes_kwargs
             )
 
@@ -587,7 +584,6 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                         ticks_to_plot = ticks_to_plot, 
                         color_col = color_col,
                         plot_palette_raw = plot_palette_raw, 
-                        proportional = proportional, 
                         show_pairs = show_pairs,
                         horizontal = horizontal,
         )

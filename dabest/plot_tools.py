@@ -887,7 +887,6 @@ def summary_bars_plotter(
         ticks_to_plot: list, 
         color_col: str, 
         plot_palette_raw: dict, 
-        proportional: bool, 
         show_pairs: bool, 
         horizontal: bool
     ):
@@ -914,8 +913,6 @@ def summary_bars_plotter(
         Column name of the color column.
     plot_palette_raw : dict
         Dictionary of colors used in the plot.
-    proportional : bool
-        Whether the data is proportional.
     show_pairs : bool
         Whether the data is paired and shown in pairs.
     horizontal : bool
@@ -1055,8 +1052,7 @@ def delta_text_plotter(
         delta_text_kwargs: dict, 
         color_col: str, 
         plot_palette_raw: dict, 
-        show_pairs: bool, 
-        proportional: bool, 
+        show_pairs: bool,
         float_contrast: bool,
         show_mini_meta: bool, 
         mini_meta: object, 
@@ -1085,8 +1081,6 @@ def delta_text_plotter(
         Dictionary of colors used in the plot.
     show_pairs : bool
         Whether the data is paired and show pairs.
-    proportional : bool
-        Whether the data is proportional.
     float_contrast : bool
         Whether the DABEST plot uses Gardner-Altman or Cummings
     show_mini_meta : bool
@@ -2055,7 +2049,6 @@ def barplotter(
         raw_colors: str, 
         plot_palette_raw: dict, 
         color_col: str,
-        plot_kwargs: dict, 
         barplot_kwargs: dict, 
         horizontal: bool
     ):
@@ -2080,8 +2073,6 @@ def barplotter(
         Dictionary of colors used in the bar plot.
     color_col : str
         Column name of the color column.
-    plot_kwargs : dict
-        Keyword arguments for the plot.
     barplot_kwargs : dict
         Keyword arguments for the barplot.
     horizontal : bool
@@ -2143,7 +2134,6 @@ def barplotter(
     )
 
     # adjust the width of bars
-    # bar_width = plot_kwargs["bar_width"]
     if horizontal:
         for bar in bar1.patches:
             y = bar.get_y()

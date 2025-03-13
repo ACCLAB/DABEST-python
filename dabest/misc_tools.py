@@ -1355,7 +1355,7 @@ def gardner_altman_adjustments(
         redraw_axes_kwargs: dict
     ):
     """
-    Aesthetic adjustments for the Gardner-Altman plot.
+    Aesthetic adjustments specific to Gardner-Altman plots (float_contrast=True).
     
     Parameters
     ----------
@@ -1546,6 +1546,20 @@ def draw_zeroline(
         reflines_kwargs : dict,
         extra_delta : bool,
     ):
+    """
+    Draw the independent axis spine lines.
+
+    Parameters
+    ----------
+    ax : object (Axes)
+        The contrast data axes.
+    horizontal : bool
+        A boolean flag to determine if the plot is for horizontal plotting.
+    reflines_kwargs : dict
+        Additional keyword arguments to be passed to the zeroline.
+    extra_delta : bool
+        A boolean flag to determine if the plot includes an extra delta (delta-delta or mini-meta).
+    """
     # If 0 lies within the ylim of the contrast axes, draw a zero reference line.
     if extra_delta and not horizontal:
         contrast_xlim = [-0.5, 3.4]
@@ -1584,9 +1598,40 @@ def redraw_independent_spines(
         ticks_to_skip : list,
         temp_idx : list,
         ticks_to_skip_contrast : list,
-        extra_delta : bool,
         redraw_axes_kwargs : dict
     ):
+    """
+    Draw the independent axis spine lines.
+
+    Parameters
+    ----------
+    rawdata_axes : object (Axes)
+        The raw data axes.
+    contrast_axes : object (Axes)
+        The contrast axes.
+    horizontal : bool
+        A boolean flag to determine if the plot is for horizontal plotting.
+    two_col_sankey : bool
+        A boolean flag to determine if the plot is for two-col sankey.
+    ticks_to_start_twocol_sankey : list
+        A list of ticks to start for sankey plot.
+    idx : list
+        A list of indices.
+    is_paired : bool
+        A boolean flag to determine if the data is paired.
+    show_pairs : bool
+        A boolean flag to determine if pairs should be shown.
+    proportional : bool
+        A boolean flag to determine if the plot is proportional/binary.
+    ticks_to_skip : list,
+        A list of ticks to be skipped in the raw data axes.
+    temp_idx : list,
+        A temporary list of indices to be used for skipping ticks in the raw data axes.
+    ticks_to_skip_contrast : list,
+        A list of ticks to be skipped in the contrast axes.
+    redraw_axes_kwargs : dict
+        Kwargs passed to the redraw axes.
+    """
     # Extract the ticks
     if two_col_sankey:
         rightend_ticks_raw = rightend_ticks_contrast = np.array([len(i) - 2 for i in idx]) + np.array(ticks_to_start_twocol_sankey)
@@ -1655,7 +1700,7 @@ def redraw_dependent_spines(
         delta2_axes: axes.Axes
     ):
     """
-    Aesthetic general adjustments across both GA and Cumming plots.
+    Draw the dependent axis spine lines.
 
     Parameters
     ----------
@@ -1665,8 +1710,6 @@ def redraw_dependent_spines(
         The contrast axes.
     redraw_axes_kwargs : dict
         Kwargs passed to the redraw axes.
-    plot_kwargs : dict
-        Kwargs passed to the plot function.
     float_contrast : bool
         A boolean flag to determine if the plot is GA or Cum
     horizontal : bool
