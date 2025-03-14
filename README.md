@@ -14,7 +14,7 @@ citation](https://zenodo.org/badge/DOI/10.1038/s41592-019-0470-3.svg)](https://r
 
 ## Recent Version Update
 
-We are proud to announce **DABEST Version Dadar (v2025.03.14)** This new
+We are proud to announce **DABEST Version Dadar (v2025.03.27)** This new
 version of the DABEST Python library includes several new features and
 performance improvements. It’s a big one!
 
