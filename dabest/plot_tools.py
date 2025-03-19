@@ -7,10 +7,9 @@ from __future__ import annotations
 
 # %% auto 0
 __all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'width_determine',
-           'single_sankey', 'sankeydiag', 'summary_bars_plotter', 'color_picker', 'raw_contrast_bar_plotter',
-           'delta_text_plotter', 'delta_dots_plotter', 'slopegraph_plotter', 'plot_minimeta_or_deltadelta_violins',
-           'effect_size_curve_plotter', 'gridkey_plotter', 'barplotter', 'table_for_horizontal_plots',
-           'add_counts_to_prop_plots', 'swarmplot', 'SwarmPlot']
+           'single_sankey', 'sankeydiag', 'add_bars_to_plot', 'delta_text_plotter', 'delta_dots_plotter',
+           'slopegraph_plotter', 'plot_minimeta_or_deltadelta_violins', 'effect_size_curve_plotter', 'gridkey_plotter',
+           'barplotter', 'table_for_horizontal_plots', 'add_counts_to_prop_plots', 'swarmplot', 'SwarmPlot']
 
 # %% ../nbs/API/plot_tools.ipynb 4
 import math
@@ -877,188 +876,48 @@ def sankeydiag(
 
     return (left_idx, right_idx)
 
-def summary_bars_plotter(
-        summary_bars: list, 
-        results: pd.DataFrame,
-        ax_to_plot: axes.Axes,
-        float_contrast: bool,
-        summary_bars_kwargs: dict, 
-        ci_type: str,
-        ticks_to_plot: list, 
-        color_col: str, 
-        plot_palette_raw: dict, 
-        show_pairs: bool, 
-        horizontal: bool
-    ):
+def add_bars_to_plot(bar_dict: dict, ax: axes.Axes, bar_kwargs: dict):
     """
-    Add summary bars to the contrast plot.
+    Add bars to the relevant axes.
 
     Parameters
     ----------
-    summary_bars : list
-        List of indices of the contrast objects to plot summary bars for.
-    results : DataFrame
-        Dataframe of contrast object comparisons.
-    ax_to_plot : axes.Axes
+    bar_dict : dict
+        Dictionary of bar values.
+    ax : axes.Axes
         Matplotlib axis object to plot on.
-    float_contrast : bool
-        Whether the DABEST plot uses Gardner-Altman or Cummings.
-    summary_bars_kwargs : dict
-        Keyword arguments for the summary bars.
-    ci_type : str 
-        Type of confidence interval to plot.
-    ticks_to_plot : list
-        List of indices of the contrast objects.
-    color_col : str
-        Column name of the color column.
-    plot_palette_raw : dict
-        Dictionary of colors used in the plot.
-    show_pairs : bool
-        Whether the data is paired and shown in pairs.
-    horizontal : bool
-        Whether the plot is horizontal.
+    bar_kwargs : dict
+        Keyword arguments for the bars.
     """
-# Begin checks        
-    if not isinstance(summary_bars, list):
-        raise TypeError("summary_bars must be a list of indices (ints).")
-    if not all(isinstance(i, int) for i in summary_bars):
-        raise TypeError("summary_bars must be a list of indices (ints).")
-    if any(i >= len(results) for i in summary_bars):
-        raise ValueError("Index {} chosen is out of range for the contrast objects.".format([i for i in summary_bars if i >= len(results)]))
-    if float_contrast:
-        raise ValueError("summary_bars cannot be used with Gardner-Altman plots.")
-# End checks
-    else:
-        summary_xmin, summary_xmax = ax_to_plot.get_xlim()
-        summary_ymin, summary_ymax = ax_to_plot.get_ylim()
+    og_xlim, og_ylim = ax.get_xlim(), ax.get_ylim()
 
-        summary_bars_colors = color_picker(summary_bars_kwargs, ticks_to_plot, color_col, show_pairs, plot_palette_raw)
+    x_start_values, x_distances, y_start_values, y_distances, colors = bar_dict.values()
 
-        span_ax = summary_bars_kwargs.pop("span_ax")
-
-        for summary_index in summary_bars:
-            summary_ci_low = results.get(ci_type+'_low')[summary_index]
-            summary_ci_high = results.get(ci_type+'_high')[summary_index]    
-
-            if span_ax == True:
-                starting_location = summary_ymax if horizontal else summary_xmin
-            else:
-                starting_location = ticks_to_plot[summary_index]                
-
-            summary_color = summary_bars_colors[int(ticks_to_plot[summary_index])]
-
-            if horizontal:
-                ax_to_plot.add_patch(mpatches.Rectangle(
-                    (summary_ci_low, starting_location),
-                    summary_ci_high-summary_ci_low, summary_ymin+1, 
-                    color=summary_color, 
-                    **summary_bars_kwargs)
+    for start_x, start_y, distance_x, distance_y, current_color in zip(
+                                                                        x_start_values, 
+                                                                        y_start_values, 
+                                                                        x_distances, 
+                                                                        y_distances, 
+                                                                        colors
+                                                                    ):
+        ax.add_patch(mpatches.Rectangle((start_x, start_y), 
+                                        distance_x, distance_y, 
+                                        color=current_color, **bar_kwargs
+                                        )
                     )
-            else:
-                ax_to_plot.add_patch(mpatches.Rectangle(
-                    (starting_location, summary_ci_low),
-                    summary_xmax+1, summary_ci_high-summary_ci_low, 
-                    color=summary_color, 
-                    **summary_bars_kwargs)
-                    )
-
-def color_picker(kwargs: dict, num_of_elements: list, color_col: str, show_pairs: bool, color_palette: dict) -> list:
-
-    if any(isinstance(val, typ) for val in num_of_elements for typ in [int, float]):
-        num_of_elements = int(max(num_of_elements) + 1)
-    elif any(isinstance(val, typ) for val in num_of_elements for typ in [str]):
-        num_of_elements = len(num_of_elements) + 1
-
-    colors = (
-        [kwargs.get('color')] * num_of_elements
-        if kwargs.get('color') is not None
-        else ['black'] * num_of_elements
-        if color_col is not None or show_pairs 
-        else list(color_palette.values())
-    )
-    kwargs.pop('color')
-
-    return colors
-
-def raw_contrast_bar_plotter(
-        bar_type: str,
-        axes : list,
-        bar_kwargs: dict,
-        color_col : str,
-        show_pairs : bool,
-        plot_palette_raw : dict,
-        idx : list,
-
-        plot_data : pd.DataFrame = None, #Only raw
-        xvar : str = None, #Only raw
-        yvar : str = None, #Only raw
-
-        order : list = None, #Only contrast
-        results : object = None, #Only contrast
-        horizontal : bool = False, #Only contrast
-        diff : float = None #Only contrast
-    ):
-
-    ax_to_plot = axes[0] if bar_type == 'raw' else axes[1]
-    og_xlim, og_ylim = ax_to_plot.get_xlim(), ax_to_plot.get_ylim()
-
-    # Extract means
-    if bar_type == 'raw':
-        if isinstance(plot_data[xvar].dtype, pd.CategoricalDtype):
-            order = pd.unique(plot_data[xvar]).categories
-        else:
-            order = pd.unique(plot_data[xvar])
-        means = plot_data.groupby(xvar, observed=False)[yvar].mean().reindex(index=order)
-    elif bar_type == 'contrast':
-        means = []
-        for j, tick in enumerate(order):
-            means.append(results.difference[int(j)])
-
-    unpacked_idx = [element for innerList in idx for element in innerList] 
-
-    # Colors
-    bar_colors = color_picker(bar_kwargs, order, color_col, show_pairs, plot_palette_raw)
-
-    # alpha
-    bar_kwargs['alpha'] = bar_kwargs.get('alpha', 0.15 if color_col is not None or show_pairs else 0.25)
-
-    # Plot the bars
-    y_values = order if bar_type == 'contrast' else np.arange(0, len(order)+1, 1)
-    for current_x, current_y in zip(y_values, means):
-        idx_selector = (
-            int(current_x) 
-            if type(bar_colors) == list 
-            else unpacked_idx[int(current_x)]
-        )
-        if bar_type == 'contrast' and horizontal:
-            ax_to_plot.add_patch(mpatches.Rectangle((0, current_x-0.5), current_y, 0.5, color=bar_colors[idx_selector], **bar_kwargs))
-        else:
-            ax_to_plot.add_patch(mpatches.Rectangle((current_x-0.25, 0), 0.5, current_y, color=bar_colors[idx_selector], **bar_kwargs))
-
-    if bar_type == 'contrast' and diff is not None:
-        if horizontal:
-            ax_to_plot.add_patch(mpatches.Rectangle((0, max(axes[0].get_yticks())-0.5), diff, 0.5, color='black', **bar_kwargs))
-        else:
-            ax_to_plot.add_patch(mpatches.Rectangle((max(axes[0].get_xticks())+1-0.25, 0), 0.5, diff, color='black', **bar_kwargs))
-
-    ax_to_plot.set_xlim(og_xlim)
-    ax_to_plot.set_ylim(og_ylim) 
+    ax.set_xlim(og_xlim)
+    ax.set_ylim(og_ylim) 
 
 def delta_text_plotter(
         results: pd.DataFrame, 
         ax_to_plot: object, 
-        swarm_plot_ax: axes.Axes, 
         ticks_to_plot: list, 
         delta_text_kwargs: dict, 
         color_col: str, 
         plot_palette_raw: dict, 
         show_pairs: bool,
         float_contrast: bool,
-        show_mini_meta: bool, 
-        mini_meta: object, 
-        show_delta2: bool, 
-        delta_delta: object, 
-        idx: list
+        extra_delta: float,
     ):
     """
     Add delta text to the contrast plot.
@@ -1069,8 +928,6 @@ def delta_text_plotter(
         Dataframe of contrast object comparisons.
     ax_to_plot : axes.Axes
         Matplotlib axis object to plot on.
-    swarm_plot_ax : axes.Axes
-        Matplotlib axis object of the swarm plot.
     ticks_to_plot : list
         List of indices of the contrast objects.
     delta_text_kwargs : dict
@@ -1082,90 +939,60 @@ def delta_text_plotter(
     show_pairs : bool
         Whether the data is paired and show pairs.
     float_contrast : bool
-        Whether the DABEST plot uses Gardner-Altman or Cummings
-    show_mini_meta : bool
-        Whether to show the mini meta-analysis.
-    mini_meta : object
-        Mini meta-analysis object.
-    show_delta2 : bool
-        Whether to show the delta-delta.
-    delta_delta : object
-        delta-delta object.
-    idx : list
-        List of indices of the raw groups.
+        Whether the DABEST plot uses Gardner-Altman or Cummings.
+    extra_delta : float or None
+        The extra mini-meta or delta-delta value if applicable.
     """
-    # Begin checks
-    delta_text_x_location = delta_text_kwargs.get('x_location')
-    if delta_text_x_location != 'right' and delta_text_x_location != 'left':
-        raise ValueError("delta_text_kwargs['x_location'] must be either 'right' or 'left'.")
-    if float_contrast:
-        delta_text_x_location = 'left'
-        delta_text_kwargs["va"] = 'bottom' if results.difference[0] >= 0 else 'top'
-    delta_text_kwargs.pop('x_location')
-
     # Colors
-    delta_text_colors = color_picker(delta_text_kwargs, ticks_to_plot, color_col, show_pairs, plot_palette_raw)
+    from .misc_tools import color_picker
+    delta_text_colors = color_picker(color_type = 'delta_text',
+                                     kwargs = delta_text_kwargs, 
+                                     elements = ticks_to_plot, 
+                                     color_col = color_col, 
+                                     show_pairs = show_pairs, 
+                                     color_palette = plot_palette_raw
+                                    )
 
-    # Idx
-    unpacked_idx = [element for innerList in idx for element in innerList] 
-    if show_mini_meta or show_delta2: 
-        unpacked_idx.append('extra_delta')
-        if type(delta_text_colors) == list:
-            delta_text_colors.append('black')
-        else:
-            delta_text_colors['extra_delta'] = 'black'
+    num_of_elements = len(ticks_to_plot) + 1 if extra_delta is not None else len(ticks_to_plot)
 
-    total_ticks = len(ticks_to_plot) + 1 if show_mini_meta or show_delta2 else len(ticks_to_plot)
-
-    # Collect the Y-values for the delta text
-    Delta_Values = []
+    # Collect the means for the delta text
+    delta_values = []
     for j, tick in enumerate(ticks_to_plot):
-        Delta_Values.append(results.difference[int(j)])
-    if show_delta2: Delta_Values.append(delta_delta.difference)
-    if show_mini_meta: Delta_Values.append(mini_meta.difference)
+        delta_values.append(results.difference[int(j)])
+    if extra_delta is not None: 
+        delta_values.append(extra_delta)
+        delta_text_colors.append('black')
 
     # Collect the X-coordinates for the delta text
     delta_text_x_coordinates = delta_text_kwargs.pop('x_coordinates')
-    delta_text_x_adjustment = delta_text_kwargs.pop('offset')
+    delta_text_x_offset = delta_text_kwargs.pop('offset')
 
     if delta_text_x_coordinates is not None:
         if not isinstance(delta_text_x_coordinates, (list, tuple)) or not all(isinstance(x, (int, float)) for x in delta_text_x_coordinates):
             raise TypeError("delta_text_kwargs['x_coordinates'] must be a list of x-coordinates.")
-        if len(delta_text_x_coordinates) != total_ticks:
+        if len(delta_text_x_coordinates) != num_of_elements:
             raise ValueError("delta_text_kwargs['x_coordinates'] must have the same length as the number of ticks to plot.")
-        if show_mini_meta or show_delta2: ticks_to_plot.append(max(ticks_to_plot)+1)
     else:
-        delta_text_x_coordinates = ticks_to_plot
-        X_Adjust = 0.48 if delta_text_x_location == 'right' else -0.38
-        X_Adjust += delta_text_x_adjustment
-        delta_text_x_coordinates = [x+X_Adjust for x in delta_text_x_coordinates]
-        if show_mini_meta: delta_text_x_coordinates.append(max(swarm_plot_ax.get_xticks())+1+X_Adjust)
-        if show_delta2: delta_text_x_coordinates.append(max(swarm_plot_ax.get_xticks())+1+X_Adjust)
-        if show_mini_meta or show_delta2: ticks_to_plot.append(max(ticks_to_plot)+1)
+        x_adjust = (-0.4 if float_contrast else 0.48) + delta_text_x_offset
+        delta_text_x_coordinates = [x+x_adjust for x in ticks_to_plot]
+        if extra_delta is not None: delta_text_x_coordinates.append(max(ticks_to_plot)+1+x_adjust)
 
     # Collect the Y-coordinates for the delta text
-    delta_text_y_coordinates = delta_text_kwargs.get('y_coordinates')
+    delta_text_y_coordinates = delta_text_kwargs.pop('y_coordinates')
+    if float_contrast: delta_text_kwargs["va"] = 'bottom' if results.difference[0] >= 0 else 'top'
 
     if delta_text_y_coordinates is not None:
         if not isinstance(delta_text_y_coordinates, (list, tuple)) or not all(isinstance(y, (int, float)) for y in delta_text_y_coordinates):
             raise TypeError("delta_text_kwargs['y_coordinates'] must be a list of y-coordinates.")
-        if len(delta_text_y_coordinates) != total_ticks:
+        if len(delta_text_y_coordinates) != num_of_elements:
             raise ValueError("delta_text_kwargs['y_coordinates'] must have the same length as the number of ticks to plot.")
     else:
-        delta_text_y_coordinates = Delta_Values
-
-    delta_text_kwargs.pop('y_coordinates')
+        delta_text_y_coordinates = delta_values
 
     # Plot the delta text
-    for x,y,t,tick in zip(delta_text_x_coordinates, delta_text_y_coordinates,Delta_Values,ticks_to_plot):
-        delta_text = np.format_float_positional(t, precision=2, sign=True, trim="k", min_digits=2)
-        idx_selector = (
-            int(tick)
-            if type(delta_text_colors) == list 
-            else unpacked_idx[int(tick)]
-            )
-        ax_to_plot.text(x, y, delta_text, color=delta_text_colors[idx_selector], zorder=5, **delta_text_kwargs)
-
+    for x, y, text, color in zip(delta_text_x_coordinates, delta_text_y_coordinates, delta_values, delta_text_colors):
+        delta_text = np.format_float_positional(text, precision=2, sign=True, trim="k", min_digits=2)
+        ax_to_plot.text(x, y, delta_text, color=color, zorder=5, **delta_text_kwargs)
 
 def delta_dots_plotter(
         plot_data: pd.DataFrame, 
@@ -1209,7 +1036,7 @@ def delta_dots_plotter(
     horizontal : bool
         If the rawplot is horizontal.
     """
-    
+
     # Checks and initializations
     # from .plot_tools import swarmplot
     delta_dot_color = delta_dot_kwargs.pop('color')
@@ -1373,31 +1200,29 @@ def slopegraph_plotter(
     
 
 def plot_minimeta_or_deltadelta_violins(
-        show_mini_meta: bool, 
-        effectsize_df: object, 
+        dabest_obj: object,
+        type: str,
         ci_type: str, 
         rawdata_axes: axes.Axes,
         contrast_axes: axes.Axes, 
         contrast_kwargs: dict, 
-        contrast_alpha: float, 
         contrast_xtick_labels: list, 
         effect_size: str, 
-        show_delta2: bool, 
         plot_kwargs: dict, 
         horizontal: bool, 
         show_pairs: bool,
         contrast_marker_kwargs: dict, 
-        contrast_errorbar_kwargs: dict
+        contrast_errorbar_kwargs: dict,
     ):
     """
     Add mini meta-analysis or delta-delta violin plots to the contrast plot.
 
     Parameters
     ----------
-    show_mini_meta : bool
-        Whether to show the mini meta-analysis.
-    effectsize_df : object
-        DABEST Effectsize object
+    dabest_obj : object
+        DABEST Effectsize object delta-delta or mini_meta
+    type: str
+        mini_meta or delta_delta
     ci_type : str
         Type of confidence interval to plot.
     rawdata_axes : axes.Axes
@@ -1406,14 +1231,10 @@ def plot_minimeta_or_deltadelta_violins(
         Matplotlib axis object to plot on.
     contrast_kwargs : dict
         Keyword arguments for the violinplot.
-    contrast_alpha : float
-        Alpha value for the half violin.
     contrast_xtick_labels : list
         List of xtick labels for the contrast plot.
     effect_size : str
         Type of effect size to plot.
-    show_delta2 : bool
-        Whether to show the delta-delta.
     plot_kwargs : dict
         Keyword arguments for the plot.
     horizontal : bool
@@ -1436,8 +1257,7 @@ def plot_minimeta_or_deltadelta_violins(
         ci_low, ci_high = dabest_object.results.get(ci_type+'_low')[0], dabest_object.results.get(ci_type+'_high')[0]
         return data, dabest_object.difference, ci_low, ci_high
 
-    dabest_object = effectsize_df.mini_meta if show_mini_meta else effectsize_df.delta_delta
-    data, difference, ci_low, ci_high = extract_curve_data(dabest_object)
+    data, difference, ci_low, ci_high = extract_curve_data(dabest_obj)
 
     if contrast_kwargs.get('alpha') is not None:
         contrast_alpha = contrast_kwargs.pop('alpha')
@@ -1476,7 +1296,7 @@ def plot_minimeta_or_deltadelta_violins(
     # Add labels and ticks
     if horizontal:
         current_ylabels = rawdata_axes.get_yticklabels()
-        if show_mini_meta:
+        if type == 'mini_meta':
             current_ylabels.extend(["Weighted Delta"])
         elif effect_size == "hedges_g":
             current_ylabels.extend(["Deltas' g"])
@@ -1485,9 +1305,8 @@ def plot_minimeta_or_deltadelta_violins(
 
         rawdata_axes.set_yticks(np.append(rawdata_axes.get_yticks(), position))
         rawdata_axes.set_yticklabels(current_ylabels)
-
     else:
-        if show_mini_meta:
+        if type == 'mini_meta':
             if show_pairs:
                 contrast_xtick_labels.extend(["Weighted\n Delta"])
             else:
@@ -1498,7 +1317,7 @@ def plot_minimeta_or_deltadelta_violins(
             contrast_xtick_labels.extend(["Delta-Delta"])
 
     # Create the delta-delta axes.
-    if show_delta2 and not horizontal:
+    if type == 'delta_delta' and not horizontal:
         if plot_kwargs["delta2_label"] is not None:
             delta2_label = plot_kwargs["delta2_label"]
         elif effect_size == "mean_diff":
@@ -1524,7 +1343,6 @@ def effect_size_curve_plotter(
         ci_type: str, 
         contrast_axes: axes.Axes, 
         contrast_kwargs: dict, 
-        contrast_alpha: float, 
         bootstraps_color_by_group: bool, 
         plot_palette_contrast: dict,
         horizontal: bool, 
@@ -1553,8 +1371,6 @@ def effect_size_curve_plotter(
         Matplotlib axis object to plot on.
     contrast_kwargs : dict
         Keyword arguments for the violinplot.
-    contrast_alpha : float
-        Alpha value for the half violin.
     bootstraps_color_by_group : bool
         Whether to color the bootstraps by group.
     plot_palette_contrast : dict
@@ -1687,6 +1503,7 @@ def effect_size_curve_plotter(
                     **contrast_paired_lines_kwargs
                 )
 
+    contrast_kwargs['alpha'] = contrast_alpha
     return current_group, current_control, current_effsize, contrast_xtick_labels
 
 def gridkey_plotter(
@@ -1767,7 +1584,7 @@ def gridkey_plotter(
     fontsize = gridkey_kwargs.get('fontsize')
 
     # Auto parser for gridkey - implemented by SangyuXu
-    if gridkey == "auto" or gridkey ==True:
+    if gridkey == "auto" or gridkey == True:
         if experiment_label is not None:
             gridkey = list(np.concatenate([experiment_label, x1_level]))
         else:
@@ -1854,9 +1671,7 @@ def gridkey_plotter(
         # get the effect size, append + or -, 2 dec places
         for i in enumerate(groups_for_gridkey):
             if i[1] in results_list:
-                curr_esval = results.loc[results["test"] == i[1]][
-                    "difference"
-                ].iloc[0]
+                curr_esval = results.loc[results["test"] == i[1]]["difference"].iloc[0]
                 curr_esval_str = np.format_float_positional(
                     curr_esval,
                     precision=2,
@@ -1926,6 +1741,15 @@ def gridkey_plotter(
                     group_vals.append(n)
 
     # Create the table object
+    def add_table(celltext, bbox, rowlabels=None):
+        gridkey_to_plot = ax_to_plot.table(
+                    cellText=celltext,
+                    rowLabels=rowlabels,
+                    cellLoc="center",
+                    bbox=bbox,
+        )
+        return gridkey_to_plot
+
     if horizontal:
         # Convert the cells format for horizontal table plotting
         converted_list = []
@@ -1935,18 +1759,8 @@ def gridkey_plotter(
                 temp_list.append(i[j])
             converted_list.append(temp_list)
 
-        # Plot the table for horizontal format
-        gridkey_to_plot = ax_to_plot.table(
-                    cellText=converted_list,
-                    cellLoc="center",
-                    bbox=[
-                        -len(gridkey) * 0.2, 
-                        0, 
-                        len(gridkey) * 0.2, 
-                        1
-                    ],
-        )
-        
+        gridkey_to_plot = add_table(celltext = converted_list, bbox = [-len(gridkey) * 0.2, 0, len(gridkey) * 0.2, 1])
+
         # Add the column labels as text below the table
         text_locs = np.arange((-len(gridkey)*0.2) +0.1, 0, 0.2)
         for loc, txt in zip(text_locs, gridkey):
@@ -1963,55 +1777,12 @@ def gridkey_plotter(
     else:
         # Plot the table for vertical format
         if show_mini_meta:
-            gridkey_to_plot = ax_to_plot.table(
-                cellText=table_cellcols,
-                rowLabels=gridkey,
-                cellLoc="center",
-                bbox=[
-                    0,
-                    -len(gridkey) * 0.1 - 0.05,
-                    1,
-                    len(gridkey) * 0.1,
-                ],
-
-            )
-            
+            gridkey_to_plot = add_table(celltext = table_cellcols, rowlabels=gridkey, bbox = [0, -len(gridkey) * 0.1 - 0.05, 1, len(gridkey) * 0.1])
         elif show_delta2:
-            gridkey_to_plot = ax_to_plot.table(
-                cellText=table_cellcols,
-                rowLabels=gridkey,
-                cellLoc="center",
-                bbox=[
-                    0,
-                    -len(gridkey) * 0.1 - 0.05,
-                    0.75,
-                    len(gridkey) * 0.1,
-                ],
-            )
-
-            extra_gridkey = ax_to_plot.table(
-                cellText=extra_table_cellcols,
-                cellLoc="center",
-                bbox=[
-                    0.78,
-                    -len(gridkey) * 0.1 - 0.05,
-                    0.15,
-                    len(gridkey) * 0.1,
-                ],
-            )
-                    
+            gridkey_to_plot = add_table(celltext = table_cellcols, rowlabels=gridkey, bbox = [0, -len(gridkey) * 0.1 - 0.05, 0.75, len(gridkey) * 0.1])
+            extra_gridkey  =  add_table(celltext = extra_table_cellcols, bbox = [0.78, -len(gridkey) * 0.1 - 0.05, 0.15, len(gridkey) * 0.1])
         else:
-            gridkey_to_plot = ax_to_plot.table(
-                cellText=table_cellcols,
-                rowLabels=gridkey,
-                cellLoc="center",
-                bbox=[
-                    0,
-                    -len(gridkey) * 0.1 - 0.05,
-                    1,
-                    len(gridkey) * 0.1,
-                ],
-            )
+            gridkey_to_plot = add_table(celltext = table_cellcols, rowlabels=gridkey, bbox = [0, -len(gridkey) * 0.1 - 0.05, 1, len(gridkey) * 0.1]) 
 
         # modifies row label cells
         for cell in gridkey_to_plot._cells:

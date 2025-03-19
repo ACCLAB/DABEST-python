@@ -6,7 +6,8 @@
 __all__ = ['merge_two_dicts', 'unpack_and_add', 'print_greeting', 'get_varname', 'get_unique_categories', 'get_params',
            'get_kwargs', 'get_color_palette', 'initialize_fig', 'get_plot_groups', 'add_counts_to_ticks',
            'extract_contrast_plotting_ticks', 'set_xaxis_ticks_and_lims', 'show_legend', 'gardner_altman_adjustments',
-           'draw_zeroline', 'redraw_independent_spines', 'redraw_dependent_spines', 'extract_group_summaries']
+           'draw_zeroline', 'redraw_independent_spines', 'redraw_dependent_spines', 'extract_group_summaries',
+           'color_picker', 'prepare_bars_for_plot']
 
 # %% ../nbs/API/misc_tools.ipynb 4
 import datetime as dt
@@ -167,7 +168,6 @@ def get_params(
     group_summaries = None if barplot_kwargs['errorbar'] is not None else group_summaries
 
     # Contrast Axes kwargs
-    contrast_alpha = plot_kwargs["contrast_alpha"]
     ci_type = plot_kwargs["ci_type"]
     if ci_type not in ["bca", "pct"]:
         raise ValueError("Invalid `ci_type`. Must be either 'bca' or 'pct'.")
@@ -196,7 +196,7 @@ def get_params(
         
     return (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, 
             idx, show_delta2, show_mini_meta, float_contrast, show_pairs, group_summaries, 
-            horizontal, results, contrast_alpha, ci_type, x1_level, experiment_label, show_baseline_ec, 
+            horizontal, results, ci_type, x1_level, experiment_label, show_baseline_ec, 
             one_sankey, two_col_sankey, asymmetric_side)
 
 def get_kwargs(
@@ -265,6 +265,7 @@ def get_kwargs(
         "orientation": 'vertical',
         "showextrema": False,
         "showmedians": False,
+        "alpha": plot_kwargs["contrast_alpha"],
         
     }
     if plot_kwargs["contrast_kwargs"] is None:
@@ -365,13 +366,11 @@ def get_kwargs(
 
     # Delta text kwargs.
     default_delta_text_kwargs = {
-                "color": None, 
                 "alpha": 1,
                 "fontsize": 10, 
                 "ha": 'center', 
                 "va": 'center', 
                 "rotation": 0, 
-                "x_location": 'right', 
                 "x_coordinates": None, 
                 "y_coordinates": None,
                 "offset": 0
@@ -384,7 +383,6 @@ def get_kwargs(
     # Summary bars kwargs.
     default_summary_bars_kwargs = {
                     "span_ax": False,
-                    "color": None, 
                     "alpha": 0.15,
                     "zorder":-3
     }
@@ -395,8 +393,8 @@ def get_kwargs(
 
     # Swarm bars kwargs.
     default_raw_bars_kwargs = {
-                    "color": None, 
-                    "zorder":-3
+                    "zorder":-3,
+                    "alpha": 0.2
     }
     if plot_kwargs["raw_bars_kwargs"] is None:
         raw_bars_kwargs = default_raw_bars_kwargs
@@ -405,8 +403,8 @@ def get_kwargs(
 
     # Contrast bars kwargs.
     default_contrast_bars_kwargs = {
-                    "color": None, 
-                    "zorder":-3
+                    "zorder":-3,
+                    "alpha": 0.2
     }
     if plot_kwargs["contrast_bars_kwargs"] is None:
         contrast_bars_kwargs = default_contrast_bars_kwargs
@@ -1115,7 +1113,6 @@ def extract_contrast_plotting_ticks(
             ticks_to_start_twocol_sankey.pop()
             ticks_to_start_twocol_sankey.insert(0, 0)
         else:
-
             ticks_to_skip = np.cumsum([len(t) for t in idx])[:-1].tolist()
             ticks_to_skip.insert(0, 0)
             # Then obtain the ticks where we have to plot the effect sizes.
@@ -1848,3 +1845,111 @@ def extract_group_summaries(
     group_summaries_kwargs.pop("offset")
 
     return group_summaries_method, group_summaries_offset, group_summaries_line_color
+
+def color_picker(color_type: str,
+                 kwargs: dict, 
+                 elements: list, 
+                 color_col: str, 
+                 show_pairs: bool, 
+                 color_palette: dict) -> list:
+    num_of_elements = len(elements)
+    colors = (
+        [kwargs.pop('color')] * num_of_elements
+        if kwargs.get('color', None) is not None
+        else ['black'] * num_of_elements
+        if color_col is not None or show_pairs 
+        else list(color_palette.values())
+    )
+    if color_type in ['contrast', 'summary', 'delta_text']:
+        if len(colors) == num_of_elements:
+            final_colors = colors
+        else:
+            final_colors = []
+            for tick in elements:
+                final_colors.append(colors[int(tick)])
+    else:
+        final_colors = colors
+    return final_colors
+
+
+def prepare_bars_for_plot(bar_type, bar_kwargs, horizontal, plot_palette_raw, color_col, show_pairs,
+                          plot_data = None, xvar = None, yvar = None,  # Raw data
+                          results = None, ticks_to_plot = None, extra_delta = None, # Contrast data
+                          summary_bars = None, summary_axes = None, ci_type = None  # Summary data
+                          ):
+    from .misc_tools import color_picker
+    bar_dict = {}
+    if bar_type in ['raw', 'contrast']:
+        if bar_type == 'raw':
+            if isinstance(plot_data[xvar].dtype, pd.CategoricalDtype):
+                order = pd.unique(plot_data[xvar]).categories
+            else:
+                order = pd.unique(plot_data[xvar])
+            means = plot_data.groupby(xvar, observed=False)[yvar].mean().reindex(index=order).values
+            ticks = list(range(len(order)))
+        elif bar_type == 'contrast':
+            means = results.difference.to_list()
+            ticks = ticks_to_plot.copy()
+            if extra_delta is not None:
+                ticks.append(ticks[-1]+1)  # Add an extra tick
+                means.append(extra_delta)
+
+        num_of_bars = len(means)
+        y_start_values, y_distances = [0]*num_of_bars, means
+        x_start_values, x_distances = [num - (0.5 if horizontal else 0.25) for num in ticks], [0.5,]*num_of_bars
+
+    elif bar_type == 'summary':
+        # Begin checks        
+        if not isinstance(summary_bars, list):
+            raise TypeError("summary_bars must be a list of indices (ints).")
+        if not all(isinstance(i, int) for i in summary_bars):
+            raise TypeError("summary_bars must be a list of indices (ints).")
+        if any(i >= len(results) for i in summary_bars):
+            raise ValueError("Index {} chosen is out of range for the contrast objects.".format([i for i in summary_bars if i >= len(results)]))
+
+        ticks = [ticks_to_plot[tick] for tick in summary_bars]
+        summary_xmin, summary_xmax = summary_axes.get_xlim()
+        summary_ymin, summary_ymax = summary_axes.get_ylim()
+        span_ax = bar_kwargs.pop("span_ax")
+
+        x_start_values, y_start_values, x_distances, y_distances = [], [], [], []
+        for summary_index in summary_bars:
+            summary_ci_low = results.get(ci_type+'_low')[summary_index]
+            summary_ci_high = results.get(ci_type+'_high')[summary_index]   
+
+            if span_ax == True:
+                starting_location = summary_ymax if horizontal else summary_xmin
+            else:
+                starting_location = ticks_to_plot[summary_index]  
+            x_distance = summary_ymin if horizontal else summary_xmax 
+
+            x_start_values.append(starting_location)
+            y_start_values.append(summary_ci_low)
+            x_distances.append(x_distance + 1)
+            y_distances.append(summary_ci_high - summary_ci_low)
+    else:
+        raise ValueError("Invalid bar_type. Must be 'raw' or 'contrast'.")
+    
+    if horizontal:
+        x_start_values, y_start_values = y_start_values, x_start_values
+        x_distances, y_distances = y_distances, x_distances
+
+    for name, values in zip(['x_start_values', 'x_distances', 'y_start_values', 'y_distance'],
+                            [x_start_values, x_distances, y_start_values, y_distances]
+                        ):
+        bar_dict[name] = values
+
+    # Colors
+    colors = color_picker(
+                color_type = bar_type,
+                kwargs = bar_kwargs, 
+                elements = ticks_to_plot if bar_type=='contrast' else ticks, 
+                color_col = color_col, 
+                show_pairs = show_pairs, 
+                color_palette = plot_palette_raw
+            )
+    if bar_type == 'contrast' and extra_delta is not None:
+        colors.append('black')
+    bar_dict['colors'] = colors
+
+    return bar_dict, bar_kwargs
