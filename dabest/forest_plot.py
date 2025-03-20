@@ -80,36 +80,29 @@ def load_plot_data(
                         if contrast_type == 'delta2':
                             if index == 2:
                                 current_plot_data = getattr(getattr(current_contrast, effect_attr), contrast_attr)
-                                bootstraps.append(current_plot_data.bootstraps_delta_delta)
-                                differences.append(current_plot_data.difference)
-                                bcalows.append(current_plot_data.results.get(ci_type+'_low')[0])
-                                bcahighs.append(current_plot_data.results.get(ci_type+'_high')[0])
+                                bootstrap_name, index_val = "bootstraps_delta_delta", 0
                             elif index == 0 or index == 1:
                                 current_plot_data = getattr(current_contrast, effect_attr)
-                                bootstraps.append(current_plot_data.results.bootstraps[index])
-                                differences.append(current_plot_data.results.difference[index])
-                                bcalows.append(current_plot_data.results.get(ci_type+'_low')[index])
-                                bcahighs.append(current_plot_data.results.get(ci_type+'_high')[index])
+                                bootstrap_name, index_val = "bootstraps", index
                             else:
                                 raise ValueError("The selected indices must be 0, 1, or 2.")
                         else:
                             num_of_groups = len(getattr(current_contrast, effect_attr).results)
                             if index == num_of_groups:
                                 current_plot_data = getattr(getattr(current_contrast, effect_attr), contrast_attr)
-                                bootstraps.append(current_plot_data.bootstraps_weighted_delta)
-                                differences.append(current_plot_data.difference)
-                                bcalows.append(current_plot_data.results.get(ci_type+'_low')[0])
-                                bcahighs.append(current_plot_data.results.get(ci_type+'_high')[0])
+                                bootstrap_name, index_val = "bootstraps_weighted_delta", 0
                             elif index < num_of_groups:
                                 current_plot_data = getattr(current_contrast, effect_attr)
-                                bootstraps.append(current_plot_data.results.bootstraps[index])
-                                differences.append(current_plot_data.results.difference[index])
-                                bcalows.append(current_plot_data.results.get(ci_type+'_low')[index])
-                                bcahighs.append(current_plot_data.results.get(ci_type+'_high')[index])
+                                bootstrap_name, index_val = "bootstraps", index
                             else:
                                 msg1 = "There are only {} groups (starting from zero) in this dabest object. ".format(num_of_groups)
                                 msg2 = "The idx given is {}.".format(index)
                                 raise ValueError(msg1+msg2)
+
+                        bootstraps.append(getattr(current_plot_data.results, bootstrap_name)[index_val])
+                        differences.append(current_plot_data.results.difference[index_val])
+                        bcalows.append(current_plot_data.results.get(ci_type+'_low')[index_val])
+                        bcahighs.append(current_plot_data.results.get(ci_type+'_high')[index_val])    
         else:
             contrast_plot_data = [getattr(getattr(contrast, effect_attr), contrast_attr) for contrast in data]
             attribute_suffix = "weighted_delta" if contrast_type == "mini_meta" else "delta_delta"
@@ -121,32 +114,8 @@ def load_plot_data(
 
     return bootstraps, differences, bcalows, bcahighs
 
-def check_for_errors(
-                data,
-                idx,
-                ax,
-                fig_size,
-                effect_size,
-                ci_type,
-                horizontal,
-                marker_size,
-                custom_palette,
-                contrast_alpha,
-                contrast_desat,
-                labels,
-                labels_rotation,
-                labels_fontsize,
-                title,
-                title_fontsize,
-                ylabel,
-                ylabel_fontsize,
-                ylim,
-                yticks,
-                yticklabels,
-                remove_spines,
-                summary_bars,
-    ) -> str:
-
+def check_for_errors(**kwargs):
+    data = kwargs.get('data')
     # Contrasts
     if not isinstance(data, list) or not data:
         raise ValueError("The `data` argument must be a non-empty list of dabest objects.")
@@ -168,6 +137,8 @@ def check_for_errors(
             raise ValueError("Each dabest object supplied must be the same experimental type (mini-meta or delta-delta or neither.)")
 
     # Idx
+    idx = kwargs.get('idx')
+    effect_size = kwargs.get('effect_size')
     if idx is not None:
         if not isinstance(idx, (tuple, list)):
             raise TypeError("`idx` must be a tuple or list of integers.")
@@ -193,12 +164,14 @@ def check_for_errors(
             number_of_curves_to_plot = len(data)
 
     # Axes
+    ax = kwargs.get('ax')
+    fig_size = kwargs.get('fig_size')
     if ax is not None and not isinstance(ax, plt.Axes):
         raise TypeError("The `ax` must be a `matplotlib.axes.Axes` instance or `None`.")
     
     # Figure size
     if fig_size is not None and not isinstance(fig_size, (tuple, list)):
-        raise TypeError("`fig_size` must be a tuple or list of two integers.")
+        raise TypeError("`fig_size` must be a tuple or list of two positive integers.")
 
     # Effect size
     effect_size_options = ['mean_diff', 'hedges_g', 'delta_g']
@@ -210,18 +183,23 @@ def check_for_errors(
         raise ValueError("The `effect_size` argument must be `mean_diff`, `hedges_g`, or `delta_g` for delta-delta analyses.")
     
     # CI type
+    ci_type = kwargs.get('ci_type')
     if ci_type not in ('bca', 'pct'):
         raise TypeError("`ci_type` must be either 'bca' or 'pct'.")
 
     # Horizontal
+    horizontal = kwargs.get('horizontal')
     if not isinstance(horizontal, bool):
         raise TypeError("`horizontal` must be a boolean value.")
 
     # Marker size
+    marker_size = kwargs.get('marker_size')
     if not isinstance(marker_size, (int, float)) or marker_size <= 0:
         raise TypeError("`marker_size` must be a positive integer or float.")
 
     # Custom palette
+    custom_palette = kwargs.get('custom_palette')
+    labels = kwargs.get('labels')
     if custom_palette is not None and not isinstance(custom_palette, (dict, list, tuple, str, type(None))):
         raise TypeError("The `custom_palette` must be either a dictionary, list, string, or `None`.")
     if isinstance(custom_palette, dict) and labels is None:
@@ -230,17 +208,19 @@ def check_for_errors(
         raise ValueError("The `custom_palette` list/tuple must have the same length as the number of `data` provided.")
 
     # Contrast alpha and desat
+    contrast_alpha = kwargs.get('contrast_alpha')
+    contrast_desat = kwargs.get('contrast_desat')
     if not isinstance(contrast_alpha, float) or not 0 <= contrast_alpha <= 1:
         raise TypeError("`contrast_alpha` must be a float between 0 and 1.")
     
     if not isinstance(contrast_desat, (float, int)) or not 0 <= contrast_desat <= 1:
         raise TypeError("`contrast_desat` must be a float between 0 and 1 or an int (1).")
     
-
     # Contrast labels
+    labels_fontsize = kwargs.get('labels_fontsize')
+    labels_rotation = kwargs.get('labels_rotation')
     if labels is not None and not all(isinstance(label, str) for label in labels):
         raise TypeError("The `labels` must be a list of strings or `None`.")
-    
     
     if labels is not None and len(labels) != number_of_curves_to_plot:
         raise ValueError("`labels` must match the number of `data` provided.")
@@ -252,6 +232,8 @@ def check_for_errors(
         raise TypeError("`labels_rotation` must be an integer or float between 0 and 360.")   
 
     # Title
+    title = kwargs.get('title')
+    title_fontsize = kwargs.get('title_fontsize')
     if title is not None and not isinstance(title, str):
         raise TypeError("The `title` argument must be a string.")
     
@@ -259,6 +241,8 @@ def check_for_errors(
         raise TypeError("`title_fontsize` must be an integer or float.")
     
     # Y-label
+    ylabel = kwargs.get('ylabel')
+    ylabel_fontsize = kwargs.get('ylabel_fontsize')
     if ylabel is not None and not isinstance(ylabel, str):
         raise TypeError("The `ylabel` argument must be a string.")
 
@@ -266,16 +250,19 @@ def check_for_errors(
         raise TypeError("`ylabel_fontsize` must be an integer or float.")
     
     # Y-lim
+    ylim = kwargs.get('ylim')
     if ylim is not None and not isinstance(ylim, (tuple, list)):
         raise TypeError("`ylim` must be a tuple or list of two floats.")
     if ylim is not None and len(ylim) != 2:
         raise ValueError("`ylim` must be a tuple or list of two floats.")
 
     # Y-ticks
+    yticks = kwargs.get('yticks')
     if yticks is not None and not isinstance(yticks, (tuple, list)):
         raise TypeError("`yticks` must be a tuple or list of floats.")
     
     # Y-ticklabels
+    yticklabels = kwargs.get('yticklabels')
     if yticklabels is not None and not isinstance(yticklabels, (tuple, list)):
         raise TypeError("`yticklabels` must be a tuple or list of strings.")
     
@@ -283,20 +270,33 @@ def check_for_errors(
         raise TypeError("`yticklabels` must be a list of strings.")
     
     # Remove spines
+    remove_spines = kwargs.get('remove_spines')
     if not isinstance(remove_spines, bool):
         raise TypeError("`remove_spines` must be a boolean value.")
     
     # Summary bars
+    summary_bars = kwargs.get('summary_bars')
     if summary_bars is not None:
         if not isinstance(summary_bars, list | tuple):
-            raise TypeError("summary_bars must be a list/tuple of indices (ints).")
+            raise TypeError("`summary_bars` must be a list/tuple of indices (ints).")
         if not all(isinstance(i, int) for i in summary_bars):
-            raise TypeError("summary_bars must be a list/tuple of indices (ints).")
+            raise TypeError("`summary_bars` must be a list/tuple of indices (ints).")
         if any(i >= number_of_curves_to_plot for i in summary_bars):
             raise ValueError("Index {} chosen is out of range for the contrast objects.".format([i for i in summary_bars if i >= number_of_curves_to_plot]))
     
-    return contrast_type
-    
+    # Delta text
+    delta_text = kwargs.get('delta_text')
+    if delta_text is not None:
+        if not isinstance(delta_text, bool):
+            raise TypeError("`delta_text` must be a boolean value.")
+
+    # Contrast bars
+    contrast_bars = kwargs.get('contrast_bars')
+    if contrast_bars is not None:
+        if not isinstance(contrast_bars, bool):
+            raise TypeError("`contrast_bars` must be a boolean value.")
+
+    return contrast_type    
 
 def get_kwargs(
         violin_kwargs,
@@ -359,7 +359,6 @@ def get_kwargs(
     else:
         errorbar_kwargs = merge_two_dicts(default_errorbar_kwargs, errorbar_kwargs)
 
-
     # Delta text kwargs
     default_delta_text_kwargs = {
                 "color": None, 
@@ -404,8 +403,6 @@ def get_kwargs(
     return (violin_kwargs, zeroline_kwargs, marker_kwargs, errorbar_kwargs, 
             delta_text_kwargs, contrast_bars_kwargs, summary_bars_kwargs)
 
-
-
 def color_palette(
         custom_palette, 
         labels, 
@@ -430,7 +427,6 @@ def color_palette(
         violin_colors = sns.color_palette(n_colors=number_of_curves_to_plot)
     violin_colors = [sns.desaturate(color, contrast_desat) for color in violin_colors]
     return violin_colors
-
 
 def forest_plot(
     data: list,
@@ -551,33 +547,9 @@ def forest_plot(
     """
     from .plot_tools import halfviolin
 
-    
     # Check for errors in the input arguments
-    contrast_type = check_for_errors(
-                            data = data,
-                            idx = idx,
-                            ax = ax,
-                            fig_size = fig_size,
-                            effect_size = effect_size,
-                            ci_type = ci_type,
-                            horizontal = horizontal,
-                            marker_size = marker_size,
-                            custom_palette = custom_palette,
-                            contrast_alpha = contrast_alpha,
-                            contrast_desat = contrast_desat,
-                            labels = labels,
-                            labels_rotation = labels_rotation,
-                            labels_fontsize = labels_fontsize,
-                            title = title,
-                            title_fontsize = title_fontsize,
-                            ylabel = ylabel,
-                            ylabel_fontsize = ylabel_fontsize,
-                            ylim = ylim,
-                            yticks = yticks,
-                            yticklabels = yticklabels,
-                            remove_spines = remove_spines,
-                            summary_bars = summary_bars,
-    )
+    all_kwargs = locals()
+    contrast_type = check_for_errors(**all_kwargs)
 
     # Load plot data and extract info
     bootstraps, differences, bcalows, bcahighs = load_plot_data(
@@ -589,7 +561,6 @@ def forest_plot(
     )
     # Adjust figure size based on orientation
     number_of_curves_to_plot = len(bootstraps)
-    # number_of_curves_to_plot = sum([len(i) for i in idx]) if idx is not None else len(data)
     if ax is not None:
         fig = ax.figure
     else:
@@ -600,15 +571,15 @@ def forest_plot(
     # Get Kwargs
     (violin_kwargs, zeroline_kwargs, marker_kwargs, errorbar_kwargs, 
      delta_text_kwargs, contrast_bars_kwargs, summary_bars_kwargs) = get_kwargs(
-                                                                violin_kwargs = violin_kwargs,
-                                                                zeroline_kwargs = zeroline_kwargs,
-                                                                horizontal = horizontal,
-                                                                marker_kwargs = marker_kwargs,
-                                                                errorbar_kwargs = errorbar_kwargs,
-                                                                delta_text_kwargs = delta_text_kwargs,
-                                                                contrast_bars_kwargs = contrast_bars_kwargs,
-                                                                summary_bars_kwargs = summary_bars_kwargs,
-                                                                marker_size = marker_size
+                                                                        violin_kwargs = violin_kwargs,
+                                                                        zeroline_kwargs = zeroline_kwargs,
+                                                                        horizontal = horizontal,
+                                                                        marker_kwargs = marker_kwargs,
+                                                                        errorbar_kwargs = errorbar_kwargs,
+                                                                        delta_text_kwargs = delta_text_kwargs,
+                                                                        contrast_bars_kwargs = contrast_bars_kwargs,
+                                                                        summary_bars_kwargs = summary_bars_kwargs,
+                                                                        marker_size = marker_size
     )
                                             
     # Plot the violins and make adjustments

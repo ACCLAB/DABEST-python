@@ -192,8 +192,6 @@ def test_502_minimeta_forest():
                 labels=['mini_meta1', 'mini_meta2', 'mini_meta3']
             )
 
-
-
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_503_deltadelta_custompalette_forest():
     plt.rcdefaults()
@@ -433,7 +431,6 @@ def test_522b_minimeta_with_deltas_with_summary_bars_horizontal():
                 summary_bars=[0, 2],
                 horizontal=True
             )
-
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_522c_minimeta_with_deltas_with_summary_bars_kwargs():
