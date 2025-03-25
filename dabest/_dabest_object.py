@@ -248,9 +248,9 @@ class Dabest(object):
     @property
     def delta_g(self):
         """
-        Returns an :py:class:`EffectSizeDataFrame` for deltas' g, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
+        Returns an :py:class:`EffectSizeDataFrame` for delta g, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
         """
-        raise DeprecationWarning("delta_g has been depreciated  - Please use hedges_g (with delta2=True) for deltas' g experiments")
+        raise DeprecationWarning("delta_g has been depreciated  - Please use hedges_g (with delta2=True) for delta g experiments")
 
 
     @property

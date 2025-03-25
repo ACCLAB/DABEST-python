@@ -131,23 +131,23 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
     ytick_color = plt.rcParams["ytick.color"]
 
     # Extract parameters and set kwargs
-    (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, 
-     contrast_kwargs, slopegraph_kwargs, reflines_kwargs, legend_kwargs,
-     group_summaries_kwargs, redraw_axes_kwargs, delta_dot_kwargs, delta_text_kwargs,
-     summary_bars_kwargs, raw_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs, 
-     contrast_marker_kwargs, contrast_errorbar_kwargs, prop_sample_counts_kwargs, contrast_paired_lines_kwargs) = get_kwargs(
-                                                                                                            plot_kwargs = plot_kwargs, 
-                                                                                                            ytick_color = ytick_color
+    (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, contrast_kwargs, 
+     slopegraph_kwargs, reflines_kwargs, legend_kwargs, group_summaries_kwargs, 
+     redraw_axes_kwargs, delta_dot_kwargs, delta_text_kwargs, summary_bars_kwargs, 
+     raw_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs, contrast_marker_kwargs, 
+     contrast_errorbar_kwargs, prop_sample_counts_kwargs, contrast_paired_lines_kwargs) = get_kwargs(
+                                                                                                plot_kwargs = plot_kwargs, 
+                                                                                                ytick_color = ytick_color
     )
 
     (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, 
      all_plot_groups, idx, show_delta2, show_mini_meta, float_contrast, 
-     show_pairs, group_summaries, horizontal, results, ci_type,
-     x1_level, experiment_label, show_baseline_ec, one_sankey, two_col_sankey, asymmetric_side) = get_params(
-     																							effectsize_df = effectsize_df, 
-                                                                                                plot_kwargs = plot_kwargs,
-                                                                                                sankey_kwargs = sankey_kwargs,
-                                                                                                barplot_kwargs = barplot_kwargs
+     show_pairs, group_summaries, horizontal, results, ci_type, x1_level, experiment_label, 
+     show_baseline_ec, one_sankey, two_col_sankey, asymmetric_side, show_sample_size) = get_params(
+                                                                                            effectsize_df = effectsize_df, 
+                                                                                            plot_kwargs = plot_kwargs,
+                                                                                            sankey_kwargs = sankey_kwargs,
+                                                                                            barplot_kwargs = barplot_kwargs
     )
 
     # Extract Color palette
@@ -189,6 +189,9 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                                                     all_plot_groups = all_plot_groups
         )
         if proportional:  ## Plot the raw data as a set of Sankey Diagrams aligned like barplot.
+            if sankey_kwargs["flow"] == False and len(temp_all_plot_groups) == 2: 
+                sankey_kwargs["flow"], two_col_sankey = True, False
+                warnings.warn("Sankey flow must be true for singular two-group sankey plots")
             sankey_control_test_groups = sankeydiag(
                                                     plot_data,
                                                     xvar = xvar,
@@ -214,7 +217,8 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                 ytick_color = ytick_color, 
                 temp_idx = temp_idx,
                 horizontal = horizontal,
-                temp_all_plot_groups = temp_all_plot_groups
+                temp_all_plot_groups = temp_all_plot_groups, 
+                plot_kwargs = plot_kwargs,
             )
             
             ## Add delta dots to the contrast axes for paired plots.
@@ -304,15 +308,16 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
             )
 
     # Add the counts to the rawdata axes xticks.
-    add_counts_to_ticks(
-            plot_data = plot_data, 
-            xvar = xvar, 
-            yvar = yvar, 
-            rawdata_axes = rawdata_axes, 
-            plot_kwargs = plot_kwargs,
-            flow = sankey_kwargs["flow"],
-            horizontal = horizontal,
-    )
+    if show_sample_size:
+        add_counts_to_ticks(
+                plot_data = plot_data, 
+                xvar = xvar, 
+                yvar = yvar, 
+                rawdata_axes = rawdata_axes, 
+                plot_kwargs = plot_kwargs,
+                flow = sankey_kwargs["flow"],
+                horizontal = horizontal,
+        )
 
     # Add counts to prop plots (embedded in the plot bars)
     if proportional and plot_kwargs['prop_sample_counts'] and sankey_kwargs["flow"]:

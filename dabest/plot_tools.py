@@ -202,38 +202,26 @@ def error_bar(
 
         if low == high == central_measure:
             if horizontal:
-                low_to_mean = mlines.Line2D(
-                    [low, central_measure], [_xpos, _xpos], **kwargs
-                )
-                mean_to_high = mlines.Line2D(
-                    [central_measure, high], [_xpos, _xpos], **kwargs
-                )
+                low2mean_x, low2mean_y = [low, central_measure], [_xpos, _xpos]
+                mean2high_x, mean2high_y = [central_measure, high], [_xpos, _xpos]
             else:
-                low_to_mean = mlines.Line2D(
-                    [_xpos, _xpos], [low, central_measure], **kwargs
-                )
-                mean_to_high = mlines.Line2D(
-                    [_xpos, _xpos], [central_measure, high], **kwargs
-                )
+                low2mean_x, low2mean_y = [_xpos, _xpos], [low, central_measure]
+                mean2high_x, mean2high_y = [_xpos, _xpos], [central_measure, high]
         else:
             if horizontal:
-                low_to_mean = mlines.Line2D(
-                    [low, central_measure - gap_width], [_xpos, _xpos],  **kwargs
-                )
-                mean_to_high = mlines.Line2D(
-                    [central_measure + gap_width, high], [_xpos, _xpos],  **kwargs
-                )
+                low2mean_x, low2mean_y = [low, central_measure - gap_width], [_xpos, _xpos]
+                mean2high_x, mean2high_y = [central_measure + gap_width, high], [_xpos, _xpos]
             else:
-                low_to_mean = mlines.Line2D(
-                    [_xpos, _xpos], [low, central_measure - gap_width], **kwargs
-                )
-                mean_to_high = mlines.Line2D(
-                    [_xpos, _xpos], [central_measure + gap_width, high], **kwargs
-                )
-        ax.add_line(low_to_mean)
-        ax.add_line(mean_to_high)
-
-
+                low2mean_x, low2mean_y = [_xpos, _xpos], [low, central_measure - gap_width]
+                mean2high_x, mean2high_y = [_xpos, _xpos], [central_measure + gap_width, high]
+        # Add lines
+        ax.add_line(mlines.Line2D(
+                    low2mean_x, low2mean_y, **kwargs
+                ))
+        ax.add_line(mlines.Line2D(
+                    mean2high_x, mean2high_y, **kwargs
+                ))
+        
 def check_data_matches_labels(
     labels,  # list of input labels
     data,  # Pandas Series of input data
@@ -701,7 +689,6 @@ def sankeydiag(
     right_idx in the column xvar is on the right side of each sankey diagram
 
     """
-
     if "width" in kwargs:
         width = kwargs["width"]
 
@@ -723,6 +710,8 @@ def sankeydiag(
     if "flow" in kwargs:
         flow = kwargs["flow"]
 
+    fontsize = kwargs.pop("fontsize")
+
     if ax is None:
         ax = plt.gca()
 
@@ -739,8 +728,9 @@ def sankeydiag(
         )
     ]
     if flow
-    else temp_idx
-)
+    else temp_idx   
+    )
+
     for i in sankey_idx:
         left_idx.append(i[0])
         right_idx.append(i[1])
@@ -751,7 +741,6 @@ def sankeydiag(
         right_idx.pop()  # Remove the last element from two lists
 
     # two_col_sankey = True if proportional == True and one_sankey == False and sankey == True and flow == False else False
-
 
     allLabels = pd.Series(np.sort(data[yvar].unique())[::-1]).unique()
 
@@ -850,8 +839,9 @@ def sankeydiag(
             )
 
     # Now only draw vs xticks for two-column sankey diagram
+
     if not one_sankey or (sankey and not flow):
-        sankey_ticks = (
+        sankey_tick_vals = (
             [f"{left}" for left in broadcasted_left]
             if flow
             else [f"{left} v.s. {right}" if horizontal
@@ -859,20 +849,16 @@ def sankeydiag(
                 for left, right in zip(broadcasted_left, right_idx)
             ]
         )
-        if horizontal:
-            ax.get_yaxis().set_ticks(np.arange(len(right_idx)))
-            ax.get_yaxis().set_ticklabels(sankey_ticks)
-        else:
-            ax.get_xaxis().set_ticks(np.arange(len(right_idx)))
-            ax.get_xaxis().set_ticklabels(sankey_ticks)
+        sankey_tick_locs = np.arange(len(right_idx))
     else:
-        sankey_ticks = [broadcasted_left[0], right_idx[0]]
-        if horizontal:
-            ax.set_yticks([0, 1])
-            ax.set_yticklabels(sankey_ticks)        
-        else:
-            ax.set_xticks([0, 1])
-            ax.set_xticklabels(sankey_ticks)
+        sankey_tick_vals, sankey_tick_locs = [broadcasted_left[0], right_idx[0]], [0, 1]
+
+    if horizontal:
+        ax.set_yticks(sankey_tick_locs)
+        ax.set_yticklabels(sankey_tick_vals, fontsize = fontsize)
+    else:
+        ax.set_xticks(sankey_tick_locs)
+        ax.set_xticklabels(sankey_tick_vals, fontsize = fontsize)
 
     return (left_idx, right_idx)
 
@@ -1104,7 +1090,8 @@ def slopegraph_plotter(
         ytick_color: str, 
         temp_idx: list, 
         horizontal: bool,
-        temp_all_plot_groups: list
+        temp_all_plot_groups: list,
+        plot_kwargs: dict
     ):
     """
     Add slopegraph to the rawdata axes.
@@ -1134,6 +1121,9 @@ def slopegraph_plotter(
     horizontal : bool
         If the plotting will be in horizontal format.
     temp_all_plot_groups : list
+        List of all plot groups.
+    plot_kwargs : dict
+        Keyword arguments for the plot.
 
     """
     # Jitter Kwargs 
@@ -1193,10 +1183,10 @@ def slopegraph_plotter(
     # Set the tick labels, because the slopegraph plotting doesn't.
     if horizontal:
         rawdata_axes.set_yticks(np.arange(0, len(temp_all_plot_groups)))
-        rawdata_axes.set_yticklabels(temp_all_plot_groups)
+        rawdata_axes.set_yticklabels(temp_all_plot_groups, fontsize = plot_kwargs.get("fontsize_rawxlabel"))
     else:
         rawdata_axes.set_xticks(np.arange(0, len(temp_all_plot_groups)))
-        rawdata_axes.set_xticklabels(temp_all_plot_groups)
+        rawdata_axes.set_xticklabels(temp_all_plot_groups, fontsize = plot_kwargs.get("fontsize_rawxlabel"))
     
 
 def plot_minimeta_or_deltadelta_violins(
@@ -1299,7 +1289,7 @@ def plot_minimeta_or_deltadelta_violins(
         if type == 'mini_meta':
             current_ylabels.extend(["Weighted Delta"])
         elif effect_size == "hedges_g":
-            current_ylabels.extend(["Deltas' g"])
+            current_ylabels.extend(["Delta g"])
         else:
             current_ylabels.extend(["Delta-Delta"])
 
@@ -1312,7 +1302,7 @@ def plot_minimeta_or_deltadelta_violins(
             else:
                 contrast_xtick_labels.extend(["Weighted Delta"])
         elif effect_size == "hedges_g":
-            contrast_xtick_labels.extend(["Deltas' g"])
+            contrast_xtick_labels.extend(["Delta g"])
         else:
             contrast_xtick_labels.extend(["Delta-Delta"])
 
@@ -1323,7 +1313,7 @@ def plot_minimeta_or_deltadelta_violins(
         elif effect_size == "mean_diff":
             delta2_label = "Delta-Delta"
         else:
-            delta2_label = "Deltas' g"
+            delta2_label = "Delta g"
         fontsize_delta2label = plot_kwargs["fontsize_delta2label"]
         delta2_axes = contrast_axes.twinx()
         delta2_axes.set_frame_on(False)
@@ -1850,6 +1840,7 @@ def barplotter(
         If the plot is horizontal.
     """
     bar_width = barplot_kwargs.get('width', 0.5)
+    fontsize = barplot_kwargs.pop('fontsize')
 
     x_label, y_label = rawdata_axes.get_xlabel(), rawdata_axes.get_ylabel()
     if horizontal:
@@ -1923,6 +1914,13 @@ def barplotter(
     # reset the x and y labels
     rawdata_axes.set_xlabel(x_label)
     rawdata_axes.set_ylabel(y_label)
+
+    if horizontal:
+        rawdata_axes.set_yticks(rawdata_axes.get_yticks())
+        rawdata_axes.set_yticklabels(rawdata_axes.get_yticklabels(), fontsize = fontsize)
+    else:
+        rawdata_axes.set_xticks(rawdata_axes.get_xticks())
+        rawdata_axes.set_xticklabels(rawdata_axes.get_xticklabels(), fontsize = fontsize)
 
 def table_for_horizontal_plots(
         effectsize_df: object, 
@@ -2585,6 +2583,8 @@ class SwarmPlot:
             raise ValueError("`gutter_limit` must be a scalar or float.")
         if not isinstance(filled, (bool, list, tuple)):
             raise ValueError("`filled` must be a boolean, list or tuple.")
+        
+        fontsize = kwargs.pop('fontsize', 12)
 
         # More thorough input validation checks
         if isinstance(filled, (list, tuple)):
@@ -2690,9 +2690,9 @@ class SwarmPlot:
 
         if horizontal:
             ax.get_yaxis().set_ticks(np.arange(x_position))
-            ax.get_yaxis().set_ticklabels(x_tick_tabels)
+            ax.get_yaxis().set_ticklabels(x_tick_tabels, fontsize = fontsize)
         else:
             ax.get_xaxis().set_ticks(np.arange(x_position))
-            ax.get_xaxis().set_ticklabels(x_tick_tabels)
+            ax.get_xaxis().set_ticklabels(x_tick_tabels, fontsize = fontsize)
             
         return ax

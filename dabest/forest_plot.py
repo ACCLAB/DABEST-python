@@ -647,12 +647,12 @@ def forest_plot(
         effect_attr_map = {
             "mean_diff": "Mean Difference",
             "hedges_g": "Hedges' g",
-            "delta_g": "Deltas' g"
+            "delta_g": "Delta g"
         }
         if contrast_type=='delta2' and idx is None and effect_size == "hedges_g":
-            ylabel = "Deltas' g"
+            ylabel = "Delta g"
         elif contrast_type=='delta2' and idx is not None and (effect_size == "delta_g" or effect_size == "hedges_g"):
-            ylabel = "Hedges' g with Deltas' g"
+            ylabel = "Hedges' g with Delta g"
         else:
             ylabel = effect_attr_map[effect_size]
     lim_key = ax.set_xlabel if horizontal else ax.set_ylabel

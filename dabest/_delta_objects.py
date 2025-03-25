@@ -33,7 +33,7 @@ class DeltaDelta(object):
 
     $$\Delta_{\Delta} = \Delta_{2} - \Delta_{1}$$
 
-    and a deltas' g value is calculated as the mean difference between the two primary deltas divided by
+    and a delta g value is calculated as the mean difference between the two primary deltas divided by
     the standard deviation of the delta-delta value, which is calculated from a pooled variance of the 4 samples:
 
     $$\Delta_{g} = \frac{\Delta_{\Delta}}{s_{\Delta_{\Delta}}}$$
@@ -63,7 +63,7 @@ class DeltaDelta(object):
         self.__control = self.__dabest_obj.experiment_label[0]
         self.__test = self.__dabest_obj.experiment_label[1]
 
-        # Compute the bootstrap delta-delta or deltas' g and the true dela-delta based on the raw data
+        # Compute the bootstrap delta-delta or delta g and the true dela-delta based on the raw data
         if self.__effect_size == "mean_diff":
             self.__bootstraps_delta_delta = bootstraps_delta_delta[2]
             self.__difference = (
@@ -157,7 +157,7 @@ class DeltaDelta(object):
         if self.__effect_size == "mean_diff":
             out1 = "The delta-delta between {control} and {test} ".format(**first_line)
         else:
-            out1 = "The deltas' g between {control} and {test} ".format(**first_line)
+            out1 = "The delta g between {control} and {test} ".format(**first_line)
 
         base_string_fmt = "{:." + str(sigfig) + "}"
         if "." in str(self.__ci):

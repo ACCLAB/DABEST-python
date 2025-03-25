@@ -193,11 +193,13 @@ def get_params(
         else "right" if not horizontal
         else "left"
     )  
+    # Whether to show sample sizes with ticklabels
+    show_sample_size = plot_kwargs["show_sample_size"]
         
     return (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, 
             idx, show_delta2, show_mini_meta, float_contrast, show_pairs, group_summaries, 
             horizontal, results, ci_type, x1_level, experiment_label, show_baseline_ec, 
-            one_sankey, two_col_sankey, asymmetric_side)
+            one_sankey, two_col_sankey, asymmetric_side, show_sample_size)
 
 def get_kwargs(
         plot_kwargs: dict, 
@@ -219,6 +221,7 @@ def get_kwargs(
     default_swarmplot_kwargs = {
         "size": plot_kwargs["raw_marker_size"],
         "alpha": plot_kwargs["raw_alpha"],
+        "fontsize": plot_kwargs.get("fontsize_rawxlabel"),
     }
     if plot_kwargs["swarmplot_kwargs"] is None:
         swarmplot_kwargs = default_swarmplot_kwargs
@@ -234,6 +237,7 @@ def get_kwargs(
         "width": plot_kwargs["bar_width"],
         "alpha": plot_kwargs["raw_alpha"],
         "err_kws": {'color': 'black'},
+        "fontsize": plot_kwargs["fontsize_rawxlabel"]
     }
     if plot_kwargs["barplot_kwargs"] is None:
         barplot_kwargs = default_barplot_kwargs
@@ -251,6 +255,7 @@ def get_kwargs(
         "alpha": plot_kwargs['raw_alpha'],
         "rightColor": False,
         "bar_width": 0.2,
+        "fontsize": plot_kwargs.get("fontsize_rawxlabel")
     }
     if plot_kwargs["sankey_kwargs"] is None:
         sankey_kwargs = default_sankey_kwargs
@@ -280,7 +285,7 @@ def get_kwargs(
         "linewidth": 1, 
         "alpha": plot_kwargs["raw_alpha"],
         'jitter': 0, 
-        'jitter_seed': 9876543210
+        'jitter_seed': 9876543210,
     }
     if plot_kwargs["slopegraph_kwargs"] is None:
         slopegraph_kwargs = default_slopegraph_kwargs
@@ -1066,12 +1071,12 @@ def add_counts_to_ticks(
         else:
             ticks_with_counts.append(f"{t}\n(N={value})")
 
-    fontsize_rawxlabel = plot_kwargs.get("fontsize_rawxlabel")
     set_major_loc_method(plt.FixedLocator(get_ticks()))
-    if plot_kwargs['show_sample_size']:
-        set_label(ticks_with_counts, fontsize=fontsize_rawxlabel)
-    else:
-        set_label(get_label(), fontsize=fontsize_rawxlabel)
+
+    # label = ticks_with_counts if plot_kwargs['show_sample_size'] else get_label()
+    # set_label(label, fontsize=plot_kwargs.get("fontsize_rawxlabel"))
+
+    set_label(ticks_with_counts, fontsize=plot_kwargs.get("fontsize_rawxlabel"))
 
     # Ensure ticks are at the correct locations
     set_major_loc_method(plt.FixedLocator(get_ticks()))
