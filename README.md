@@ -40,13 +40,28 @@ performance improvements. It’s a big one!
 
 5.  **Other Visualization Improvements**:
 
-    - **Raw, Contrast, and Summary bars**: We added bars highlighting
-      the various groups’ differences. These bars can be customized to
-      suit the user’s needs. Raw and contrast bars are provided by
-      default, summary bars can be added by the user. See the relevant
-      sections in the [Plot
-      Aesthetics](../tutorials/09-plot_aesthetics.html) tutorial for
-      more details.
+    - **Raw, Contrast, and Summary bars**: Our visualization package now
+      includes three types of customizable bars to enhance data
+      interpretation:
+
+      - **Raw Bars**: Colored rectangles that extend from the zero line
+        to the mean of each group’s raw data. These bars visually
+        highlight the central tendency of the raw data.
+
+      - **Contrast Bars**: Similar to raw bars, these highlight the
+        effect size difference between two groups (typically test and
+        control) in the contrast axis. They provide a visual
+        representation of the differences between groups.
+
+      - **Summary Bars**: Optional horizontal bars that can be added to
+        emphasize a specific effect size across the entire contrast
+        axis. Unlike raw and contrast bars, these span horizontally and
+        are not displayed by default.
+
+        By default, plots show raw and contrast bars. Users can
+        customize these bars and add summary bars as needed. For
+        detailed customization instructions, please refer to the [Plot
+        Aesthetics](../tutorials/09-plot_aesthetics.html) tutorial.
 
     - **Tighter spacing in Delta-Delta and Mini-Meta Plots**: We have
       adjusted the spacing of delta-delta and mini-meta plots to reduce
@@ -172,7 +187,7 @@ allowing everyone access to high-quality estimation plots.
 
 ## Installation
 
-This package is tested on Python 3.10 and onwards. It is highly
+This package is tested on Python 3.11 and onwards. It is highly
 recommended to download the [Anaconda
 distribution](https://www.continuum.io/downloads) of Python in order to
 obtain the dependencies easily.

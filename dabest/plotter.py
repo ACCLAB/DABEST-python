@@ -449,7 +449,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                                                                   else effectsize_df.delta_delta.difference if show_delta2
                                                                   else None),
         )
-    
+
     ## Make sure the contrast_axes x-lims match the rawdata_axes xlims,
     ## and add an extra violinplot tick for delta-delta plot.
     ## Name is xaxis but it is actually y-axis for horizontal plots

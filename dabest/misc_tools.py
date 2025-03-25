@@ -1236,7 +1236,7 @@ def set_xaxis_ticks_and_lims(
         if float_contrast:
             contrast_axes.set_xlim(0.5, 1.5)
 
-        if show_delta2:
+        elif show_delta2:
             if show_pairs:
                 rawdata_axes.set_xlim(-0.375, 4.75)
             else:
