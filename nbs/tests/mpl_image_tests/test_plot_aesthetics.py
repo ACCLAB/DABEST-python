@@ -229,51 +229,51 @@ def test_215_change_idx_order_custom_palette_new():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_216_cummings_shared_control_meandiff_showswarmbars():
     plt.rcdefaults()
-    return shared_control.mean_diff.plot(swarm_bars=True, contrast_bars=False);
+    return shared_control.mean_diff.plot(raw_bars=True, contrast_bars=False);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_217_cummings_shared_control_meandiff_hideswarmbars():
     plt.rcdefaults()
-    return shared_control.mean_diff.plot(swarm_bars=False, contrast_bars=False);
+    return shared_control.mean_diff.plot(raw_bars=False, contrast_bars=False);
 
-swarm_kwargs = {'color': "red", 'alpha': 0.2}
+raw_kwargs = {'color': "red", 'alpha': 0.2}
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_218_cummings_shared_control_meandiff_swarmbars_kwargs():
     plt.rcdefaults()
-    return shared_control.mean_diff.plot(swarm_bars=True, swarm_bars_kwargs = swarm_kwargs, contrast_bars=False);
+    return shared_control.mean_diff.plot(raw_bars=True, raw_bars_kwargs = raw_kwargs, contrast_bars=False);
 
 
 # Contrast bars
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_219_cummings_shared_control_meandiff_showcontrastbars():
     plt.rcdefaults()
-    return shared_control.mean_diff.plot(contrast_bars=True, swarm_bars=False);
+    return shared_control.mean_diff.plot(contrast_bars=True,raw_bars=False);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_220_cummings_shared_control_meandiff_hidecontrastbars():
     plt.rcdefaults()
-    return shared_control.mean_diff.plot(contrast_bars=False, swarm_bars=False);
+    return shared_control.mean_diff.plot(contrast_bars=False, raw_bars=False);
 
 contrast_kwargs = {'color': "red", 'alpha': 0.2}
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_221_cummings_shared_control_meandiff_contrastbars_kwargs():
     plt.rcdefaults()
-    return shared_control.mean_diff.plot(contrast_bars=True, contrast_bars_kwargs = contrast_kwargs, swarm_bars=False);
+    return shared_control.mean_diff.plot(contrast_bars=True, contrast_bars_kwargs = contrast_kwargs, raw_bars=False);
 
 
-# Summary bars
-summary_bars=[0, 1]
+#  reference_band
+reference_band=[0, 1]
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_222_cummings_shared_control_meandiff_summarybars():
     plt.rcdefaults()
-    return shared_control.mean_diff.plot(summary_bars=[0, 1], swarm_bars=False, contrast_bars=False,);
+    return shared_control.mean_diff.plot(reference_band=[0, 1], raw_bars=False, contrast_bars=False,);
 
-summary_bars_kwargs = {'color': "black", 'alpha': 0.2, 'span_ax': True}
+reference_band_kwargs = {'color': "black", 'alpha': 0.2, 'span_ax': True}
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_223_cummings_shared_control_meandiff_summarybars_kwargs():
     plt.rcdefaults()
-    return shared_control.mean_diff.plot(summary_bars=[0, 1], summary_bars_kwargs = summary_bars_kwargs,
-                                         contrast_bars=False, swarm_bars=False);
+    return shared_control.mean_diff.plot(reference_band=[0, 1], reference_band_kwargs = reference_band_kwargs,
+                                         contrast_bars=False, raw_bars=False);
 
 
 # Delta text
@@ -323,17 +323,17 @@ def test_231_delta_dot_kwargs():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_232_repeatedmeasures_meandiff_show_es_paired_lines():
     plt.rcdefaults()
-    return repeated_measures.mean_diff.plot(es_paired_lines=True);
+    return repeated_measures.mean_diff.plot(contrast_paired_lines=True);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_233_repeatedmeasures_meandiff_hide_es_paired_lines():
     plt.rcdefaults()
-    return repeated_measures.mean_diff.plot(es_paired_lines=False);
+    return repeated_measures.mean_diff.plot(contrast_paired_lines=False);
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_234_multigroups_paired_meandiff_es_paired_lines_kwargs():
     plt.rcdefaults()
-    return multi_groups_paired_baseline.mean_diff.plot(es_paired_lines=True, es_paired_lines_kwargs={'color':'red', 'linestyle': '--', 'linewidth': 2, 'alpha': 0.5});
+    return multi_groups_paired_baseline.mean_diff.plot(contrast_paired_lines=True, contrast_paired_lines_kwargs={'color':'red', 'linestyle': '--', 'linewidth': 2, 'alpha': 0.5});
 
 # Baseline Error Curve
 @pytest.mark.mpl_image_compare(tolerance=8)

@@ -135,7 +135,7 @@ def test_49_cummings_baseline_delta_delta_meandiff():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_50_delta_plot_ylabel():
     plt.rcdefaults()
-    return baseline.mean_diff.plot(swarm_label="This is my\nrawdata",
+    return baseline.mean_diff.plot(raw_label="This is my\nrawdata",
                                    contrast_label="The bootstrap\ndistribtions!", 
                                    delta2_label="This is delta!");
 
@@ -155,7 +155,7 @@ def test_52_delta_specified():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_53_delta_change_ylims():
     plt.rcdefaults()
-    return sequential.mean_diff.plot(swarm_ylim=(0, 9),
+    return sequential.mean_diff.plot(raw_ylim=(0, 9),
                                        contrast_ylim=(-2, 2),
                                        fig_size=(15,6));
 

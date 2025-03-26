@@ -48,7 +48,7 @@ default_forestplot_kwargs = {
     "marker_size": 20,  # Ensure it's a positive integer or float.
     "remove_spines": True,  # Ensure it's a boolean.
     "labels_rotation": 45,  # Ensure it's an integer or float between 0 and 360.
-    "halfviolin_alpha": 0.8,  # Ensure it's a float between 0 and 1.
+    "contrast_alpha": 0.8,  # Ensure it's a float between 0 and 1.
     "horizontal": False,  # Ensure it's a boolean.
 }
 

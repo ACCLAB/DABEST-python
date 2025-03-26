@@ -314,7 +314,10 @@ def compute_interval_limits(bias, acceleration, n_boots, ci=95):
 
 @njit(cache=True)
 def calculate_group_var(control_var, control_N, test_var, test_N):
-    return control_var / control_N + test_var / test_N
+    
+    pooled_var = ((control_N - 1) * control_var + (test_N - 1) * test_var) / (control_N + test_N - 2) 
+    
+    return pooled_var
 
 
 def calculate_weighted_delta(group_var, differences):

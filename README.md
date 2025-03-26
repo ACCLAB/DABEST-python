@@ -14,106 +14,132 @@ citation](https://zenodo.org/badge/DOI/10.1038/s41592-019-0470-3.svg)](https://r
 
 ## Recent Version Update
 
-We are proud to announce **DABEST Version TBC (v2025.03.14)** This new
-version of the DABEST Python library provides several new features and
-includes performance improvements. It’s a big one!
+We are proud to announce **DABEST Version Dadar (v2025.03.27)** This new
+version of the DABEST Python library includes several new features and
+performance improvements. It’s a big one!
 
-1.  **Python 3.13 Support**: DABEST now supports Python 3.10-3.13.
+1.  **Python 3.13 Support**: DABEST now supports Python 3.10—3.13.
 
-2.  **Horizontal Plots**: This new feature allows users to create
-    horizontal plots instead of the regular vertical plots, providing a
-    more compact visualization of data. This can be utilized by setting
-    `horizontal=True` in the `plot()` method. See the [Horizontal
-    Plots](../tutorials/08-horizontal_plot.html) tutorial for more
+2.  **Horizontal Plots**: Users can now create horizontal layout plots,
+    providing compact data visualization. This can be achieved by
+    setting `horizontal=True` in the `.plot()` method. See the
+    [Horizontal Plots tutorial](../tutorials/08-horizontal_plot.html)
+    for more details.
+
+3.  **Forest Plots**: Forest plots provide a simple and intuitive way to
+    visualize many delta-delta (or delta *g*), mini-meta, or regular
+    delta effect sizes at once from multiple different dabest objects
+    without presenting the raw data. See the [Forest Plots
+    tutorial](../tutorials/07-forest_plot.html) for more details.
+
+4.  **Gridkey**: Users can now represent experimental labels in a
+    ‘gridkey’ table. This can be accessed with the `gridkey` parameter
+    in the `.plot()` method. See the gridkey section in the [Plot
+    Aesthetics tutorial](../tutorials/09-plot_aesthetics.html) for more
     details.
 
-3.  **Forest Plots**: This new feature allows users to create forest
-    plots! Forest plots provide a simple and intuitive way to visualize
-    many delta-delta (or Deltas’ g) or mini-meta effect sizes at once
-    from multiple different dabest objects without presenting the raw
-    data. See the [Forest Plots](../tutorials/07-forest_plot.html)
-    tutorial for more details.
+5.  **Other Visualization Improvements**:
 
-4.  **Gridkey**: This new feature allows users to create a gridkey to
-    represent the labels of the groups in the plot. This can be utilized
-    with the `gridkey_rows` argument in the `plot()` method. See the
-    gridkey section in the [Plot
-    Aesthetics](../tutorials/09-plot_aesthetics.html) tutorial for more
-    details.
+    - **Comparing means and effect sizes**: The estimation plots now
+      include three types of customizable visual features to enhance
+      contextualization and comparison of means and effect sizes:
 
-5.  **Aesthetic Updates**: We have made several aesthetic improvements
-    to the plots, including:
+      - **Bars for the mean of the observed values (`raw_bars`)**:
+        Colored rectangles that extend from the zero line to the mean of
+        each group’s raw data. These bars visually highlight the central
+        tendency of the raw data.
 
-    - **Swarm, Contrast, and Summary bars**: We have added bars to
-      better highlight the various groups and their differences. These
-      bars can be customized to suit the user’s needs. The swarm and
-      contrast bars are provided by default, while the summary bars can
-      be added by the user. See the relevant sections in the [Plot
-      Aesthetics](../tutorials/09-plot_aesthetics.html) tutorial for
-      more details.
+      - **Bars for effect size/s (`contrast_bars`)**: Similar to raw
+        bars, these highlight the effect-size difference between two
+        groups (typically test and control) in the contrast axis. They
+        provide a visual representation of the differences between
+        groups.
 
-    - **Delta-Delta Plots**: We have modified the delta-delta plot
-      format to be more compact and easier to read. The new format
-      brings the delta-delta (or Deltas’ g) effect size closer to the
-      regular effect sizes. In addition, a gap has been added to the
-      zeroline to separate the delta-delta and regular effect sizes.
+      - **Summary bands (`reference_band`)**: An optional band or ribbon
+        that can be added to emphasize a specific effect size’s
+        confidence interval that is used as a reference range across the
+        entire contrast axis. Unlike raw and contrast bars, these span
+        horizontally (or vertically if `horizontal=True`) and are not
+        displayed by default.
 
-    - **Delta-delta Effect Sizes for Proportion Plots**: Delta-delta
-      effect sizes for proportion plots are now available.
+        Raw and contrast bars are shown by default. Users can customize
+        these bars and add summary bands as needed. For detailed
+        customization instructions, please refer to the [Plot Aesthetics
+        tutorial](../tutorials/09-plot_aesthetics.html).
 
-    - **Mini-Meta Plots**: We have modified the mini-meta plot format to
-      be more compact and easier to read. The new format brings the
-      mini-meta effect size closer to the regular effect sizes.
+    - **Tighter spacing in delta-delta and mini-meta plots**: We have
+      adjusted the spacing of delta-delta and mini-meta plots to reduce
+      whitespace. The new format brings the overall effect size closer
+      to the two-groups effect sizes. In addition, delta-delta plots now
+      have a gap in the zero line to separate the delta-delta from the ∆
+      effect sizes.
 
-    - **Proportion Plots Sample Sizes**: We have updated the proportion
-      plots to show sample sizes for each group. These can be toggled on
-      or off via the `prop_sample_counts` parameter.
+    - **Delta-delta effect sizes for proportion plots**: In addition to
+      continuous data, delta-delta plots now support binary data
+      (proportions). This means that 2-way designs for binary outcomes
+      can be analyzed with DABEST.
 
-    - **Effect Size Lines for Paired Plots**: Effect size lines for
-      paired plots are now available. These can be toggled on or off via
-      the `es_paired_lines` parameter.
+    - **Proportion plots sample sizes**: The sample size of each binary
+      option for each group can now be displayed. These can be toggled
+      on/off via the `prop_sample_counts` parameter.
 
-    - **Baseline Error Curves**: Plots now include a baseline error dot
-      and curve to show the error of the baseline/control group. By
-      default, the dot is shown, while the curve can be added by the
-      user (via the `show_baseline_ec` parameter).
+    - **Effect size lines for paired plots**: Along with lines
+      connecting paired observed values, the paired plots now also
+      display lines linking the effect sizes within a group in the
+      contrast axes. These lines can be toggled on/off via the
+      `contrast_paired_lines` parameter.
 
-    - **Delta Text**: There is now an option to display delta text on
-      the contrast axes. It displays the effect size of the contrast
-      group relative to the reference group. This can be toggled on or
-      off via the `delta_text` parameter. It is on by default.
+    - **Baseline error curves**: To represent the baseline/control group
+      in the contrast axes, it is now possible to plot the baseline dot
+      and the baseline error curve. The dot is shown by default, while
+      the curve can be toggled on/off via the `show_baseline_ec`
+      parameter. This dot helps make it clear where the baseline comes
+      from i.e. the control minus itself. The baseline error curve can
+      be used to show that the baseline itself is an estimate inferred
+      from the observed values of the control data.
 
-    - **Empty Circle Color Palette**: A new swarmplot color palette
+    - **Delta text**: Effect-size deltas (e.g. mean differences) are now
+      displayed as numerals next to their respective effect size. This
+      can be toggled on/off via the `delta_text` parameter.
+
+    - **Empty circle color palette**: A new swarmplot color palette
       modification is available for unpaired plots via the
-      `empty_circle` parameter in the `plot()` method. This option
+      `empty_circle` parameter in the `.plot()` method. This option
       modifies the two-group swarmplots to have empty circles for the
       control group and filled circles for the experimental group.
 
 6.  **Miscellaneous Improvements & Adjustments**
 
-    - **Numba for Speed Improvements**: We have included Numba to speed
-      up the various calculations in DABEST. This should make the
-      calculations faster and more efficient. Importing DABEST may take
-      a little longer than before, and a progress bar will appear during
-      the import process to show the calculations being performed. Once
-      imported, loading and plotting data should now be faster.
+    - **Numba for speed improvements**: We have added
+      [Numba](https://numba.pydata.org/) to speed up the various
+      calculations in DABEST. Precalculations will be performed during
+      import, which will help speed up the subsequent loading and
+      plotting of data.
 
-    - **Terminology Updates**: We have made several updates to the
-      documentation and terminology to improve clarity and consistency.
-      For example:
+    - **Terminology/naming updates**: During the refactoring of the
+      code, we have made several updates to the documentation and
+      terminology to improve clarity and consistency. For example:
 
-      - The method to utilise the Deltas’ g effect size is now via the
-        `.hedges_g.plot()` method now rather than creating a whole new
-        `Delta_g` object as before. The functionality remains the same,
-        it plots hedges_g effect sizes and then the Deltas’ g effect
-        size alongside these (if a delta-delta experiment was loaded
+      - Plot arguments have been adjusted to bring more clarity and
+        consistency in naming. Arguments relating to the rawdata plot
+        axis will now be typically referred to with `raw` while
+        arguments relating to the contrast axis will be referred to with
+        `contrast`. For example, `raw_label` replaces `swarm_label` and
+        `bar_label`. The various kwargs relating to each different type
+        of plot (e.g., `swarmplot_kwargs`) remain unchanged.
+
+      - The method to utilise the Delta *g* effect size is now via the
+        .hedges_g.plot() method rather than creating a whole new Delta_g
+        object as before. The functionality remains the same, it plots
+        hedges_g effect sizes and then the Delta *g* effect size
+        alongside these (if a delta-delta experiment was loaded
         correctly).
 
-    - **Updated Tutorial Pages**: We have updated the tutorial pages to
+    - **Updated tutorial pages**: We have updated the tutorial pages to
       reflect the new features and changes. The tutorial pages are now
-      more comprehensive and hopefully more intuitive!.
+      more comprehensive and (hopefully!) more intuitive!
 
-    - **Results Dataframe for Delta-delta and Mini-meta Plots**: A
+    - **Results dataframe for delta-delta and mini-meta plots**: A
       results dataframe can now be extracted for both the delta-delta
       and mini-meta effect size data (similar to the results dataframe
       for the regular effect sizes). These can be found via the
@@ -165,7 +191,7 @@ allowing everyone access to high-quality estimation plots.
 
 ## Installation
 
-This package is tested on Python 3.10 and onwards. It is highly
+This package is tested on Python 3.11 and onwards. It is highly
 recommended to download the [Anaconda
 distribution](https://www.continuum.io/downloads) of Python in order to
 obtain the dependencies easily.

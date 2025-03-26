@@ -22,6 +22,7 @@ def load(
     experiment_label=None,
     x1_level=None,
     mini_meta=False,
+    ps_adjust=False,
 ):
     """
     Loads data in preparation for estimation statistics.
@@ -82,6 +83,9 @@ def load(
         is True; otherwise it can only be a string.
     mini_meta : boolean, default False
         Indicator of weighted delta calculation.
+    ps_adjust : boolean, default False
+        Indicator of whether to adjust calculated p-value according to Phipson & Smyth (2010)
+        # https://doi.org/10.2202/1544-6115.1585
 
     Returns
     -------
@@ -105,6 +109,7 @@ def load(
         experiment_label,
         x1_level,
         mini_meta,
+        ps_adjust,
     )
 
 # %% ../nbs/API/load.ipynb 5

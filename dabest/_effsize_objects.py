@@ -10,6 +10,10 @@ import pandas as pd
 import lqrt
 from scipy.stats import norm
 import numpy as np
+from scipy.special import binom as binomcoeff  # devMJBL
+from scipy.stats import binom  # devMJBL
+from scipy.integrate import fixed_quad  # devMJBL
+from numpy import arange, mean  # devMJBL
 from numpy import array, isnan, isinf, repeat, random, isin, abs, var
 from numpy import sort as npsort
 from numpy import nan as npnan
@@ -50,6 +54,10 @@ class TwoGroupsEffectSize(object):
             `random_seed` is used to seed the random number generator during
             bootstrap resampling. This ensures that the confidence intervals
             reported are replicable.
+        ps_adjust : boolean, default False.
+            If True, adjust calculated p-value according to Phipson & Smyth (2010)
+            # https://doi.org/10.2202/1544-6115.1585
+            
 
         Returns
         -------
@@ -87,6 +95,7 @@ class TwoGroupsEffectSize(object):
         resamples=5000,
         permutation_count=5000,
         random_seed=12345,
+        ps_adjust=False,
     ):
         from ._stats_tools import confint_2group_diff as ci2g
         from ._stats_tools import effsize as es
@@ -99,13 +108,14 @@ class TwoGroupsEffectSize(object):
             "hedges_g": "Hedges' g",
             "cliffs_delta": "Cliff's delta",
         }
-
+  
         self.__is_paired = is_paired
         self.__resamples = resamples
         self.__effect_size = effect_size
         self.__random_seed = random_seed
         self.__ci = ci
         self.__is_proportional = proportional
+        self.__ps_adjust = ps_adjust
         self._check_errors(control, test)
 
         # Convert to numpy arrays for speed.
@@ -329,6 +339,7 @@ class TwoGroupsEffectSize(object):
             self.__effect_size,
             self.__is_paired,
             self.__permutation_count,
+            ps_adjust = self.__ps_adjust,
         )
 
         if self.__is_paired and not self.__is_proportional:
@@ -827,6 +838,7 @@ class EffectSizeDataFrame(object):
         delta2=False,
         experiment_label=None,
         mini_meta=False,
+        ps_adjust=False,
     ):
         """
         Parses the data from a Dabest object, enabling plotting and printing
@@ -846,6 +858,7 @@ class EffectSizeDataFrame(object):
         self.__x2 = x2
         self.__delta2 = delta2
         self.__is_mini_meta = mini_meta
+        self.__ps_adjust = ps_adjust
 
     def __pre_calc(self):
         from .misc_tools import print_greeting, get_varname
@@ -896,7 +909,6 @@ class EffectSizeDataFrame(object):
                     cname = current_tuple[ix]
                     control = grouped_data[cname]
                 test = grouped_data[tname]
-
                 result = TwoGroupsEffectSize(
                     control,
                     test,
@@ -907,6 +919,7 @@ class EffectSizeDataFrame(object):
                     self.__resamples,
                     self.__permutation_count,
                     self.__random_seed,
+                    self.__ps_adjust
                 )
                 r_dict = result.to_dict()
                 r_dict["control"] = cname
@@ -1113,45 +1126,53 @@ class EffectSizeDataFrame(object):
         self,
         color_col=None,
         raw_marker_size=6,
-        es_marker_size=9,
-        swarm_label=None,
+        contrast_marker_size=9, # es_marker_size=9, OLD
+
+        raw_label=None, # swarm_label=None, OLD # bar_label=None, OLD
         contrast_label=None,
         delta2_label=None,
-        swarm_ylim=None,
+
+        raw_ylim=None, # swarm_ylim=None, OLD # bar_ylim=None, OLD
         contrast_ylim=None,
         delta2_ylim=None,
-        swarm_side=None,
-        empty_circle=False,
+
         custom_palette=None,
-        swarm_desat=0.5,
-        halfviolin_desat=1,
-        halfviolin_alpha=0.8,
+        swarm_side=None,
+        empty_circle=False,  # Not very intuitive name
+
         face_color=None,
-        # bar plot
-        bar_label=None,
-        bar_desat=0.5,
+
+        raw_desat=0.5, # swarm_desat=0.5, OLD # bar_desat=0.5, OLD
+        contrast_desat=1, # halfviolin_desat=1, OLD
+
+        raw_alpha=None, # NEW
+        contrast_alpha=0.8, # halfviolin_alpha=0.8, OLD
+
         bar_width=0.5,
-        bar_ylim=None,
-        # error bar of proportion plot
-        ci=None,
+        # ci=None, # Seems to be unused
         ci_type="bca",
-        err_color=None,
+
         float_contrast=True,
         show_pairs=True,
-        show_delta2=True,
+        show_sample_size=True,
+        show_delta2=True, # Would pref switch to delta_delta instead of delta2
         show_mini_meta=True,
-        group_summaries=None,
+
+        group_summaries="mean_sd",
+        # err_color=None, # Not intuitive name and doesnt fit with group_summaries argument    
         fig_size=None,
         dpi=100,
         ax=None,
+
         swarmplot_kwargs=None,
-        barplot_kwargs=None,
-        violinplot_kwargs=None,
         slopegraph_kwargs=None,
+        barplot_kwargs=None,
         sankey_kwargs=None,
+        contrast_kwargs=None, # violinplot_kwargs=None, OLD
         reflines_kwargs=None,
         group_summaries_kwargs=None,
         legend_kwargs=None,
+
         title=None,
         fontsize_title=16,
         fontsize_rawxlabel=12,
@@ -1159,13 +1180,14 @@ class EffectSizeDataFrame(object):
         fontsize_contrastxlabel=12,
         fontsize_contrastylabel=12,
         fontsize_delta2label=12,
-        #### Contrast bars, Swarm bars, delta text, and delta dots WIP  ####
+
+        # Raw bars, Contrast bars, delta text, and delta dots
+        raw_bars=True, # swarm_bars=True, OLD          
+        raw_bars_kwargs=None, # swarm_bars_kwargs=None, OLD
         contrast_bars=True,
-        swarm_bars=True,
         contrast_bars_kwargs=None,
-        swarm_bars_kwargs=None,
-        summary_bars=None,
-        summary_bars_kwargs=None,
+        reference_band=None,
+        reference_band_kwargs=None,
         delta_text=True,
         delta_text_kwargs=None,
         delta_dot=True,
@@ -1176,23 +1198,23 @@ class EffectSizeDataFrame(object):
         horizontal_table_kwargs=None,
 
         # Gridkey
-        gridkey_rows=None,
+        gridkey=None, # gridkey_rows=None, OLD
         gridkey_merge_pairs=False,
         gridkey_show_Ns=True,
         gridkey_show_es=True,
         gridkey_delimiters=[';', '>', '_'],
         gridkey_kwargs=None,
 
-        es_marker_kwargs=None,
-        es_errorbar_kwargs=None,
+        contrast_marker_kwargs=None, # es_marker_kwargs=None, OLD
+        contrast_errorbar_kwargs=None, # es_errorbar_kwargs=None, OLD
 
         prop_sample_counts=False,
         prop_sample_counts_kwargs=None,
 
-        es_paired_lines=True,
-        es_paired_lines_kwargs=None,
-		
-		# Basline EffectSize Curve
+        contrast_paired_lines=True, # es_paired_lines=True, OLD
+        contrast_paired_lines_kwargs=None, # es_paired_lines_kwargs=None, OLD
+        
+		# Baseline Effect Size Curve
 		show_baseline_ec=False,
     ):
         """
@@ -1206,18 +1228,18 @@ class EffectSizeDataFrame(object):
         raw_marker_size : float, default 6
             The diameter (in points) of the marker dots plotted in the
             swarmplot.
-        es_marker_size : float, default 9
+        contrast_marker_size : float, default 9
             The size (in points) of the effect size points on the difference
             axes.
-        swarm_label, contrast_label, delta2_label : strings, default None
-            Set labels for the y-axis of the swarmplot and the contrast plot,
-            respectively. If `swarm_label` is not specified, it defaults to
-            "value", unless a column name was passed to `y`. If
-            `contrast_label` is not specified, it defaults to the effect size
-            being plotted. If `delta2_label` is not specifed, it defaults to
-            "delta - delta"
-        swarm_ylim, contrast_ylim, delta2_ylim : tuples, default None
-            The desired y-limits of the raw data (swarmplot) axes, the
+        raw_label, contrast_label, delta2_label : strings, default None
+            Set labels for the y-axis of the raw plot and the contrast plot,
+            respectively. If `raw_label` is not specified, it defaults to
+            "Value" for non binary data (and "Proportion of Success" for binary data), 
+            unless a column name was passed to `y`. If `contrast_label` is not specified, 
+            it defaults to the effect size being plotted. If `delta2_label` is not specifed, 
+            it defaults to "delta - delta".
+        raw_ylim, contrast_ylim, delta2_ylim : tuples, default None
+            The desired y-limits of the raw data axes, the
             difference axes and the delta-delta axes respectively, as a tuple.
             These will be autoscaled to sensible values if they are not
             specified. The delta2 axes and contrast axes should have the same
@@ -1247,15 +1269,26 @@ class EffectSizeDataFrame(object):
             Boolean value determining if empty circles will be used for plotting of
             swarmplot for control groups. Color of each individual swarm is also now
             dependent on the comparison group.
-        swarm_desat : float, default 1
-            Decreases the saturation of the colors in the swarmplot by the
+        face_color: string, default None
+            The face color of the plot. Defaults to "white".
+        raw_desat : float, default 1
+            Decreases the saturation of the colors in the rawplot by the
             desired proportion. Uses `seaborn.desaturate()` to acheive this.
-        halfviolin_desat : float, default 0.5
+        contrast_desat : float, default 0.5
             Decreases the saturation of the colors of the half-violin bootstrap
             curves by the desired proportion. Uses `seaborn.desaturate()` to
             acheive this.
-        halfviolin_alpha : float, default 0.8
+        raw_alpha : float, default None
+            The alpha (transparency) level of the raw plot elements. This defaults
+            to 1.0 for all plots except sankey and slopegraphs, whereby it defaults to 0.4
+            and 0.5, respectively.
+        contrast_alpha : float, default 0.8
             The alpha (transparency) level of the half-violin bootstrap curves.
+        bar_width : float, default 0.5
+            The width of the bars in the barplot (binary, non-paired data).
+        ci_type : string, default
+            The confidence interval of the contrast plot to display. Defaults
+            to "bca". Otherwise, the user can choose "pct" for percentile. 
         float_contrast : boolean, default True
             Whether or not to display the halfviolin bootstrapped difference
             distribution alongside the raw data.
@@ -1263,10 +1296,12 @@ class EffectSizeDataFrame(object):
             If the data is paired, whether or not to show the raw data as a
             swarmplot, or as slopegraph, with a line joining each pair of
             observations.
+        show_sample_size : boolean, default True
+            Whether or not to display the sample size of each group in the axis label.
         show_delta2, show_mini_meta : boolean, default True
             If delta-delta or mini-meta delta is calculated, whether or not to
             show the delta-delta plot or mini-meta plot.
-        group_summaries : ['mean_sd', 'median_quartiles', 'None'], default None.
+        group_summaries : ['mean_sd', 'median_quartiles', 'None'], default "mean_sd".
             Plots the summary statistics for each group. If 'mean_sd', then
             the mean and standard deviation of each group is plotted as a
             notched line beside each group. If 'median_quantiles', then the
@@ -1283,26 +1318,26 @@ class EffectSizeDataFrame(object):
             Pass any keyword arguments accepted by the seaborn `swarmplot`
             command here, as a dict. If None, the following keywords are
             passed to sns.swarmplot : {'size':`raw_marker_size`}.
-        barplot_kwargs : dict, default None
-            By default, the keyword arguments passed are:
-            {"estimator": np.mean, "errorbar": plot_kwargs["ci"]}
-        violinplot_kwargs : dict, default None
-            Pass any keyword arguments accepted by the matplotlib `
-            pyplot.violinplot` command here, as a dict. If None, the following
-            keywords are passed to violinplot : {'widths':0.5, 'vert':True,
-            'showextrema':False, 'showmedians':False}.
         slopegraph_kwargs : dict, default None
             This will change the appearance of the lines used to join each pair
             of observations when `show_pairs=True`. Pass any keyword arguments
             accepted by matplotlib `plot()` function here, as a dict.
             If None, the following keywords are
             passed to plot() : {'linewidth':1, 'alpha':0.5, 'jitter':0, 'jitter_seed':9876543210}.
+        barplot_kwargs : dict, default None
+            By default, the keyword arguments passed are:
+            {"estimator": np.mean, "errorbar": plot_kwargs["ci"], "err_kws" : {'color':'black'}}
         sankey_kwargs: dict, default None
             Whis will change the appearance of the sankey diagram used to depict
             paired proportional data when `show_pairs=True` and `is_proportional=True`.
             Pass any keyword arguments accepted by plot_tools.sankeydiag() function
             here, as a dict. If None, the following keywords are passed to sankey diagram:
             {"width": 0.5, "align": "center", "alpha": 0.4, "bar_width": 0.1, "rightColor": False}
+        contrast_kwargs : dict, default None
+            Pass any keyword arguments accepted by the matplotlib `
+            pyplot.violinplot` command here, as a dict. If None, the following
+            keywords are passed to violinplot : {'widths':0.5, 'vert':True,
+            'showextrema':False, 'showmedians':False}.
         reflines_kwargs : dict, default None
             This will change the appearance of the zero reference lines. Pass
             any keyword arguments accepted by the matplotlib Axes `hlines`
@@ -1324,7 +1359,7 @@ class EffectSizeDataFrame(object):
             Title for the plot. If None, no title will be displayed. Pass any
             keyword arguments accepted by the matplotlib.pyplot.suptitle `t` command here,
             as a string.
-        fontsize_title : float or {'xx-small', 'x-small', 'small', 'medium', 'large', 'x-large', 'xx-large'}, default 'large'
+        fontsize_title : float or {'xx-small', 'x-small', 'small', 'medium', 'large', 'x-large', 'xx-large'}, default 16
             Font size for the plot title. If a float, the fontsize in points. The
             string values denote sizes relative to the default font size. Pass any keyword arguments accepted
             by the matplotlib.pyplot.suptitle `fontsize` command here, as a string.
@@ -1339,23 +1374,22 @@ class EffectSizeDataFrame(object):
         fontsize_delta2label : float, default 12
             Font size for the delta-delta axes ylabel.
             
+        raw_bars : boolean, default True
+            Whether or not to display the raw bars.
+        raw_bars_kwargs : dict, default None
+            Pass relevant keyword arguments to the raw bars. Pass any keyword arguments accepted by 
+            matplotlib.patches.Rectangle here, as a string. If None, the following keywords are passed:
+            {"color": None, "zorder":-3}
         contrast_bars : boolean, default True
             Whether or not to display the contrast bars.
-        swarm_bars : boolean, default True
-            Whether or not to display the swarm bars.
         contrast_bars_kwargs : dict, default None
             Pass relevant keyword arguments to the contrast bars. Pass any keyword arguments accepted by 
             matplotlib.patches.Rectangle here, as a string. If None, the following keywords are passed:
             {"color": None, "zorder":-3}
-        swarm_bars_kwargs : dict, default None
-            Pass relevant keyword arguments to the swarm bars. Pass any keyword arguments accepted by 
-            matplotlib.patches.Rectangle here, as a string. If None, the following keywords are passed:
-            {"color": None, "zorder":-3}
-
-        summary_bars : list, default None
-            Pass a list of indices of the contrast objects to have summary bars displayed on the plot.
-            For example, [0,1] will show summary bars for the first two contrast objects.
-        summary_bars_kwargs: dict, default None
+        reference_band : list, default None
+            Pass a list of indices of the contrast objects to have reference bands displayed on the plot.
+            For example, [0,1] will show reference bands for the first two contrast objects.
+        reference_band_kwargs: dict, default None
             If None, the following keywords are passed: {"span_ax": False, "color": None, "alpha": 0.15, "zorder":-3}
         delta_text : boolean, default True
             Whether or not to display the text deltas.
@@ -1371,13 +1405,23 @@ class EffectSizeDataFrame(object):
         delta_dot_kwargs : dict, default None
             Pass relevant keyword arguments. If None, the following keywords are passed:
             {"color": 'k', "marker": "^", "alpha": 0.5, "zorder": 2, "size": 3, "side": "right"}
-
+        horizontal : boolean, default False
+            Whether to display plots in the horizontal format. Default is False. 
         horizontal_table_kwargs : dict, default None
             {'show: True, 'color' : 'yellow', 'alpha' :0.2, 'fontsize' : 12, 'text_color' : 'black', 
             'text_units' : None, 'control_marker' : '-', 'fontsize_label': 12, 'label': 'Δ'}
             
-        gridkey_rows : list, default None
-            cell should be populated or not. 
+        gridkey : list, default None
+            Provide either a list of grid keys or 'auto' for automatic grid selection.
+        gridkey_merge_pairs : boolean, default False
+            Merges the paired grid key groups together.
+        gridkey_show_Ns : boolean, default True
+            Whether to display the sample size row.
+        gridkey_show_es : boolean, default True
+            Whether to show the effect size row. 
+        gridkey_delimiters : list, default [';', '>', '_']
+            The delimiter used to split gridkey groups if required.
+        gridkey_kwargs : dict, default None
             Pass relevant keyword arguments to the gridkey. If None, the following keywords are passed:
             {   'show_es' : True,                   # If True, the gridkey will show the effect size of each comparison.
                 'show_Ns' :True,                    # If True, the gridkey will show the number of observations in eachgroup.
@@ -1386,10 +1430,10 @@ class EffectSizeDataFrame(object):
                 'marker': "\u25CF",                 # Marker for the gridkey dots.
             }
 
-        es_marker_kwargs: dict, default None
+        contrast_marker_kwargs: dict, default None
             Pass relevant keyword arguments to the effectsize marker plotting. If none, the following keywords are passed:
-            {'marker': 'o', 'size': plot_kwargs['es_marker_size'], 'color': 'black', 'alpha': 1, 'zorder': 1}
-        es_errorbar_kwargs: dict, default None
+            {'marker': 'o', 'size': plot_kwargs['contrast_marker_size'], 'color': 'black', 'alpha': 1, 'zorder': 1}
+        contrast_errorbar_kwargs: dict, default None
             Pass relevant keyword arguments to the effectsize errorbar plotting. If none, the following keywords are passed:
             {'color': 'black', 'lw': 2, 'linestyle': '-', 'alpha': 1,'zorder': 1,}
 
@@ -1399,9 +1443,9 @@ class EffectSizeDataFrame(object):
             Pass relevant keyword arguments. If None, the following keywords are passed:
             {'color': 'k', 'zorder': 5, 'ha': 'center', 'va': 'center'},
 
-        es_paired_lines: bool, default True
+        contrast_paired_lines: bool, default True
             Whether or not to add lines to connect the effect size curves in paired plots.
-        es_paired_lines_kwargs: dict, default None
+        contrast_paired_lines_kwargs: dict, default None
             Pass relevant plot keyword arguments. If None, the following keywords are passed:
             {"linestyle": "-", "linewidth": 2, "zorder": -2, "color": 'dimgray', "alpha": 1}
         
@@ -1432,11 +1476,14 @@ class EffectSizeDataFrame(object):
         if hasattr(self, "results") is False:
             self.__pre_calc()
 
+        if raw_alpha is None:
+            raw_alpha = (0.4 if self.is_proportional and self.is_paired 
+                         else 0.5 if self.is_paired
+                         else 1.0
+            )
+
         if self.__delta2 and not empty_circle:
             color_col = self.__x2
-
-        # Modification incurred due to update of Seaborn
-        ci = ("ci", ci) if ci is not None else None
 
         all_kwargs = locals()
         del all_kwargs["self"]
@@ -1630,6 +1677,10 @@ class PermutationTest:
         `random_seed` is used to seed the random number generator during
         bootstrap resampling. This ensures that the generated permutations
         are replicable.
+    ps_adjust : bool, default False
+        If True, the p-value is adjusted according to Phipson & Smyth (2010).
+        # https://doi.org/10.2202/1544-6115.1585
+
         
     Returns
     -------
@@ -1648,6 +1699,7 @@ class PermutationTest:
                  is_paired:str=None,
                  permutation_count:int=5000, # The number of permutations (reshuffles) to perform.
                  random_seed:int=12345,#`random_seed` is used to seed the random number generator during bootstrap resampling. This ensures that the generated permutations are replicable.
+                 ps_adjust:bool=False,
                  **kwargs):
         from ._stats_tools.effsize import two_group_difference
         from ._stats_tools.confint_2group_diff import calculate_group_var
@@ -1672,6 +1724,7 @@ class PermutationTest:
 
         BAG = array([*control, *test])
         CONTROL_LEN = int(len(control))
+        TEST_LEN = int(len(test)) # devMJBL
         EXTREME_COUNT = 0.
         THRESHOLD = abs(two_group_difference(control, test, 
                                                 is_paired, effect_size))
@@ -1711,12 +1764,42 @@ class PermutationTest:
 
             if abs(es) > THRESHOLD:
                 EXTREME_COUNT += 1.
+                
+        if ps_adjust:
+            # devMJBL
+            # adjust calculated p-value according to Phipson & Smyth (2010)
+            # https://doi.org/10.2202/1544-6115.1585
+            # as per R code in statmod::permp
+            # https://rdrr.io/cran/statmod/src/R/permp.R
+            # (assumes two-sided test)
 
+            if CONTROL_LEN == TEST_LEN:
+                totalPermutations = binomcoeff(CONTROL_LEN + TEST_LEN, TEST_LEN)/2
+            else:
+                totalPermutations = binomcoeff(CONTROL_LEN + TEST_LEN, TEST_LEN)
+
+            if totalPermutations <= 10e3:
+                # use exact calculation
+                p = arange(1, totalPermutations + 1)/totalPermutations
+                x2 = repeat(EXTREME_COUNT, repeats=totalPermutations)
+                Y = binom.cdf(k=x2, n=permutation_count, p=p)
+                self.pvalue = mean(Y)
+            else:
+                # use integral approximation
+                def binomcdf(p, k, n):
+                    return binom.cdf(k, n, p)
+
+                integrationVal, _ = fixed_quad(binomcdf,
+                                            a=0, b=0.5/totalPermutations,
+                                            args=(EXTREME_COUNT, permutation_count),
+                                            n=128)
+
+                self.pvalue = (EXTREME_COUNT + 1)/(permutation_count + 1) - integrationVal
+        else:
+            self.pvalue = EXTREME_COUNT / self.__permutation_count
+            
         self.__permutations = array(self.__permutations)
         self.__permutations_var = array(self.__permutations_var)
-
-        self.pvalue = EXTREME_COUNT / self.__permutation_count
-
 
     def __repr__(self):
         return("{} permutations were taken. The p-value is {}.".format(self.__permutation_count, 

@@ -77,7 +77,7 @@ def two_group_difference(control:list|tuple|np.ndarray, #Accepts lists, tuples, 
                 "result in a biased estimate and cause problems with " + \
                 "BCa confidence intervals. Consider using a different statistic, such as the mean.\n"
         mes2 = "When plotting, please consider using percetile confidence intervals " + \
-                "by specifying `ci_type='percentile'`. For detailed information, " + \
+                "by specifying `ci_type='pct'`. For detailed information, " + \
                 "refer to https://github.com/ACCLAB/DABEST-python/issues/129 \n"
         warnings.warn(message=mes1+mes2, category=UserWarning)
         return func_difference(control, test, np.median, is_paired)

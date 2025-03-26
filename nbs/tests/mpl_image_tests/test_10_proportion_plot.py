@@ -209,7 +209,7 @@ def test_107_cummings_multi_groups_propdiff():
 def test_109_gardner_altman_ylabel():
     plt.rcdefaults()
     return two_groups_unpaired.mean_diff.plot(
-        bar_label="This is my\nrawdata", contrast_label="The bootstrap\ndistribtions!"
+        raw_label="This is my\nrawdata", contrast_label="The bootstrap\ndistribtions!"
     )
 
 
@@ -243,7 +243,7 @@ def test_112_change_palette_c():
 def test_113_desat():
     plt.rcdefaults()
     return multi_2group.mean_diff.plot(
-        custom_palette=my_color_palette, bar_desat=0.1, halfviolin_desat=0.25
+        custom_palette=my_color_palette, raw_desat=0.1, contrast_desat=0.25
     )
 
 
@@ -280,7 +280,7 @@ def test_116_ticker_gardner_altman():
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_117_err_color():
     plt.rcdefaults()
-    return two_groups_unpaired.mean_diff.plot(err_color="purple")
+    return two_groups_unpaired.mean_diff.plot(barplot_kwargs={"err_kws": {"color" : "purple"}})
 
 
 @pytest.mark.mpl_image_compare(tolerance=8)

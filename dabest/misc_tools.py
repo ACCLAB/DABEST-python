@@ -6,7 +6,8 @@
 __all__ = ['merge_two_dicts', 'unpack_and_add', 'print_greeting', 'get_varname', 'get_unique_categories', 'get_params',
            'get_kwargs', 'get_color_palette', 'initialize_fig', 'get_plot_groups', 'add_counts_to_ticks',
            'extract_contrast_plotting_ticks', 'set_xaxis_ticks_and_lims', 'show_legend', 'gardner_altman_adjustments',
-           'draw_zeroline', 'redraw_independent_spines', 'redraw_dependent_spines', 'extract_group_summaries']
+           'draw_zeroline', 'redraw_independent_spines', 'redraw_dependent_spines', 'extract_group_summaries',
+           'color_picker', 'prepare_bars_for_plot']
 
 # %% ../nbs/API/misc_tools.ipynb 4
 import datetime as dt
@@ -98,7 +99,8 @@ def get_unique_categories(names):
 def get_params(
         effectsize_df: object, 
         plot_kwargs: dict,
-        sankey_kwargs: dict
+        sankey_kwargs: dict,
+        barplot_kwargs: dict
     ):
     """
     Extracts parameters from the `effectsize_df` and `plot_kwargs` objects for use in the plotter function.
@@ -111,6 +113,8 @@ def get_params(
         Kwargs passed to the plot function.
     sankey kwargs : dict
         Kwargs relating to the sankey diagram plots
+    barplot_kwargs : dict
+        Kwargs relating to the barplot
     """
     plot_data = effectsize_df._plot_data
     xvar = effectsize_df.xvar
@@ -161,17 +165,12 @@ def get_params(
 
     # Group summaries
     group_summaries = plot_kwargs["group_summaries"]
-    if group_summaries is None:
-        group_summaries = "mean_sd"
-
-    # Error bar color
-    err_color = plot_kwargs["err_color"]
-    if err_color is None: 
-        err_color = "black"
+    group_summaries = None if barplot_kwargs['errorbar'] is not None else group_summaries
 
     # Contrast Axes kwargs
-    halfviolin_alpha = plot_kwargs["halfviolin_alpha"]
     ci_type = plot_kwargs["ci_type"]
+    if ci_type not in ["bca", "pct"]:
+        raise ValueError("Invalid `ci_type`. Must be either 'bca' or 'pct'.")
         
     # Boolean for showing Baseline Curve
     show_baseline_ec = plot_kwargs["show_baseline_ec"]
@@ -194,11 +193,13 @@ def get_params(
         else "right" if not horizontal
         else "left"
     )  
+    # Whether to show sample sizes with ticklabels
+    show_sample_size = plot_kwargs["show_sample_size"]
         
     return (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, 
-            idx, show_delta2, show_mini_meta, float_contrast, show_pairs, group_summaries, err_color, 
-            horizontal, results, halfviolin_alpha, ci_type, x1_level, experiment_label, show_baseline_ec, 
-            one_sankey, two_col_sankey, asymmetric_side)
+            idx, show_delta2, show_mini_meta, float_contrast, show_pairs, group_summaries, 
+            horizontal, results, ci_type, x1_level, experiment_label, show_baseline_ec, 
+            one_sankey, two_col_sankey, asymmetric_side, show_sample_size)
 
 def get_kwargs(
         plot_kwargs: dict, 
@@ -218,7 +219,9 @@ def get_kwargs(
 
     # Swarmplot kwargs
     default_swarmplot_kwargs = {
-        "size": plot_kwargs["raw_marker_size"]
+        "size": plot_kwargs["raw_marker_size"],
+        "alpha": plot_kwargs["raw_alpha"],
+        "fontsize": plot_kwargs.get("fontsize_rawxlabel"),
     }
     if plot_kwargs["swarmplot_kwargs"] is None:
         swarmplot_kwargs = default_swarmplot_kwargs
@@ -230,7 +233,11 @@ def get_kwargs(
     # Barplot kwargs
     default_barplot_kwargs = {
         "estimator": np.mean, 
-        "errorbar": plot_kwargs["ci"],
+        "errorbar": None,
+        "width": plot_kwargs["bar_width"],
+        "alpha": plot_kwargs["raw_alpha"],
+        "err_kws": {'color': 'black'},
+        "fontsize": plot_kwargs["fontsize_rawxlabel"]
     }
     if plot_kwargs["barplot_kwargs"] is None:
         barplot_kwargs = default_barplot_kwargs
@@ -245,9 +252,10 @@ def get_kwargs(
         "align": "center",
         "sankey": True,
         "flow": True,
-        "alpha": 0.4,
+        "alpha": plot_kwargs['raw_alpha'],
         "rightColor": False,
         "bar_width": 0.2,
+        "fontsize": plot_kwargs.get("fontsize_rawxlabel")
     }
     if plot_kwargs["sankey_kwargs"] is None:
         sankey_kwargs = default_sankey_kwargs
@@ -257,26 +265,27 @@ def get_kwargs(
         )
 
     # Violinplot kwargs.
-    default_violinplot_kwargs = {
+    default_contrast_kwargs = {
         "widths": 0.5,
-        "vert": 'vertical',
+        "orientation": 'vertical',
         "showextrema": False,
         "showmedians": False,
+        "alpha": plot_kwargs["contrast_alpha"],
         
     }
-    if plot_kwargs["violinplot_kwargs"] is None:
-        violinplot_kwargs = default_violinplot_kwargs
+    if plot_kwargs["contrast_kwargs"] is None:
+        contrast_kwargs = default_contrast_kwargs
     else:
-        violinplot_kwargs = merge_two_dicts(
-            default_violinplot_kwargs, plot_kwargs["violinplot_kwargs"]
+        contrast_kwargs = merge_two_dicts(
+            default_contrast_kwargs, plot_kwargs["contrast_kwargs"]
         )
 
     # Slopegraph kwargs.
     default_slopegraph_kwargs = {
         "linewidth": 1, 
-        "alpha": 0.5,
+        "alpha": plot_kwargs["raw_alpha"],
         'jitter': 0, 
-        'jitter_seed': 9876543210
+        'jitter_seed': 9876543210,
     }
     if plot_kwargs["slopegraph_kwargs"] is None:
         slopegraph_kwargs = default_slopegraph_kwargs
@@ -362,13 +371,11 @@ def get_kwargs(
 
     # Delta text kwargs.
     default_delta_text_kwargs = {
-                "color": None, 
                 "alpha": 1,
                 "fontsize": 10, 
                 "ha": 'center', 
                 "va": 'center', 
                 "rotation": 0, 
-                "x_location": 'right', 
                 "x_coordinates": None, 
                 "y_coordinates": None,
                 "offset": 0
@@ -378,32 +385,31 @@ def get_kwargs(
     else:
         delta_text_kwargs = merge_two_dicts(default_delta_text_kwargs, plot_kwargs["delta_text_kwargs"])
 
-    # Summary bars kwargs.
-    default_summary_bars_kwargs = {
+    # Reference band kwargs.
+    default_reference_band_kwargs = {
                     "span_ax": False,
-                    "color": None, 
                     "alpha": 0.15,
                     "zorder":-3
     }
-    if plot_kwargs["summary_bars_kwargs"] is None:
-        summary_bars_kwargs = default_summary_bars_kwargs
+    if plot_kwargs["reference_band_kwargs"] is None:
+        reference_band_kwargs = default_reference_band_kwargs
     else:
-        summary_bars_kwargs = merge_two_dicts(default_summary_bars_kwargs, plot_kwargs["summary_bars_kwargs"])
+        reference_band_kwargs = merge_two_dicts(default_reference_band_kwargs, plot_kwargs["reference_band_kwargs"])
 
     # Swarm bars kwargs.
-    default_swarm_bars_kwargs = {
-                    "color": None, 
-                    "zorder":-3
+    default_raw_bars_kwargs = {
+                    "zorder":-3,
+                    "alpha": 0.2
     }
-    if plot_kwargs["swarm_bars_kwargs"] is None:
-        swarm_bars_kwargs = default_swarm_bars_kwargs
+    if plot_kwargs["raw_bars_kwargs"] is None:
+        raw_bars_kwargs = default_raw_bars_kwargs
     else:
-        swarm_bars_kwargs = merge_two_dicts(default_swarm_bars_kwargs, plot_kwargs["swarm_bars_kwargs"])
+        raw_bars_kwargs = merge_two_dicts(default_raw_bars_kwargs, plot_kwargs["raw_bars_kwargs"])
 
     # Contrast bars kwargs.
     default_contrast_bars_kwargs = {
-                    "color": None, 
-                    "zorder":-3
+                    "zorder":-3,
+                    "alpha": 0.2
     }
     if plot_kwargs["contrast_bars_kwargs"] is None:
         contrast_bars_kwargs = default_contrast_bars_kwargs
@@ -429,11 +435,11 @@ def get_kwargs(
 
     # Gridkey kwargs.
     default_gridkey_kwargs = {
-                'show_es' : True,                   # If True, the gridkey will show the effect size of each comparison.
-                'show_Ns' :True,                    # If True, the gridkey will show the number of observations in eachgroup.
-                'merge_pairs' : False,              # If True, the gridkey will merge the pairs of groups into a single cell. This is useful for when the groups are paired.
-                'delimiters': [';', '>', '_'],      # Delimiters to split the group names.
-                'marker': "\u25CF",                 # Marker for the gridkey dots.
+                'show_es' : plot_kwargs['gridkey_show_es'],           # If True, the gridkey will show the effect size of each comparison.
+                'show_Ns' : plot_kwargs['gridkey_show_Ns'],           # If True, the gridkey will show the number of observations in eachgroup.
+                'merge_pairs' : plot_kwargs['gridkey_merge_pairs'],   # If True, the gridkey will merge the pairs of groups into a single cell. This is useful for when the groups are paired.
+                'delimiters': plot_kwargs['gridkey_delimiters'],      # Delimiters to split the group names.
+                'marker': "\u25CF",                                   # Marker for the gridkey dots.
     }
     if plot_kwargs["gridkey_kwargs"] is None:
         gridkey_kwargs = default_gridkey_kwargs
@@ -441,30 +447,30 @@ def get_kwargs(
         gridkey_kwargs = merge_two_dicts(default_gridkey_kwargs, plot_kwargs["gridkey_kwargs"])
 
     # Effect size marker kwargs
-    default_es_marker_kwargs = {
+    default_contrast_marker_kwargs = {
                 'marker': 'o',
-                'markersize': plot_kwargs['es_marker_size'],
+                'markersize': plot_kwargs['contrast_marker_size'],
                 'color': ytick_color,
                 'alpha': 1,
                 'zorder': 2,
     }
-    if plot_kwargs['es_marker_kwargs'] is None:
-        es_marker_kwargs = default_es_marker_kwargs
+    if plot_kwargs['contrast_marker_kwargs'] is None:
+        contrast_marker_kwargs = default_contrast_marker_kwargs
     else:
-        es_marker_kwargs = merge_two_dicts(default_es_marker_kwargs, plot_kwargs['es_marker_kwargs'])
+        contrast_marker_kwargs = merge_two_dicts(default_contrast_marker_kwargs, plot_kwargs['contrast_marker_kwargs'])
 
     # Effect size error bar kwargs
-    default_es_errorbar_kwargs = {
+    default_contrast_errorbar_kwargs = {
                 'color': ytick_color,
                 'lw': 2,
                 'linestyle': '-',
                 'alpha': 1,
                 'zorder': 1,
     }
-    if plot_kwargs['es_errorbar_kwargs'] is None:
-        es_errorbar_kwargs = default_es_errorbar_kwargs
+    if plot_kwargs['contrast_errorbar_kwargs'] is None:
+        contrast_errorbar_kwargs = default_contrast_errorbar_kwargs
     else:
-        es_errorbar_kwargs = merge_two_dicts(default_es_errorbar_kwargs, plot_kwargs['es_errorbar_kwargs'])
+        contrast_errorbar_kwargs = merge_two_dicts(default_contrast_errorbar_kwargs, plot_kwargs['contrast_errorbar_kwargs'])
 
     # Prop sample counts kwargs
     default_prop_sample_counts_kwargs = {
@@ -480,23 +486,23 @@ def get_kwargs(
 
 
     # RM Lines kwargs
-    default_es_paired_lines_kwargs = {
+    default_contrast_paired_lines_kwargs = {
         "linestyle": "-",
         "linewidth": 2,
         "zorder": -2,
         "color": 'dimgray',
         "alpha": 1
     }
-    if plot_kwargs["es_paired_lines_kwargs"] is None:
-        es_paired_lines_kwargs = default_es_paired_lines_kwargs
+    if plot_kwargs["contrast_paired_lines_kwargs"] is None:
+        contrast_paired_lines_kwargs = default_contrast_paired_lines_kwargs
     else:
-        es_paired_lines_kwargs = merge_two_dicts(default_es_paired_lines_kwargs, plot_kwargs["es_paired_lines_kwargs"])
+        contrast_paired_lines_kwargs = merge_two_dicts(default_contrast_paired_lines_kwargs, plot_kwargs["contrast_paired_lines_kwargs"])
 
     # Return the kwargs.
-    return (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, violinplot_kwargs, slopegraph_kwargs, 
+    return (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, contrast_kwargs, slopegraph_kwargs, 
             reflines_kwargs, legend_kwargs, group_summaries_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
-            delta_text_kwargs, summary_bars_kwargs, swarm_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs,
-            es_marker_kwargs, es_errorbar_kwargs, prop_sample_counts_kwargs, es_paired_lines_kwargs)
+            delta_text_kwargs, reference_band_kwargs, raw_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs,
+            contrast_marker_kwargs, contrast_errorbar_kwargs, prop_sample_counts_kwargs, contrast_paired_lines_kwargs)
 
 
 def get_color_palette(
@@ -580,9 +586,8 @@ def get_color_palette(
 
     n_groups = len(color_groups)
     custom_pal = plot_kwargs["custom_palette"]
-    swarm_desat = plot_kwargs["swarm_desat"]
-    bar_desat = plot_kwargs["bar_desat"]
-    contrast_desat = plot_kwargs["halfviolin_desat"]
+    raw_desat = plot_kwargs["raw_desat"]
+    contrast_desat = plot_kwargs["contrast_desat"]
 
     if custom_pal is None:
         unsat_colors = sns.color_palette(n_colors=n_groups)
@@ -636,39 +641,31 @@ def get_color_palette(
 
     if custom_pal is None and color_col is None:
         categories = get_unique_categories(names)
-        swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
+        raw_colors = [sns.desaturate(c, raw_desat) for c in unsat_colors]
         contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
-        bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
         if color_by_subgroups:
             plot_palette_raw = dict()
             plot_palette_contrast = dict()
-            plot_palette_bar = dict()
             for i in range(len(idx)):
                 for names_i in idx[i]:
-                    plot_palette_raw[names_i] = swarm_colors[i]
+                    plot_palette_raw[names_i] = raw_colors[i]
                     plot_palette_contrast[names_i] = contrast_colors[i]
-                    plot_palette_bar[names_i] = bar_color[i]
         else:
-            plot_palette_raw = dict(zip(categories, swarm_colors))
+            plot_palette_raw = dict(zip(categories, raw_colors))
             plot_palette_contrast = dict(zip(categories, contrast_colors))
-            plot_palette_bar = dict(zip(categories, bar_color))
     else:
-        swarm_colors = [sns.desaturate(c, swarm_desat) for c in unsat_colors]
+        raw_colors = [sns.desaturate(c, raw_desat) for c in unsat_colors]
         contrast_colors = [sns.desaturate(c, contrast_desat) for c in unsat_colors]
-        bar_color = [sns.desaturate(c, bar_desat) for c in unsat_colors]
         if color_by_subgroups:
             plot_palette_raw = dict()
             plot_palette_contrast = dict()
-            plot_palette_bar = dict()
             for i in range(len(idx)):
                 for names_i in idx[i]:
-                    plot_palette_raw[names_i] = swarm_colors[i]
+                    plot_palette_raw[names_i] = raw_colors[i]
                     plot_palette_contrast[names_i] = contrast_colors[i]
-                    plot_palette_bar[names_i] = bar_color[i]
         else:
-            plot_palette_raw = dict(zip(names, swarm_colors))
+            plot_palette_raw = dict(zip(names, raw_colors))
             plot_palette_contrast = dict(zip(names, contrast_colors))
-            plot_palette_bar = dict(zip(names, bar_color))
             plot_palette_sankey = dict(zip(names, unsat_colors))
 
     # For Sankey Diagram plot, each bar will have the same two colors if custom_pal is None
@@ -676,8 +673,8 @@ def get_color_palette(
     if custom_pal is None:
         plot_palette_sankey = None
 
-    return (color_col, bootstraps_color_by_group, n_groups, filled, plot_palette_raw, bar_color, 
-            plot_palette_bar, plot_palette_contrast, plot_palette_sankey)
+    return (color_col, bootstraps_color_by_group, n_groups, filled, raw_colors,
+            plot_palette_raw, plot_palette_contrast, plot_palette_sankey)
 
 def initialize_fig(
         plot_kwargs: dict, 
@@ -691,7 +688,8 @@ def initialize_fig(
         effect_size_type: str, 
         yvar: str, 
         horizontal: bool, 
-        show_table: bool
+        show_table: bool,
+        color_col: str,
     ):
     """
     Initialize the figure and axes for the plotter function.
@@ -722,6 +720,8 @@ def initialize_fig(
         A boolean flag to determine if the plot is for horizontal plotting.
     show_table : dict
         A boolean flag to determine if the table will be shown in horizontal plot.
+    color_col : str
+        The column name for coloring the data points.
     """
     # Params
     fig_size = plot_kwargs["fig_size"]
@@ -741,7 +741,10 @@ def initialize_fig(
             fig_size = (7, 1 + (frac * all_groups_count))
         else:
             if is_paired and show_pairs and proportional is False:
-                frac = 0.8
+                if color_col is not None and float_contrast:
+                    frac = 0.9
+                else:
+                    frac = 0.8
             else:
                 frac = 1
             if float_contrast:
@@ -757,7 +760,7 @@ def initialize_fig(
     init_fig_kwargs = dict(figsize=fig_size, dpi=plot_kwargs["dpi"], tight_layout=True)
 
     width_ratios_ga = [2.5, 1]
-    h_space_cummings = (0.1 if plot_kwargs["gridkey_rows"] is not None
+    h_space_cummings = (0.1 if plot_kwargs["gridkey"] is not None
                         else 0.3)
 
     if plot_kwargs["ax"] is not None:
@@ -849,16 +852,19 @@ def initialize_fig(
                 )
         fig.patch.set_facecolor(face_color)
 
-        # Title
-        title = plot_kwargs["title"]
-        fontsize_title = plot_kwargs["fontsize_title"]
-        if title is not None:
-            fig.suptitle(title, fontsize=fontsize_title)
-
         # Set axes   
         rawdata_axes = axx[0]
         contrast_axes = axx[1]
         table_axes = axx[2] if horizontal and show_table else None
+
+
+    # Title
+    title, fontsize_title = plot_kwargs["title"], plot_kwargs["fontsize_title"]
+    if title is not None:
+        if plot_kwargs["ax"] is not None:
+            rawdata_axes.set_title(title, fontsize=fontsize_title)
+        else:
+            fig.suptitle(title, fontsize=fontsize_title)
 
     rawdata_axes.set_frame_on(False)
     contrast_axes.set_frame_on(False)
@@ -866,14 +872,14 @@ def initialize_fig(
         table_axes.set_frame_on(False)
     
     # Swarmplot ylim (Vertical) or xlim (Horizontal)
-    swarm_ylim = plot_kwargs["swarm_ylim"]
-    if swarm_ylim is not None:
-        if not isinstance(swarm_ylim, list) and not isinstance(swarm_ylim, tuple) or len(swarm_ylim) != 2:
-            raise ValueError("`swarm_ylim` must be a tuple/list of the lower and upper bound.")
+    raw_ylim = plot_kwargs["raw_ylim"]
+    if raw_ylim is not None:
+        if not isinstance(raw_ylim, list) and not isinstance(raw_ylim, tuple) or len(raw_ylim) != 2:
+            raise ValueError("`raw_ylim` must be a tuple/list of the lower and upper bound.")
         if horizontal:
-            rawdata_axes.set_xlim(swarm_ylim)
+            rawdata_axes.set_xlim(raw_ylim)
         else:
-            rawdata_axes.set_ylim(swarm_ylim)
+            rawdata_axes.set_ylim(raw_ylim)
 
     # Contrastplot ylim (Vertical) or xlim (Horizontal)
     if horizontal or not float_contrast:
@@ -906,19 +912,19 @@ def initialize_fig(
                     contrast_axes.set_ylim(contrast_ylim)
 
     # Set raw axes y-label.
-    swarm_label, bar_label = plot_kwargs["swarm_label"], plot_kwargs["bar_label"]
-    if swarm_label is None:
-        swarm_label = yvar
-    if bar_label is None:
-        bar_label = "Proportion of Success" if effect_size_type != "cohens_h" else "Value"
+    raw_label = plot_kwargs["raw_label"]
+    if raw_label is None:
+        if proportional:
+            raw_label = "Proportion of Success" if effect_size_type != "cohens_h" else "Value"
+        else:
+            raw_label = yvar 
 
     fontsize_rawylabel = plot_kwargs["fontsize_rawylabel"]
-    rawdata_label = bar_label if proportional else swarm_label
     if horizontal:
-        rawdata_axes.set_xlabel(rawdata_label, fontsize=fontsize_rawylabel)
+        rawdata_axes.set_xlabel(raw_label, fontsize=fontsize_rawylabel)
         rawdata_axes.set_ylabel("")
     else:
-        rawdata_axes.set_ylabel(rawdata_label, fontsize=fontsize_rawylabel)
+        rawdata_axes.set_ylabel(raw_label, fontsize=fontsize_rawylabel)
         rawdata_axes.set_xlabel("")
 
     # Set contrast axes y-label.
@@ -1065,9 +1071,12 @@ def add_counts_to_ticks(
         else:
             ticks_with_counts.append(f"{t}\n(N={value})")
 
-    fontsize_rawxlabel = plot_kwargs.get("fontsize_rawxlabel")
     set_major_loc_method(plt.FixedLocator(get_ticks()))
-    set_label(ticks_with_counts, fontsize=fontsize_rawxlabel)
+
+    # label = ticks_with_counts if plot_kwargs['show_sample_size'] else get_label()
+    # set_label(label, fontsize=plot_kwargs.get("fontsize_rawxlabel"))
+
+    set_label(ticks_with_counts, fontsize=plot_kwargs.get("fontsize_rawxlabel"))
 
     # Ensure ticks are at the correct locations
     set_major_loc_method(plt.FixedLocator(get_ticks()))
@@ -1109,7 +1118,6 @@ def extract_contrast_plotting_ticks(
             ticks_to_start_twocol_sankey.pop()
             ticks_to_start_twocol_sankey.insert(0, 0)
         else:
-
             ticks_to_skip = np.cumsum([len(t) for t in idx])[:-1].tolist()
             ticks_to_skip.insert(0, 0)
             # Then obtain the ticks where we have to plot the effect sizes.
@@ -1228,7 +1236,7 @@ def set_xaxis_ticks_and_lims(
         if float_contrast:
             contrast_axes.set_xlim(0.5, 1.5)
 
-        if show_delta2:
+        elif show_delta2:
             if show_pairs:
                 rawdata_axes.set_xlim(-0.375, 4.75)
             else:
@@ -1349,7 +1357,7 @@ def gardner_altman_adjustments(
         redraw_axes_kwargs: dict
     ):
     """
-    Aesthetic adjustments for the Gardner-Altman plot.
+    Aesthetic adjustments specific to Gardner-Altman plots (float_contrast=True).
     
     Parameters
     ----------
@@ -1540,6 +1548,20 @@ def draw_zeroline(
         reflines_kwargs : dict,
         extra_delta : bool,
     ):
+    """
+    Draw the independent axis spine lines.
+
+    Parameters
+    ----------
+    ax : object (Axes)
+        The contrast data axes.
+    horizontal : bool
+        A boolean flag to determine if the plot is for horizontal plotting.
+    reflines_kwargs : dict
+        Additional keyword arguments to be passed to the zeroline.
+    extra_delta : bool
+        A boolean flag to determine if the plot includes an extra delta (delta-delta or mini-meta).
+    """
     # If 0 lies within the ylim of the contrast axes, draw a zero reference line.
     if extra_delta and not horizontal:
         contrast_xlim = [-0.5, 3.4]
@@ -1578,9 +1600,40 @@ def redraw_independent_spines(
         ticks_to_skip : list,
         temp_idx : list,
         ticks_to_skip_contrast : list,
-        extra_delta : bool,
         redraw_axes_kwargs : dict
     ):
+    """
+    Draw the independent axis spine lines.
+
+    Parameters
+    ----------
+    rawdata_axes : object (Axes)
+        The raw data axes.
+    contrast_axes : object (Axes)
+        The contrast axes.
+    horizontal : bool
+        A boolean flag to determine if the plot is for horizontal plotting.
+    two_col_sankey : bool
+        A boolean flag to determine if the plot is for two-col sankey.
+    ticks_to_start_twocol_sankey : list
+        A list of ticks to start for sankey plot.
+    idx : list
+        A list of indices.
+    is_paired : bool
+        A boolean flag to determine if the data is paired.
+    show_pairs : bool
+        A boolean flag to determine if pairs should be shown.
+    proportional : bool
+        A boolean flag to determine if the plot is proportional/binary.
+    ticks_to_skip : list,
+        A list of ticks to be skipped in the raw data axes.
+    temp_idx : list,
+        A temporary list of indices to be used for skipping ticks in the raw data axes.
+    ticks_to_skip_contrast : list,
+        A list of ticks to be skipped in the contrast axes.
+    redraw_axes_kwargs : dict
+        Kwargs passed to the redraw axes.
+    """
     # Extract the ticks
     if two_col_sankey:
         rightend_ticks_raw = rightend_ticks_contrast = np.array([len(i) - 2 for i in idx]) + np.array(ticks_to_start_twocol_sankey)
@@ -1649,7 +1702,7 @@ def redraw_dependent_spines(
         delta2_axes: axes.Axes
     ):
     """
-    Aesthetic general adjustments across both GA and Cumming plots.
+    Draw the dependent axis spine lines.
 
     Parameters
     ----------
@@ -1659,8 +1712,6 @@ def redraw_dependent_spines(
         The contrast axes.
     redraw_axes_kwargs : dict
         Kwargs passed to the redraw axes.
-    plot_kwargs : dict
-        Kwargs passed to the plot function.
     float_contrast : bool
         A boolean flag to determine if the plot is GA or Cum
     horizontal : bool
@@ -1710,7 +1761,6 @@ def redraw_dependent_spines(
 
 def extract_group_summaries(
         proportional: bool, 
-        err_color, 
         rawdata_axes: axes.Axes, 
         asymmetric_side: str, 
         horizontal: bool, 
@@ -1729,8 +1779,6 @@ def extract_group_summaries(
     ----------
     proportional : bool
         A boolean flag to determine if the plot is for proportional data.
-    err_color : str
-        The color of the error bars.
     rawdata_axes : object (Axes)
         The raw data axes.
     asymmetric_side : str
@@ -1758,7 +1806,7 @@ def extract_group_summaries(
     if proportional:
         group_summaries_method = "proportional_error_bar"
         group_summaries_offset = 0
-        group_summaries_line_color = err_color
+        group_summaries_line_color = "black"
     else:
         # Create list to gather xspans.
         xspans = []
@@ -1802,3 +1850,111 @@ def extract_group_summaries(
     group_summaries_kwargs.pop("offset")
 
     return group_summaries_method, group_summaries_offset, group_summaries_line_color
+
+def color_picker(color_type: str,
+                 kwargs: dict, 
+                 elements: list, 
+                 color_col: str, 
+                 show_pairs: bool, 
+                 color_palette: dict) -> list:
+    num_of_elements = len(elements)
+    colors = (
+        [kwargs.pop('color')] * num_of_elements
+        if kwargs.get('color', None) is not None
+        else ['black'] * num_of_elements
+        if color_col is not None or show_pairs 
+        else list(color_palette.values())
+    )
+    if color_type in ['contrast', 'summary', 'delta_text']:
+        if len(colors) == num_of_elements:
+            final_colors = colors
+        else:
+            final_colors = []
+            for tick in elements:
+                final_colors.append(colors[int(tick)])
+    else:
+        final_colors = colors
+    return final_colors
+
+
+def prepare_bars_for_plot(bar_type, bar_kwargs, horizontal, plot_palette_raw, color_col, show_pairs,
+                          plot_data = None, xvar = None, yvar = None,  # Raw data
+                          results = None, ticks_to_plot = None, extra_delta = None, # Contrast data
+                          reference_band = None, summary_axes = None, ci_type = None  # Summary data
+                          ):
+    from .misc_tools import color_picker
+    bar_dict = {}
+    if bar_type in ['raw', 'contrast']:
+        if bar_type == 'raw':
+            if isinstance(plot_data[xvar].dtype, pd.CategoricalDtype):
+                order = pd.unique(plot_data[xvar]).categories
+            else:
+                order = pd.unique(plot_data[xvar])
+            means = plot_data.groupby(xvar, observed=False)[yvar].mean().reindex(index=order).values
+            ticks = list(range(len(order)))
+        elif bar_type == 'contrast':
+            means = results.difference.to_list()
+            ticks = ticks_to_plot.copy()
+            if extra_delta is not None:
+                ticks.append(ticks[-1]+1)  # Add an extra tick
+                means.append(extra_delta)
+
+        num_of_bars = len(means)
+        y_start_values, y_distances = [0]*num_of_bars, means
+        x_start_values, x_distances = [num - (0.5 if horizontal else 0.25) for num in ticks], [0.5,]*num_of_bars
+
+    elif bar_type == 'summary':
+        # Begin checks        
+        if not isinstance(reference_band, list):
+            raise TypeError("reference_band must be a list of indices (ints).")
+        if not all(isinstance(i, int) for i in reference_band):
+            raise TypeError("reference_band must be a list of indices (ints).")
+        if any(i >= len(results) for i in reference_band):
+            raise ValueError("Index {} chosen is out of range for the contrast objects.".format([i for i in reference_band if i >= len(results)]))
+
+        ticks = [ticks_to_plot[tick] for tick in reference_band]
+        summary_xmin, summary_xmax = summary_axes.get_xlim()
+        summary_ymin, summary_ymax = summary_axes.get_ylim()
+        span_ax = bar_kwargs.pop("span_ax")
+
+        x_start_values, y_start_values, x_distances, y_distances = [], [], [], []
+        for summary_index in reference_band:
+            summary_ci_low = results.get(ci_type+'_low')[summary_index]
+            summary_ci_high = results.get(ci_type+'_high')[summary_index]   
+
+            if span_ax == True:
+                starting_location = summary_ymax if horizontal else summary_xmin
+            else:
+                starting_location = ticks_to_plot[summary_index]  
+            x_distance = summary_ymin if horizontal else summary_xmax 
+
+            x_start_values.append(starting_location)
+            y_start_values.append(summary_ci_low)
+            x_distances.append(x_distance + 1)
+            y_distances.append(summary_ci_high - summary_ci_low)
+    else:
+        raise ValueError("Invalid bar_type. Must be 'raw' or 'contrast'.")
+    
+    if horizontal:
+        x_start_values, y_start_values = y_start_values, x_start_values
+        x_distances, y_distances = y_distances, x_distances
+
+    for name, values in zip(['x_start_values', 'x_distances', 'y_start_values', 'y_distance'],
+                            [x_start_values, x_distances, y_start_values, y_distances]
+                        ):
+        bar_dict[name] = values
+
+    # Colors
+    colors = color_picker(
+                color_type = bar_type,
+                kwargs = bar_kwargs, 
+                elements = ticks_to_plot if bar_type=='contrast' else ticks, 
+                color_col = color_col, 
+                show_pairs = show_pairs, 
+                color_palette = plot_palette_raw
+            )
+    if bar_type == 'contrast' and extra_delta is not None:
+        colors.append('black')
+    bar_dict['colors'] = colors
+
+    return bar_dict, bar_kwargs

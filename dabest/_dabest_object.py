@@ -38,6 +38,7 @@ class Dabest(object):
         experiment_label,
         x1_level,
         mini_meta,
+        ps_adjust,
     ):
         """
         Parses and stores pandas DataFrames in preparation for estimation
@@ -56,6 +57,7 @@ class Dabest(object):
         self.__random_seed = random_seed
         self.__is_proportional = proportional
         self.__is_mini_meta = mini_meta
+        self.__ps_adjust = ps_adjust
 
         # after this call the attributes self.__experiment_label and self.__x1_level are updated
         self._check_errors(x, y, idx, experiment, experiment_label, x1_level)
@@ -246,9 +248,9 @@ class Dabest(object):
     @property
     def delta_g(self):
         """
-        Returns an :py:class:`EffectSizeDataFrame` for deltas' g, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
+        Returns an :py:class:`EffectSizeDataFrame` for delta g, its confidence interval, and relevant statistics, for all comparisons as indicated via the `idx` and `paired` argument in `dabest.load()`.
         """
-        raise DeprecationWarning("delta_g has been depreciated  - Please use hedges_g (with delta2=True) for deltas' g experiments")
+        raise DeprecationWarning("delta_g has been depreciated  - Please use hedges_g (with delta2=True) for delta g experiments")
 
 
     @property
@@ -486,10 +488,6 @@ class Dabest(object):
             if x is None:
                 error_msg = "If `delta2` is True. `x` parameter cannot be None. String or list expected"
                 raise ValueError(error_msg)
-            
-            if self.__is_proportional:
-                mes1 = "Only mean_diff is supported for proportional data when `delta2` is True"
-                warnings.warn(message=mes1, category=UserWarning)
 
             # idx should not be specified
             if idx:
@@ -699,6 +697,7 @@ class Dabest(object):
             x1_level=self.__x1_level,
             x2=self.__x2,
             mini_meta=self.__is_mini_meta,
+            ps_adjust=self.__ps_adjust,
         )
 
         self.__mean_diff = EffectSizeDataFrame(
