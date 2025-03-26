@@ -1186,8 +1186,8 @@ class EffectSizeDataFrame(object):
         raw_bars_kwargs=None, # swarm_bars_kwargs=None, OLD
         contrast_bars=True,
         contrast_bars_kwargs=None,
-        summary_bars=None,
-        summary_bars_kwargs=None,
+        reference_band=None,
+        reference_band_kwargs=None,
         delta_text=True,
         delta_text_kwargs=None,
         delta_dot=True,
@@ -1386,10 +1386,10 @@ class EffectSizeDataFrame(object):
             Pass relevant keyword arguments to the contrast bars. Pass any keyword arguments accepted by 
             matplotlib.patches.Rectangle here, as a string. If None, the following keywords are passed:
             {"color": None, "zorder":-3}
-        summary_bars : list, default None
-            Pass a list of indices of the contrast objects to have summary bars displayed on the plot.
-            For example, [0,1] will show summary bars for the first two contrast objects.
-        summary_bars_kwargs: dict, default None
+        reference_band : list, default None
+            Pass a list of indices of the contrast objects to have reference bands displayed on the plot.
+            For example, [0,1] will show reference bands for the first two contrast objects.
+        reference_band_kwargs: dict, default None
             If None, the following keywords are passed: {"span_ax": False, "color": None, "alpha": 0.15, "zorder":-3}
         delta_text : boolean, default True
             Whether or not to display the text deltas.

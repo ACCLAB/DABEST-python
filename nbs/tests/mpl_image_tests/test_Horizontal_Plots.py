@@ -990,18 +990,18 @@ def test_420_shared_control_meandiff_contrastbars_kwargs():
     plt.rcdefaults()
     return shared_control.mean_diff.plot(horizontal=True, contrast_bars=True, contrast_bars_kwargs = contrast_kwargs, raw_bars=False);
 
-# Summary bars
-summary_bars=[0, 1]
+# reference_band
+reference_band=[0, 1]
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_421_shared_control_meandiff_summarybars():
     plt.rcdefaults()
-    return shared_control.mean_diff.plot(horizontal=True, summary_bars=[0, 1], raw_bars=False, contrast_bars=False,);
+    return shared_control.mean_diff.plot(horizontal=True, reference_band=[0, 1], raw_bars=False, contrast_bars=False,);
 
-summary_bars_kwargs = {'color': "black", 'alpha': 0.2, 'span_ax': True}
+reference_band_kwargs = {'color': "black", 'alpha': 0.2, 'span_ax': True}
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_422_shared_control_meandiff_summarybars_kwargs():
     plt.rcdefaults()
-    return shared_control.mean_diff.plot(horizontal=True, summary_bars=[0, 1], summary_bars_kwargs = summary_bars_kwargs,
+    return shared_control.mean_diff.plot(horizontal=True, reference_band=[0, 1], reference_band_kwargs = reference_band_kwargs,
                                          contrast_bars=False, raw_bars=False);
 
 # Add counts to prop plots

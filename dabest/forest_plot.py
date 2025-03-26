@@ -264,15 +264,15 @@ def check_for_errors(**kwargs):
     if not isinstance(remove_spines, bool):
         raise TypeError("`remove_spines` must be a boolean value.")
     
-    # Summary bars
-    summary_bars = kwargs.get('summary_bars')
-    if summary_bars is not None:
-        if not isinstance(summary_bars, list | tuple):
-            raise TypeError("`summary_bars` must be a list/tuple of indices (ints).")
-        if not all(isinstance(i, int) for i in summary_bars):
-            raise TypeError("`summary_bars` must be a list/tuple of indices (ints).")
-        if any(i >= number_of_curves_to_plot for i in summary_bars):
-            raise ValueError("Index {} chosen is out of range for the contrast objects.".format([i for i in summary_bars if i >= number_of_curves_to_plot]))
+    # Reference band
+    reference_band = kwargs.get('reference_band')
+    if reference_band is not None:
+        if not isinstance(reference_band, list | tuple):
+            raise TypeError("`reference_band` must be a list/tuple of indices (ints).")
+        if not all(isinstance(i, int) for i in reference_band):
+            raise TypeError("`reference_band` must be a list/tuple of indices (ints).")
+        if any(i >= number_of_curves_to_plot for i in reference_band):
+            raise ValueError("Index {} chosen is out of range for the contrast objects.".format([i for i in reference_band if i >= number_of_curves_to_plot]))
     
     # Delta text
     delta_text = kwargs.get('delta_text')
@@ -296,7 +296,7 @@ def get_kwargs(
         errorbar_kwargs,
         delta_text_kwargs,
         contrast_bars_kwargs,
-        summary_bars_kwargs,
+        reference_band_kwargs,
         marker_size
     ):
     from .misc_tools import merge_two_dicts
@@ -377,20 +377,20 @@ def get_kwargs(
     else:
         contrast_bars_kwargs = merge_two_dicts(default_contrast_bars_kwargs, contrast_bars_kwargs)
 
-    # Summary bars kwargs.
-    default_summary_bars_kwargs = {
+    # reference band kwargs.
+    default_reference_band_kwargs = {
                     "span_ax": False,
                     "color": None, 
                     "alpha": 0.15,
                     "zorder":-3
     }
-    if summary_bars_kwargs is None:
-        summary_bars_kwargs = default_summary_bars_kwargs
+    if reference_band_kwargs is None:
+        reference_band_kwargs = default_reference_band_kwargs
     else:
-        summary_bars_kwargs = merge_two_dicts(default_summary_bars_kwargs, summary_bars_kwargs)
+        reference_band_kwargs = merge_two_dicts(default_reference_band_kwargs, reference_band_kwargs)
 
     return (violin_kwargs, zeroline_kwargs, marker_kwargs, errorbar_kwargs, 
-            delta_text_kwargs, contrast_bars_kwargs, summary_bars_kwargs)
+            delta_text_kwargs, contrast_bars_kwargs, reference_band_kwargs)
 
 def color_palette(
         custom_palette, 
@@ -448,8 +448,8 @@ def forest_plot(
 
     contrast_bars: bool = True,
     contrast_bars_kwargs: dict = None,
-    summary_bars: list|tuple = None,
-    summary_bars_kwargs: dict = None,
+    reference_band: list|tuple = None,
+    reference_band_kwargs: dict = None,
 
     violin_kwargs: Optional[dict] = None,
     zeroline_kwargs: Optional[dict] = None,
@@ -516,10 +516,10 @@ def forest_plot(
         If True, it adds bars from the zeroline to the effect size curve.
     contrast_bars_kwargs : dict, default=None
         Additional keyword arguments for the contrast_bars.
-    summary_bars: list | tuple, default=None,
-        If True, it adds summary bars to the relevant effect size curves.
-    summary_bars_kwargs : dict, default=None,
-        Additional keyword arguments for the summary_bars.
+    reference_band: list | tuple, default=None,
+        It adds reference bands to the relevant effect size curves.
+    reference_band_kwargs : dict, default=None,
+        Additional keyword arguments for the reference_band.
     violin_kwargs : Optional[dict], default=None
         Additional arguments for violin plot customization.
     zeroline_kwargs : Optional[dict], default=None
@@ -559,7 +559,7 @@ def forest_plot(
 
     # Get Kwargs
     (violin_kwargs, zeroline_kwargs, marker_kwargs, errorbar_kwargs, 
-     delta_text_kwargs, contrast_bars_kwargs, summary_bars_kwargs) = get_kwargs(
+     delta_text_kwargs, contrast_bars_kwargs, reference_band_kwargs) = get_kwargs(
                                                                         violin_kwargs = violin_kwargs,
                                                                         zeroline_kwargs = zeroline_kwargs,
                                                                         horizontal = horizontal,
@@ -567,7 +567,7 @@ def forest_plot(
                                                                         errorbar_kwargs = errorbar_kwargs,
                                                                         delta_text_kwargs = delta_text_kwargs,
                                                                         contrast_bars_kwargs = contrast_bars_kwargs,
-                                                                        summary_bars_kwargs = summary_bars_kwargs,
+                                                                        reference_band_kwargs = reference_band_kwargs,
                                                                         marker_size = marker_size
     )
                                             
@@ -726,19 +726,19 @@ def forest_plot(
             else:
                 ax.add_patch(mpatches.Rectangle((x, 0), 0.25, y, color=bar_colors[x-1], **contrast_bars_kwargs))
 
-    # Summary bars
-    if summary_bars:
-        _bar_color = summary_bars_kwargs.pop('color')
+    # Reference band
+    if reference_band:
+        _bar_color = reference_band_kwargs.pop('color')
         if _bar_color is not None:
             bar_colors = [_bar_color] * number_of_curves_to_plot
         else:
             bar_colors = violin_colors
 
-        span_ax = summary_bars_kwargs.pop("span_ax")
+        span_ax = reference_band_kwargs.pop("span_ax")
         summary_xmin, summary_xmax = ax.get_xlim()
         summary_ymin, summary_ymax = ax.get_ylim()
 
-        for summary_index in summary_bars:
+        for summary_index in reference_band:
             if span_ax == True:
                 starting_location = summary_ymin if horizontal else summary_xmin
             else:
@@ -752,14 +752,14 @@ def forest_plot(
                     (summary_ci_low, starting_location),
                     summary_ci_high-summary_ci_low, summary_ymax+1, 
                     color=summary_color, 
-                    **summary_bars_kwargs)
+                    **reference_band_kwargs)
                     )
             else:
                 ax.add_patch(mpatches.Rectangle(
                     (starting_location, summary_ci_low),
                     summary_xmax+1, summary_ci_high-summary_ci_low, 
                     color=summary_color, 
-                    **summary_bars_kwargs)
+                    **reference_band_kwargs)
                     )
 
     ## Invert Y-axis if horizontal 

@@ -44,9 +44,9 @@ idx_msg3 = "E.g., `idx` = [[1,2],[0,1]]."
     ("yticklabels", "auto", "`yticklabels` must be a tuple or list of strings.", TypeError),
     ("yticklabels", [532, 123], "`yticklabels` must be a list of strings.", TypeError),
     ("remove_spines", "yes", "`remove_spines` must be a boolean value.", TypeError),
-    ("summary_bars", "yes", "`summary_bars` must be a list/tuple of indices (ints).", TypeError),
-    ("summary_bars", [0.1, 0.5], "`summary_bars` must be a list/tuple of indices (ints).", TypeError),
-    ("summary_bars", [10,], "Index [10] chosen is out of range for the contrast objects.", ValueError),
+    ("reference_band", "yes", "`reference_band` must be a list/tuple of indices (ints).", TypeError),
+    ("reference_band", [0.1, 0.5], "`reference_band` must be a list/tuple of indices (ints).", TypeError),
+    ("reference_band", [10,], "Index [10] chosen is out of range for the contrast objects.", ValueError),
     ("delta_text", "auto", "`delta_text` must be a boolean value.", TypeError),
     ("contrast_bars", "auto", "`contrast_bars` must be a boolean value.", TypeError),
 ])

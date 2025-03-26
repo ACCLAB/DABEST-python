@@ -385,16 +385,16 @@ def get_kwargs(
     else:
         delta_text_kwargs = merge_two_dicts(default_delta_text_kwargs, plot_kwargs["delta_text_kwargs"])
 
-    # Summary bars kwargs.
-    default_summary_bars_kwargs = {
+    # Reference band kwargs.
+    default_reference_band_kwargs = {
                     "span_ax": False,
                     "alpha": 0.15,
                     "zorder":-3
     }
-    if plot_kwargs["summary_bars_kwargs"] is None:
-        summary_bars_kwargs = default_summary_bars_kwargs
+    if plot_kwargs["reference_band_kwargs"] is None:
+        reference_band_kwargs = default_reference_band_kwargs
     else:
-        summary_bars_kwargs = merge_two_dicts(default_summary_bars_kwargs, plot_kwargs["summary_bars_kwargs"])
+        reference_band_kwargs = merge_two_dicts(default_reference_band_kwargs, plot_kwargs["reference_band_kwargs"])
 
     # Swarm bars kwargs.
     default_raw_bars_kwargs = {
@@ -501,7 +501,7 @@ def get_kwargs(
     # Return the kwargs.
     return (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, contrast_kwargs, slopegraph_kwargs, 
             reflines_kwargs, legend_kwargs, group_summaries_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
-            delta_text_kwargs, summary_bars_kwargs, raw_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs,
+            delta_text_kwargs, reference_band_kwargs, raw_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs,
             contrast_marker_kwargs, contrast_errorbar_kwargs, prop_sample_counts_kwargs, contrast_paired_lines_kwargs)
 
 
@@ -1880,7 +1880,7 @@ def color_picker(color_type: str,
 def prepare_bars_for_plot(bar_type, bar_kwargs, horizontal, plot_palette_raw, color_col, show_pairs,
                           plot_data = None, xvar = None, yvar = None,  # Raw data
                           results = None, ticks_to_plot = None, extra_delta = None, # Contrast data
-                          summary_bars = None, summary_axes = None, ci_type = None  # Summary data
+                          reference_band = None, summary_axes = None, ci_type = None  # Summary data
                           ):
     from .misc_tools import color_picker
     bar_dict = {}
@@ -1905,20 +1905,20 @@ def prepare_bars_for_plot(bar_type, bar_kwargs, horizontal, plot_palette_raw, co
 
     elif bar_type == 'summary':
         # Begin checks        
-        if not isinstance(summary_bars, list):
-            raise TypeError("summary_bars must be a list of indices (ints).")
-        if not all(isinstance(i, int) for i in summary_bars):
-            raise TypeError("summary_bars must be a list of indices (ints).")
-        if any(i >= len(results) for i in summary_bars):
-            raise ValueError("Index {} chosen is out of range for the contrast objects.".format([i for i in summary_bars if i >= len(results)]))
+        if not isinstance(reference_band, list):
+            raise TypeError("reference_band must be a list of indices (ints).")
+        if not all(isinstance(i, int) for i in reference_band):
+            raise TypeError("reference_band must be a list of indices (ints).")
+        if any(i >= len(results) for i in reference_band):
+            raise ValueError("Index {} chosen is out of range for the contrast objects.".format([i for i in reference_band if i >= len(results)]))
 
-        ticks = [ticks_to_plot[tick] for tick in summary_bars]
+        ticks = [ticks_to_plot[tick] for tick in reference_band]
         summary_xmin, summary_xmax = summary_axes.get_xlim()
         summary_ymin, summary_ymax = summary_axes.get_ylim()
         span_ax = bar_kwargs.pop("span_ax")
 
         x_start_values, y_start_values, x_distances, y_distances = [], [], [], []
-        for summary_index in summary_bars:
+        for summary_index in reference_band:
             summary_ci_low = results.get(ci_type+'_low')[summary_index]
             summary_ci_high = results.get(ci_type+'_high')[summary_index]   
 

@@ -40,52 +40,56 @@ performance improvements. It’s a big one!
 
 5.  **Other Visualization Improvements**:
 
-    - **Raw, Contrast, and Summary bars**: Our visualization package now
-      includes three types of customizable bars to enhance data
-      interpretation:
+    - **Comparing means and effect sizes**: The estimation plots now
+      include three types of customizable visual features to enhance
+      contextualization and comparison of means and effect sizes:
 
-      - **Raw Bars**: Colored rectangles that extend from the zero line
-        to the mean of each group’s raw data. These bars visually
-        highlight the central tendency of the raw data.
+      - **Bars for the mean of the observed values (`raw_bars`)**:
+        Colored rectangles that extend from the zero line to the mean of
+        each group’s raw data. These bars visually highlight the central
+        tendency of the raw data.
 
-      - **Contrast Bars**: Similar to raw bars, these highlight the
-        effect size difference between two groups (typically test and
-        control) in the contrast axis. They provide a visual
-        representation of the differences between groups.
+      - **Bars for effect size/s (`contrast_bars`)**: Similar to raw
+        bars, these highlight the effect-size difference between two
+        groups (typically test and control) in the contrast axis. They
+        provide a visual representation of the differences between
+        groups.
 
-      - **Summary Bars**: Optional bars that can be added to emphasize a
-        specific effect size across the entire contrast axis. Unlike raw
-        and contrast bars, these span horizontally (or vertically if
-        `horizontal=True`) and are not displayed by default.
+      - **Summary bands (`reference_band`)**: An optional band or ribbon
+        that can be added to emphasize a specific effect size’s
+        confidence interval that is used as a reference range across the
+        entire contrast axis. Unlike raw and contrast bars, these span
+        horizontally (or vertically if `horizontal=True`) and are not
+        displayed by default.
 
         Raw and contrast bars are shown by default. Users can customize
-        these bars and add summary bars as needed. For detailed
+        these bars and add summary bands as needed. For detailed
         customization instructions, please refer to the [Plot Aesthetics
         tutorial](../tutorials/09-plot_aesthetics.html).
 
-    - **Tighter spacing in Delta-Delta and Mini-Meta Plots**: We have
+    - **Tighter spacing in delta-delta and mini-meta plots**: We have
       adjusted the spacing of delta-delta and mini-meta plots to reduce
       whitespace. The new format brings the overall effect size closer
       to the two-groups effect sizes. In addition, delta-delta plots now
       have a gap in the zero line to separate the delta-delta from the ∆
       effect sizes.
 
-    - **Delta-Delta Effect Sizes for Proportion Plots**: In addition to
+    - **Delta-delta effect sizes for proportion plots**: In addition to
       continuous data, delta-delta plots now support binary data
       (proportions). This means that 2-way designs for binary outcomes
       can be analyzed with DABEST.
 
-    - **Proportion Plots Sample Sizes**: The sample size of each binary
+    - **Proportion plots sample sizes**: The sample size of each binary
       option for each group can now be displayed. These can be toggled
       on/off via the `prop_sample_counts` parameter.
 
-    - **Effect Size Lines for Paired Plots**: Along with lines
+    - **Effect size lines for paired plots**: Along with lines
       connecting paired observed values, the paired plots now also
       display lines linking the effect sizes within a group in the
       contrast axes. These lines can be toggled on/off via the
       `contrast_paired_lines` parameter.
 
-    - **Baseline Error Curves**: To represent the baseline/control group
+    - **Baseline error curves**: To represent the baseline/control group
       in the contrast axes, it is now possible to plot the baseline dot
       and the baseline error curve. The dot is shown by default, while
       the curve can be toggled on/off via the `show_baseline_ec`
@@ -94,11 +98,11 @@ performance improvements. It’s a big one!
       be used to show that the baseline itself is an estimate inferred
       from the observed values of the control data.
 
-    - **Delta Text**: Effect-size deltas (e.g. mean differences) are now
+    - **Delta text**: Effect-size deltas (e.g. mean differences) are now
       displayed as numerals next to their respective effect size. This
       can be toggled on/off via the `delta_text` parameter.
 
-    - **Empty Circle Color Palette**: A new swarmplot color palette
+    - **Empty circle color palette**: A new swarmplot color palette
       modification is available for unpaired plots via the
       `empty_circle` parameter in the `.plot()` method. This option
       modifies the two-group swarmplots to have empty circles for the
@@ -106,13 +110,13 @@ performance improvements. It’s a big one!
 
 6.  **Miscellaneous Improvements & Adjustments**
 
-    - **Numba for Speed Improvements**: We have added
+    - **Numba for speed improvements**: We have added
       [Numba](https://numba.pydata.org/) to speed up the various
       calculations in DABEST. Precalculations will be performed during
       import, which will help speed up the subsequent loading and
       plotting of data.
 
-    - **Terminology/Naming Updates**: During the refactoring of the
+    - **Terminology/naming updates**: During the refactoring of the
       code, we have made several updates to the documentation and
       terminology to improve clarity and consistency. For example:
 
@@ -131,11 +135,11 @@ performance improvements. It’s a big one!
         alongside these (if a delta-delta experiment was loaded
         correctly).
 
-    - **Updated Tutorial Pages**: We have updated the tutorial pages to
+    - **Updated tutorial pages**: We have updated the tutorial pages to
       reflect the new features and changes. The tutorial pages are now
       more comprehensive and (hopefully!) more intuitive!
 
-    - **Results Dataframe for Delta-Delta and Mini-Meta Plots**: A
+    - **Results dataframe for delta-delta and mini-meta plots**: A
       results dataframe can now be extracted for both the delta-delta
       and mini-meta effect size data (similar to the results dataframe
       for the regular effect sizes). These can be found via the

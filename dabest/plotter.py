@@ -63,7 +63,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
 
         raw_bars=True, raw_bars_kwargs=None,
         contrast_bars=True, contrast_bars_kwargs=None,
-        summary_bars=None, summary_bars_kwargs=None,
+        reference_band=None, reference_band_kwargs=None,
         delta_text=True, delta_text_kwargs=None,
         delta_dot=True, delta_dot_kwargs=None,
 
@@ -133,7 +133,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
     # Extract parameters and set kwargs
     (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, contrast_kwargs, 
      slopegraph_kwargs, reflines_kwargs, legend_kwargs, group_summaries_kwargs, 
-     redraw_axes_kwargs, delta_dot_kwargs, delta_text_kwargs, summary_bars_kwargs, 
+     redraw_axes_kwargs, delta_dot_kwargs, delta_text_kwargs, reference_band_kwargs, 
      raw_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs, contrast_marker_kwargs, 
      contrast_errorbar_kwargs, prop_sample_counts_kwargs, contrast_paired_lines_kwargs) = get_kwargs(
                                                                                                 plot_kwargs = plot_kwargs, 
@@ -574,25 +574,25 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                 gridkey_kwargs = gridkey_kwargs,
         )
     
-    # Summary bars
-    summary_bars = plot_kwargs["summary_bars"]
-    if summary_bars is not None and not float_contrast:
-        summary_bars_dict, summary_bars_kwargs = prepare_bars_for_plot(bar_type = 'summary', 
-                                                                       bar_kwargs = summary_bars_kwargs, 
+    #  Reference band
+    reference_band = plot_kwargs["reference_band"]
+    if reference_band is not None and not float_contrast:
+        reference_band_dict, reference_band_kwargs = prepare_bars_for_plot(bar_type = 'summary', 
+                                                                       bar_kwargs = reference_band_kwargs, 
                                                                        horizontal = horizontal, 
                                                                        plot_palette_raw = plot_palette_raw, 
                                                                        color_col = color_col, 
                                                                        show_pairs = show_pairs,
                                                                        results = results,    
                                                                        ticks_to_plot = ticks_to_plot, 
-                                                                       summary_bars = summary_bars, 
+                                                                       reference_band = reference_band, 
                                                                        summary_axes = contrast_axes, 
                                                                        ci_type = ci_type,
                                                                     )
         
-        add_bars_to_plot(bar_dict = summary_bars_dict,
+        add_bars_to_plot(bar_dict = reference_band_dict,
                         ax = contrast_axes,
-                        bar_kwargs = summary_bars_kwargs
+                        bar_kwargs = reference_band_kwargs
         )
 
     # Legend

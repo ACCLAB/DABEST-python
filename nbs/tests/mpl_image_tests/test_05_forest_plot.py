@@ -418,7 +418,7 @@ def test_522a_minimeta_with_deltas_with_summary_bars():
                 contrasts_mini_meta, 
                 idx=[(0, 3),(0, 3),(0, 3)],
                 labels=['Contrast A1', 'Mini_Meta A', 'Contrast B1', 'Mini_Meta B', 'Contrast C1', 'Mini_Meta C'],
-                summary_bars=[0, 2],
+                reference_band=[0, 2],
             )
 
 @pytest.mark.mpl_image_compare(tolerance=8)
@@ -428,7 +428,7 @@ def test_522b_minimeta_with_deltas_with_summary_bars_horizontal():
                 contrasts_mini_meta, 
                 idx=[(0, 3),(0, 3),(0, 3)],
                 labels=['Contrast A1', 'Mini_Meta A', 'Contrast B1', 'Mini_Meta B', 'Contrast C1', 'Mini_Meta C'],
-                summary_bars=[0, 2],
+                reference_band=[0, 2],
                 horizontal=True
             )
 
@@ -439,8 +439,8 @@ def test_522c_minimeta_with_deltas_with_summary_bars_kwargs():
                 contrasts_mini_meta, 
                 idx=[(0, 3),(0, 3),(0, 3)],
                 labels=['Contrast A1', 'Mini_Meta A', 'Contrast B1', 'Mini_Meta B', 'Contrast C1', 'Mini_Meta C'],
-                summary_bars=[0, 2],
-                summary_bars_kwargs={'span_ax': True, 'color': 'grey', 'alpha': 0.1}
+                reference_band=[0, 2],
+                reference_band_kwargs={'span_ax': True, 'color': 'grey', 'alpha': 0.1}
             )
 
 @pytest.mark.mpl_image_compare(tolerance=8)
@@ -450,7 +450,7 @@ def test_522d_minimeta_with_deltas_with_summary_bars_kwargs_horizontal():
                 contrasts_mini_meta, 
                 idx=[(0, 3),(0, 3),(0, 3)],
                 labels=['Contrast A1', 'Mini_Meta A', 'Contrast B1', 'Mini_Meta B', 'Contrast C1', 'Mini_Meta C'],
-                summary_bars=[0, 2],
+                reference_band=[0, 2],
                 horizontal=True,
-                summary_bars_kwargs={'span_ax': True, 'color': 'grey', 'alpha': 0.1}
+                reference_band_kwargs={'span_ax': True, 'color': 'grey', 'alpha': 0.1}
             )
