@@ -164,9 +164,9 @@ def check_for_errors(**kwargs):
         raise TypeError("`fig_size` must be a tuple or list of two positive integers.")
 
     # Effect size
-    effect_size_options = ['mean_diff', 'hedges_g', 'delta_g']
+    effect_size_options = ['mean_diff', 'median_diff', 'cohens_d', 'cohens_h', 'cliffs_delta', 'hedges_g', 'delta_g']
     if not isinstance(effect_size, str) or effect_size not in effect_size_options:
-        raise TypeError("The `effect_size` argument must be a string and please choose from the following effect sizes: `mean_diff`, `hedges_g`, or `delta_g`.")
+        raise TypeError("The `effect_size` argument must be a string and please choose from the following effect sizes: 'mean_diff', 'median_diff', 'cohens_d', 'cohens_h', 'cliffs_delta', 'hedges_g', 'delta_g'.")
     if data[0].is_mini_meta and effect_size != 'mean_diff':
         raise ValueError("The `effect_size` argument must be `mean_diff` for mini-meta analyses.")
     if data[0].delta2 and effect_size not in ['mean_diff', 'hedges_g', 'delta_g']:
@@ -646,6 +646,10 @@ def forest_plot(
     if ylabel is None:
         effect_attr_map = {
             "mean_diff": "Mean Difference",
+            "median_diff": "Median Difference", 
+            "cohens_d": "Cohen's d",
+            "cohens_h": "Cohen's h",
+            "cliffs_delta": "Cliff's delta",
             "hedges_g": "Hedges' g",
             "delta_g": "Delta g"
         }

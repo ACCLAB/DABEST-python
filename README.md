@@ -22,20 +22,20 @@ performance improvements. It’s a big one!
 
 2.  **Horizontal Plots**: Users can now create horizontal layout plots,
     providing compact data visualization. This can be achieved by
-    setting `horizontal=True` in the `plot()` method. See the
-    [Horizontal Plots](../tutorials/08-horizontal_plot.html) tutorial
+    setting `horizontal=True` in the `.plot()` method. See the
+    [Horizontal Plots tutorial](../tutorials/08-horizontal_plot.html)
     for more details.
 
 3.  **Forest Plots**: Forest plots provide a simple and intuitive way to
     visualize many delta-delta (or delta *g*), mini-meta, or regular
     delta effect sizes at once from multiple different dabest objects
-    without presenting the raw data. See the [Forest
-    Plots](../tutorials/07-forest_plot.html) tutorial for more details.
+    without presenting the raw data. See the [Forest Plots
+    tutorial](../tutorials/07-forest_plot.html) for more details.
 
 4.  **Gridkey**: Users can now represent experimental labels in a
     ‘gridkey’ table. This can be accessed with the `gridkey` parameter
-    in the `plot()` method. See the gridkey section in the [Plot
-    Aesthetics](../tutorials/09-plot_aesthetics.html) tutorial for more
+    in the `.plot()` method. See the gridkey section in the [Plot
+    Aesthetics tutorial](../tutorials/09-plot_aesthetics.html) for more
     details.
 
 5.  **Other Visualization Improvements**:
@@ -53,15 +53,15 @@ performance improvements. It’s a big one!
         control) in the contrast axis. They provide a visual
         representation of the differences between groups.
 
-      - **Summary Bars**: Optional horizontal bars that can be added to
-        emphasize a specific effect size across the entire contrast
-        axis. Unlike raw and contrast bars, these span horizontally and
-        are not displayed by default.
+      - **Summary Bars**: Optional bars that can be added to emphasize a
+        specific effect size across the entire contrast axis. Unlike raw
+        and contrast bars, these span horizontally (or vertically if
+        `horizontal=True`) and are not displayed by default.
 
-        By default, plots show raw and contrast bars. Users can
-        customize these bars and add summary bars as needed. For
-        detailed customization instructions, please refer to the [Plot
-        Aesthetics](../tutorials/09-plot_aesthetics.html) tutorial.
+        Raw and contrast bars are shown by default. Users can customize
+        these bars and add summary bars as needed. For detailed
+        customization instructions, please refer to the [Plot Aesthetics
+        tutorial](../tutorials/09-plot_aesthetics.html).
 
     - **Tighter spacing in Delta-Delta and Mini-Meta Plots**: We have
       adjusted the spacing of delta-delta and mini-meta plots to reduce
@@ -77,31 +77,30 @@ performance improvements. It’s a big one!
 
     - **Proportion Plots Sample Sizes**: The sample size of each binary
       option for each group can now be displayed. These can be toggled
-      on or off via the `prop_sample_counts` parameter.
+      on/off via the `prop_sample_counts` parameter.
 
     - **Effect Size Lines for Paired Plots**: Along with lines
       connecting paired observed values, the paired plots now also
       display lines linking the effect sizes within a group in the
-      contrast axes. These lines can be toggled on or off via the
+      contrast axes. These lines can be toggled on/off via the
       `contrast_paired_lines` parameter.
 
     - **Baseline Error Curves**: To represent the baseline/control group
       in the contrast axes, it is now possible to plot the baseline dot
       and the baseline error curve. The dot is shown by default, while
-      the curve can be toggled on/off by the user (via the
-      `show_baseline_ec` parameter). This dot helps make it clear where
-      the baseline comes from i.e. the control minus itself. The
-      baseline error curve can be used to show that the baseline itself
-      is an estimate inferred from the observed values of the control
-      data.
+      the curve can be toggled on/off via the `show_baseline_ec`
+      parameter. This dot helps make it clear where the baseline comes
+      from i.e. the control minus itself. The baseline error curve can
+      be used to show that the baseline itself is an estimate inferred
+      from the observed values of the control data.
 
     - **Delta Text**: Effect-size deltas (e.g. mean differences) are now
       displayed as numerals next to their respective effect size. This
-      can be toggled on or off via the `delta_text` parameter.
+      can be toggled on/off via the `delta_text` parameter.
 
     - **Empty Circle Color Palette**: A new swarmplot color palette
       modification is available for unpaired plots via the
-      `empty_circle` parameter in the `plot()` method. This option
+      `empty_circle` parameter in the `.plot()` method. This option
       modifies the two-group swarmplots to have empty circles for the
       control group and filled circles for the experimental group.
 
@@ -117,13 +116,14 @@ performance improvements. It’s a big one!
       code, we have made several updates to the documentation and
       terminology to improve clarity and consistency. For example:
 
-      - Many plot arguments have been adjusted to bring more clarity and
+      - Plot arguments have been adjusted to bring more clarity and
         consistency in naming. Arguments relating to the rawdata plot
         axis will now be typically referred to with `raw` while
         arguments relating to the contrast axis will be referred to with
         `contrast`. For example, `raw_label` replaces `swarm_label` and
         `bar_label`. The various kwargs relating to each different type
         of plot (e.g., `swarmplot_kwargs`) remain unchanged.
+
       - The method to utilise the Delta *g* effect size is now via the
         .hedges_g.plot() method rather than creating a whole new Delta_g
         object as before. The functionality remains the same, it plots

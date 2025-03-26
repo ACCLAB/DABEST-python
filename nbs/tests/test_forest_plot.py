@@ -22,7 +22,7 @@ idx_msg3 = "E.g., `idx` = [[1,2],[0,1]]."
     ("idx", ((0,1),(0,1),(0,1),(0,1),(0,1)), idx_msg1+idx_msg2+idx_msg3, ValueError),
     ("ax", "axes", "The `ax` must be a `matplotlib.axes.Axes` instance or `None`.", TypeError),
     ("fig_size", "huge", "`fig_size` must be a tuple or list of two positive integers.", TypeError),
-    ("effect_size", 456, "The `effect_size` argument must be a string and please choose from the following effect sizes: `mean_diff`, `hedges_g`, or `delta_g`.", TypeError),
+    ("effect_size", 456, "The `effect_size` argument must be a string and please choose from the following effect sizes: 'mean_diff', 'median_diff', 'cohens_d', 'cohens_h', 'cliffs_delta', 'hedges_g', 'delta_g'.", TypeError),
     ("ci_type", 'linear', "`ci_type` must be either 'bca' or 'pct'.", TypeError),
     ("horizontal", "sideways", "`horizontal` must be a boolean value.", TypeError),
     ("marker_size", "large", "`marker_size` must be a positive integer or float.", TypeError),
