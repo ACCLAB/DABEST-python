@@ -23,20 +23,20 @@ performance improvements. It’s a big one!
 2.  **Horizontal Plots**: Users can now create horizontal layout plots,
     providing compact data visualization. This can be achieved by
     setting `horizontal=True` in the `.plot()` method. See the
-    [Horizontal Plots tutorial](../tutorials/08-horizontal_plot.html)
+    [Horizontal Plots tutorial](nbs/tutorials/08-horizontal_plot.ipynb)
     for more details.
 
 3.  **Forest Plots**: Forest plots provide a simple and intuitive way to
     visualize many delta-delta (or delta *g*), mini-meta, or regular
     delta effect sizes at once from multiple different dabest objects
     without presenting the raw data. See the [Forest Plots
-    tutorial](../tutorials/07-forest_plot.html) for more details.
+    tutorial](nbs/tutorials/07-forest_plot.ipynb) for more details.
 
 4.  **Gridkey**: Users can now represent experimental labels in a
     ‘gridkey’ table. This can be accessed with the `gridkey` parameter
     in the `.plot()` method. See the gridkey section in the [Plot
-    Aesthetics tutorial](../tutorials/09-plot_aesthetics.html) for more
-    details.
+    Aesthetics tutorial](nbs/tutorials/09-plot_aesthetics.ipynb) for
+    more details.
 
 5.  **Other Visualization Improvements**:
 
@@ -65,7 +65,7 @@ performance improvements. It’s a big one!
         Raw and contrast bars are shown by default. Users can customize
         these bars and add summary bands as needed. For detailed
         customization instructions, please refer to the [Plot Aesthetics
-        tutorial](../tutorials/09-plot_aesthetics.html).
+        tutorial](nbs/tutorials/09-plot_aesthetics.ipynb).
 
     - **Tighter spacing in delta-delta and mini-meta plots**: We have
       adjusted the spacing of delta-delta and mini-meta plots to reduce
