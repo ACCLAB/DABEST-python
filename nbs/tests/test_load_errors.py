@@ -35,18 +35,6 @@ def test_wrong_params_combinations():
 
     assert error_msg in str(excinfo.value)
 
-    error_msg = "`proportional` and `delta2` cannot be True at the same time."
-    with pytest.raises(ValueError) as excinfo:
-        my_data = load(
-            dummy_df,
-            x=["Control 1", "Control 1"],
-            y="Test 1",
-            delta2=True,
-            proportional=True
-        )
-
-    assert error_msg in str(excinfo.value)
-
     error_msg = "`idx` should not be specified when `delta2` is True.".format(N)
     with pytest.raises(ValueError) as excinfo:
         my_data = load(
@@ -105,7 +93,7 @@ def test_param_validations():
     assert error_msg in str(excinfo.value)
 
     wrong_paired = 'not_valid'
-    error_msg = "{} assigned for `paired` is not valid.".format(wrong_paired)
+    error_msg = "'{}' assigned for `paired` is not valid. Please use either 'baseline' or 'sequential'.".format(wrong_paired)
     with pytest.raises(ValueError) as excinfo:
         my_data = load(
             dummy_df, idx=("Control 1", "Test 1"), paired=wrong_paired, id_col="ID"
@@ -115,7 +103,7 @@ def test_param_validations():
 
 
     wrong_id_col = 'not_valid'
-    error_msg = "{} is not a column in `data`. ".format(wrong_id_col)
+    error_msg = "`id_col` was given as '{}'; however, '{}' is not a column in `data`.".format(wrong_id_col, wrong_id_col)
     with pytest.raises(IndexError) as excinfo:
         my_data = load(
             dummy_df, idx=("Control 1", "Test 1"), paired="baseline", id_col=wrong_id_col

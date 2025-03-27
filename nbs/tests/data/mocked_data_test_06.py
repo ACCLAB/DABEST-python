@@ -62,4 +62,5 @@ dabest_default_kwargs = dict(
     idx=None,
     proportional=False,
     mini_meta=False,
+    ps_adjust=False,
 )

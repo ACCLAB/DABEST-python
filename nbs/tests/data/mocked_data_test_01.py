@@ -67,4 +67,5 @@ dabest_default_kwargs = dict(
     experiment_label=None,
     x1_level=None,
     mini_meta=False,
+    ps_adjust=False,
 )
