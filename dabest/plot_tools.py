@@ -904,6 +904,7 @@ def delta_text_plotter(
         show_pairs: bool,
         float_contrast: bool,
         extra_delta: float,
+        bootstraps_color_by_group: bool = False
     ):
     """
     Add delta text to the contrast plot.
@@ -928,6 +929,8 @@ def delta_text_plotter(
         Whether the DABEST plot uses Gardner-Altman or Cummings.
     extra_delta : float or None
         The extra mini-meta or delta-delta value if applicable.
+    bootstraps_color_by_group : bool, optional
+        Whether to color the bootstraps by group. Default is False.
     """
     # Colors
     from .misc_tools import color_picker
@@ -936,7 +939,8 @@ def delta_text_plotter(
                                      elements = ticks_to_plot, 
                                      color_col = color_col, 
                                      show_pairs = show_pairs, 
-                                     color_palette = plot_palette_raw
+                                     color_palette = plot_palette_raw,
+                                     bootstraps_color_by_group = bootstraps_color_by_group
                                     )
 
     num_of_elements = len(ticks_to_plot) + 1 if extra_delta is not None else len(ticks_to_plot)
@@ -1091,7 +1095,8 @@ def slopegraph_plotter(
         temp_idx: list, 
         horizontal: bool,
         temp_all_plot_groups: list,
-        plot_kwargs: dict
+        plot_kwargs: dict,
+        group_summaries_kwargs: dict
     ):
     """
     Add slopegraph to the rawdata axes.
@@ -1124,6 +1129,8 @@ def slopegraph_plotter(
         List of all plot groups.
     plot_kwargs : dict
         Keyword arguments for the plot.
+    group_summaries_kwargs : dict, optional
+        Keyword arguments for group summaries, if applicable.
 
     """
     # Jitter Kwargs 
@@ -1177,6 +1184,45 @@ def slopegraph_plotter(
 
             x_points, y_points = (y_points, x_points) if horizontal else (x_points, y_points)
             rawdata_axes.plot(x_points, y_points, **slopegraph_kwargs)
+
+        # Add the group summaries if applicable.
+        group_summaries = plot_kwargs.get("group_summaries", None)
+        if group_summaries is not None:
+            for key in ['gap_width_percent', 'offset']:
+                group_summaries_kwargs.pop(key, None)
+            group_summaries_kwargs['color'] = 'black' if group_summaries_kwargs.get('color') is None else group_summaries_kwargs['color']
+            group_summaries_kwargs['capsize'] = 0 if group_summaries_kwargs.get('capsize') is None else group_summaries_kwargs['capsize']
+
+            index_points = [t for t in range(x_start, x_start + grp_count)]
+            av_points, err_points, lo_points, hi_points = [], [], [], []
+            for group in range(len(index_points)):
+                if group_summaries == "mean_sd":
+                    av_points.append(current_pair.iloc[:, int(group)].mean())
+                    err_points.append(current_pair.iloc[:, int(group)].std())
+                elif group_summaries == "median_quartiles":
+                    median = current_pair.iloc[:, int(group)].median()
+                    av_points.append(median)
+                    lo_points.append(median - current_pair.iloc[:, int(group)].quantile(0.25))
+                    hi_points.append(current_pair.iloc[:, int(group)].quantile(0.75) - median)
+
+            if group_summaries == "median_quartiles":
+                err_points = [lo_points, hi_points] 
+
+            # Plot the lines
+            if horizontal:
+                rawdata_axes.errorbar(
+                        av_points,
+                        index_points, 
+                        xerr=err_points, 
+                        **group_summaries_kwargs
+                        )
+            else:
+                rawdata_axes.errorbar(
+                        index_points, 
+                        av_points, 
+                        yerr=err_points, 
+                        **group_summaries_kwargs
+                        )
 
         x_start = x_start + grp_count
 

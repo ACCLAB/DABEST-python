@@ -137,7 +137,8 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
      raw_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs, contrast_marker_kwargs, 
      contrast_errorbar_kwargs, prop_sample_counts_kwargs, contrast_paired_lines_kwargs) = get_kwargs(
                                                                                                 plot_kwargs = plot_kwargs, 
-                                                                                                ytick_color = ytick_color
+                                                                                                ytick_color = ytick_color,
+                                                                                                is_paired = effectsize_df.is_paired
     )
 
     (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, 
@@ -219,6 +220,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                 horizontal = horizontal,
                 temp_all_plot_groups = temp_all_plot_groups, 
                 plot_kwargs = plot_kwargs,
+                group_summaries_kwargs = group_summaries_kwargs
             )
             
             ## Add delta dots to the contrast axes for paired plots.
@@ -333,7 +335,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
 
     ## Swarm bars
     raw_bars = plot_kwargs["raw_bars"]
-    if raw_bars and not proportional and not horizontal: #Currently not supporting swarm bars for horizontal plots (looks weird)
+    if raw_bars and not proportional and not is_paired and not horizontal: #Currently not supporting swarm bars for horizontal plots (looks weird)
         raw_bars_dict, raw_bars_kwargs = prepare_bars_for_plot(
                                                     bar_type = 'raw', 
                                                     bar_kwargs = raw_bars_kwargs, 
@@ -343,7 +345,8 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                                                     show_pairs = show_pairs, 
                                                     plot_data = plot_data,
                                                     xvar = xvar, 
-                                                    yvar = yvar,      
+                                                    yvar = yvar,    
+                                                    bootstraps_color_by_group = bootstraps_color_by_group,  
                                         )
         add_bars_to_plot(bar_dict = raw_bars_dict, 
                          ax = rawdata_axes, 
@@ -424,6 +427,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                                                     show_pairs = show_pairs, 
                                                     results = results, 
                                                     ticks_to_plot = ticks_to_plot, 
+                                                    bootstraps_color_by_group = bootstraps_color_by_group,  
                                                     extra_delta = (effectsize_df.mini_meta.difference if show_mini_meta 
                                                                   else effectsize_df.delta_delta.difference if show_delta2
                                                                   else None)
@@ -445,6 +449,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                     plot_palette_raw = plot_palette_raw, 
                     show_pairs = show_pairs,
                     float_contrast = float_contrast, 
+                    bootstraps_color_by_group = bootstraps_color_by_group,
                     extra_delta = (effectsize_df.mini_meta.difference if show_mini_meta 
                                                                   else effectsize_df.delta_delta.difference if show_delta2
                                                                   else None),
@@ -588,6 +593,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                                                                        reference_band = reference_band, 
                                                                        summary_axes = contrast_axes, 
                                                                        ci_type = ci_type,
+                                                                       bootstraps_color_by_group = bootstraps_color_by_group,
                                                                     )
         
         add_bars_to_plot(bar_dict = reference_band_dict,
