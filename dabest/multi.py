@@ -95,7 +95,7 @@ def _parse_contrast_structure(contrasts, labels=None):
         # Handle 2D labels
         if labels and isinstance(labels[0], (list, tuple)):
             row_labels = [labels[i][0] for i in range(n_rows)]
-            col_labels = labels[0]
+            col_labels = labels[0][1:]
         else:
             row_labels = [f"Row {i+1}" for i in range(n_rows)]
             col_labels = [f"Col {j+1}" for j in range(n_cols)]
@@ -188,8 +188,8 @@ def _spiralize(fill, m, n):
     return array
 
 # %% ../nbs/API/multi.ipynb 12
-def vortexmap(multi_contrast, n=21, sort_by=None, vmax=3, vmin=-3, 
-              reverse_neg=True, abs_rank=False, chop_tail=0, ax=None, **kwargs):
+def vortexmap(multi_contrast, n=21, sort_by=None, cmap = 'vlag', vmax = None, vmin = None, 
+              reverse_neg=True, abs_rank=False, chop_tail=0, ax=None,fig_size=None, **kwargs):
     """
     Create a vortexmap visualization of multiple contrasts.
     
@@ -201,7 +201,7 @@ def vortexmap(multi_contrast, n=21, sort_by=None, vmax=3, vmin=-3,
         Size of each spiral (n x n grid per contrast)
     sort_by : list, optional
         Order to sort contrasts by
-    vmax, vmin : float, default 3, -3
+    vmax, vmin : float, default None, None
         Color scale limits
     reverse_neg : bool, default True
         Whether to reverse negative values
@@ -227,6 +227,7 @@ def vortexmap(multi_contrast, n=21, sort_by=None, vmax=3, vmin=-3,
     contrasts_2d = structure['contrasts_2d']
 
     spirals = pd.DataFrame(np.zeros((n_rows * n, n_cols * n)))
+    
     mean_delta = pd.DataFrame(np.zeros((n_rows, n_cols)), 
                              columns=col_labels, 
                              index=row_labels)
@@ -251,19 +252,40 @@ def vortexmap(multi_contrast, n=21, sort_by=None, vmax=3, vmin=-3,
         f, a = plt.subplots(1, 1)
     else:
         a = ax
+    if vmax is None:
+        vmax = np.max(spirals.values)
+    if vmin is None:
+        vmin = np.min(spirals.values)
+    if structure['was_1d']:
+        cbar_orientation = 'horizontal'
+        cbar_location = 'top'
+    else:
+        cbar_orientation = 'vertical'
+        cbar_location = 'right'
     
-    sns.heatmap(spirals, cmap='vlag', cbar_kws={"shrink": 0.2, 'pad': .17}, 
-                ax=a, vmax=vmax, vmin=vmin)
+    # Create heatmap
+    sns.heatmap(spirals, cmap=cmap, cbar_kws={"shrink": 1, "pad": .17, "orientation": cbar_orientation, "location": cbar_location}, 
+                ax=a, center = 0, vmax=vmax, vmin=vmin,  **kwargs)
     
     # Set labels
     a.set_xticks(np.linspace(n/2, n_cols*n-n/2, n_cols))
     a.set_xticklabels(col_labels, rotation=45, ha='right')
-    a.set_yticks(np.linspace(n/2, n_rows*n-n/2, n_rows))
-    a.set_yticklabels(row_labels, ha='right', rotation=0)
-    
+
+    if structure['was_1d']:
+        a.set_xlabel('Contrasts')
+        a.set_ylabel(' ')
+        a.set_yticks([])
+        a.set_yticklabels([])
+    else:
+        a.set_yticks(np.linspace(n/2, n_rows*n-n/2, n_rows))
+        a.set_yticklabels(row_labels, ha='right', rotation=0)
+
     if ax is None:
         f.gca().set_aspect('equal')
-        f.set_size_inches(n_cols/3, n_rows/3)
+        if fig_size is None:
+            f.set_size_inches(n_cols/3, n_rows/3)
+        else:
+            f.set_size_inches(fig_size)
         return f, a, mean_delta
     else:
         return a, mean_delta
