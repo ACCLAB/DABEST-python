@@ -516,7 +516,7 @@ def get_color_palette(
         idx: list, 
         all_plot_groups: list,
         delta2: bool,
-        sankey: bool
+        proportional: bool
     ):
     """
     Create the color palette to be used in the plotter function.
@@ -537,9 +537,11 @@ def get_color_palette(
         A list of all the group names.
     delta2 : bool
         A boolean flag to determine if the plot will have a delta-delta effect size.
-    sankey : bool
-        A boolean flag to determine if the plot is for a Sankey diagram.
+    proportional : bool
+        A boolean flag to determine if the plot is for a proportional plot.
     """
+    sankey = True if proportional and show_pairs else False
+
     # Create color palette that will be shared across subplots.
     color_col = plot_kwargs["color_col"]
     if color_col is None:
@@ -608,6 +610,17 @@ def get_color_palette(
                 groups_in_palette = {
                     k: custom_pal[k] for k in color_groups
                 }
+            elif proportional and not sankey: # barplots (unpaired proportional data)
+                keys = list(custom_pal.keys())
+                if all(k in keys for k in [1, 0]) and len(keys) == 2:
+                    groups_in_palette = {
+                        k: custom_pal[k] for k in [1, 0]
+                    }
+                    bootstraps_color_by_group = False
+                else:
+                    groups_in_palette = {
+                        k: custom_pal[k] for k in all_plot_groups if k in color_groups
+                    }
             elif sankey:
                 groups_in_palette = {
                     k: custom_pal[k] for k in [1, 0]

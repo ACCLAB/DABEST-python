@@ -161,7 +161,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                                                                                 idx = idx,
                                                                                 all_plot_groups = all_plot_groups,
                                                                                 delta2 = effectsize_df.delta2,
-                                                                                sankey = True if proportional and show_pairs else False,
+                                                                                proportional = proportional
     )
 
     # Initialise the figure.

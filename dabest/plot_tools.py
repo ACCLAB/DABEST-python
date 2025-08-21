@@ -1885,6 +1885,9 @@ def barplotter(
     horizontal : bool
         If the plot is horizontal.
     """
+    # Check if the custom_palette is a dictionary with two keys 0 and 1 (for filled bar coloring)
+    filled_bars = True if len(plot_palette_raw.keys())==2 and all(k in plot_palette_raw for k in [1, 0]) else False
+
     bar_width = barplot_kwargs.get('width', 0.5)
     fontsize = barplot_kwargs.pop('fontsize')
 
@@ -1912,7 +1915,7 @@ def barplotter(
             for hue_val in bar1_df[color_col]
         ]
     else:
-        edge_colors = raw_colors
+        edge_colors = len(all_plot_groups)*['black',] if filled_bars else raw_colors
 
     bar1 = sns.barplot(
         data=bar1_df,
@@ -1921,11 +1924,18 @@ def barplotter(
         ax=rawdata_axes,
         order=all_plot_groups,
         linewidth=2,
-        facecolor=(1, 1, 1, 0),
+        facecolor=plot_palette_raw[0] if filled_bars else (1, 1, 1, 0),
         edgecolor=edge_colors,
         zorder=1,
         orient=orient,
     )
+
+    if filled_bars:
+        barplot_kwargs['facecolor'] = plot_palette_raw[1]
+        barplot_kwargs['edgecolor'] = 'black'
+        barplot_kwargs['linewidth'] = 2
+    else:
+        barplot_kwargs['palette'] = plot_palette_raw
 
     bar2 = sns.barplot(
         data=plot_data,
@@ -1934,7 +1944,6 @@ def barplotter(
         hue=xvar if color_col is None else color_col,
         ax=rawdata_axes,
         order=all_plot_groups,
-        palette=plot_palette_raw,
         dodge=False,
         zorder=1,
         orient=orient,
