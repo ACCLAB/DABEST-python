@@ -1923,7 +1923,7 @@ def barplotter(
         y="proportion",
         ax=rawdata_axes,
         order=all_plot_groups,
-        linewidth=2,
+        linewidth=1 if filled_bars else 2,
         facecolor=plot_palette_raw[0] if filled_bars else (1, 1, 1, 0),
         edgecolor=edge_colors,
         zorder=1,
@@ -1933,7 +1933,7 @@ def barplotter(
     if filled_bars:
         barplot_kwargs['facecolor'] = plot_palette_raw[1]
         barplot_kwargs['edgecolor'] = 'black'
-        barplot_kwargs['linewidth'] = 2
+        barplot_kwargs['linewidth'] = 1
     else:
         barplot_kwargs['palette'] = plot_palette_raw
 
