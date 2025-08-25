@@ -17,6 +17,7 @@ website:
     contents:
       - auto: "/0*.ipynb"
       - auto: "tutorials/0*.ipynb" # Autogenerate a section of tutorial notebooks
+      - auto: "tutorials/1*.ipynb" # Autogenerate a section of tutorial notebooks
       - section: API
         contents: API/*
   favicon: images/Favicon-3-outline.svg
