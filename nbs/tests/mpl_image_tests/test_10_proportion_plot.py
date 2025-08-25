@@ -460,6 +460,11 @@ def test_143_sankey_change_palette_c():
     return multi_groups_paired.mean_diff.plot(custom_palette=['red', 'blue'])
 
 @pytest.mark.mpl_image_compare(tolerance=8)
+def test_144_change_palette_d():
+    plt.rcdefaults()
+    return multi_2group.mean_diff.plot(custom_palette={0:'blue', 1: 'red'})
+
+@pytest.mark.mpl_image_compare(tolerance=8)
 def test_136_style_sheets():
     # Perform this test last so we don't have to reset the plot style.
     plt.rcdefaults()
