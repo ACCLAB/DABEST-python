@@ -285,11 +285,11 @@ class MultiContrast:
         
     def _extract_data(self) -> Tuple[List, List, List, List]:
         """
-        Extract bootstrap, effect sizes, and CI data.
+        Extract bootstrap, effect sizes, CI low bounds and CI high bounds.
         Handles mixed contrast types for vortexmap.
         """
         if self._bootstrap_data is not None:
-            return self._bootstrap_data, self._effect_data, self._ci_data
+            return self._bootstrap_data, self._effect_data, self._ci_lows, self._ci_highs
         
         # Process effect size attribute name
         effect_attr = "hedges_g" if self.effect_size == 'delta_g' else self.effect_size
@@ -334,7 +334,8 @@ class MultiContrast:
         # Cache results
         self._bootstrap_data = bootstraps
         self._effect_data = differences
-        self._ci_data = (ci_lows, ci_highs)
+        self._ci_lows = ci_lows
+        self._ci_highs = ci_highs
         
         return bootstraps, differences, ci_lows, ci_highs
     
@@ -383,7 +384,7 @@ class MultiContrast:
         _, _, ci_lows, ci_highs = self._extract_data()
         return ci_lows, ci_highs
     
-    def forest_plot(self, **kwargs):
+    def forest_plot(self, **forest_plot_kwargs):
         """
         Create forest plot using validated data.
         
@@ -414,23 +415,22 @@ class MultiContrast:
             'ci_type': self.ci_type,
             'labels': self.structure['col_labels'],
         }
-        forest_kwargs.update(kwargs)  # kwargs can override defaults
+        forest_kwargs.update(forest_plot_kwargs)  # kwargs can override defaults
         
         # Call existing forest_plot with validated dabest objects
         return forest_plot(data=all_dabest_objs, **forest_kwargs)
 
-    def vortexmap(self, **kwargs):
+    def vortexmap(self, **heatmap_kwargs):
         """
         Create vortexmap using validated data.
         
-        This uses the enhanced vortexmap that can handle both homogeneous
+        This uses the vortexmap that can handle both homogeneous
         and mixed contrast types.
         """
-        # Import here to avoid circular imports  
         from .multi import vortexmap
         
-        # Call enhanced vortexmap with self as the multi_contrast object
-        return vortexmap(multi_contrast=self, **kwargs)       
+        # Call vortexmap with self as the multi_contrast object
+        return vortexmap(multi_contrast=self, **heatmap_kwargs)       
     def get_bootstrap_by_position(self, row: int, col: int):
         """
         Get bootstrap data for a specific position in the grid.
@@ -611,7 +611,7 @@ def _spiralize(fill, m, n):
 
 # %% ../nbs/API/multi.ipynb 12
 def vortexmap(multi_contrast, n=21, sort_by=None, cmap = 'vlag', vmax = None, vmin = None, 
-              reverse_neg=True, abs_rank=False, chop_tail=0, ax=None,fig_size=None, **kwargs):
+              reverse_neg=True, abs_rank=False, chop_tail=0, ax=None,fig_size=None, heatmap_kwargs=None):
     """
     Create a vortexmap visualization of multiple contrasts.
     
@@ -633,18 +633,44 @@ def vortexmap(multi_contrast, n=21, sort_by=None, cmap = 'vlag', vmax = None, vm
         Percentage of extreme values to exclude
     ax : matplotlib.Axes, optional
         Existing axes to plot on
-        
+    fig_size : tuple, optional
+        Figure size (width, height) in inches
+    heatmap_kwargs : dict, optional
+        Additional keyword arguments passed to sns.heatmap().
+        Common options include:
+        - 'cmap': colormap (overrides direct cmap parameter)
+        - 'vmin', 'vmax': color scale limits (override direct parameters)
+        - 'center': center value for colormap
+        - 'annot': whether to annotate cells with values
+        - 'fmt': format string for annotations
+        - 'linewidths': width of lines between cells
+        - 'linecolor': color of lines between cells
+        - 'cbar': whether to show colorbar
+        - 'cbar_kws': colorbar customization dict
+        - 'square': whether to make cells square
+        - 'xticklabels', 'yticklabels': tick label control
+        - 'mask': boolean array to mask cells
+    plot_kwargs : dict, optional
+        Additional keyword arguments for plot styling and layout.
+        Available options:
+        - 'title': plot title
+        - 'xlabel', 'ylabel': axis labels
+        - 'xlabel_rotation', 'ylabel_rotation': label rotation angles
+        - 'grid': whether to show grid    
     Returns
     -------
     tuple
         (figure, axes, mean_delta_dataframe) if ax is None, 
         else (axes, mean_delta_dataframe)
     """
+
+    if heatmap_kwargs is None:
+        heatmap_kwargs = {}
     structure = multi_contrast.structure
 
     n_rows = structure['n_rows']
     n_cols = structure['n_cols']
-    col_labels = structure['col_labels']
+    col_labels = structure['col_labels'] 
     row_labels = structure['row_labels']
     was_1d = (structure['type'] == '1D')
 
@@ -694,10 +720,13 @@ def vortexmap(multi_contrast, n=21, sort_by=None, cmap = 'vlag', vmax = None, vm
     else:
         cbar_orientation = 'vertical'
         cbar_location = 'right'
-    
+    heatmap_kwargs.setdefault('cmap', cmap)
+    heatmap_kwargs.setdefault('vmax', vmax)
+    heatmap_kwargs.setdefault('vmin', vmin)
+    heatmap_kwargs.setdefault('center', 0)
     # Create heatmap
-    sns.heatmap(spirals, cmap=cmap, cbar_kws={"shrink": 1, "pad": .17, "orientation": cbar_orientation, "location": cbar_location}, 
-                ax=a, center = 0, vmax=vmax, vmin=vmin,  **kwargs)
+    sns.heatmap(spirals, cbar_kws={"shrink": 1, "pad": .17, "orientation": cbar_orientation, "location": cbar_location}, 
+                ax=a, **heatmap_kwargs)
     
     # Set labels
     a.set_xticks(np.linspace(n/2, n_cols*n-n/2, n_cols))
