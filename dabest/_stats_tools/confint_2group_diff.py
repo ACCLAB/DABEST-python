@@ -6,7 +6,7 @@
 __all__ = ['create_jackknife_indexes', 'create_repeated_indexes', 'compute_meandiff_jackknife', 'bootstrap_indices',
            'compute_bootstrapped_diff', 'delta2_bootstrap_loop', 'compute_delta2_bootstrapped_diff',
            'compute_meandiff_bias_correction', 'compute_interval_limits', 'calculate_group_var',
-           'calculate_weighted_delta']
+           'calculate_bootstraps_var', 'calculate_weighted_delta']
 
 # %% ../../nbs/API/confint_2group_diff.ipynb 4
 import numpy as np
@@ -319,15 +319,23 @@ def calculate_group_var(control_var, control_N, test_var, test_N):
     
     return pooled_var
 
+def calculate_bootstraps_var(bootstraps):
 
-def calculate_weighted_delta(group_var, differences):
+    bootstraps_var_list = [np.var(x, ddof=1) for x in bootstraps]
+    bootstraps_var_array = np.array(bootstraps_var_list)
+    
+    return bootstraps_var_array
+    
+
+
+def calculate_weighted_delta(bootstrap_dist_var, differences):
     """
     Compute the weighted deltas.
     """
 
-    weight = 1 / group_var
+    weight = np.true_divide(1, bootstrap_dist_var)
     denom = np.sum(weight)
     num = 0.0
     for i in range(len(weight)):
         num += weight[i] * differences[i]
-    return num / denom
+    return np.true_divide(num, denom)

@@ -435,17 +435,19 @@ class MiniMetaDelta(object):
                                                  self.__control_N,
                                                  self.__test_var, 
                                                  self.__test_N)
+        
+        self.__bootstraps_variance = ci2g.calculate_bootstraps_var(self.__bootstraps)
 
         # Compute the weighted average mean differences of the bootstrap data
         # using the pooled group variances of the raw data as the inverse of 
         # weights
         self.__bootstraps_weighted_delta = ci2g.calculate_weighted_delta(
-                                                          self.__group_var, 
+                                                          self.__bootstraps_variance, 
                                                           self.__bootstraps)
 
         # Compute the weighted average mean difference based on the raw data
         self.__difference = es.weighted_delta(np.array(self.__effsizedf["difference"]),
-                                                   self.__group_var)
+                                                   self.__bootstraps_variance)
 
         sorted_weighted_deltas = npsort(self.__bootstraps_weighted_delta)
 
@@ -753,6 +755,14 @@ class MiniMetaDelta(object):
         in order. 
         '''
         return self.__group_var
+    
+    @property
+    def bootstraps_var(self):
+        '''
+        Return the variances of each bootstrapped mean difference distribution
+        in order. 
+        '''
+        return self.__bootstraps_variance
 
 
     @property
