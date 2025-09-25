@@ -1333,31 +1333,31 @@ def plot_minimeta_or_deltadelta_violins(
     if horizontal:
         current_ylabels = rawdata_axes.get_yticklabels()
         if type == 'mini_meta':
-            current_ylabels.extend(["Weighted Delta"])
+            current_ylabels.extend(["Weighted delta"])
         elif effect_size == "hedges_g":
             current_ylabels.extend(["Delta g"])
         else:
-            current_ylabels.extend(["Delta-Delta"])
+            current_ylabels.extend(["Delta-delta"])
 
         rawdata_axes.set_yticks(np.append(rawdata_axes.get_yticks(), position))
         rawdata_axes.set_yticklabels(current_ylabels)
     else:
         if type == 'mini_meta':
             if show_pairs:
-                contrast_xtick_labels.extend(["Weighted\n Delta"])
+                contrast_xtick_labels.extend(["Weighted\n delta"])
             else:
-                contrast_xtick_labels.extend(["Weighted Delta"])
+                contrast_xtick_labels.extend(["Weighted delta"])
         elif effect_size == "hedges_g":
             contrast_xtick_labels.extend(["Delta g"])
         else:
-            contrast_xtick_labels.extend(["Delta-Delta"])
+            contrast_xtick_labels.extend(["Delta-delta"])
 
     # Create the delta-delta axes.
     if type == 'delta_delta' and not horizontal:
         if plot_kwargs["delta2_label"] is not None:
             delta2_label = plot_kwargs["delta2_label"]
         elif effect_size == "mean_diff":
-            delta2_label = "Delta-Delta"
+            delta2_label = "Delta-delta"
         else:
             delta2_label = "Delta g"
         fontsize_delta2label = plot_kwargs["fontsize_delta2label"]
