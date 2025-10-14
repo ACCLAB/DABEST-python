@@ -951,8 +951,8 @@ def initialize_fig(
 
     # Set contrast axes y-label.
     contrast_label_dict = {
-        "mean_diff": "Mean difference",
-        "median_diff": "Median difference",
+        "mean_diff": "mean difference",
+        "median_diff": "median difference",
         "cohens_d": "Cohen's d",
         "hedges_g": "Hedges' g",
         "cliffs_delta": "Cliff's delta",
@@ -960,7 +960,7 @@ def initialize_fig(
     }
 
     if proportional and effect_size_type != "cohens_h":
-        default_contrast_label = "Proportion difference"
+        default_contrast_label = "proportion difference"
     else:
         default_contrast_label = contrast_label_dict[effect_size_type]
 
@@ -968,7 +968,7 @@ def initialize_fig(
         if is_paired:
             contrast_label = "Paired\n{}".format(default_contrast_label)
         else:
-            contrast_label = default_contrast_label
+            contrast_label = default_contrast_label.capitalize()
     else:
         contrast_label = plot_kwargs["contrast_label"]
 

@@ -645,8 +645,8 @@ def forest_plot(
     ## y-label 
     if ylabel is None:
         effect_attr_map = {
-            "mean_diff": "Mean Difference",
-            "median_diff": "Median Difference", 
+            "mean_diff": "Mean difference",
+            "median_diff": "Median difference", 
             "cohens_d": "Cohen's d",
             "cohens_h": "Cohen's h",
             "cliffs_delta": "Cliff's delta",

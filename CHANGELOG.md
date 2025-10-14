@@ -2,6 +2,22 @@
 
 <!-- do not remove -->
 
+## v2025.10.17
+
+### New Features
+
+1. **Group Summaries for Paired Plots**: Slopegraphs now support group summaries, showing summary statistics for each group. By default, a line connects group means, with vertical bars indicating standard deviation. Users can choose the summary type via the `group_summaries` argument in `.plot()` — options include `'mean_sd'`, `'median_quartiles'`, or `None`. Appearance can be customized using `group_summaries_kwargs`.
+
+2. **Fixed Mini-meta Weighted Delta Calculation**: The weighted delta calculation in mini-meta plots has been modified to ensure accurate reporting of the weighted delta.
+
+3. **Whorlmaps**: A new plot type for visualizing high-dimensional data in a compact heatmap-like format. TBC
+
+4. **Miscellaneous Improvements & Adjustments**:
+    - **Additional color options for barplots (unpaired proportional)**: `custom_palette` dict can now take 0 and 1 as keys to color the filled and unfilled portions of the plots.
+    - **Custom palette usage for slopegraphs**: The `custom_palette` can now be used for paired (non proportional) plots to color the contrast bars and effect size curves.
+
+
+
 ## v2025.03.27
 
 ### New Features
@@ -69,6 +85,7 @@
 ## v2023.03.29
 
 ### New Features
+
 - **Repeated measures**: Augments the prior function for plotting (independent) multiple test groups versus a shared control; it can now do the same for repeated-measures experimental designs. Thus, together, these two methods can be used to replace both flavors of the 1-way ANOVA with an estimation analysis.
 
 - **Proportional data**: Generates proportional bar plots, proportional differences, and calculates Cohen’s h. Also enables plotting Sankey diagrams for paired binary data. This is the estimation equivalent to a bar chart with Fischer’s exact test.
