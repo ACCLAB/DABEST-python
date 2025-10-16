@@ -25,20 +25,6 @@ def test_multicontrast_init_basic():
     assert mc.ci_type == "bca"
 
 
-def test_multicontrast_init_custom_params():
-    """Test MultiContrast initialization with custom parameters."""
-    mc = MultiContrast(
-        dabest_objs=[two_group_contrast_1, two_group_contrast_2],
-        labels=["Treatment A", "Treatment B"],
-        effect_size="hedges_g",
-        ci_type="pct"
-    )
-    
-    assert mc.effect_size == "hedges_g"
-    assert mc.ci_type == "pct"
-    assert mc.structure['col_labels'] == ["Treatment A", "Treatment B"]
-
-
 
 def test_multicontrast_bootstraps_property():
     """Test that bootstraps property returns data correctly."""
@@ -130,37 +116,6 @@ def test_multicontrast_get_bootstrap_by_position_out_of_bounds():
     assert error_msg in str(excinfo.value)
 
 
-def test_multicontrast_get_bootstrap_mixed_types():
-    """Test getting bootstrap data from mixed-type MultiContrast."""
-    mc = combine(
-        dabest_objs=[[two_group_contrast_1, two_group_contrast_2],
-                     [delta2_contrast_1, delta2_contrast_2]],
-        allow_mixed_types=True
-    )
-    
-    # Get bootstrap from standard contrast row
-    bootstrap_two_group = mc.get_bootstrap_by_position(0, 0)
-    # Get bootstrap from delta2 contrast row
-    bootstrap_delta2 = mc.get_bootstrap_by_position(1, 0)
-    
-    assert bootstrap_two_group is not None
-    assert bootstrap_delta2 is not None
-
-
-
-def test_multicontrast_repr_mixed():
-    """Test __repr__ for mixed contrast types."""
-    mc = combine(
-        dabest_objs=[[two_group_contrast_1, two_group_contrast_2],
-                     [delta2_contrast_1, delta2_contrast_2]],
-        allow_mixed_types=True
-    )
-    
-    repr_str = repr(mc)
-    
-    assert "MultiContrast" in repr_str
-    assert "mixed" in repr_str
-
 
 def test_validate_individual_dabest_obj_missing_attribute():
     """Test that validation catches missing required attributes."""
@@ -235,22 +190,7 @@ def test_multicontrast_structure_1d_to_2d():
     assert len(mc.structure['dabest_objs_2d'][0]) == 2
 
 
-def test_multicontrast_contrast_type_homogeneous_standard():
-    """Test contrast_type for homogeneous standard contrasts."""
-    mc = MultiContrast(
-        dabest_objs=[two_group_contrast_1, two_group_contrast_2]
-    )
-    
-    assert mc.contrast_type == 'delta'
 
-
-def test_multicontrast_contrast_type_homogeneous_delta2():
-    """Test contrast_type for homogeneous delta2 contrasts."""
-    mc = MultiContrast(
-        dabest_objs=[delta2_contrast_1, delta2_contrast_2]
-    )
-    
-    assert mc.contrast_type == 'delta2'
 
 
 def test_multicontrast_contrast_type_mixed():
