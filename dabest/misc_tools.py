@@ -937,7 +937,7 @@ def initialize_fig(
     raw_label = plot_kwargs["raw_label"]
     if raw_label is None:
         if proportional:
-            raw_label = "Proportion of Success" if effect_size_type != "cohens_h" else "Value"
+            raw_label = "Proportion of success" if effect_size_type != "cohens_h" else "Value"
         else:
             raw_label = yvar 
 
@@ -951,8 +951,8 @@ def initialize_fig(
 
     # Set contrast axes y-label.
     contrast_label_dict = {
-        "mean_diff": "Mean Difference",
-        "median_diff": "Median Difference",
+        "mean_diff": "Mean difference",
+        "median_diff": "Median difference",
         "cohens_d": "Cohen's d",
         "hedges_g": "Hedges' g",
         "cliffs_delta": "Cliff's delta",
@@ -960,7 +960,7 @@ def initialize_fig(
     }
 
     if proportional and effect_size_type != "cohens_h":
-        default_contrast_label = "Proportion Difference"
+        default_contrast_label = "Proportion difference"
     else:
         default_contrast_label = contrast_label_dict[effect_size_type]
 
