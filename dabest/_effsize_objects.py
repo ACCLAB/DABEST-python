@@ -1143,7 +1143,7 @@ class EffectSizeDataFrame(object):
         face_color=None,
 
         raw_desat=0.5, # swarm_desat=0.5, OLD # bar_desat=0.5, OLD
-        contrast_desat=1, # halfviolin_desat=1, OLD
+        contrast_desat=1.0, # halfviolin_desat=1, OLD
 
         raw_alpha=None, # NEW
         contrast_alpha=0.8, # halfviolin_alpha=0.8, OLD
@@ -1478,7 +1478,8 @@ class EffectSizeDataFrame(object):
 
         if raw_alpha is None:
             raw_alpha = (0.4 if self.is_proportional and self.is_paired 
-                         else 0.5 if self.is_paired
+                         else 0.5 if self.is_paired and (color_col is not None or self.__delta2)
+                         else 0.2 if self.is_paired and color_col is None
                          else 1.0
             )
 

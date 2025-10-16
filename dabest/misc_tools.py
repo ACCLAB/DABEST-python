@@ -203,7 +203,8 @@ def get_params(
 
 def get_kwargs(
         plot_kwargs: dict, 
-        ytick_color
+        ytick_color,
+        is_paired: bool = False
     ):
     """
     Extracts the kwargs from the `plot_kwargs` object for use in the plotter function.
@@ -214,6 +215,8 @@ def get_kwargs(
         Kwargs passed to the plot function.
     ytick_color : str or color list
         Color of the yticks.
+    is_paired : bool, optional
+        A boolean flag to determine if the plot is for paired data. Default is False.
     """
     from .misc_tools import merge_two_dicts
 
@@ -334,7 +337,7 @@ def get_kwargs(
     default_group_summaries_kwargs = {
                         "zorder": 3, 
                         "lw": 2, 
-                        "alpha": 1,
+                        "alpha": 1 if not is_paired else 0.6,
                         'gap_width_percent': 1.5,
                         'offset': 0.1,
                         'color': None
@@ -513,7 +516,7 @@ def get_color_palette(
         idx: list, 
         all_plot_groups: list,
         delta2: bool,
-        sankey: bool
+        proportional: bool
     ):
     """
     Create the color palette to be used in the plotter function.
@@ -534,9 +537,11 @@ def get_color_palette(
         A list of all the group names.
     delta2 : bool
         A boolean flag to determine if the plot will have a delta-delta effect size.
-    sankey : bool
-        A boolean flag to determine if the plot is for a Sankey diagram.
+    proportional : bool
+        A boolean flag to determine if the plot is for a proportional plot.
     """
+    sankey = True if proportional and show_pairs else False
+
     # Create color palette that will be shared across subplots.
     color_col = plot_kwargs["color_col"]
     if color_col is None:
@@ -548,7 +553,13 @@ def get_color_palette(
         color_groups = pd.unique(plot_data[color_col])
         bootstraps_color_by_group = False
     if show_pairs:
-        bootstraps_color_by_group = False
+        if plot_kwargs["custom_palette"] is not None:
+            if delta2 or sankey:
+                bootstraps_color_by_group = False
+            else:
+                bootstraps_color_by_group = True
+        else:
+            bootstraps_color_by_group = False
 
     # Handle the color palette.
     filled = True
@@ -599,6 +610,17 @@ def get_color_palette(
                 groups_in_palette = {
                     k: custom_pal[k] for k in color_groups
                 }
+            elif proportional and not sankey: # barplots (unpaired proportional data)
+                keys = list(custom_pal.keys())
+                if all(k in keys for k in [1, 0]) and len(keys) == 2:
+                    groups_in_palette = {
+                        k: custom_pal[k] for k in [1, 0]
+                    }
+                    bootstraps_color_by_group = False
+                else:
+                    groups_in_palette = {
+                        k: custom_pal[k] for k in all_plot_groups if k in color_groups
+                    }
             elif sankey:
                 groups_in_palette = {
                     k: custom_pal[k] for k in [1, 0]
@@ -915,7 +937,7 @@ def initialize_fig(
     raw_label = plot_kwargs["raw_label"]
     if raw_label is None:
         if proportional:
-            raw_label = "Proportion of Success" if effect_size_type != "cohens_h" else "Value"
+            raw_label = "Proportion of success" if effect_size_type != "cohens_h" else "Value"
         else:
             raw_label = yvar 
 
@@ -929,8 +951,8 @@ def initialize_fig(
 
     # Set contrast axes y-label.
     contrast_label_dict = {
-        "mean_diff": "Mean Difference",
-        "median_diff": "Median Difference",
+        "mean_diff": "Mean difference",
+        "median_diff": "Median difference",
         "cohens_d": "Cohen's d",
         "hedges_g": "Hedges' g",
         "cliffs_delta": "Cliff's delta",
@@ -938,7 +960,7 @@ def initialize_fig(
     }
 
     if proportional and effect_size_type != "cohens_h":
-        default_contrast_label = "Proportion Difference"
+        default_contrast_label = "Proportion difference"
     else:
         default_contrast_label = contrast_label_dict[effect_size_type]
 
@@ -1856,13 +1878,15 @@ def color_picker(color_type: str,
                  elements: list, 
                  color_col: str, 
                  show_pairs: bool, 
-                 color_palette: dict) -> list:
+                 color_palette: dict,
+                 bootstraps_color_by_group: bool) -> list:
     num_of_elements = len(elements)
     colors = (
         [kwargs.pop('color')] * num_of_elements
         if kwargs.get('color', None) is not None
         else ['black'] * num_of_elements
-        if color_col is not None or show_pairs 
+        # if color_col is not None or show_pairs
+        if color_col is not None or not bootstraps_color_by_group
         else list(color_palette.values())
     )
     if color_type in ['contrast', 'summary', 'delta_text']:
@@ -1877,7 +1901,7 @@ def color_picker(color_type: str,
     return final_colors
 
 
-def prepare_bars_for_plot(bar_type, bar_kwargs, horizontal, plot_palette_raw, color_col, show_pairs,
+def prepare_bars_for_plot(bar_type, bar_kwargs, horizontal, plot_palette_raw, color_col, show_pairs, bootstraps_color_by_group,
                           plot_data = None, xvar = None, yvar = None,  # Raw data
                           results = None, ticks_to_plot = None, extra_delta = None, # Contrast data
                           reference_band = None, summary_axes = None, ci_type = None  # Summary data
@@ -1951,7 +1975,8 @@ def prepare_bars_for_plot(bar_type, bar_kwargs, horizontal, plot_palette_raw, co
                 elements = ticks_to_plot if bar_type=='contrast' else ticks, 
                 color_col = color_col, 
                 show_pairs = show_pairs, 
-                color_palette = plot_palette_raw
+                color_palette = plot_palette_raw,
+                bootstraps_color_by_group = bootstraps_color_by_group
             )
     if bar_type == 'contrast' and extra_delta is not None:
         colors.append('black')
