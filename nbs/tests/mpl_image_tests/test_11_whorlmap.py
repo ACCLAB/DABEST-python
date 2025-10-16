@@ -62,7 +62,7 @@ multi_2d_mean_diff = combine(dabest_objects_2d, labels_2d, row_labels=row_labels
 multi_2d_delta_g = combine(dabest_objects_2d, labels_2d, row_labels=row_labels_2d, effect_size="delta_g")
 multi_1d = combine(dabest_objects_2d[0], labels_2d, row_labels="Drug A", effect_size="mean_diff")
 
-dabest_objects_2d_two_group_delta = [[None for _ in range(10)] for _ in range(6)]
+dabest_objects_2d_two_group_delta = [[None for _ in range(2)] for _ in range(2)]
 for i in range(len(row_labels_2d)):
     for j in range(len(labels_2d)):
         df = create_delta_dataset(seed=seeds[i], 
