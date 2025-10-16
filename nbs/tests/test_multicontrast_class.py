@@ -59,7 +59,7 @@ def test_multicontrast_ci_lows_property():
         dabest_objs=[two_group_contrast_1, two_group_contrast_2]
     )
     
-    ci_lows = mc.ci_lows
+    ci_lows, ci_highs = mc.confidence_intervals
     
     assert isinstance(ci_lows, list)
     assert len(ci_lows) == 2
@@ -71,8 +71,9 @@ def test_multicontrast_ci_highs_property():
         dabest_objs=[two_group_contrast_1, two_group_contrast_2]
     )
     
-    ci_highs = mc.ci_highs
-    
+    # Use the correct property name
+    ci_lows, ci_highs = mc.confidence_intervals
+        
     assert isinstance(ci_highs, list)
     assert len(ci_highs) == 2
 
@@ -125,13 +126,13 @@ def test_validate_individual_dabest_obj_missing_attribute():
     
     fake_obj = FakeDabest()
     
-    with pytest.raises(AttributeError):
-        mc = MultiContrast(dabest_objs=[fake_obj])
+    with pytest.raises(TypeError):
+        mc = MultiContrast(dabest_objs=[fake_obj], delta2 = False)
 
 
 def test_validate_effect_size_compatibility_delta2():
     """Test effect size validation for delta2 contrasts."""
-    error_msg = "delta-delta analyses only support mean_diff, hedges_g, and delta_g"
+    error_msg = "effect_size must be 'mean_diff', 'hedges_g', or 'delta_g' for delta-delta analyses"
     
     with pytest.raises(ValueError) as excinfo:
         MultiContrast(
@@ -144,7 +145,7 @@ def test_validate_effect_size_compatibility_delta2():
 
 def test_validate_effect_size_compatibility_minimeta():
     """Test effect size validation for mini-meta contrasts."""
-    error_msg = "mini-meta analyses only support mean_diff"
+    error_msg = "effect_size must be 'mean_diff' for mini-meta analyses"
     
     with pytest.raises(ValueError) as excinfo:
         MultiContrast(

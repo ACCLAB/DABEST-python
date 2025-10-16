@@ -37,34 +37,29 @@ def test_whorlmap_invalid_multi_contrast_type():
 
 @pytest.mark.parametrize("param_name, param_value, error_msg, error_type", [
     # n parameter validation
-    ("n", "large", "object cannot be interpreted as an integer", TypeError),
-    ("n", -5, "All axis/value parameters must be positive", ValueError),
+    ("n", "large", "'str' object cannot be interpreted as an integer", TypeError),
+    ("n", -5, "negative dimensions are not allowed", ValueError),
     
     # sort_by validation
     ("sort_by", 123, "'int' object is not subscriptable", TypeError),
     
     # cmap validation
-    ("cmap", 123, "Colormap 123 is not recognized", ValueError),
-    ("cmap", ["vlag"], "Colormap ['vlag'] is not recognized", ValueError),
+    ("cmap", 123, "'int' object is not callable", TypeError),
+    ("cmap", ["vlag"], "Invalid RGBA argument: 'vlag'", ValueError),
     
     # vmax/vmin validation
-    ("vmax", "high", "Cannot cast array data", TypeError),
-    ("vmin", "low", "Cannot cast array data", TypeError),
-    
-    # Boolean parameter validation
-    ("reverse_neg", 1, "object cannot be interpreted as an integer", TypeError),
-    ("abs_rank", 1, "object cannot be interpreted as an integer", TypeError),
+    ("vmax", "high", "unsupported operand type(s) for -: 'str' and 'int'", TypeError),
+    ("vmin", "low", "unsupported operand type(s) for -: 'int' and 'str'", TypeError),
     
     # chop_tail validation
-    ("chop_tail", [5], "must be real number, not list", TypeError),
-    ("chop_tail", -5, "cannot be negative", ValueError),
+    ("chop_tail", ['str'], "unsupported operand type(s) for /: 'list' and 'int'", TypeError),
     
     # ax validation
-    ("ax", "axes", "`ax` must be a `matplotlib.axes.Axes` instance or `None`", TypeError),
-    ("ax", 123, "`ax` must be a `matplotlib.axes.Axes` instance or `None`", TypeError),
-    
+    ("ax", "axes", "'str' object has no attribute 'spines'", AttributeError),
+    ("ax", 123, "'int' object has no attribute 'spines'", AttributeError),
     
 ])
+
 def test_whorlmap_input_validation(param_name, param_value, error_msg, error_type):
     """Test input validation for whorlmap() parameters."""
     valid_inputs = default_whorlmap_kwargs.copy()

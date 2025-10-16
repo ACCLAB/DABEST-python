@@ -78,7 +78,7 @@ multi_2d_two_group_delta_mean_diff = combine(dabest_objects_2d_two_group_delta, 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_550_forest_plot_2d_mean_diff():
     plt.rcdefaults()
-    f, a, m = multi_2d_mean_diff.forest_plot(
+    f, a = multi_2d_mean_diff.forest_plot(
                 forest_plot_title="Forest Plot",
                 forest_plot_kwargs={'marker_size': 6}
             )
