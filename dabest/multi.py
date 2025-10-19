@@ -623,8 +623,8 @@ def _spiralize(fill, m, n):
     return array
 
 # %% ../nbs/API/multi.ipynb 12
-def whorlmap(multi_contrast, n=21, sort_by=None, cmap = 'vlag', vmax = None, vmin = None, 
-              reverse_neg=True, abs_rank=False, chop_tail=0, ax=None,fig_size=None, whorlmap_title = None, heatmap_kwargs=None):
+def whorlmap(multi_contrast, n=21, sort_by=None, cmap = 'vlag', vmax = None, vmin = None, reverse_neg=True, 
+             abs_rank=False, chop_tail=0, ax=None, fig_size=None, title = None, heatmap_kwargs=None, plot_kwargs=None):
     """
     Create a whorlmap visualization of multiple contrasts.
     
@@ -648,6 +648,8 @@ def whorlmap(multi_contrast, n=21, sort_by=None, cmap = 'vlag', vmax = None, vmi
         Existing axes to plot on
     fig_size : tuple, optional
         Figure size (width, height) in inches
+    title : str, optional
+        Plot title
     heatmap_kwargs : dict, optional
         Additional keyword arguments passed to sns.heatmap().
         Common options include:
@@ -665,22 +667,21 @@ def whorlmap(multi_contrast, n=21, sort_by=None, cmap = 'vlag', vmax = None, vmi
         - 'mask': boolean array to mask cells
     plot_kwargs : dict, optional
         Additional keyword arguments for plot styling and layout.
-        Available options:
+        Available options (WIP):
         - 'title': plot title
         - 'xlabel', 'ylabel': axis labels
-        - 'xlabel_rotation', 'ylabel_rotation': label rotation angles
-        - 'grid': whether to show grid    
+        - 'xticklabels', 'yticklabels': tick labels
+        - 'xticklabels_rotation', 'yticklabels_rotation': tick label rotation angles
+        - 'xticklabels_ha', 'yticklabels_ha': horizontal alignment 
     Returns
     -------
     tuple
         (figure, axes, mean_delta_dataframe) if ax is None, 
         else (axes, mean_delta_dataframe)
     """
+    from .misc_tools import merge_two_dicts
 
-    if heatmap_kwargs is None:
-        heatmap_kwargs = {}
     structure = multi_contrast.structure
-
     n_rows = structure['n_rows']
     n_cols = structure['n_cols']
     col_labels = structure['col_labels'] 
@@ -693,6 +694,7 @@ def whorlmap(multi_contrast, n=21, sort_by=None, cmap = 'vlag', vmax = None, vmi
     mean_delta = pd.DataFrame(np.zeros((n_rows, n_cols)), 
                              columns=col_labels, 
                              index=row_labels)
+    
     # Get all bootstrap data from MultiContrast
     all_bootstraps = multi_contrast.bootstraps
     bootstrap_idx = 0
@@ -723,40 +725,66 @@ def whorlmap(multi_contrast, n=21, sort_by=None, cmap = 'vlag', vmax = None, vmi
         f, a = plt.subplots(1, 1)
     else:
         a = ax
-    if vmax is None:
-        vmax = np.max(spirals.values)
-    if vmin is None:
-        vmin = np.min(spirals.values)
     if was_1d:
-        cbar_orientation = 'horizontal'
-        cbar_location = 'top'
+        cbar_orientation, cbar_location = 'horizontal', 'top'
     else:
-        cbar_orientation = 'vertical'
-        cbar_location = 'right'
-    heatmap_kwargs.setdefault('cmap', cmap)
-    heatmap_kwargs.setdefault('vmax', vmax)
-    heatmap_kwargs.setdefault('vmin', vmin)
-    heatmap_kwargs.setdefault('center', 0)
+        cbar_orientation, cbar_location = 'vertical', 'right'
+
+    # heatmap kwargs
+    default_heatmap_kwargs = {
+        "cmap": cmap,
+        "vmax": np.max(spirals.values) if vmax is None else vmax,
+        "vmin": np.min(spirals.values) if vmin is None else vmin,
+        "center": 0,
+        "cbar_kws": {"shrink": 1, "pad": .05, "orientation": cbar_orientation, "location": cbar_location},
+    }
+    if heatmap_kwargs is None:
+        heatmap_kwargs = default_heatmap_kwargs
+    else:
+        heatmap_kwargs = merge_two_dicts(
+            default_heatmap_kwargs, heatmap_kwargs
+        )
+
     # Create heatmap
-    sns.heatmap(spirals, cbar_kws={"shrink": 1, "pad": .17, "orientation": cbar_orientation, "location": cbar_location}, 
-                ax=a, **heatmap_kwargs)
-    if whorlmap_title:
+    sns.heatmap(spirals, ax=a, **heatmap_kwargs)
+
+
+    # Plot kwargs
+    default_plot_kwargs = {
+        "title": title,
+        "xticklabels": col_labels,
+        "xticklabels_rotation": 45,
+        "xticklabels_ha":'right',
+        "yticklabels": row_labels if not was_1d else [],
+        "yticklabels_rotation": 0,
+        "yticklabels_ha": 'right',
+    }
+    if plot_kwargs is None:
+        plot_kwargs = default_plot_kwargs
+    else:
+        plot_kwargs = merge_two_dicts(
+            default_plot_kwargs, plot_kwargs
+        )
+
+    # Set title
+    if plot_kwargs.get('title') is not None:
         if ax is None:
-            f.suptitle(whorlmap_title)
+            f.suptitle(plot_kwargs.get('title'))
         else:
-            a.set_title(whorlmap_title)
+            a.set_title(plot_kwargs.get('title'))
+
+    # Set labels
+    if plot_kwargs.get('xlabel') is not None:
+        a.set_xlabel(plot_kwargs.get('xlabel'))
+    if plot_kwargs.get('ylabel') is not None:
+        a.set_ylabel(plot_kwargs.get('ylabel'))
+
     # Set labels
     a.set_xticks(np.linspace(n/2, n_cols*n-n/2, n_cols))
-    a.set_xticklabels(col_labels, rotation=45, ha='right')
+    a.set_xticklabels(plot_kwargs.get("xticklabels"), rotation=plot_kwargs.get("xticklabels_rotation"), ha=plot_kwargs.get("xticklabels_ha"))
 
-    if was_1d:
-        a.set_xlabel('Contrasts')
-        a.set_ylabel(' ')
-        a.set_yticks([])
-        a.set_yticklabels([])
-    else:
-        a.set_yticks(np.linspace(n/2, n_rows*n-n/2, n_rows))
-        a.set_yticklabels(row_labels, ha='right', rotation=0)
+    a.set_yticks([] if was_1d else np.linspace(n/2, n_rows*n-n/2, n_rows))
+    a.set_yticklabels(plot_kwargs.get("yticklabels"), rotation=plot_kwargs.get("yticklabels_rotation"), ha=plot_kwargs.get("yticklabels_ha"))
 
     if ax is None:
         f.gca().set_aspect('equal')
@@ -767,9 +795,6 @@ def whorlmap(multi_contrast, n=21, sort_by=None, cmap = 'vlag', vmax = None, vmi
         return f, a, mean_delta
     else:
         return a, mean_delta
-        
-    
-
 
 # %% ../nbs/API/multi.ipynb 13
 __all__ = ['MultiContrast', 'combine', 'whorlmap']

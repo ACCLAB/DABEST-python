@@ -2,6 +2,22 @@
 
 <!-- do not remove -->
 
+## v2025.10.20
+
+### New Features
+1. **Whorlmap Visualization**: Introducing a new way to visualize effect sizes from multiple comparisons in a grid of whorled square cells. This design condenses information from full bootstrap distributions of an array of contrast objects into a compact visual representation. It optimizes visual real estate by presenting a clear impression of the whole dataset at a glance while retaining nuanced distributional information for further scrutiny. Whorlmaps are a space-efficient alternative to stacked forest plots when working with multi-dimensional DABEST objects from large scale experiments. 
+   
+2. **Slopegraphs have a new look**: Slopegraphs for paired continuous data now show summary statistics for each group. By default, a thick trend line connects group means, with vertical bars indicating standard deviation. Users can choose the summary type via the `group_summaries` argument in .plot() — options include `'mean_sd'`, `'median_quartiles'`, or `None`. Appearance can be customized using `group_summaries_kwargs`. See the group summaries section in the Plot Aesthetics tutorial for more details.
+   
+3. **Fixed Mini-meta Weighted Delta Calculation**: The weighted delta in mini-meta plots has been updated to ensure accurate calculation and reporting of the weighted delta.
+   
+4. **Expanded custom_palette functionality**:
+     - **Barplots (unpaired, proportional)**: The custom_palette dict can now take 0 and 1 as keys to color the filled and unfilled portions of the plots. See the custom palette section in the Plot Aesthetics tutorial for more details.
+  
+     - **Slopegraphs (paired, non proportional)**: The custom_palette can now be used to color the contrast bars and effect-size curves. See the custom palette section in the Plot Aesthetics tutorial for more details.
+
+
+
 ## v2025.03.27
 
 ### New Features

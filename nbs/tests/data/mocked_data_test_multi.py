@@ -134,6 +134,6 @@ default_whorlmap_kwargs = {
     "chop_tail": 0,
     "ax": None,
     "fig_size": None,
-    "whorlmap_title": None,
+    "title": None,
     "heatmap_kwargs": None
 }

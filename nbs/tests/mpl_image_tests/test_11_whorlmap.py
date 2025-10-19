@@ -88,7 +88,7 @@ def test_550_forest_plot_2d_mean_diff():
 def test_551_whorlmap_2d_mean_diff():
     plt.rcdefaults()
     f, a, m = multi_2d_mean_diff.whorlmap(
-                whorlmap_title="Whorlmap",
+                title="Whorlmap",
                 chop_tail=2.5,  # Remove 5% extreme values
                 fig_size=(2, 2)
             )
@@ -98,7 +98,7 @@ def test_551_whorlmap_2d_mean_diff():
 def test_552_whorlmap_2d_delta_g():
     plt.rcdefaults()
     f, a, m = multi_2d_delta_g.whorlmap(
-                whorlmap_title="Delta g Whorlmap",
+                title="Delta g Whorlmap",
                 chop_tail=2.5,  # Remove 5% extreme values
                 fig_size=(2, 2)
             )
