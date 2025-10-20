@@ -21,17 +21,17 @@ brings new visualizations, refined plots, and improved accuracy.
 
 1.  **Whorlmap 🌀: Compact visualization for multi-dimensional effects**
 
-    Introducing Whorlmap, a new way to visualize effect sizes from
+    Introducing **Whorlmap**, a new way to visualize effect sizes from
     multiple comparisons in a compact, grid-based format.
 
     Whorlmaps condense information from the full bootstrap distributions
-    of many contrast objects into a 2D heatmap-style grid of “whorled”
-    cells. This provides an overview of the entire dataset while
+    of many contrast objects into a **2D heatmap-style grid of “whorled”
+    cells**. This provides an overview of the entire dataset while
     preserving the underlying distributional detail.
 
     They are especially useful for large-scale or multi-condition
-    experiments, serving as a space-efficient alternative to stacked
-    forest plots.
+    experiments, serving as a **space-efficient alternative to stacked
+    forest plots**.
 
     You can generate a Whorlmap directly from multi-dimensional DABEST
     objects using the `.whorlmap()` method. See the [Whorlmap
@@ -39,8 +39,8 @@ brings new visualizations, refined plots, and improved accuracy.
 
 2.  **Slopegraphs 📈: Enhanced summaries for paired data**
 
-    Slopegraphs for paired continuous data now display group summary
-    statistics.
+    Slopegraphs for paired continuous data now display **group summary
+    statistics**.
 
     - By default, a thick trend line connects group means, with vertical
       bars showing standard deviation.
@@ -57,16 +57,16 @@ brings new visualizations, refined plots, and improved accuracy.
 3.  **Mini-meta Weighted Delta Fix 🧮**
 
     The weighted delta calculation in mini-meta plots has been updated
-    for greater accuracy and consistency.
+    for **greater accuracy and consistency**.
 
 4.  **Expanded custom_palette functionality 🎨**
 
-    - Barplots (unpaired, proportional): `custom_palette` can now take
-      `0` and `1` as dictionary keys to color the filled and unfilled
-      portions of the plot.
+    - **Barplots (unpaired, proportional):** `custom_palette` can now
+      take `1` and `0` as dictionary keys to color the filled and
+      unfilled portions of the plot.
 
-    - Slopegraphs (paired, non-proportional): `custom_palette` can now
-      color contrast bars and effect-size curves.
+    - **Slopegraphs (paired, non-proportional):** `custom_palette` can
+      now color contrast bars and effect-size curves.
 
 See the Custom Palette section in the [Plot Aesthetics
 tutorial](08-plot_aesthetics.html) for examples.
