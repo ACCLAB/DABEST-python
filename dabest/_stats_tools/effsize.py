@@ -392,11 +392,11 @@ def _compute_hedges_correction_factor(n1,
 
 # %% ../../nbs/API/effsize.ipynb 13
 @njit(cache=True)
-def weighted_delta(difference, group_var):
+def weighted_delta(difference, bootstrap_dist_var):
     '''
     Compute the weighted deltas where the weight is the inverse of the
     pooled group difference.
     '''
 
-    weight = np.true_divide(1, group_var)
+    weight = np.true_divide(1, bootstrap_dist_var)
     return np.sum(difference*weight)/np.sum(weight)

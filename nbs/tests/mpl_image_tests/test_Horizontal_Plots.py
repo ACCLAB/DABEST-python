@@ -1036,3 +1036,10 @@ def test_427_repeatedmeasures_meandiff_hide_es_paired_lines():
 def test_428_multigroups_paired_meandiff_es_paired_lines_kwargs():
     plt.rcdefaults()
     return multi_groups_paired_baseline.mean_diff.plot(horizontal=True, contrast_paired_lines=True, contrast_paired_lines_kwargs={'color':'red', 'linestyle': '--', 'linewidth': 2, 'alpha': 0.5});
+
+# color palette change for paired plots
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_429_multigroups_paired_baseline_change_palette():
+    plt.rcdefaults()
+    return multi_groups_paired_baseline.mean_diff.plot(horizontal=True, custom_palette="Dark2",
+                                                       delta_text=True)

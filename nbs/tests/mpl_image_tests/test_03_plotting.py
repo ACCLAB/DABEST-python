@@ -445,6 +445,11 @@ def test_31_baseline_cumming_slopegraph():
     plt.rcdefaults()
     return multi_groups_baseline.mean_diff.plot()
 
+# color palette change for paired plots
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_32_multigroups_baseline_change_palette():
+    plt.rcdefaults()
+    return multi_groups_baseline.mean_diff.plot(custom_palette="Dark2", delta_text=True)
 
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_99_style_sheets():
