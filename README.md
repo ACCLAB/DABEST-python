@@ -71,7 +71,9 @@ brings new visualizations, refined plots, and improved accuracy.
 See the Custom Palette section in the [Plot Aesthetics
 tutorial](08-plot_aesthetics.html) for examples.
 
-Thank you for your continued support! *The DABEST Development Team*
+Thank you for your continued support!
+
+*The DABEST Development Team*
 
 ## Contents
 
