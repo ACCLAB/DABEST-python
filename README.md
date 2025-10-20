@@ -35,7 +35,8 @@ brings new visualizations, refined plots, and improved accuracy.
 
     You can generate a Whorlmap directly from multi-dimensional DABEST
     objects using the `.whorlmap()` method. See the [Whorlmap
-    tutorial](10-whorlmap.html) for more details.
+    tutorial](https://acclab.github.io/DABEST-python/tutorials/10-whorlmap.html)
+    for more details.
 
 2.  **Slopegraphs 📈: Enhanced summaries for paired data**
 
@@ -52,7 +53,8 @@ brings new visualizations, refined plots, and improved accuracy.
     - Customize appearance with `group_summaries_kwargs`.
 
     See the Group Summaries section in the [Plot Aesthetics
-    tutorial](08-plot_aesthetics.html) for more details.
+    tutorial](https://acclab.github.io/DABEST-python/tutorials/08-plot_aesthetics.html)
+    for more details.
 
 3.  **Mini-meta Weighted Delta Fix 🧮**
 
@@ -69,7 +71,8 @@ brings new visualizations, refined plots, and improved accuracy.
       now color contrast bars and effect-size curves.
 
 See the Custom Palette section in the [Plot Aesthetics
-tutorial](08-plot_aesthetics.html) for examples.
+tutorial](https://acclab.github.io/DABEST-python/tutorials/08-plot_aesthetics.html)
+for examples.
 
 Thank you for your continued support!
 
