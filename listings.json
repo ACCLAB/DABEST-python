@@ -1,0 +1,43 @@
+[
+  {
+    "listing": "/API/index.html",
+    "items": [
+      "/API/load.html",
+      "/API/dabest_object.html",
+      "/API/bootstrap.html",
+      "/API/forest_plot.html",
+      "/API/plotter.html",
+      "/API/plot_tools.html",
+      "/API/effsize.html",
+      "/API/confint_1group.html",
+      "/API/confint_2group_diff.html",
+      "/API/delta_objects.html",
+      "/API/misc_tools.html",
+      "/API/effsize_objects.html",
+      "/API/precompile.html",
+      "/API/multi.html"
+    ]
+  },
+  {
+    "listing": "/blog/index.html",
+    "items": [
+      "/blog/posts/robust-beautiful/robust-beautiful.html",
+      "/blog/posts/bootstraps/bootstraps.html"
+    ]
+  },
+  {
+    "listing": "/tutorials/index.html",
+    "items": [
+      "/tutorials/01-basics.html",
+      "/tutorials/02-two_group.html",
+      "/tutorials/03-shared_control_and_repeated_measures.html",
+      "/tutorials/04-proportion_plot.html",
+      "/tutorials/05-mini_meta.html",
+      "/tutorials/06-delta_delta.html",
+      "/tutorials/07-horizontal_plot.html",
+      "/tutorials/08-plot_aesthetics.html",
+      "/tutorials/09-forest_plot.html",
+      "/tutorials/10-whorlmap.html"
+    ]
+  }
+]

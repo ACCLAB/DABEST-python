@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="The auxiliary classes involved in the computations of bootstrapped effect sizes.">
+
+<title>Effectsize objects – dabest</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/Favicon-3-outline.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-80e91010c642a1f9fc1842d203c8c8a0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Effectsize objects – dabest">
+<meta property="og:description" content="The auxiliary classes involved in the computations of bootstrapped effect sizes.">
+<meta property="og:image" content="https://acclab.github.io/DABEST-python/API/effsize_objects_files/figure-html/cell-7-output-1.png">
+<meta property="og:site_name" content="dabest">
+<meta property="og:image:height" content="390">
+<meta property="og:image:width" content="490">
+<meta name="twitter:title" content="Effectsize objects – dabest">
+<meta name="twitter:description" content="The auxiliary classes involved in the computations of bootstrapped effect sizes.">
+<meta name="twitter:image" content="https://acclab.github.io/DABEST-python/API/effsize_objects_files/figure-html/cell-7-output-1.png">
+<meta name="twitter:image-height" content="390">
+<meta name="twitter:image-width" content="490">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">dabest</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../01-getting_started.html" aria-current="page"> 
+<span class="menu-text">Get Started</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../tutorials/index.html"> 
+<span class="menu-text">Tutorial</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../blog/index.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-help" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Help</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-help">    
+        <li>
+    <a class="dropdown-item" href="https://github.com/ACCLAB/DABEST-python/issues"><i class="bi bi-bug" role="img">
+</i> 
+ <span class="dropdown-text">Report an Issue</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/ACCLAB/DABEST-python"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/EstimationStats"> <i class="bi bi-twitter" role="img" aria-label="ACCLAB Twitter">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../API/index.html">API</a></li><li class="breadcrumb-item"><a href="../API/effsize_objects.html">Effectsize objects</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+      <a href="../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-getting_started.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Getting Started</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02-about.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">About</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../03-citation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Citing DABEST</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/01-basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/02-two_group.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Two-Group Experiments</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/03-shared_control_and_repeated_measures.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Shared Control &amp; Repeated Measures</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/04-proportion_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Proportion Plots</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/05-mini_meta.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mini-Meta</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/06-delta_delta.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Delta-Delta</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/07-horizontal_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Horizontal Plots</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/08-plot_aesthetics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Controlling Plot Aesthetics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/09-forest_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Forest Plots: Visualizing Multiple Contrasts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/10-whorlmap.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Whorlmaps: Visualizing Even More Contrasts</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../API/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">API</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/load.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Loading Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/dabest_object.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Dabest object</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/bootstrap.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bootstrap</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/forest_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Forest plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/plotter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/plot_tools.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_tools</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/effsize.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">effsize</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/confint_1group.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">confint_1group</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/confint_2group_diff.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">confint_2group_diff</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/delta_objects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Delta objects</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/misc_tools.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">misc_tools</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/effsize_objects.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Effectsize objects</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/precompile.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">precompile</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/multi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">multi</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#twogroupseffectsize" id="toc-twogroupseffectsize" class="nav-link active" data-scroll-target="#twogroupseffectsize">TwoGroupsEffectSize</a>
+  <ul>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example">Example</a></li>
+  </ul></li>
+  <li><a href="#effectsizedataframe" id="toc-effectsizedataframe" class="nav-link" data-scroll-target="#effectsizedataframe">EffectSizeDataFrame</a>
+  <ul>
+  <li><a href="#example-plot" id="toc-example-plot" class="nav-link" data-scroll-target="#example-plot">Example: plot</a></li>
+  </ul></li>
+  <li><a href="#permutationtest" id="toc-permutationtest" class="nav-link" data-scroll-target="#permutationtest">PermutationTest</a>
+  <ul>
+  <li><a href="#example-permutation-test" id="toc-example-permutation-test" class="nav-link" data-scroll-target="#example-permutation-test">Example: permutation test</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/acclab/DABEST-python/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../API/index.html">API</a></li><li class="breadcrumb-item"><a href="../API/effsize_objects.html">Effectsize objects</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Effectsize objects</h1>
+</div>
+
+<div>
+  <div class="description">
+    The auxiliary classes involved in the computations of bootstrapped effect sizes.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<hr>
+<section id="twogroupseffectsize" class="level3">
+<h3 class="anchored" data-anchor-id="twogroupseffectsize">TwoGroupsEffectSize</h3>
+<blockquote class="blockquote">
+<pre><code> TwoGroupsEffectSize (control, test, effect_size, proportional=False,
+                      is_paired=None, ci=95, resamples=5000,
+                      permutation_count=5000, random_seed=12345,
+                      ps_adjust=False)</code></pre>
+</blockquote>
+<p>*A class to compute and store the results of bootstrapped mean differences between two groups.</p>
+<p>Compute the effect size between two groups.*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>control</td>
+<td>array-like</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>test</td>
+<td>array-like</td>
+<td></td>
+<td>These should be numerical iterables.</td>
+</tr>
+<tr class="odd">
+<td>effect_size</td>
+<td>string.</td>
+<td></td>
+<td>Any one of the following are accepted inputs:<br>‘mean_diff’, ‘median_diff’, ‘cohens_d’, ‘hedges_g’, or ‘cliffs_delta’</td>
+</tr>
+<tr class="even">
+<td>proportional</td>
+<td>bool</td>
+<td>False</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>is_paired</td>
+<td>NoneType</td>
+<td>None</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>ci</td>
+<td>int</td>
+<td>95</td>
+<td>The confidence interval width. The default of 95 produces 95%<br>confidence intervals.</td>
+</tr>
+<tr class="odd">
+<td>resamples</td>
+<td>int</td>
+<td>5000</td>
+<td>The number of bootstrap resamples to be taken for the calculation<br>of the confidence interval limits.</td>
+</tr>
+<tr class="even">
+<td>permutation_count</td>
+<td>int</td>
+<td>5000</td>
+<td>The number of permutations (reshuffles) to perform for the<br>computation of the permutation p-value</td>
+</tr>
+<tr class="odd">
+<td>random_seed</td>
+<td>int</td>
+<td>12345</td>
+<td><code>random_seed</code> is used to seed the random number generator during<br>bootstrap resampling. This ensures that the confidence intervals<br>reported are replicable.</td>
+</tr>
+<tr class="even">
+<td>ps_adjust</td>
+<td>bool</td>
+<td>False</td>
+<td>If True, adjust calculated p-value according to Phipson &amp; Smyth (2010)<br># https://doi.org/10.2202/1544-6115.1585</td>
+</tr>
+<tr class="odd">
+<td><strong>Returns</strong></td>
+<td><strong>py:class:<code>TwoGroupEffectSize</code> object:</strong></td>
+<td></td>
+<td><strong><code>difference</code> : float<br> The effect size of the difference between the control and the test.<br><code>effect_size</code> : string<br> The type of effect size reported.<br><code>is_paired</code> : string<br> The type of repeated-measures experiment.<br><code>ci</code> : float<br> Returns the width of the confidence interval, in percent.<br><code>alpha</code> : float<br> Returns the significance level of the statistical test as a float between 0 and 1.<br><code>resamples</code> : int<br> The number of resamples performed during the bootstrap procedure.<br><code>bootstraps</code> : numpy ndarray<br> The generated bootstraps of the effect size.<br><code>random_seed</code> : int<br> The number used to initialise the numpy random seed generator, ie.<code>seed_value</code> from <code>numpy.random.seed(seed_value)</code> is returned.<br><code>bca_low, bca_high</code> : float<br> The bias-corrected and accelerated confidence interval lower limit and upper limits, respectively.<br><code>pct_low, pct_high</code> : float<br> The percentile confidence interval lower limit and upper limits, respectively.</strong></td>
+</tr>
+</tbody>
+</table>
+<section id="example" class="level4">
+<h4 class="anchored" data-anchor-id="example">Example</h4>
+<div id="cell-4" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>random.seed(<span class="dv">12345</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>control <span class="op">=</span> norm.rvs(loc<span class="op">=</span><span class="dv">0</span>, size<span class="op">=</span><span class="dv">30</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>test <span class="op">=</span> norm.rvs(loc<span class="op">=</span><span class="fl">0.5</span>, size<span class="op">=</span><span class="dv">30</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>effsize <span class="op">=</span> dabest.TwoGroupsEffectSize(control, test, <span class="st">"mean_diff"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>effsize</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>The unpaired mean difference is -0.253 [95%CI -0.782, 0.241].
+The p-value of the two-sided permutation t-test is 0.348, calculated for legacy purposes only. 
+
+5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+Any p-value reported is the probability of observing theeffect size (or greater),
+assuming the null hypothesis of zero difference is true.
+For each p-value, 5000 reshuffles of the control and test labels were performed.</code></pre>
+</div>
+</div>
+<div id="cell-5" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>effsize.to_dict()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>{'alpha': 0.05,
+ 'bca_high': 0.2413346581369784,
+ 'bca_interval_idx': (109, 4858),
+ 'bca_low': -0.7818088458343655,
+ 'bec_bca_high': 0.5352403905584314,
+ 'bec_bca_interval_idx': (130, 4880),
+ 'bec_bca_low': -0.4982839949134528,
+ 'bec_bootstraps': array([-0.48953946, -0.18565285, -0.23896785, ..., -0.55130928,
+         0.16037238, -0.07364879]),
+ 'bec_difference': 0.0,
+ 'bec_pct_high': 0.5280564736117328,
+ 'bec_pct_interval_idx': (125, 4875),
+ 'bec_pct_low': -0.5041777340626885,
+ 'bootstraps': array([-0.23923425, -0.66013733, -0.42672232, ..., -0.33191074,
+        -0.16543251, -0.34179536]),
+ 'ci': 95,
+ 'difference': -0.25315417702752846,
+ 'effect_size': 'mean difference',
+ 'is_paired': None,
+ 'is_proportional': False,
+ 'pct_high': 0.25135646125431527,
+ 'pct_interval_idx': (125, 4875),
+ 'pct_low': -0.763588353717278,
+ 'permutation_count': 5000,
+ 'permutations': array([ 0.17221029,  0.03112419, -0.13911387, ..., -0.38007941,
+         0.30261507, -0.09073054]),
+ 'permutations_var': array([0.07201642, 0.07251104, 0.07219407, ..., 0.07003705, 0.07094885,
+        0.07238581]),
+ 'proportional_difference': nan,
+ 'pvalue_brunner_munzel': nan,
+ 'pvalue_kruskal': nan,
+ 'pvalue_mann_whitney': 0.5201446121616038,
+ 'pvalue_mcnemar': nan,
+ 'pvalue_paired_students_t': nan,
+ 'pvalue_permutation': 0.3484,
+ 'pvalue_students_t': 0.34743913903372836,
+ 'pvalue_welch': 0.3474493875548964,
+ 'pvalue_wilcoxon': nan,
+ 'random_seed': 12345,
+ 'resamples': 5000,
+ 'statistic_brunner_munzel': nan,
+ 'statistic_kruskal': nan,
+ 'statistic_mann_whitney': 494.0,
+ 'statistic_mcnemar': nan,
+ 'statistic_paired_students_t': nan,
+ 'statistic_students_t': 0.9472545159069105,
+ 'statistic_welch': 0.9472545159069105,
+ 'statistic_wilcoxon': nan}</code></pre>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="effectsizedataframe" class="level3">
+<h3 class="anchored" data-anchor-id="effectsizedataframe">EffectSizeDataFrame</h3>
+<blockquote class="blockquote">
+<pre><code> EffectSizeDataFrame (dabest, effect_size, is_paired, ci=95,
+                      proportional=False, resamples=5000,
+                      permutation_count=5000, random_seed=12345,
+                      x1_level=None, x2=None, delta2=False,
+                      experiment_label=None, mini_meta=False,
+                      ps_adjust=False)</code></pre>
+</blockquote>
+<p><em>A class that generates and stores the results of bootstrapped effect sizes for several comparisons.</em></p>
+<section id="example-plot" class="level4">
+<h4 class="anchored" data-anchor-id="example-plot">Example: plot</h4>
+<p>Create a Gardner-Altman estimation plot for the mean difference.</p>
+<div id="cell-8" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>random.seed(<span class="dv">9999</span>) <span class="co"># Fix the seed so the results are replicable.</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># pop_size = 10000 # Size of each population.</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>Ns <span class="op">=</span> <span class="dv">20</span> <span class="co"># The number of samples taken from each population</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create samples</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>c1 <span class="op">=</span> norm.rvs(loc<span class="op">=</span><span class="dv">3</span>, scale<span class="op">=</span><span class="fl">0.4</span>, size<span class="op">=</span>Ns)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>c2 <span class="op">=</span> norm.rvs(loc<span class="op">=</span><span class="fl">3.5</span>, scale<span class="op">=</span><span class="fl">0.75</span>, size<span class="op">=</span>Ns)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>c3 <span class="op">=</span> norm.rvs(loc<span class="op">=</span><span class="fl">3.25</span>, scale<span class="op">=</span><span class="fl">0.4</span>, size<span class="op">=</span>Ns)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>t1 <span class="op">=</span> norm.rvs(loc<span class="op">=</span><span class="fl">3.5</span>, scale<span class="op">=</span><span class="fl">0.5</span>, size<span class="op">=</span>Ns)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>t2 <span class="op">=</span> norm.rvs(loc<span class="op">=</span><span class="fl">2.5</span>, scale<span class="op">=</span><span class="fl">0.6</span>, size<span class="op">=</span>Ns)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>t3 <span class="op">=</span> norm.rvs(loc<span class="op">=</span><span class="dv">3</span>, scale<span class="op">=</span><span class="fl">0.75</span>, size<span class="op">=</span>Ns)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>t4 <span class="op">=</span> norm.rvs(loc<span class="op">=</span><span class="fl">3.5</span>, scale<span class="op">=</span><span class="fl">0.75</span>, size<span class="op">=</span>Ns)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>t5 <span class="op">=</span> norm.rvs(loc<span class="op">=</span><span class="fl">3.25</span>, scale<span class="op">=</span><span class="fl">0.4</span>, size<span class="op">=</span>Ns)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>t6 <span class="op">=</span> norm.rvs(loc<span class="op">=</span><span class="fl">3.25</span>, scale<span class="op">=</span><span class="fl">0.4</span>, size<span class="op">=</span>Ns)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a `gender` column for coloring the data.</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>females <span class="op">=</span> repeat(<span class="st">'Female'</span>, Ns<span class="op">/</span><span class="dv">2</span>).tolist()</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>males <span class="op">=</span> repeat(<span class="st">'Male'</span>, Ns<span class="op">/</span><span class="dv">2</span>).tolist()</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>gender <span class="op">=</span> females <span class="op">+</span> males</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Add an `id` column for paired data plotting.</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>id_col <span class="op">=</span> pd.Series(<span class="bu">range</span>(<span class="dv">1</span>, Ns<span class="op">+</span><span class="dv">1</span>))</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine samples and gender into a DataFrame.</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame({<span class="st">'Control 1'</span> : c1,     <span class="st">'Test 1'</span> : t1,</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>                 <span class="st">'Control 2'</span> : c2,     <span class="st">'Test 2'</span> : t2,</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>                 <span class="st">'Control 3'</span> : c3,     <span class="st">'Test 3'</span> : t3,</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>                 <span class="st">'Test 4'</span>    : t4,     <span class="st">'Test 5'</span> : t5, <span class="st">'Test 6'</span> : t6,</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>                 <span class="st">'Gender'</span>    : gender, <span class="st">'ID'</span>  : id_col</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>                })</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>my_data <span class="op">=</span> dabest.load(df, idx<span class="op">=</span>(<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="cell-9" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>fig1 <span class="op">=</span> my_data.mean_diff.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="effsize_objects_files/figure-html/cell-7-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Create a Gardner-Altman plot for the Hedges’ g effect size.</p>
+<div id="cell-11" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>fig2 <span class="op">=</span> my_data.hedges_g.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="effsize_objects_files/figure-html/cell-8-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Create a Cumming estimation plot for the mean difference.</p>
+<div id="cell-13" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>fig3 <span class="op">=</span> my_data.mean_diff.plot(float_contrast<span class="op">=</span><span class="va">True</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="effsize_objects_files/figure-html/cell-9-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Create a paired Gardner-Altman plot.</p>
+<div id="cell-15" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>my_data_paired <span class="op">=</span> dabest.load(df, idx<span class="op">=</span>(<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>),</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>                       id_col <span class="op">=</span> <span class="st">"ID"</span>, paired<span class="op">=</span><span class="st">'baseline'</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>fig4 <span class="op">=</span> my_data_paired.mean_diff.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="effsize_objects_files/figure-html/cell-10-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Create a multi-group Cumming plot.</p>
+<div id="cell-17" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>my_multi_groups <span class="op">=</span> dabest.load(df, id_col <span class="op">=</span> <span class="st">"ID"</span>, </span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>                             idx<span class="op">=</span>((<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>),</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>                                 (<span class="st">"Control 2"</span>, <span class="st">"Test 2"</span>)))</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>fig5 <span class="op">=</span> my_multi_groups.mean_diff.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/Users/jonathananns/GitHub/DABEST-python/dabest/plot_tools.py:2778: UserWarning: 5.0% of the points cannot be placed. You might want to decrease the size of the markers.
+  warnings.warn(err)
+/Users/jonathananns/GitHub/DABEST-python/dabest/plot_tools.py:2778: UserWarning: 10.0% of the points cannot be placed. You might want to decrease the size of the markers.
+  warnings.warn(err)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="effsize_objects_files/figure-html/cell-11-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Create a shared control Cumming plot.</p>
+<div id="cell-19" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>my_shared_control <span class="op">=</span> dabest.load(df, id_col <span class="op">=</span> <span class="st">"ID"</span>,</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                                 idx<span class="op">=</span>(<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>,</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>                                          <span class="st">"Test 2"</span>, <span class="st">"Test 3"</span>))</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>fig6 <span class="op">=</span> my_shared_control.mean_diff.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/Users/jonathananns/GitHub/DABEST-python/dabest/plot_tools.py:2778: UserWarning: 10.0% of the points cannot be placed. You might want to decrease the size of the markers.
+  warnings.warn(err)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="effsize_objects_files/figure-html/cell-12-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Create a repeated meausures (against baseline) Slopeplot.</p>
+<div id="cell-21" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>my_rm_baseline <span class="op">=</span> dabest.load(df, id_col <span class="op">=</span> <span class="st">"ID"</span>, paired <span class="op">=</span> <span class="st">"baseline"</span>,</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>                                 idx<span class="op">=</span>(<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                                          <span class="st">"Test 2"</span>, <span class="st">"Test 3"</span>))</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>fig7 <span class="op">=</span> my_rm_baseline.mean_diff.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="effsize_objects_files/figure-html/cell-13-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Create a repeated meausures (sequential) Slopeplot.</p>
+<div id="cell-23" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>my_rm_sequential <span class="op">=</span> dabest.load(df, id_col <span class="op">=</span> <span class="st">"ID"</span>, paired <span class="op">=</span> <span class="st">"sequential"</span>,</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>                                 idx<span class="op">=</span>(<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>,</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>                                          <span class="st">"Test 2"</span>, <span class="st">"Test 3"</span>))</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>fig8 <span class="op">=</span> my_rm_sequential.mean_diff.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="effsize_objects_files/figure-html/cell-14-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="permutationtest" class="level3">
+<h3 class="anchored" data-anchor-id="permutationtest">PermutationTest</h3>
+<blockquote class="blockquote">
+<pre><code> PermutationTest (control:&lt;built-infunctionarray&gt;, test:&lt;built-
+                  infunctionarray&gt;, effect_size:str, is_paired:str=None,
+                  permutation_count:int=5000, random_seed:int=12345,
+                  ps_adjust:bool=False, **kwargs)</code></pre>
+</blockquote>
+<p><em>A class to compute and report permutation tests.</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>control</td>
+<td>array</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>test</td>
+<td>array</td>
+<td></td>
+<td>These should be numerical iterables.</td>
+</tr>
+<tr class="odd">
+<td>effect_size</td>
+<td>str</td>
+<td></td>
+<td>Any one of the following are accepted inputs: ‘mean_diff’, ‘median_diff’, ‘cohens_d’, ‘hedges_g’, or ‘cliffs_delta’</td>
+</tr>
+<tr class="even">
+<td>is_paired</td>
+<td>str</td>
+<td>None</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>permutation_count</td>
+<td>int</td>
+<td>5000</td>
+<td>The number of permutations (reshuffles) to perform.</td>
+</tr>
+<tr class="even">
+<td>random_seed</td>
+<td>int</td>
+<td>12345</td>
+<td><code>random_seed</code> is used to seed the random number generator during bootstrap resampling. This ensures that the generated permutations are replicable.</td>
+</tr>
+<tr class="odd">
+<td>ps_adjust</td>
+<td>bool</td>
+<td>False</td>
+<td>If True, the p-value is adjusted according to Phipson &amp; Smyth (2010).<br># https://doi.org/10.2202/1544-6115.1585</td>
+</tr>
+<tr class="even">
+<td>kwargs</td>
+<td>VAR_KEYWORD</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><strong>Returns</strong></td>
+<td><strong>py:class:<code>PermutationTest</code> object:</strong></td>
+<td></td>
+<td><strong><code>difference</code>:float<br> The effect size of the difference between the control and the test.<br><code>effect_size</code>:string<br> The type of effect size reported.</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Notes</strong>:</p>
+<p>The basic concept of permutation tests is the same as that behind bootstrapping. In an “exact” permutation test, all possible resuffles of the control and test labels are performed, and the proportion of effect sizes that equal or exceed the observed effect size is computed. This is the probability, under the null hypothesis of zero difference between test and control groups, of observing the effect size: the p-value of the Student’s t-test.</p>
+<p>Exact permutation tests are impractical: computing the effect sizes for all reshuffles quickly exceeds trivial computational loads. A control group and a test group both with 10 observations each would have a total of <span class="math inline">\(20!\)</span> or <span class="math inline">\(2.43 \times {10}^{18}\)</span> reshuffles. Therefore, in practice, “approximate” permutation tests are performed, where a sufficient number of reshuffles are performed (5,000 or 10,000), from which the p-value is computed.</p>
+<p>More information can be found <a href="https://en.wikipedia.org/wiki/Resampling_(statistics)#Permutation_tests">here</a>.</p>
+<section id="example-permutation-test" class="level4">
+<h4 class="anchored" data-anchor-id="example-permutation-test">Example: permutation test</h4>
+<div id="cell-28" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>control <span class="op">=</span> norm.rvs(loc<span class="op">=</span><span class="dv">0</span>, size<span class="op">=</span><span class="dv">30</span>, random_state<span class="op">=</span><span class="dv">12345</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>test <span class="op">=</span> norm.rvs(loc<span class="op">=</span><span class="fl">0.5</span>, size<span class="op">=</span><span class="dv">30</span>, random_state<span class="op">=</span><span class="dv">12345</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>perm_test <span class="op">=</span> dabest.PermutationTest(control, test, </span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>                                   effect_size<span class="op">=</span><span class="st">"mean_diff"</span>, </span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>                                   is_paired<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>perm_test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>5000 permutations were taken. The p-value is 0.0758.</code></pre>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/acclab\.github\.io\/DABEST-python");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/acclab/DABEST-python/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

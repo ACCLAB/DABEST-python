@@ -1,0 +1,1963 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="A guide to plot proportion plots with binary data.">
+
+<title>Proportion Plots – dabest</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/Favicon-3-outline.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-80e91010c642a1f9fc1842d203c8c8a0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Proportion Plots – dabest">
+<meta property="og:description" content="A guide to plot proportion plots with binary data.">
+<meta property="og:image" content="https://acclab.github.io/DABEST-python/tutorials/04-proportion_plot_files/figure-html/cell-8-output-1.png">
+<meta property="og:site_name" content="dabest">
+<meta property="og:image:height" content="390">
+<meta property="og:image:width" content="490">
+<meta name="twitter:title" content="Proportion Plots – dabest">
+<meta name="twitter:description" content="A guide to plot proportion plots with binary data.">
+<meta name="twitter:image" content="https://acclab.github.io/DABEST-python/tutorials/04-proportion_plot_files/figure-html/cell-8-output-1.png">
+<meta name="twitter:image-height" content="390">
+<meta name="twitter:image-width" content="490">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">dabest</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../01-getting_started.html" aria-current="page"> 
+<span class="menu-text">Get Started</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../tutorials/index.html"> 
+<span class="menu-text">Tutorial</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../blog/index.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-help" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Help</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-help">    
+        <li>
+    <a class="dropdown-item" href="https://github.com/ACCLAB/DABEST-python/issues"><i class="bi bi-bug" role="img">
+</i> 
+ <span class="dropdown-text">Report an Issue</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/ACCLAB/DABEST-python"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/EstimationStats"> <i class="bi bi-twitter" role="img" aria-label="ACCLAB Twitter">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tutorials/01-basics.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../tutorials/04-proportion_plot.html">Proportion Plots</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+      <a href="../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-getting_started.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Getting Started</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02-about.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">About</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../03-citation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Citing DABEST</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/01-basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/02-two_group.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Two-Group Experiments</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/03-shared_control_and_repeated_measures.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Shared Control &amp; Repeated Measures</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/04-proportion_plot.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Proportion Plots</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/05-mini_meta.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mini-Meta</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/06-delta_delta.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Delta-Delta</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/07-horizontal_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Horizontal Plots</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/08-plot_aesthetics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Controlling Plot Aesthetics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/09-forest_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Forest Plots: Visualizing Multiple Contrasts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/10-whorlmap.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Whorlmaps: Visualizing Even More Contrasts</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../API/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">API</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/load.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Loading Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/dabest_object.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Dabest object</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/bootstrap.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bootstrap</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/forest_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Forest plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/plotter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/plot_tools.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_tools</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/effsize.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">effsize</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/confint_1group.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">confint_1group</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/confint_2group_diff.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">confint_2group_diff</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/delta_objects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Delta objects</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/misc_tools.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">misc_tools</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/effsize_objects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Effectsize objects</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/precompile.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">precompile</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/multi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">multi</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#load-libraries" id="toc-load-libraries" class="nav-link active" data-scroll-target="#load-libraries">Load libraries</a></li>
+  <li><a href="#creating-a-demo-dataset" id="toc-creating-a-demo-dataset" class="nav-link" data-scroll-target="#creating-a-demo-dataset">Creating a demo dataset</a>
+  <ul>
+  <li><a href="#helper-function-to-create-a-binary-table---dabest.prop_dataset" id="toc-helper-function-to-create-a-binary-table---dabest.prop_dataset" class="nav-link" data-scroll-target="#helper-function-to-create-a-binary-table---dabest.prop_dataset">Helper function to create a binary table - <code>dabest.prop_dataset</code></a></li>
+  </ul></li>
+  <li><a href="#loading-data" id="toc-loading-data" class="nav-link" data-scroll-target="#loading-data">Loading data</a></li>
+  <li><a href="#effect-sizes" id="toc-effect-sizes" class="nav-link" data-scroll-target="#effect-sizes">Effect sizes</a></li>
+  <li><a href="#generating-proportion-plots" id="toc-generating-proportion-plots" class="nav-link" data-scroll-target="#generating-proportion-plots">Generating proportion plots</a>
+  <ul>
+  <li><a href="#unpaired-proportion-plots" id="toc-unpaired-proportion-plots" class="nav-link" data-scroll-target="#unpaired-proportion-plots">Unpaired proportion plots</a>
+  <ul class="collapse">
+  <li><a href="#two-group" id="toc-two-group" class="nav-link" data-scroll-target="#two-group">Two-Group</a></li>
+  <li><a href="#multi-two-group-shared-control-and-multi-groups" id="toc-multi-two-group-shared-control-and-multi-groups" class="nav-link" data-scroll-target="#multi-two-group-shared-control-and-multi-groups">Multi Two-Group, Shared-Control, and Multi Groups</a></li>
+  </ul></li>
+  <li><a href="#paired-proportion-plots" id="toc-paired-proportion-plots" class="nav-link" data-scroll-target="#paired-proportion-plots">Paired proportion plots</a>
+  <ul class="collapse">
+  <li><a href="#two-group-1" id="toc-two-group-1" class="nav-link" data-scroll-target="#two-group-1">Two-Group</a></li>
+  <li><a href="#multi-two-group-repeated-measures-and-multi-groups" id="toc-multi-two-group-repeated-measures-and-multi-groups" class="nav-link" data-scroll-target="#multi-two-group-repeated-measures-and-multi-groups">Multi Two-Group, Repeated Measures, and Multi Groups</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#aesthetic-adjustments" id="toc-aesthetic-adjustments" class="nav-link" data-scroll-target="#aesthetic-adjustments">Aesthetic adjustments</a>
+  <ul>
+  <li><a href="#bar-width" id="toc-bar-width" class="nav-link" data-scroll-target="#bar-width">Bar Width</a></li>
+  <li><a href="#bar-desaturation" id="toc-bar-desaturation" class="nav-link" data-scroll-target="#bar-desaturation">Bar desaturation</a></li>
+  <li><a href="#raw-label-and-contrast-label" id="toc-raw-label-and-contrast-label" class="nav-link" data-scroll-target="#raw-label-and-contrast-label">Raw Label and Contrast Label</a></li>
+  <li><a href="#barplot-kwargs" id="toc-barplot-kwargs" class="nav-link" data-scroll-target="#barplot-kwargs">Barplot kwargs</a></li>
+  <li><a href="#sankey-and-flow" id="toc-sankey-and-flow" class="nav-link" data-scroll-target="#sankey-and-flow">Sankey and Flow</a></li>
+  <li><a href="#sankey-kwargs" id="toc-sankey-kwargs" class="nav-link" data-scroll-target="#sankey-kwargs">Sankey kwargs</a></li>
+  <li><a href="#custom-palette" id="toc-custom-palette" class="nav-link" data-scroll-target="#custom-palette">Custom Palette</a></li>
+  <li><a href="#add-counts-to-proportion-plots" id="toc-add-counts-to-proportion-plots" class="nav-link" data-scroll-target="#add-counts-to-proportion-plots">Add counts to proportion plots</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/acclab/DABEST-python/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tutorials/01-basics.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../tutorials/04-proportion_plot.html">Proportion Plots</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Proportion Plots</h1>
+</div>
+
+<div>
+  <div class="description">
+    A guide to plot proportion plots with binary data.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<div style="padding: 15px; border: 1px solid transparent; border-color: transparent; margin-bottom: 20px; border-radius: 4px; color: #31708f; background-color: #d9edf7; border-color: #bce8f1;">
+As of v2023.02.14, DABEST can be used to generate Cohen’s <em>h</em> and the corresponding proportion plot for binary data. It’s important to note that the code we provide only supports numerical proportion data, where the values are limited to 0 (failure) and 1 (success). This means that the code is not suitable for analyzing proportion data that contains non-numeric values, such as strings like ‘yes’ and ‘no’.
+</div>
+<section id="load-libraries" class="level2">
+<h2 class="anchored" data-anchor-id="load-libraries">Load libraries</h2>
+<div id="cell-4" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> dabest</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"We're using DABEST v</span><span class="sc">{}</span><span class="st">"</span>.<span class="bu">format</span>(dabest.__version__))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Pre-compiling numba functions for DABEST...</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Compiling numba functions: 100%|██████████| 11/11 [00:00&lt;00:00, 61.07it/s]</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Numba compilation complete!
+We're using DABEST v2025.10.20</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+</div>
+</section>
+<section id="creating-a-demo-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="creating-a-demo-dataset">Creating a demo dataset</h2>
+<div id="cell-6" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> create_demo_prop_dataset(seed<span class="op">=</span><span class="dv">9999</span>, N<span class="op">=</span><span class="dv">40</span>):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    np.random.seed(<span class="dv">9999</span>)  <span class="co"># Fix the seed to ensure reproducibility of results.</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create samples</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    c1 <span class="op">=</span> np.random.binomial(n, <span class="fl">0.2</span>, size<span class="op">=</span>N)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    c2 <span class="op">=</span> np.random.binomial(n, <span class="fl">0.2</span>, size<span class="op">=</span>N)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    c3 <span class="op">=</span> np.random.binomial(n, <span class="fl">0.8</span>, size<span class="op">=</span>N)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    t1 <span class="op">=</span> np.random.binomial(n, <span class="fl">0.6</span>, size<span class="op">=</span>N)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    t2 <span class="op">=</span> np.random.binomial(n, <span class="fl">0.2</span>, size<span class="op">=</span>N)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    t3 <span class="op">=</span> np.random.binomial(n, <span class="fl">0.3</span>, size<span class="op">=</span>N)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    t4 <span class="op">=</span> np.random.binomial(n, <span class="fl">0.4</span>, size<span class="op">=</span>N)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    t5 <span class="op">=</span> np.random.binomial(n, <span class="fl">0.5</span>, size<span class="op">=</span>N)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    t6 <span class="op">=</span> np.random.binomial(n, <span class="fl">0.6</span>, size<span class="op">=</span>N)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    t7 <span class="op">=</span> np.ones(N)</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    t8 <span class="op">=</span> np.zeros(N)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    t9 <span class="op">=</span> np.zeros(N)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add a `gender` column for coloring the data.</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    females <span class="op">=</span> np.repeat(<span class="st">'Female'</span>, N <span class="op">/</span> <span class="dv">2</span>).tolist()</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    males <span class="op">=</span> np.repeat(<span class="st">'Male'</span>, N <span class="op">/</span> <span class="dv">2</span>).tolist()</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    gender <span class="op">=</span> females <span class="op">+</span> males</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add an `id` column for paired data plotting.</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    id_col <span class="op">=</span> pd.Series(<span class="bu">range</span>(<span class="dv">1</span>, N <span class="op">+</span> <span class="dv">1</span>))</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Combine samples and gender into a DataFrame.</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.DataFrame({<span class="st">'Control 1'</span>: c1, <span class="st">'Test 1'</span>: t1,</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>                       <span class="st">'Control 2'</span>: c2, <span class="st">'Test 2'</span>: t2,</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>                       <span class="st">'Control 3'</span>: c3, <span class="st">'Test 3'</span>: t3,</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>                       <span class="st">'Test 4'</span>: t4, <span class="st">'Test 5'</span>: t5, <span class="st">'Test 6'</span>: t6,</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>                       <span class="st">'Test 7'</span>: t7, <span class="st">'Test 8'</span>: t8, <span class="st">'Test 9'</span>: t9,</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>                       <span class="st">'Gender'</span>: gender, <span class="st">'ID'</span>: id_col</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>                       })</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> create_demo_prop_dataset()</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>df.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Control 1</th>
+<th data-quarto-table-cell-role="th">Test 1</th>
+<th data-quarto-table-cell-role="th">Control 2</th>
+<th data-quarto-table-cell-role="th">Test 2</th>
+<th data-quarto-table-cell-role="th">Control 3</th>
+<th data-quarto-table-cell-role="th">Test 3</th>
+<th data-quarto-table-cell-role="th">Test 4</th>
+<th data-quarto-table-cell-role="th">Test 5</th>
+<th data-quarto-table-cell-role="th">Test 6</th>
+<th data-quarto-table-cell-role="th">Test 7</th>
+<th data-quarto-table-cell-role="th">Test 8</th>
+<th data-quarto-table-cell-role="th">Test 9</th>
+<th data-quarto-table-cell-role="th">Gender</th>
+<th data-quarto-table-cell-role="th">ID</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">0</th>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>Female</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">1</th>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>Female</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">2</th>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>Female</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">3</th>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>Female</td>
+<td>4</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">4</th>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>Female</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<section id="helper-function-to-create-a-binary-table---dabest.prop_dataset" class="level3">
+<h3 class="anchored" data-anchor-id="helper-function-to-create-a-binary-table---dabest.prop_dataset">Helper function to create a binary table - <code>dabest.prop_dataset</code></h3>
+<p>In DABEST <strong>v2024.3.29</strong>, we incorporated feedback from biologists who may not have tables of 0’s and 1’s readily available. As a result, a convenient function - <code>dabest.prop_dataset</code> - to generate a binary dataset based on the specified sample sizes is provided. Users can generate a pandas.DataFrame containing the sample sizes for each element in the groups and the group names (optional if the sample sizes are provided in a dict).</p>
+<div id="cell-9" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>sample_size_1 <span class="op">=</span> {<span class="st">'a'</span>:[<span class="dv">3</span>, <span class="dv">4</span>], <span class="st">'b'</span>:[<span class="dv">2</span>, <span class="dv">5</span>]}</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>sample_size_2 <span class="op">=</span> [<span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">2</span>, <span class="dv">5</span>]</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>names <span class="op">=</span> [<span class="st">'a'</span>, <span class="st">'b'</span>]</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>sample_df_1 <span class="op">=</span> dabest.prop_dataset(sample_size_1)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>sample_df_2 <span class="op">=</span> dabest.prop_dataset(sample_size_2, names)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">all</span>(sample_df_1 <span class="op">==</span> sample_df_2))</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>sample_df_1.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>True</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">a</th>
+<th data-quarto-table-cell-role="th">b</th>
+<th data-quarto-table-cell-role="th">ID</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">0</th>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">1</th>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">2</th>
+<td>0</td>
+<td>1</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">3</th>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">4</th>
+<td>1</td>
+<td>1</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="loading-data" class="level2">
+<h2 class="anchored" data-anchor-id="loading-data">Loading data</h2>
+<p>When loading data, you need to set the parameter <code>proportional=True</code>.</p>
+<div id="cell-12" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>two_groups_unpaired <span class="op">=</span> dabest.load(df, idx<span class="op">=</span>(<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>), proportional<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>two_groups_unpaired</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:22 2025.
+
+Effect size(s) with 95% confidence intervals will be computed for:
+1. Test 1 minus Control 1
+
+5000 resamples will be used to generate the effect size bootstraps.</code></pre>
+</div>
+</div>
+</section>
+<section id="effect-sizes" class="level2">
+<h2 class="anchored" data-anchor-id="effect-sizes">Effect sizes</h2>
+<p>To generate a proportion plot, the <strong>dabest</strong> library features two effect sizes:</p>
+<ul>
+<li>Mean difference (<code>mean_diff</code>)</li>
+<li><a href="https://en.wikipedia.org/wiki/Cohen's_h">Cohen’s h</a> (<code>cohens＿h</code>)</li>
+</ul>
+<p>These are attributes of the <code>Dabest</code> object.</p>
+<div id="cell-15" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>two_groups_unpaired.mean_diff</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:23 2025.
+
+The unpaired mean difference between Control 1 and Test 1 is 0.575 [95%CI 0.35, 0.725].
+The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
+
+5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+Any p-value reported is the probability of observing theeffect size (or greater),
+assuming the null hypothesis of zero difference is true.
+For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`</code></pre>
+</div>
+</div>
+<p>Let’s compute the <em>Cohen’s h</em> for our comparison.</p>
+<div id="cell-17" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>two_groups_unpaired.cohens_h</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:23 2025.
+
+The unpaired Cohen's h between Control 1 and Test 1 is 1.24 [95%CI 0.784, 1.66].
+The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
+
+5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+Any p-value reported is the probability of observing theeffect size (or greater),
+assuming the null hypothesis of zero difference is true.
+For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+To get the results of all valid statistical tests, use `.cohens_h.statistical_tests`</code></pre>
+</div>
+</div>
+</section>
+<section id="generating-proportion-plots" class="level2">
+<h2 class="anchored" data-anchor-id="generating-proportion-plots">Generating proportion plots</h2>
+<p>To generate an <strong>estimation plot</strong>, simply use the <code>.plot()</code> method.</p>
+<p>Each effect size instance has access to the <code>.plot()</code> method, allowing you to quickly create plots for different effect sizes with ease.</p>
+<section id="unpaired-proportion-plots" class="level3">
+<h3 class="anchored" data-anchor-id="unpaired-proportion-plots">Unpaired proportion plots</h3>
+<p>Unpaired proportion plots utilise the common bar plot. The bar plot displays the proportion of observations in the dataset that belong to the category of interest:</p>
+<ul>
+<li>The white portion represents the proportion of observations that do not belong to the category (proportion of 0s in the data).</li>
+<li>The colored portion represents the proportion of observations belonging to the category (proportion of 1s in the data).</li>
+</ul>
+<section id="two-group" class="level4">
+<h4 class="anchored" data-anchor-id="two-group">Two-Group</h4>
+<div id="cell-23" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>two_groups_unpaired.mean_diff.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-8-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-24" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>two_groups_unpaired.cohens_h.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-9-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Instead of a Gardner-Altman plot, you can generate a <strong>Cumming estimation plot</strong> by setting <code>float_contrast=False</code> in the <code>.plot()</code> method. This will plot the bootstrap effect sizes below the raw data.</p>
+<div id="cell-26" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>two_groups_unpaired.mean_diff.plot(float_contrast<span class="op">=</span><span class="va">False</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-10-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="multi-two-group-shared-control-and-multi-groups" class="level4">
+<h4 class="anchored" data-anchor-id="multi-two-group-shared-control-and-multi-groups">Multi Two-Group, Shared-Control, and Multi Groups</h4>
+<p>As with regular (non-binary) unpaired data, multi two-group, shared-control, and multi group plots can be generated for binary data.</p>
+<div id="cell-28" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>multi_two_groups_unpaired <span class="op">=</span> dabest.load(df, idx<span class="op">=</span>((<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>),(<span class="st">"Control 2"</span>, <span class="st">"Test 2"</span>),(<span class="st">"Control 3"</span>, <span class="st">"Test 3"</span>)),</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>                                        proportional<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>multi_two_groups_unpaired</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:24 2025.
+
+Effect size(s) with 95% confidence intervals will be computed for:
+1. Test 1 minus Control 1
+2. Test 2 minus Control 2
+3. Test 3 minus Control 3
+
+5000 resamples will be used to generate the effect size bootstraps.</code></pre>
+</div>
+</div>
+<div id="cell-29" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>multi_two_groups_unpaired.mean_diff</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:25 2025.
+
+The unpaired mean difference between Control 1 and Test 1 is 0.575 [95%CI 0.35, 0.725].
+The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
+
+The unpaired mean difference between Control 2 and Test 2 is 0.025 [95%CI -0.15, 0.15].
+The p-value of the two-sided permutation t-test is 0.535, calculated for legacy purposes only. 
+
+The unpaired mean difference between Control 3 and Test 3 is -0.6 [95%CI -0.75, -0.425].
+The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
+
+5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+Any p-value reported is the probability of observing theeffect size (or greater),
+assuming the null hypothesis of zero difference is true.
+For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`</code></pre>
+</div>
+</div>
+<div id="cell-30" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>multi_two_groups_unpaired.mean_diff.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-13-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-31" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>shared_control <span class="op">=</span> dabest.load(df, idx<span class="op">=</span>(<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>, <span class="st">"Test 2"</span>, <span class="st">"Test 3"</span>, <span class="st">"Test 4"</span>),</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>                                        proportional<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>shared_control</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:25 2025.
+
+Effect size(s) with 95% confidence intervals will be computed for:
+1. Test 1 minus Control 1
+2. Test 2 minus Control 1
+3. Test 3 minus Control 1
+4. Test 4 minus Control 1
+
+5000 resamples will be used to generate the effect size bootstraps.</code></pre>
+</div>
+</div>
+<div id="cell-32" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>shared_control.mean_diff</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:26 2025.
+
+The unpaired mean difference between Control 1 and Test 1 is 0.575 [95%CI 0.35, 0.725].
+The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
+
+The unpaired mean difference between Control 1 and Test 2 is 0.025 [95%CI -0.15, 0.15].
+The p-value of the two-sided permutation t-test is 0.539, calculated for legacy purposes only. 
+
+The unpaired mean difference between Control 1 and Test 3 is 0.125 [95%CI -0.025, 0.325].
+The p-value of the two-sided permutation t-test is 0.0936, calculated for legacy purposes only. 
+
+The unpaired mean difference between Control 1 and Test 4 is 0.15 [95%CI -0.05, 0.3].
+The p-value of the two-sided permutation t-test is 0.0604, calculated for legacy purposes only. 
+
+5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+Any p-value reported is the probability of observing theeffect size (or greater),
+assuming the null hypothesis of zero difference is true.
+For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`</code></pre>
+</div>
+</div>
+<div id="cell-33" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>shared_control.mean_diff.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-16-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-34" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>multi_groups_unpaired <span class="op">=</span> dabest.load(df, idx<span class="op">=</span>((<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>),(<span class="st">"Control 2"</span>, <span class="st">"Test 2"</span>, <span class="st">"Test 3"</span>, <span class="st">"Test 4"</span>)),</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>                                        proportional<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>multi_groups_unpaired</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:26 2025.
+
+Effect size(s) with 95% confidence intervals will be computed for:
+1. Test 1 minus Control 1
+2. Test 2 minus Control 2
+3. Test 3 minus Control 2
+4. Test 4 minus Control 2
+
+5000 resamples will be used to generate the effect size bootstraps.</code></pre>
+</div>
+</div>
+<div id="cell-35" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>multi_groups_unpaired.mean_diff</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:26 2025.
+
+The unpaired mean difference between Control 1 and Test 1 is 0.575 [95%CI 0.35, 0.725].
+The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
+
+The unpaired mean difference between Control 2 and Test 2 is 0.025 [95%CI -0.15, 0.15].
+The p-value of the two-sided permutation t-test is 0.535, calculated for legacy purposes only. 
+
+The unpaired mean difference between Control 2 and Test 3 is 0.125 [95%CI -0.05, 0.325].
+The p-value of the two-sided permutation t-test is 0.099, calculated for legacy purposes only. 
+
+The unpaired mean difference between Control 2 and Test 4 is 0.15 [95%CI -0.05, 0.3].
+The p-value of the two-sided permutation t-test is 0.0604, calculated for legacy purposes only. 
+
+5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+Any p-value reported is the probability of observing theeffect size (or greater),
+assuming the null hypothesis of zero difference is true.
+For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`</code></pre>
+</div>
+</div>
+<div id="cell-36" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>multi_groups_unpaired.mean_diff.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-19-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="paired-proportion-plots" class="level3">
+<h3 class="anchored" data-anchor-id="paired-proportion-plots">Paired proportion plots</h3>
+<p>For the paired version of the proportion plot, we adopt the style of a Sankey Diagram. The width of each bar in each xtick represents the proportion of the corresponding label in the group, and the strip denotes the paired relationship for each observation.</p>
+<p>Starting from <strong>v2024.3.29</strong>, the paired version of the proportion plot receives a major upgrade. We introduce the <code>sankey</code> and <code>flow</code> parameters to control the plot. By default, both <code>sankey</code> and <code>flow</code> are set to True to cater the needs of repeated measures. When <code>sankey</code> is set to False, DABEST will generate a bar plot with a similar aesthetic to the paired proportion plot. When <code>flow</code> is set to False, each group of comparsion forms a Sankey diagram that does not connect to other groups of comparison.</p>
+<p>Similar to the unpaired version, the <code>.plot()</code> method is used to produce an <strong>estimation plot</strong>.</p>
+<section id="two-group-1" class="level4">
+<h4 class="anchored" data-anchor-id="two-group-1">Two-Group</h4>
+<div id="cell-40" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>two_groups_paired <span class="op">=</span> dabest.load(df, idx<span class="op">=</span>(<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>), </span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>                                  proportional<span class="op">=</span><span class="va">True</span>, paired<span class="op">=</span><span class="st">"baseline"</span>, id_col<span class="op">=</span><span class="st">"ID"</span>)</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>two_groups_paired</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:27 2025.
+
+Paired effect size(s) for repeated measures against baseline 
+with 95% confidence intervals will be computed for:
+1. Test 1 minus Control 1
+
+5000 resamples will be used to generate the effect size bootstraps.</code></pre>
+</div>
+</div>
+<div id="cell-41" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>two_groups_paired.mean_diff</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:27 2025.
+
+The paired mean difference for repeated measures against baseline 
+between Control 1 and Test 1 is 0.575 [95%CI 0.325, 0.725].
+The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
+
+5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+Any p-value reported is the probability of observing theeffect size (or greater),
+assuming the null hypothesis of zero difference is true.
+For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`</code></pre>
+</div>
+</div>
+<div id="cell-42" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>two_groups_paired.mean_diff.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-22-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The Sankey plots for paired proportions also supports the <code>float_contrast</code> parameter, which can be set to <code>False</code> to produce a <strong>Cumming estimation plot</strong>.</p>
+<div id="cell-44" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>two_groups_paired.mean_diff.plot(float_contrast<span class="op">=</span><span class="va">False</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-23-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="multi-two-group-repeated-measures-and-multi-groups" class="level4">
+<h4 class="anchored" data-anchor-id="multi-two-group-repeated-measures-and-multi-groups">Multi Two-Group, Repeated Measures, and Multi Groups</h4>
+<p>As with regular (non-binary) unpaired data, multi two-group, repeated-measures, and multi group plots can be generated for binary data.</p>
+<div id="cell-46" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>multi_two_groups_paired <span class="op">=</span> dabest.load(df, idx<span class="op">=</span>((<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>),(<span class="st">"Control 2"</span>, <span class="st">"Test 2"</span>),(<span class="st">"Control 3"</span>, <span class="st">"Test 3"</span>)),</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>                                        proportional<span class="op">=</span><span class="va">True</span>, paired<span class="op">=</span><span class="st">"baseline"</span>, id_col<span class="op">=</span><span class="st">"ID"</span>)</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>multi_two_groups_paired</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:27 2025.
+
+Paired effect size(s) for repeated measures against baseline 
+with 95% confidence intervals will be computed for:
+1. Test 1 minus Control 1
+2. Test 2 minus Control 2
+3. Test 3 minus Control 3
+
+5000 resamples will be used to generate the effect size bootstraps.</code></pre>
+</div>
+</div>
+<div id="cell-47" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>multi_two_groups_paired.mean_diff</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:28 2025.
+
+The paired mean difference for repeated measures against baseline 
+between Control 1 and Test 1 is 0.575 [95%CI 0.325, 0.725].
+The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
+
+The paired mean difference for repeated measures against baseline 
+between Control 2 and Test 2 is 0.025 [95%CI -0.15, 0.175].
+The p-value of the two-sided permutation t-test is 0.571, calculated for legacy purposes only. 
+
+The paired mean difference for repeated measures against baseline 
+between Control 3 and Test 3 is -0.6 [95%CI -0.775, -0.425].
+The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
+
+5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+Any p-value reported is the probability of observing theeffect size (or greater),
+assuming the null hypothesis of zero difference is true.
+For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`</code></pre>
+</div>
+</div>
+<div id="cell-48" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>multi_two_groups_paired.mean_diff.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-26-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-49" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>repeated_measures_baseline <span class="op">=</span> dabest.load(df, idx<span class="op">=</span>(<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>, <span class="st">"Test 2"</span>, <span class="st">"Test 3"</span>, <span class="st">"Test 4"</span>),</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>                                        proportional<span class="op">=</span><span class="va">True</span>, paired<span class="op">=</span><span class="st">"baseline"</span>, id_col<span class="op">=</span><span class="st">"ID"</span>)</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>repeated_measures_baseline</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:28 2025.
+
+Paired effect size(s) for repeated measures against baseline 
+with 95% confidence intervals will be computed for:
+1. Test 1 minus Control 1
+2. Test 2 minus Control 1
+3. Test 3 minus Control 1
+4. Test 4 minus Control 1
+
+5000 resamples will be used to generate the effect size bootstraps.</code></pre>
+</div>
+</div>
+<div id="cell-50" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>repeated_measures_baseline.mean_diff</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:29 2025.
+
+The paired mean difference for repeated measures against baseline 
+between Control 1 and Test 1 is 0.575 [95%CI 0.325, 0.725].
+The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
+
+The paired mean difference for repeated measures against baseline 
+between Control 1 and Test 2 is 0.025 [95%CI -0.15, 0.175].
+The p-value of the two-sided permutation t-test is 0.555, calculated for legacy purposes only. 
+
+The paired mean difference for repeated measures against baseline 
+between Control 1 and Test 3 is 0.125 [95%CI -0.075, 0.275].
+The p-value of the two-sided permutation t-test is 0.277, calculated for legacy purposes only. 
+
+The paired mean difference for repeated measures against baseline 
+between Control 1 and Test 4 is 0.15 [95%CI -0.05, 0.325].
+The p-value of the two-sided permutation t-test is 0.075, calculated for legacy purposes only. 
+
+5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+Any p-value reported is the probability of observing theeffect size (or greater),
+assuming the null hypothesis of zero difference is true.
+For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`</code></pre>
+</div>
+</div>
+<div id="cell-51" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>repeated_measures_baseline.mean_diff.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-29-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-52" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>repeated_measures_sequential <span class="op">=</span> dabest.load(df, idx<span class="op">=</span>(<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>, <span class="st">"Test 2"</span>, <span class="st">"Test 3"</span>, <span class="st">"Test 4"</span>),</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>                                        proportional<span class="op">=</span><span class="va">True</span>, paired<span class="op">=</span><span class="st">"sequential"</span>, id_col<span class="op">=</span><span class="st">"ID"</span>)</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>repeated_measures_sequential</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:29 2025.
+
+Paired effect size(s) for the sequential design of repeated-measures experiment 
+with 95% confidence intervals will be computed for:
+1. Test 1 minus Control 1
+2. Test 2 minus Test 1
+3. Test 3 minus Test 2
+4. Test 4 minus Test 3
+
+5000 resamples will be used to generate the effect size bootstraps.</code></pre>
+</div>
+</div>
+<div id="cell-53" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>repeated_measures_sequential.mean_diff</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:30 2025.
+
+The paired mean difference for the sequential design of repeated-measures experiment 
+between Control 1 and Test 1 is 0.575 [95%CI 0.325, 0.725].
+The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
+
+The paired mean difference for the sequential design of repeated-measures experiment 
+between Test 1 and Test 2 is -0.55 [95%CI -0.725, -0.4].
+The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
+
+The paired mean difference for the sequential design of repeated-measures experiment 
+between Test 2 and Test 3 is 0.1 [95%CI -0.075, 0.225].
+The p-value of the two-sided permutation t-test is 0.342, calculated for legacy purposes only. 
+
+The paired mean difference for the sequential design of repeated-measures experiment 
+between Test 3 and Test 4 is 0.025 [95%CI -0.2, 0.2].
+The p-value of the two-sided permutation t-test is 0.624, calculated for legacy purposes only. 
+
+5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+Any p-value reported is the probability of observing theeffect size (or greater),
+assuming the null hypothesis of zero difference is true.
+For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`</code></pre>
+</div>
+</div>
+<div id="cell-54" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>repeated_measures_sequential.mean_diff.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-32-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-55" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>multi_groups_baseline <span class="op">=</span> dabest.load(df, idx<span class="op">=</span>((<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>),(<span class="st">"Control 2"</span>, <span class="st">"Test 2"</span>, <span class="st">"Test 3"</span>, <span class="st">"Test 4"</span>)),</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>                                        proportional<span class="op">=</span><span class="va">True</span>, paired<span class="op">=</span><span class="st">"baseline"</span>, id_col<span class="op">=</span><span class="st">"ID"</span>)</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>multi_groups_baseline</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:30 2025.
+
+Paired effect size(s) for repeated measures against baseline 
+with 95% confidence intervals will be computed for:
+1. Test 1 minus Control 1
+2. Test 2 minus Control 2
+3. Test 3 minus Control 2
+4. Test 4 minus Control 2
+
+5000 resamples will be used to generate the effect size bootstraps.</code></pre>
+</div>
+</div>
+<div id="cell-56" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>multi_groups_baseline.mean_diff</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>DABEST v2025.10.20
+==================
+                  
+Good afternoon!
+The current time is Sun Oct 19 16:00:31 2025.
+
+The paired mean difference for repeated measures against baseline 
+between Control 1 and Test 1 is 0.575 [95%CI 0.325, 0.725].
+The p-value of the two-sided permutation t-test is 0.0, calculated for legacy purposes only. 
+
+The paired mean difference for repeated measures against baseline 
+between Control 2 and Test 2 is 0.025 [95%CI -0.15, 0.175].
+The p-value of the two-sided permutation t-test is 0.571, calculated for legacy purposes only. 
+
+The paired mean difference for repeated measures against baseline 
+between Control 2 and Test 3 is 0.125 [95%CI -0.075, 0.3].
+The p-value of the two-sided permutation t-test is 0.309, calculated for legacy purposes only. 
+
+The paired mean difference for repeated measures against baseline 
+between Control 2 and Test 4 is 0.15 [95%CI -0.025, 0.3].
+The p-value of the two-sided permutation t-test is 0.0362, calculated for legacy purposes only. 
+
+5000 bootstrap samples were taken; the confidence interval is bias-corrected and accelerated.
+Any p-value reported is the probability of observing theeffect size (or greater),
+assuming the null hypothesis of zero difference is true.
+For each p-value, 5000 reshuffles of the control and test labels were performed.
+
+To get the results of all valid statistical tests, use `.mean_diff.statistical_tests`</code></pre>
+</div>
+</div>
+<div id="cell-57" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>multi_groups_baseline.mean_diff.plot()<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-35-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="aesthetic-adjustments" class="level2">
+<h2 class="anchored" data-anchor-id="aesthetic-adjustments">Aesthetic adjustments</h2>
+<p>Here we demonstrate a few proportion plot specific aesthetic adjustments.</p>
+<section id="bar-width" class="level3">
+<h3 class="anchored" data-anchor-id="bar-width">Bar Width</h3>
+<p>You can modify the width of the bar plot bars (unpaired data) by setting the parameter <code>bar_width</code> in the <code>.plot()</code> method.</p>
+<div id="cell-60" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>two_groups_unpaired.mean_diff.plot(bar_width<span class="op">=</span><span class="fl">0.3</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-36-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="bar-desaturation" class="level3">
+<h3 class="anchored" data-anchor-id="bar-desaturation">Bar desaturation</h3>
+<p>The <code>raw_desat</code> is used to control the amount of desaturation applied to the bar plot bar colors (specific to unpaired data). A value of 0.0 means full desaturation (i.e., grayscale), while a value of 1.0 means no desaturation (i.e., full color saturation). The default one is 0.8.</p>
+<div id="cell-62" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>two_groups_unpaired.mean_diff.plot(raw_desat<span class="op">=</span><span class="fl">1.0</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-37-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="raw-label-and-contrast-label" class="level3">
+<h3 class="anchored" data-anchor-id="raw-label-and-contrast-label">Raw Label and Contrast Label</h3>
+<p>The parameters <code>raw_label</code> and <code>contrast_label</code> can be used to set labels for the y-axis of the bar plot and the contrast plot.</p>
+<div id="cell-64" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>two_groups_unpaired.mean_diff.plot(raw_label<span class="op">=</span><span class="st">"success"</span>,contrast_label<span class="op">=</span><span class="st">"difference"</span>)<span class="op">;</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>two_groups_paired.mean_diff.plot(raw_label<span class="op">=</span><span class="st">"success"</span>,contrast_label<span class="op">=</span><span class="st">"difference"</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-38-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-38-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="barplot-kwargs" class="level3">
+<h3 class="anchored" data-anchor-id="barplot-kwargs">Barplot kwargs</h3>
+<p>The parameters <code>barplot_kwargs</code> can be used to alter the aesthetics of the bar plot. This is a dictionary that can be used to pass additional arguments to the bar plot.</p>
+<div id="cell-66" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>two_groups_unpaired.mean_diff.plot(barplot_kwargs<span class="op">=</span>{<span class="st">"alpha"</span>:<span class="fl">0.5</span>, <span class="st">"edgecolor"</span>:<span class="st">"red"</span>, <span class="st">"linewidth"</span>:<span class="dv">2</span>, <span class="st">'errorbar'</span>: (<span class="st">'sd'</span>, <span class="fl">0.1</span>)})<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-39-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="sankey-and-flow" class="level3">
+<h3 class="anchored" data-anchor-id="sankey-and-flow">Sankey and Flow</h3>
+<p>By changing the <code>sankey</code> and <code>flow</code> parameters, you can generate different types of Sankey plots for paired proportions.</p>
+<div id="cell-68" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>separate_control <span class="op">=</span> dabest.load(df, idx<span class="op">=</span>(((<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>),</span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>                                (<span class="st">"Test 2"</span>, <span class="st">"Test 3"</span>),</span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>                                (<span class="st">"Test 4"</span>, <span class="st">"Test 7"</span>, <span class="st">"Test 6"</span>))),</span>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>                    proportional<span class="op">=</span><span class="va">True</span>, paired<span class="op">=</span><span class="st">"sequential"</span>, id_col<span class="op">=</span><span class="st">"ID"</span>)</span>
+<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>separate_control.mean_diff.plot()<span class="op">;</span></span>
+<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a>separate_control.mean_diff.plot(sankey_kwargs<span class="op">=</span>{<span class="st">'sankey'</span>:<span class="va">False</span>})<span class="op">;</span></span>
+<span id="cb63-8"><a href="#cb63-8" aria-hidden="true" tabindex="-1"></a>separate_control.mean_diff.plot(sankey_kwargs<span class="op">=</span>{<span class="st">'flow'</span>:<span class="va">False</span>})<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-40-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-40-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-40-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="sankey-kwargs" class="level3">
+<h3 class="anchored" data-anchor-id="sankey-kwargs">Sankey kwargs</h3>
+<p>Several exclusive parameters can be provided to the <code>.plot()</code> method to customize the Sankey plots for paired proportions. By modifying the <code>sankey_kwargs</code> parameter, you can customize the Sankey plot. The following parameters are supported:</p>
+<ul>
+<li><strong>align</strong>: The alignment of each Sankey bar. Default is “center”.</li>
+<li><strong>alpha</strong>: The transparency of each Sankey bar. Default is 0.4.</li>
+<li><strong>bar_width</strong>: The width of each bar on the side in the plot. Default is 0.1.</li>
+</ul>
+<div id="cell-70" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>repeated_measures_baseline.mean_diff.plot(sankey_kwargs <span class="op">=</span> {<span class="st">"alpha"</span>: <span class="fl">0.2</span>,</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>                                                  <span class="st">"bar_width"</span>: <span class="fl">0.4</span>})<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-41-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="custom-palette" class="level3">
+<h3 class="anchored" data-anchor-id="custom-palette">Custom Palette</h3>
+<p>The <code>custom_palette</code> parameter functions in a similar way for proportion plots as for other plots - however, there are some differences!</p>
+<p>A <code>custom_palette</code> dict can be passed for sankey plots, whereby two keys used are 0 and 1. The color associated with these keys will be used to color the bars in the sankey plot.</p>
+<p>For bar plots, the <code>custom_palette</code> dict can be passed like a regular plot, with a color associated to each group. The chosen color will then be used to color the filled portion of the bar plot.</p>
+<div id="cell-73" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>repeated_measures_baseline.mean_diff.plot(custom_palette<span class="op">=</span>{<span class="dv">0</span>: <span class="st">"red"</span>, <span class="dv">1</span>: <span class="st">"blue"</span>})<span class="op">;</span></span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>shared_control.mean_diff.plot(custom_palette<span class="op">=</span>{<span class="st">'Control 1'</span>: <span class="st">"red"</span>, <span class="st">'Test 1'</span>: <span class="st">"blue"</span>, <span class="st">'Test 2'</span>: <span class="st">"green"</span>, <span class="st">'Test 3'</span>: <span class="st">"purple"</span>, <span class="st">'Test 4'</span>: <span class="st">"orange"</span>})<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-42-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-42-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Similarly, premade matplotlib/seaborn color palette can be passed. For sankey plots, the first two colors in the palette will be used to color the bars in the sankey plot. For bar plots, the colors will be used to color the filled portion of the bar plot.</p>
+<div id="cell-75" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>repeated_measures_baseline.mean_diff.plot(custom_palette<span class="op">=</span><span class="st">'Set1'</span>)<span class="op">;</span></span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>shared_control.mean_diff.plot(custom_palette<span class="op">=</span><span class="st">'Set1'</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-43-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-43-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Passing a custom palette list functions differently for bar plots and sankey plots:</p>
+<ul>
+<li>For bar plots, the list should contain the colors associated with each group.</li>
+<li>For sankey plots, the list should contain two colors, the first color will be used to color the binary ’1’s, and the second color will be used to color the ’0’s.</li>
+</ul>
+<div id="cell-77" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>repeated_measures_baseline.mean_diff.plot(custom_palette<span class="op">=</span>[<span class="st">'red'</span>, <span class="st">'blue'</span>])<span class="op">;</span></span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>shared_control.mean_diff.plot(custom_palette<span class="op">=</span>[<span class="st">'red'</span>, <span class="st">'blue'</span>, <span class="st">'green'</span>, <span class="st">'purple'</span>, <span class="st">'orange'</span>])<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-44-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-44-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="add-counts-to-proportion-plots" class="level3">
+<h3 class="anchored" data-anchor-id="add-counts-to-proportion-plots">Add counts to proportion plots</h3>
+<p>By default, the sample counts for each bar in proportion plots are not shown.</p>
+<p>This feature can be turned on by setting <code>prop_sample_counts=True</code> in the <code>.plot()</code> method.</p>
+<p><strong>Note</strong>: This feature is not compatible with <code>flow=False</code> in <code>sankey_kwargs</code>.</p>
+<div id="cell-79" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>two_groups_unpaired <span class="op">=</span> dabest.load(df, idx<span class="op">=</span>(<span class="st">"Control 1"</span>, <span class="st">"Test 1"</span>), proportional<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>two_groups_unpaired.mean_diff.plot(prop_sample_counts<span class="op">=</span><span class="va">True</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-45-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The sample counts kwargs can be utilised via <code>prop_sample_counts_kwargs</code> in the <code>.plot()</code> method.</p>
+<div id="cell-81" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>two_groups_unpaired.mean_diff.plot(prop_sample_counts<span class="op">=</span><span class="va">True</span>, prop_sample_counts_kwargs<span class="op">=</span>{<span class="st">"color"</span>:<span class="st">"red"</span>})<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-proportion_plot_files/figure-html/cell-46-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>For further aesthetic changes, the <a href="08-plot_aesthetics.html">Plot Aesthetics Tutorial</a> provides detailed examples of how to customize the plot.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/acclab\.github\.io\/DABEST-python");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/acclab/DABEST-python/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

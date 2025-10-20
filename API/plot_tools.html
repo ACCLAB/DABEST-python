@@ -1,0 +1,2444 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="A set of convenience functions used for producing plots in dabest.">
+
+<title>plot_tools – dabest</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../images/Favicon-3-outline.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-80e91010c642a1f9fc1842d203c8c8a0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="plot_tools – dabest">
+<meta property="og:description" content="A set of convenience functions used for producing plots in dabest.">
+<meta property="og:site_name" content="dabest">
+<meta name="twitter:title" content="plot_tools – dabest">
+<meta name="twitter:description" content="A set of convenience functions used for producing plots in dabest.">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">dabest</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../01-getting_started.html" aria-current="page"> 
+<span class="menu-text">Get Started</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../tutorials/index.html"> 
+<span class="menu-text">Tutorial</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../blog/index.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-help" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Help</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-help">    
+        <li>
+    <a class="dropdown-item" href="https://github.com/ACCLAB/DABEST-python/issues"><i class="bi bi-bug" role="img">
+</i> 
+ <span class="dropdown-text">Report an Issue</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/ACCLAB/DABEST-python"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/EstimationStats"> <i class="bi bi-twitter" role="img" aria-label="ACCLAB Twitter">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../API/index.html">API</a></li><li class="breadcrumb-item"><a href="../API/plot_tools.html">plot_tools</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+      <a href="../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-getting_started.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Getting Started</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02-about.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">About</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../03-citation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Citing DABEST</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/01-basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Basics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/02-two_group.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Two-Group Experiments</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/03-shared_control_and_repeated_measures.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Shared Control &amp; Repeated Measures</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/04-proportion_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Proportion Plots</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/05-mini_meta.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mini-Meta</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/06-delta_delta.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Delta-Delta</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/07-horizontal_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Horizontal Plots</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/08-plot_aesthetics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Controlling Plot Aesthetics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/09-forest_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Forest Plots: Visualizing Multiple Contrasts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/10-whorlmap.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Whorlmaps: Visualizing Even More Contrasts</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../API/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">API</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/load.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Loading Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/dabest_object.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Dabest object</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/bootstrap.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bootstrap</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/forest_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Forest plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/plotter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/plot_tools.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">plot_tools</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/effsize.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">effsize</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/confint_1group.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">confint_1group</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/confint_2group_diff.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">confint_2group_diff</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/delta_objects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Delta objects</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/misc_tools.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">misc_tools</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/effsize_objects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Effectsize objects</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/precompile.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">precompile</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../API/multi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">multi</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#add_counts_to_prop_plots" id="toc-add_counts_to_prop_plots" class="nav-link active" data-scroll-target="#add_counts_to_prop_plots">add_counts_to_prop_plots</a></li>
+  <li><a href="#table_for_horizontal_plots" id="toc-table_for_horizontal_plots" class="nav-link" data-scroll-target="#table_for_horizontal_plots">table_for_horizontal_plots</a></li>
+  <li><a href="#barplotter" id="toc-barplotter" class="nav-link" data-scroll-target="#barplotter">barplotter</a></li>
+  <li><a href="#gridkey_plotter" id="toc-gridkey_plotter" class="nav-link" data-scroll-target="#gridkey_plotter">gridkey_plotter</a></li>
+  <li><a href="#effect_size_curve_plotter" id="toc-effect_size_curve_plotter" class="nav-link" data-scroll-target="#effect_size_curve_plotter">effect_size_curve_plotter</a></li>
+  <li><a href="#plot_minimeta_or_deltadelta_violins" id="toc-plot_minimeta_or_deltadelta_violins" class="nav-link" data-scroll-target="#plot_minimeta_or_deltadelta_violins">plot_minimeta_or_deltadelta_violins</a></li>
+  <li><a href="#slopegraph_plotter" id="toc-slopegraph_plotter" class="nav-link" data-scroll-target="#slopegraph_plotter">slopegraph_plotter</a></li>
+  <li><a href="#delta_dots_plotter" id="toc-delta_dots_plotter" class="nav-link" data-scroll-target="#delta_dots_plotter">delta_dots_plotter</a></li>
+  <li><a href="#delta_text_plotter" id="toc-delta_text_plotter" class="nav-link" data-scroll-target="#delta_text_plotter">delta_text_plotter</a></li>
+  <li><a href="#add_bars_to_plot" id="toc-add_bars_to_plot" class="nav-link" data-scroll-target="#add_bars_to_plot">add_bars_to_plot</a></li>
+  <li><a href="#sankeydiag" id="toc-sankeydiag" class="nav-link" data-scroll-target="#sankeydiag">sankeydiag</a></li>
+  <li><a href="#single_sankey" id="toc-single_sankey" class="nav-link" data-scroll-target="#single_sankey">single_sankey</a></li>
+  <li><a href="#width_determine" id="toc-width_determine" class="nav-link" data-scroll-target="#width_determine">width_determine</a></li>
+  <li><a href="#normalize_dict" id="toc-normalize_dict" class="nav-link" data-scroll-target="#normalize_dict">normalize_dict</a></li>
+  <li><a href="#check_data_matches_labels" id="toc-check_data_matches_labels" class="nav-link" data-scroll-target="#check_data_matches_labels">check_data_matches_labels</a></li>
+  <li><a href="#error_bar" id="toc-error_bar" class="nav-link" data-scroll-target="#error_bar">error_bar</a></li>
+  <li><a href="#get_swarm_spans" id="toc-get_swarm_spans" class="nav-link" data-scroll-target="#get_swarm_spans">get_swarm_spans</a></li>
+  <li><a href="#halfviolin" id="toc-halfviolin" class="nav-link" data-scroll-target="#halfviolin">halfviolin</a></li>
+  <li><a href="#swarmplot" id="toc-swarmplot" class="nav-link" data-scroll-target="#swarmplot">SwarmPlot</a></li>
+  <li><a href="#swarmplot-1" id="toc-swarmplot-1" class="nav-link" data-scroll-target="#swarmplot-1">swarmplot</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/acclab/DABEST-python/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../API/index.html">API</a></li><li class="breadcrumb-item"><a href="../API/plot_tools.html">plot_tools</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">plot_tools</h1>
+</div>
+
+<div>
+  <div class="description">
+    A set of convenience functions used for producing plots in <code>dabest</code>.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L2059" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="add_counts_to_prop_plots" class="level3">
+<h3 class="anchored" data-anchor-id="add_counts_to_prop_plots">add_counts_to_prop_plots</h3>
+<blockquote class="blockquote">
+<pre><code> add_counts_to_prop_plots (plot_data:pandas.core.frame.DataFrame,
+                           xvar:str, yvar:str,
+                           rawdata_axes:matplotlib.axes._axes.Axes,
+                           horizontal:bool, is_paired:bool,
+                           prop_sample_counts_kwargs:dict)</code></pre>
+</blockquote>
+<p><em>Add counts to the proportion plots.</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>plot_data</td>
+<td>DataFrame</td>
+<td>Dataframe of the plot data.</td>
+</tr>
+<tr class="even">
+<td>xvar</td>
+<td>str</td>
+<td>Column name of the x variable.</td>
+</tr>
+<tr class="odd">
+<td>yvar</td>
+<td>str</td>
+<td>Column name of the y variable.</td>
+</tr>
+<tr class="even">
+<td>rawdata_axes</td>
+<td>Axes</td>
+<td>Matplotlib axis object to plot on.</td>
+</tr>
+<tr class="odd">
+<td>horizontal</td>
+<td>bool</td>
+<td>If the plot is horizontal.</td>
+</tr>
+<tr class="even">
+<td>is_paired</td>
+<td>bool</td>
+<td>Whether the data is paired.</td>
+</tr>
+<tr class="odd">
+<td>prop_sample_counts_kwargs</td>
+<td>dict</td>
+<td>Keyword arguments for the sample counts.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L1980" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="table_for_horizontal_plots" class="level3">
+<h3 class="anchored" data-anchor-id="table_for_horizontal_plots">table_for_horizontal_plots</h3>
+<blockquote class="blockquote">
+<pre><code> table_for_horizontal_plots (effectsize_df:object,
+                             ax:matplotlib.axes._axes.Axes,
+                             contrast_axes:matplotlib.axes._axes.Axes,
+                             ticks_to_plot:list, show_mini_meta:bool,
+                             show_delta2:bool, table_kwargs:dict,
+                             ticks_to_skip:list)</code></pre>
+</blockquote>
+<p><em>Add table axes for showing the deltas for horizontal plots.</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>effectsize_df</td>
+<td>object</td>
+<td>Effect size DABEST object.</td>
+</tr>
+<tr class="even">
+<td>ax</td>
+<td>Axes</td>
+<td>Matplotlib axis object to plot the table axes.</td>
+</tr>
+<tr class="odd">
+<td>contrast_axes</td>
+<td>Axes</td>
+<td>Matplotlib axis object to plot the contrast axes.</td>
+</tr>
+<tr class="even">
+<td>ticks_to_plot</td>
+<td>list</td>
+<td>List of indices of the contrast objects.</td>
+</tr>
+<tr class="odd">
+<td>show_mini_meta</td>
+<td>bool</td>
+<td>Whether to show the mini meta-analysis.</td>
+</tr>
+<tr class="even">
+<td>show_delta2</td>
+<td>bool</td>
+<td>Whether to show the delta-delta.</td>
+</tr>
+<tr class="odd">
+<td>table_kwargs</td>
+<td>dict</td>
+<td>Keyword arguments for the table.</td>
+</tr>
+<tr class="even">
+<td>ticks_to_skip</td>
+<td>list</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L1850" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="barplotter" class="level3">
+<h3 class="anchored" data-anchor-id="barplotter">barplotter</h3>
+<blockquote class="blockquote">
+<pre><code> barplotter (xvar:str, yvar:str, all_plot_groups:list,
+             rawdata_axes:matplotlib.axes._axes.Axes,
+             plot_data:pandas.core.frame.DataFrame, raw_colors:str,
+             plot_palette_raw:dict, color_col:str, barplot_kwargs:dict,
+             horizontal:bool)</code></pre>
+</blockquote>
+<p><em>Add bars to the raw data plot.</em></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>xvar</td>
+<td>str</td>
+<td>Column name of the x variable.</td>
+</tr>
+<tr class="even">
+<td>yvar</td>
+<td>str</td>
+<td>Column name of the y variable.</td>
+</tr>
+<tr class="odd">
+<td>all_plot_groups</td>
+<td>list</td>
+<td>List of all plot groups.</td>
+</tr>
+<tr class="even">
+<td>rawdata_axes</td>
+<td>Axes</td>
+<td>Matplotlib axis object to plot on.</td>
+</tr>
+<tr class="odd">
+<td>plot_data</td>
+<td>DataFrame</td>
+<td>Dataframe of the plot data.</td>
+</tr>
+<tr class="even">
+<td>raw_colors</td>
+<td>str</td>
+<td>Color of the bar.</td>
+</tr>
+<tr class="odd">
+<td>plot_palette_raw</td>
+<td>dict</td>
+<td>Dictionary of colors used in the bar plot.</td>
+</tr>
+<tr class="even">
+<td>color_col</td>
+<td>str</td>
+<td>Column name of the color column.</td>
+</tr>
+<tr class="odd">
+<td>barplot_kwargs</td>
+<td>dict</td>
+<td>Keyword arguments for the barplot.</td>
+</tr>
+<tr class="even">
+<td>horizontal</td>
+<td>bool</td>
+<td>If the plot is horizontal.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L1545" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="gridkey_plotter" class="level3">
+<h3 class="anchored" data-anchor-id="gridkey_plotter">gridkey_plotter</h3>
+<blockquote class="blockquote">
+<pre><code> gridkey_plotter (is_paired:bool, idx:list, all_plot_groups:list,
+                  gridkey:list, rawdata_axes:matplotlib.axes._axes.Axes,
+                  contrast_axes:matplotlib.axes._axes.Axes,
+                  plot_data:pandas.core.frame.DataFrame, xvar:str,
+                  yvar:str, results:pandas.core.frame.DataFrame,
+                  show_delta2:bool, show_mini_meta:bool, x1_level:list,
+                  experiment_label:list, float_contrast:bool,
+                  horizontal:bool, delta_delta:object, mini_meta:object,
+                  effect_size:str, gridkey_kwargs:dict)</code></pre>
+</blockquote>
+<p><em>Add gridkey to the contrast plot.</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>is_paired</td>
+<td>bool</td>
+<td>Whether the data is paired.</td>
+</tr>
+<tr class="even">
+<td>idx</td>
+<td>list</td>
+<td>List of indices of the contrast objects.</td>
+</tr>
+<tr class="odd">
+<td>all_plot_groups</td>
+<td>list</td>
+<td>List of all plot groups.</td>
+</tr>
+<tr class="even">
+<td>gridkey</td>
+<td>list</td>
+<td>List of gridkey rows.</td>
+</tr>
+<tr class="odd">
+<td>rawdata_axes</td>
+<td>Axes</td>
+<td>Matplotlib axis object for the raw data.</td>
+</tr>
+<tr class="even">
+<td>contrast_axes</td>
+<td>Axes</td>
+<td>Matplotlib axis object for the contrast data.</td>
+</tr>
+<tr class="odd">
+<td>plot_data</td>
+<td>DataFrame</td>
+<td>Dataframe of the plot data.</td>
+</tr>
+<tr class="even">
+<td>xvar</td>
+<td>str</td>
+<td>Column name of the x variable.</td>
+</tr>
+<tr class="odd">
+<td>yvar</td>
+<td>str</td>
+<td>Column name of the y variable.</td>
+</tr>
+<tr class="even">
+<td>results</td>
+<td>DataFrame</td>
+<td>Dataframe of contrast object comparisons.</td>
+</tr>
+<tr class="odd">
+<td>show_delta2</td>
+<td>bool</td>
+<td>Whether to show the delta-delta.</td>
+</tr>
+<tr class="even">
+<td>show_mini_meta</td>
+<td>bool</td>
+<td>Whether to show the mini meta-analysis.</td>
+</tr>
+<tr class="odd">
+<td>x1_level</td>
+<td>list</td>
+<td>List of x1 levels.</td>
+</tr>
+<tr class="even">
+<td>experiment_label</td>
+<td>list</td>
+<td>List of experiment labels.</td>
+</tr>
+<tr class="odd">
+<td>float_contrast</td>
+<td>bool</td>
+<td>Whether the DABEST plot uses Gardner-Altman or Cummings</td>
+</tr>
+<tr class="even">
+<td>horizontal</td>
+<td>bool</td>
+<td>If the plot is horizontal.</td>
+</tr>
+<tr class="odd">
+<td>delta_delta</td>
+<td>object</td>
+<td>delta-delta object.</td>
+</tr>
+<tr class="even">
+<td>mini_meta</td>
+<td>object</td>
+<td>Mini meta-analysis object.</td>
+</tr>
+<tr class="odd">
+<td>effect_size</td>
+<td>str</td>
+<td>Type of effect size to plot</td>
+</tr>
+<tr class="even">
+<td>gridkey_kwargs</td>
+<td>dict</td>
+<td>Keyword arguments for the gridkey.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L1375" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="effect_size_curve_plotter" class="level3">
+<h3 class="anchored" data-anchor-id="effect_size_curve_plotter">effect_size_curve_plotter</h3>
+<blockquote class="blockquote">
+<pre><code> effect_size_curve_plotter (ticks_to_plot:list,
+                            ticks_for_baseline_ec:list,
+                            results:pandas.core.frame.DataFrame,
+                            ci_type:str,
+                            contrast_axes:matplotlib.axes._axes.Axes,
+                            contrast_kwargs:dict,
+                            bootstraps_color_by_group:bool,
+                            plot_palette_contrast:dict, horizontal:bool,
+                            contrast_marker_kwargs:dict,
+                            contrast_errorbar_kwargs:dict, idx:list,
+                            is_paired:bool, contrast_paired_lines:bool,
+                            contrast_paired_lines_kwargs:dict,
+                            show_baseline_ec:bool=False)</code></pre>
+</blockquote>
+<p><em>Add effect size curves to the contrast plot.</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ticks_to_plot</td>
+<td>list</td>
+<td></td>
+<td>List of indices of the contrast objects.</td>
+</tr>
+<tr class="even">
+<td>ticks_for_baseline_ec</td>
+<td>list</td>
+<td></td>
+<td>List of indices of the baseline effect curve objects.</td>
+</tr>
+<tr class="odd">
+<td>results</td>
+<td>DataFrame</td>
+<td></td>
+<td>Dataframe of contrast object comparisons.</td>
+</tr>
+<tr class="even">
+<td>ci_type</td>
+<td>str</td>
+<td></td>
+<td>Type of confidence interval to plot.</td>
+</tr>
+<tr class="odd">
+<td>contrast_axes</td>
+<td>Axes</td>
+<td></td>
+<td>Matplotlib axis object to plot on.</td>
+</tr>
+<tr class="even">
+<td>contrast_kwargs</td>
+<td>dict</td>
+<td></td>
+<td>Keyword arguments for the violinplot.</td>
+</tr>
+<tr class="odd">
+<td>bootstraps_color_by_group</td>
+<td>bool</td>
+<td></td>
+<td>Whether to color the bootstraps by group.</td>
+</tr>
+<tr class="even">
+<td>plot_palette_contrast</td>
+<td>dict</td>
+<td></td>
+<td>Dictionary of colors used in the contrast plot.</td>
+</tr>
+<tr class="odd">
+<td>horizontal</td>
+<td>bool</td>
+<td></td>
+<td>If the plot is horizontal.</td>
+</tr>
+<tr class="even">
+<td>contrast_marker_kwargs</td>
+<td>dict</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>contrast_errorbar_kwargs</td>
+<td>dict</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>idx</td>
+<td>list</td>
+<td></td>
+<td>List of indices of the raw groups.</td>
+</tr>
+<tr class="odd">
+<td>is_paired</td>
+<td>bool</td>
+<td></td>
+<td>Whether the data is paired.</td>
+</tr>
+<tr class="even">
+<td>contrast_paired_lines</td>
+<td>bool</td>
+<td></td>
+<td>Whether to add lines for repeated measures data.</td>
+</tr>
+<tr class="odd">
+<td>contrast_paired_lines_kwargs</td>
+<td>dict</td>
+<td></td>
+<td>Keyword arguments for the repeated measures lines.</td>
+</tr>
+<tr class="even">
+<td>show_baseline_ec</td>
+<td>bool</td>
+<td>False</td>
+<td>Whether to show the baseline effect curve.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L1238" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="plot_minimeta_or_deltadelta_violins" class="level3">
+<h3 class="anchored" data-anchor-id="plot_minimeta_or_deltadelta_violins">plot_minimeta_or_deltadelta_violins</h3>
+<blockquote class="blockquote">
+<pre><code> plot_minimeta_or_deltadelta_violins (dabest_obj:object, type:str,
+                                      ci_type:str, rawdata_axes:matplotlib
+                                      .axes._axes.Axes, contrast_axes:matp
+                                      lotlib.axes._axes.Axes,
+                                      contrast_kwargs:dict,
+                                      contrast_xtick_labels:list,
+                                      effect_size:str, plot_kwargs:dict,
+                                      horizontal:bool, show_pairs:bool,
+                                      contrast_marker_kwargs:dict,
+                                      contrast_errorbar_kwargs:dict)</code></pre>
+</blockquote>
+<p><em>Add mini meta-analysis or delta-delta violin plots to the contrast plot.</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dabest_obj</td>
+<td>object</td>
+<td>DABEST Effectsize object delta-delta or mini_meta</td>
+</tr>
+<tr class="even">
+<td>type</td>
+<td>str</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>ci_type</td>
+<td>str</td>
+<td>Type of confidence interval to plot.</td>
+</tr>
+<tr class="even">
+<td>rawdata_axes</td>
+<td>Axes</td>
+<td>Matplotlib axis object to plot on.</td>
+</tr>
+<tr class="odd">
+<td>contrast_axes</td>
+<td>Axes</td>
+<td>Matplotlib axis object to plot on.</td>
+</tr>
+<tr class="even">
+<td>contrast_kwargs</td>
+<td>dict</td>
+<td>Keyword arguments for the violinplot.</td>
+</tr>
+<tr class="odd">
+<td>contrast_xtick_labels</td>
+<td>list</td>
+<td>List of xtick labels for the contrast plot.</td>
+</tr>
+<tr class="even">
+<td>effect_size</td>
+<td>str</td>
+<td>Type of effect size to plot.</td>
+</tr>
+<tr class="odd">
+<td>plot_kwargs</td>
+<td>dict</td>
+<td>Keyword arguments for the plot.</td>
+</tr>
+<tr class="even">
+<td>horizontal</td>
+<td>bool</td>
+<td>If the plot is horizontal.</td>
+</tr>
+<tr class="odd">
+<td>show_pairs</td>
+<td>bool</td>
+<td>Whether the data is paired and shown in pairs.</td>
+</tr>
+<tr class="even">
+<td>contrast_marker_kwargs</td>
+<td>dict</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>contrast_errorbar_kwargs</td>
+<td>dict</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L1085" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="slopegraph_plotter" class="level3">
+<h3 class="anchored" data-anchor-id="slopegraph_plotter">slopegraph_plotter</h3>
+<blockquote class="blockquote">
+<pre><code> slopegraph_plotter (dabest_obj:object,
+                     plot_data:pandas.core.frame.DataFrame, xvar:str,
+                     yvar:str, color_col:str, plot_palette_raw:dict,
+                     slopegraph_kwargs:dict,
+                     rawdata_axes:matplotlib.axes._axes.Axes,
+                     ytick_color:str, temp_idx:list, horizontal:bool,
+                     temp_all_plot_groups:list, plot_kwargs:dict,
+                     group_summaries_kwargs:dict)</code></pre>
+</blockquote>
+<p><em>Add slopegraph to the rawdata axes.</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dabest_obj</td>
+<td>object</td>
+<td>DABEST object.</td>
+</tr>
+<tr class="even">
+<td>plot_data</td>
+<td>DataFrame</td>
+<td>Dataframe of the plot data.</td>
+</tr>
+<tr class="odd">
+<td>xvar</td>
+<td>str</td>
+<td>Column name of the x variable.</td>
+</tr>
+<tr class="even">
+<td>yvar</td>
+<td>str</td>
+<td>Column name of the y variable.</td>
+</tr>
+<tr class="odd">
+<td>color_col</td>
+<td>str</td>
+<td>Column name of the color column.</td>
+</tr>
+<tr class="even">
+<td>plot_palette_raw</td>
+<td>dict</td>
+<td>Dictionary of colors used in the plot.</td>
+</tr>
+<tr class="odd">
+<td>slopegraph_kwargs</td>
+<td>dict</td>
+<td>Keyword arguments for the slopegraph.</td>
+</tr>
+<tr class="even">
+<td>rawdata_axes</td>
+<td>Axes</td>
+<td>Matplotlib axis object to plot on.</td>
+</tr>
+<tr class="odd">
+<td>ytick_color</td>
+<td>str</td>
+<td>Color of the yticks.</td>
+</tr>
+<tr class="even">
+<td>temp_idx</td>
+<td>list</td>
+<td>List of indices of the contrast objects.</td>
+</tr>
+<tr class="odd">
+<td>horizontal</td>
+<td>bool</td>
+<td>If the plotting will be in horizontal format.</td>
+</tr>
+<tr class="even">
+<td>temp_all_plot_groups</td>
+<td>list</td>
+<td>List of all plot groups.</td>
+</tr>
+<tr class="odd">
+<td>plot_kwargs</td>
+<td>dict</td>
+<td>Keyword arguments for the plot.</td>
+</tr>
+<tr class="even">
+<td>group_summaries_kwargs</td>
+<td>dict</td>
+<td>Keyword arguments for group summaries, if applicable.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L987" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="delta_dots_plotter" class="level3">
+<h3 class="anchored" data-anchor-id="delta_dots_plotter">delta_dots_plotter</h3>
+<blockquote class="blockquote">
+<pre><code> delta_dots_plotter (plot_data:pandas.core.frame.DataFrame,
+                     contrast_axes:matplotlib.axes._axes.Axes,
+                     delta_id_col:str, idx:list, xvar:str, yvar:str,
+                     is_paired:bool, color_col:str, float_contrast:bool,
+                     plot_palette_raw:dict, delta_dot_kwargs:dict,
+                     horizontal:bool)</code></pre>
+</blockquote>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>plot_data</td>
+<td>DataFrame</td>
+<td>Dataframe of the plot data.</td>
+</tr>
+<tr class="even">
+<td>contrast_axes</td>
+<td>Axes</td>
+<td>Matplotlib axis object to plot on.</td>
+</tr>
+<tr class="odd">
+<td>delta_id_col</td>
+<td>str</td>
+<td>Column name of the delta id column.</td>
+</tr>
+<tr class="even">
+<td>idx</td>
+<td>list</td>
+<td>List of indices of the contrast objects.</td>
+</tr>
+<tr class="odd">
+<td>xvar</td>
+<td>str</td>
+<td>Column name of the x variable.</td>
+</tr>
+<tr class="even">
+<td>yvar</td>
+<td>str</td>
+<td>Column name of the y variable.</td>
+</tr>
+<tr class="odd">
+<td>is_paired</td>
+<td>bool</td>
+<td>Whether the data is paired.</td>
+</tr>
+<tr class="even">
+<td>color_col</td>
+<td>str</td>
+<td>Column name of the color column.</td>
+</tr>
+<tr class="odd">
+<td>float_contrast</td>
+<td>bool</td>
+<td>Whether the DABEST plot uses Gardner-Altman or Cummings</td>
+</tr>
+<tr class="even">
+<td>plot_palette_raw</td>
+<td>dict</td>
+<td>Dictionary of colors used in the plot.</td>
+</tr>
+<tr class="odd">
+<td>delta_dot_kwargs</td>
+<td>dict</td>
+<td>Keyword arguments for the delta dots.</td>
+</tr>
+<tr class="even">
+<td>horizontal</td>
+<td>bool</td>
+<td>If the rawplot is horizontal.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L897" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="delta_text_plotter" class="level3">
+<h3 class="anchored" data-anchor-id="delta_text_plotter">delta_text_plotter</h3>
+<blockquote class="blockquote">
+<pre><code> delta_text_plotter (results:pandas.core.frame.DataFrame,
+                     ax_to_plot:object, ticks_to_plot:list,
+                     delta_text_kwargs:dict, color_col:str,
+                     plot_palette_raw:dict, show_pairs:bool,
+                     float_contrast:bool, extra_delta:float,
+                     bootstraps_color_by_group:bool=False)</code></pre>
+</blockquote>
+<p><em>Add delta text to the contrast plot.</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>results</td>
+<td>DataFrame</td>
+<td></td>
+<td>Dataframe of contrast object comparisons.</td>
+</tr>
+<tr class="even">
+<td>ax_to_plot</td>
+<td>object</td>
+<td></td>
+<td>Matplotlib axis object to plot on.</td>
+</tr>
+<tr class="odd">
+<td>ticks_to_plot</td>
+<td>list</td>
+<td></td>
+<td>List of indices of the contrast objects.</td>
+</tr>
+<tr class="even">
+<td>delta_text_kwargs</td>
+<td>dict</td>
+<td></td>
+<td>Keyword arguments for the delta text.</td>
+</tr>
+<tr class="odd">
+<td>color_col</td>
+<td>str</td>
+<td></td>
+<td>Column name of the color column.</td>
+</tr>
+<tr class="even">
+<td>plot_palette_raw</td>
+<td>dict</td>
+<td></td>
+<td>Dictionary of colors used in the plot.</td>
+</tr>
+<tr class="odd">
+<td>show_pairs</td>
+<td>bool</td>
+<td></td>
+<td>Whether the data is paired and show pairs.</td>
+</tr>
+<tr class="even">
+<td>float_contrast</td>
+<td>bool</td>
+<td></td>
+<td>Whether the DABEST plot uses Gardner-Altman or Cummings.</td>
+</tr>
+<tr class="odd">
+<td>extra_delta</td>
+<td>float</td>
+<td></td>
+<td>The extra mini-meta or delta-delta value if applicable.</td>
+</tr>
+<tr class="even">
+<td>bootstraps_color_by_group</td>
+<td>bool</td>
+<td>False</td>
+<td>Whether to color the bootstraps by group. Default is False.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L865" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="add_bars_to_plot" class="level3">
+<h3 class="anchored" data-anchor-id="add_bars_to_plot">add_bars_to_plot</h3>
+<blockquote class="blockquote">
+<pre><code> add_bars_to_plot (bar_dict:dict, ax:matplotlib.axes._axes.Axes,
+                   bar_kwargs:dict)</code></pre>
+</blockquote>
+<p><em>Add bars to the relevant axes.</em></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>bar_dict</td>
+<td>dict</td>
+<td>Dictionary of bar values.</td>
+</tr>
+<tr class="even">
+<td>ax</td>
+<td>Axes</td>
+<td>Matplotlib axis object to plot on.</td>
+</tr>
+<tr class="odd">
+<td>bar_kwargs</td>
+<td>dict</td>
+<td>Keyword arguments for the bars.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L664" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="sankeydiag" class="level3">
+<h3 class="anchored" data-anchor-id="sankeydiag">sankeydiag</h3>
+<blockquote class="blockquote">
+<pre><code> sankeydiag (data:pandas.core.frame.DataFrame, xvar:str, yvar:str,
+             temp_all_plot_groups:list, idx:list, temp_idx:list,
+             left_labels:list=None, right_labels:list=None,
+             palette:str|dict=None, ax=None, flow:bool=True,
+             sankey:bool=True, one_sankey:bool=False, width:float=0.4,
+             right_color:bool=False, align:str='center', alpha:float=0.65,
+             horizontal:bool=False, **kwargs)</code></pre>
+</blockquote>
+<p><em>Read in melted pd.DataFrame, and draw multiple sankey diagram on a single axes using the value in column yvar according to the value in column xvar left_idx in the column xvar is on the left side of each sankey diagram right_idx in the column xvar is on the right side of each sankey diagram</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>data</td>
+<td>DataFrame</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>xvar</td>
+<td>str</td>
+<td></td>
+<td>x column to be plotted.</td>
+</tr>
+<tr class="odd">
+<td>yvar</td>
+<td>str</td>
+<td></td>
+<td>y column to be plotted.</td>
+</tr>
+<tr class="even">
+<td>temp_all_plot_groups</td>
+<td>list</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>idx</td>
+<td>list</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>temp_idx</td>
+<td>list</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>left_labels</td>
+<td>list</td>
+<td>None</td>
+<td>labels for the left side of the diagram. The diagram will be sorted by these labels.</td>
+</tr>
+<tr class="even">
+<td>right_labels</td>
+<td>list</td>
+<td>None</td>
+<td>labels for the right side of the diagram. The diagram will be sorted by these labels.</td>
+</tr>
+<tr class="odd">
+<td>palette</td>
+<td>str | dict</td>
+<td>None</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>ax</td>
+<td>NoneType</td>
+<td>None</td>
+<td>matplotlib axes to be drawn on</td>
+</tr>
+<tr class="odd">
+<td>flow</td>
+<td>bool</td>
+<td>True</td>
+<td>if True, draw the sankey in a flow, else draw 1 vs 1 Sankey diagram for each group comparison</td>
+</tr>
+<tr class="even">
+<td>sankey</td>
+<td>bool</td>
+<td>True</td>
+<td>if True, draw the sankey diagram, else draw barplot</td>
+</tr>
+<tr class="odd">
+<td>one_sankey</td>
+<td>bool</td>
+<td>False</td>
+<td>determined by the driver function on plotter.py, if True, draw the sankey diagram across the whole raw data axes</td>
+</tr>
+<tr class="even">
+<td>width</td>
+<td>float</td>
+<td>0.4</td>
+<td>the width of each sankey diagram</td>
+</tr>
+<tr class="odd">
+<td>right_color</td>
+<td>bool</td>
+<td>False</td>
+<td>if True, each strip of the diagram will be colored according to the corresponding left labels</td>
+</tr>
+<tr class="even">
+<td>align</td>
+<td>str</td>
+<td>center</td>
+<td>the alignment of each sankey diagram, can be ‘center’ or ‘left’</td>
+</tr>
+<tr class="odd">
+<td>alpha</td>
+<td>float</td>
+<td>0.65</td>
+<td>the transparency of each strip</td>
+</tr>
+<tr class="even">
+<td>horizontal</td>
+<td>bool</td>
+<td>False</td>
+<td>if True, the horizontal format for the sankey diagram will be used</td>
+</tr>
+<tr class="odd">
+<td>kwargs</td>
+<td>VAR_KEYWORD</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L354" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="single_sankey" class="level3">
+<h3 class="anchored" data-anchor-id="single_sankey">single_sankey</h3>
+<blockquote class="blockquote">
+<pre><code> single_sankey (left:&lt;built-infunctionarray&gt;, right:&lt;built-
+                infunctionarray&gt;, xpos:float=0, left_weight:&lt;built-
+                infunctionarray&gt;=None, right_weight:&lt;built-
+                infunctionarray&gt;=None, colorDict:dict=None,
+                left_labels:list=None, right_labels:list=None, ax=None,
+                flow:bool=True, sankey:bool=True, width=0.5, alpha=0.65,
+                bar_width=0.2, error_bar_on:bool=True, strip_on:bool=True,
+                one_sankey:bool=False, right_color:bool=False,
+                align:str='center', horizontal:bool=False)</code></pre>
+</blockquote>
+<p>*Make a single Sankey diagram showing proportion flow from left to right</p>
+<p>Original code from: https://github.com/anazalea/pySankey</p>
+<p>Changes are added to normalize each diagram’s height to be 1*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>left</td>
+<td>array</td>
+<td></td>
+<td>data on the left of the diagram</td>
+</tr>
+<tr class="even">
+<td>right</td>
+<td>array</td>
+<td></td>
+<td>data on the right of the diagram, len(left) == len(right)</td>
+</tr>
+<tr class="odd">
+<td>xpos</td>
+<td>float</td>
+<td>0</td>
+<td>the starting point on the x-axis</td>
+</tr>
+<tr class="even">
+<td>left_weight</td>
+<td>array</td>
+<td>None</td>
+<td>weights for the left labels, if None, all weights are 1</td>
+</tr>
+<tr class="odd">
+<td>right_weight</td>
+<td>array</td>
+<td>None</td>
+<td>weights for the right labels, if None, all weights are corresponding left_weight</td>
+</tr>
+<tr class="even">
+<td>colorDict</td>
+<td>dict</td>
+<td>None</td>
+<td>input format: {‘label’: ‘color’}</td>
+</tr>
+<tr class="odd">
+<td>left_labels</td>
+<td>list</td>
+<td>None</td>
+<td>labels for the left side of the diagram. The diagram will be sorted by these labels.</td>
+</tr>
+<tr class="even">
+<td>right_labels</td>
+<td>list</td>
+<td>None</td>
+<td>labels for the right side of the diagram. The diagram will be sorted by these labels.</td>
+</tr>
+<tr class="odd">
+<td>ax</td>
+<td>NoneType</td>
+<td>None</td>
+<td>matplotlib axes to be drawn on</td>
+</tr>
+<tr class="even">
+<td>flow</td>
+<td>bool</td>
+<td>True</td>
+<td>if True, draw the sankey in a flow, else draw 1 vs 1 Sankey diagram for each group comparison</td>
+</tr>
+<tr class="odd">
+<td>sankey</td>
+<td>bool</td>
+<td>True</td>
+<td>if True, draw the sankey diagram, else draw barplot</td>
+</tr>
+<tr class="even">
+<td>width</td>
+<td>float</td>
+<td>0.5</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>alpha</td>
+<td>float</td>
+<td>0.65</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>bar_width</td>
+<td>float</td>
+<td>0.2</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>error_bar_on</td>
+<td>bool</td>
+<td>True</td>
+<td>if True, draw error bar for each group comparison</td>
+</tr>
+<tr class="even">
+<td>strip_on</td>
+<td>bool</td>
+<td>True</td>
+<td>if True, draw strip for each group comparison</td>
+</tr>
+<tr class="odd">
+<td>one_sankey</td>
+<td>bool</td>
+<td>False</td>
+<td>if True, only draw one sankey diagram</td>
+</tr>
+<tr class="even">
+<td>right_color</td>
+<td>bool</td>
+<td>False</td>
+<td>if True, each strip of the diagram will be colored according to the corresponding left labels</td>
+</tr>
+<tr class="odd">
+<td>align</td>
+<td>str</td>
+<td>center</td>
+<td>if ‘center’, the diagram will be centered on each xtick, if ‘edge’, the diagram will be aligned with the left edge of each xtick</td>
+</tr>
+<tr class="even">
+<td>horizontal</td>
+<td>bool</td>
+<td>False</td>
+<td>if True, the horizontal format for the sankey diagram will be used</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L302" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="width_determine" class="level3">
+<h3 class="anchored" data-anchor-id="width_determine">width_determine</h3>
+<blockquote class="blockquote">
+<pre><code> width_determine (labels, data, pos='left')</code></pre>
+</blockquote>
+<p>*Calculates normalized width positions for a set of labels based on their associated data.</p>
+<p>This function is designed to determine width positions for plotting or graphical representation. It takes into account the cumulative weight of each label in the data and adjusts their positions accordingly. The function allows for adjusting the position of labels to either the ‘left’ or ‘right’.</p>
+<p>Parameters: labels (list): A list of labels whose width positions are to be calculated. data (DataFrame): A pandas DataFrame containing the data used for calculating width positions. The DataFrame should have columns corresponding to the ‘pos’ and ‘posWeight’. pos (str, optional): The position of labels. It can be either ‘left’ or ‘right’. Defaults to ‘left’.</p>
+<p>Returns: defaultdict: A dictionary where each key is a label and the value is another dictionary with keys ‘bottom’, ‘top’, and ‘pos’, representing the calculated width positions.</p>
+<p>Note: The function assumes that the data DataFrame contains columns named after the value of ‘pos’ and an additional column named ‘posWeight’ which represents the weight of each label.*</p>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L251" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="normalize_dict" class="level3">
+<h3 class="anchored" data-anchor-id="normalize_dict">normalize_dict</h3>
+<blockquote class="blockquote">
+<pre><code> normalize_dict (nested_dict, target)</code></pre>
+</blockquote>
+<p>*Normalizes the values in a nested dictionary based on a target dictionary.</p>
+<p>This function iterates through a nested dictionary, calculates the sum of values for each key across all sub-dictionaries, and then normalizes these values according to a target dictionary. The normalization is performed such that the values in each sub-dictionary are proportionally scaled to match the corresponding ‘right’ values in the target dictionary.</p>
+<p>Parameters: nested_dict (dict of dict): A nested dictionary where each key maps to another dictionary. The values in these inner dictionaries are subject to normalization. target (dict): A dictionary with the target values for normalization. Each key in nested_dict should have a corresponding key in target, and each target[key] should be a dictionary with a ‘right’ key containing the target normalization value.</p>
+<p>Returns: dict: The normalized nested dictionary. The original nested_dict is modified in place.</p>
+<p>Note: - If the sum of values for a particular key in nested_dict is zero, the normalized value is set to 0. - If a key in a sub-dictionary of nested_dict does not exist in the target dictionary, the corresponding ‘right’ value from the target dictionary is directly assigned. - The function modifies the input nested_dict in place and also returns it.*</p>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L225" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="check_data_matches_labels" class="level3">
+<h3 class="anchored" data-anchor-id="check_data_matches_labels">check_data_matches_labels</h3>
+<blockquote class="blockquote">
+<pre><code> check_data_matches_labels (labels, data, side:str)</code></pre>
+</blockquote>
+<p><em>Function to check that the labels and data match in the sankey diagram. And enforce labels and data to be lists. Raises an exception if the labels and data do not match.</em></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>labels</td>
+<td></td>
+<td>list of input labels</td>
+</tr>
+<tr class="even">
+<td>data</td>
+<td></td>
+<td>Pandas Series of input data</td>
+</tr>
+<tr class="odd">
+<td>side</td>
+<td>str</td>
+<td>‘left’ or ‘right’ on the sankey diagram</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L69" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="error_bar" class="level3">
+<h3 class="anchored" data-anchor-id="error_bar">error_bar</h3>
+<blockquote class="blockquote">
+<pre><code> error_bar (data:pandas.core.frame.DataFrame, x:str, y:str,
+            type:str='mean_sd', offset:float=0.2, ax=None,
+            line_color='black', gap_width_percent=1, pos:list=[0, 1],
+            method:str='gapped_lines', horizontal:bool=False,
+            **kwargs:dict)</code></pre>
+</blockquote>
+<p>*Function to plot the standard deviations as vertical errorbars. The mean is a gap defined by negative space.</p>
+<p>This function combines the functionality of gapped_lines(), proportional_error_bar(), and sankey_error_bar().*</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>data</td>
+<td>DataFrame</td>
+<td></td>
+<td>This DataFrame should be in ‘long’ format.</td>
+</tr>
+<tr class="even">
+<td>x</td>
+<td>str</td>
+<td></td>
+<td>x column to be plotted.</td>
+</tr>
+<tr class="odd">
+<td>y</td>
+<td>str</td>
+<td></td>
+<td>y column to be plotted.</td>
+</tr>
+<tr class="even">
+<td>type</td>
+<td>str</td>
+<td>mean_sd</td>
+<td>Choose from [‘mean_sd’, ‘median_quartiles’]. Plots the summary statistics for each group. If ‘mean_sd’, then the mean and standard deviation of each group is plotted as a gapped line. If ‘median_quantiles’, then the median and 25th and 75th percentiles of each group is plotted instead.</td>
+</tr>
+<tr class="odd">
+<td>offset</td>
+<td>float</td>
+<td>0.2</td>
+<td>Give a single float (that will be used as the x-offset of all gapped lines), or an iterable containing the list of x-offsets.</td>
+</tr>
+<tr class="even">
+<td>ax</td>
+<td>NoneType</td>
+<td>None</td>
+<td>If a matplotlib Axes object is specified, the gapped lines will be plotted in order on this axes. If None, the current axes (plt.gca()) is used.</td>
+</tr>
+<tr class="odd">
+<td>line_color</td>
+<td>str</td>
+<td>black</td>
+<td>The color of the gapped lines.</td>
+</tr>
+<tr class="even">
+<td>gap_width_percent</td>
+<td>int</td>
+<td>1</td>
+<td>The width of the gap in the gapped lines, as a percentage of the y-axis span.</td>
+</tr>
+<tr class="odd">
+<td>pos</td>
+<td>list</td>
+<td>[0, 1]</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>method</td>
+<td>str</td>
+<td>gapped_lines</td>
+<td>The method to use for drawing the error bars. Options are: ‘gapped_lines’, ‘proportional_error_bar’, and ‘sankey_error_bar’.</td>
+</tr>
+<tr class="odd">
+<td>horizontal</td>
+<td>bool</td>
+<td>False</td>
+<td>If True, the error bars will be horizontal. If False, the error bars will be vertical.</td>
+</tr>
+<tr class="even">
+<td>kwargs</td>
+<td>dict</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L53" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="get_swarm_spans" class="level3">
+<h3 class="anchored" data-anchor-id="get_swarm_spans">get_swarm_spans</h3>
+<blockquote class="blockquote">
+<pre><code> get_swarm_spans (coll)</code></pre>
+</blockquote>
+<p><em>Given a matplotlib Collection, will obtain the x and y spans for the collection. Will return None if this fails.</em></p>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L31" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="halfviolin" class="level3">
+<h3 class="anchored" data-anchor-id="halfviolin">halfviolin</h3>
+<blockquote class="blockquote">
+<pre><code> halfviolin (v, half='right', fill_color='k', alpha=1, line_color='k',
+             line_width=0)</code></pre>
+</blockquote>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L2189" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="swarmplot" class="level3">
+<h3 class="anchored" data-anchor-id="swarmplot">SwarmPlot</h3>
+<blockquote class="blockquote">
+<pre><code> SwarmPlot (data:pandas.core.frame.DataFrame, x:str, y:str,
+            ax:matplotlib.axes._axes.Axes, order:List=None, hue:str=None,
+            palette:Union[Iterable,str]='black', zorder:float=1,
+            size:float=5, side:str='center', jitter:float=1,
+            horizontal:bool=False)</code></pre>
+</blockquote>
+<p><em>Initialize a SwarmPlot instance.</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>data</td>
+<td>DataFrame</td>
+<td></td>
+<td>The input data as a pandas DataFrame.</td>
+</tr>
+<tr class="even">
+<td>x</td>
+<td>str</td>
+<td></td>
+<td>The column in the DataFrame to be used as the x-axis.</td>
+</tr>
+<tr class="odd">
+<td>y</td>
+<td>str</td>
+<td></td>
+<td>The column in the DataFrame to be used as the y-axis.</td>
+</tr>
+<tr class="even">
+<td>ax</td>
+<td>Axes</td>
+<td></td>
+<td>Matplotlib axes.Axes object for which the plot would be drawn on.</td>
+</tr>
+<tr class="odd">
+<td>order</td>
+<td>List</td>
+<td>None</td>
+<td>The order in which x-axis categories should be displayed. Default is None.</td>
+</tr>
+<tr class="even">
+<td>hue</td>
+<td>str</td>
+<td>None</td>
+<td>The column in the DataFrame that determines the grouping for color.<br>If None (by default), it assumes that it is being grouped by x.</td>
+</tr>
+<tr class="odd">
+<td>palette</td>
+<td>Union</td>
+<td>black</td>
+<td>The color palette to be used for plotting. Default is “black”.</td>
+</tr>
+<tr class="even">
+<td>zorder</td>
+<td>float</td>
+<td>1</td>
+<td>The z-order for drawing the swarm plot wrt other matplotlib drawings. Default is 1.</td>
+</tr>
+<tr class="odd">
+<td>size</td>
+<td>float</td>
+<td>5</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>side</td>
+<td>str</td>
+<td>center</td>
+<td>The side on which points are swarmed (“center”, “left”, or “right”). Default is “center”.</td>
+</tr>
+<tr class="odd">
+<td>jitter</td>
+<td>float</td>
+<td>1</td>
+<td>Determines the distance between points. Default is 1.</td>
+</tr>
+<tr class="even">
+<td>horizontal</td>
+<td>bool</td>
+<td>False</td>
+<td>If True, the swarm plot is drawn horizontally. Default is False.</td>
+</tr>
+<tr class="odd">
+<td><strong>Returns</strong></td>
+<td><strong>None</strong></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/acclab/DABEST-python/blob/master/dabest/plot_tools.py#L2119" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="swarmplot-1" class="level3">
+<h3 class="anchored" data-anchor-id="swarmplot-1">swarmplot</h3>
+<blockquote class="blockquote">
+<pre><code> swarmplot (data:pandas.core.frame.DataFrame, x:str, y:str,
+            ax:matplotlib.axes._axes.Axes, order:List=None, hue:str=None,
+            palette:Union[Iterable,str]='black', zorder:float=1,
+            size:float=5, side:str='center', jitter:float=1,
+            filled:Union[bool,List,Tuple]=True, is_drop_gutter:bool=True,
+            gutter_limit:float=0.5, horizontal:bool=False, **kwargs)</code></pre>
+</blockquote>
+<p><em>API to plot a swarm plot.</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>data</td>
+<td>DataFrame</td>
+<td></td>
+<td>The input data as a pandas DataFrame.</td>
+</tr>
+<tr class="even">
+<td>x</td>
+<td>str</td>
+<td></td>
+<td>The column in the DataFrame to be used as the x-axis.</td>
+</tr>
+<tr class="odd">
+<td>y</td>
+<td>str</td>
+<td></td>
+<td>The column in the DataFrame to be used as the y-axis.</td>
+</tr>
+<tr class="even">
+<td>ax</td>
+<td>Axes</td>
+<td></td>
+<td>Matplotlib axes.Axes object for which the plot would be drawn on. Default is None.</td>
+</tr>
+<tr class="odd">
+<td>order</td>
+<td>List</td>
+<td>None</td>
+<td>The order in which x-axis categories should be displayed. Default is None.</td>
+</tr>
+<tr class="even">
+<td>hue</td>
+<td>str</td>
+<td>None</td>
+<td>The column in the DataFrame that determines the grouping for color.<br>If None (by default), it assumes that it is being grouped by x.</td>
+</tr>
+<tr class="odd">
+<td>palette</td>
+<td>Union</td>
+<td>black</td>
+<td>The color palette to be used for plotting. Default is “black”.</td>
+</tr>
+<tr class="even">
+<td>zorder</td>
+<td>float</td>
+<td>1</td>
+<td>The z-order for drawing the swarm plot wrt other matplotlib drawings. Default is 1.</td>
+</tr>
+<tr class="odd">
+<td>size</td>
+<td>float</td>
+<td>5</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>side</td>
+<td>str</td>
+<td>center</td>
+<td>The side on which points are swarmed (“center”, “left”, or “right”). Default is “center”.</td>
+</tr>
+<tr class="odd">
+<td>jitter</td>
+<td>float</td>
+<td>1</td>
+<td>Determines the distance between points. Default is 1.</td>
+</tr>
+<tr class="even">
+<td>filled</td>
+<td>Union</td>
+<td>True</td>
+<td>Determines whether the dots in the swarmplot are filled or not. If set to False,<br>dots are not filled. If provided as a List or Tuple, it should contain boolean values,<br>each corresponding to a swarm group in order, indicating whether the dot should be<br>filled or not.</td>
+</tr>
+<tr class="odd">
+<td>is_drop_gutter</td>
+<td>bool</td>
+<td>True</td>
+<td>If True, drop points that hit the gutters; otherwise, readjust them.</td>
+</tr>
+<tr class="even">
+<td>gutter_limit</td>
+<td>float</td>
+<td>0.5</td>
+<td>The limit for points hitting the gutters.</td>
+</tr>
+<tr class="odd">
+<td>horizontal</td>
+<td>bool</td>
+<td>False</td>
+<td>If True, the swarm plot is drawn horizontally. Default is False.</td>
+</tr>
+<tr class="even">
+<td>kwargs</td>
+<td>VAR_KEYWORD</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><strong>Returns</strong></td>
+<td><strong>axes.Axes</strong></td>
+<td></td>
+<td><strong>Matplotlib axes.Axes object for which the swarm plot has been drawn on.</strong></td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/acclab\.github\.io\/DABEST-python");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/acclab/DABEST-python/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
