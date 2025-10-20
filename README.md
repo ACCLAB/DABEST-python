@@ -14,46 +14,64 @@ citation](https://zenodo.org/badge/DOI/10.1038/s41592-019-0470-3.svg)](https://r
 
 ## Recent Version Update
 
-Dear Dabest users ✨**DABEST Bingka v2025.10.20** for Python is now
-released! ✨
+**✨ DABEST “Bingka” v2025.10.20 for Python is now released! ✨**
 
-This new version of the DABEST Python library includes new features,
-updated graphics, and improved calculations.
+Dear DABEST users, The latest version of the DABEST Python library
+brings new visualizations, refined plots, and improved accuracy.
 
-1.  **Whorlmap 🌀**: Introducing a new way to visualize effect sizes
-    from multiple comparisons in a grid of whorled square cells. This
-    design condenses information from full bootstrap distributions of an
-    array of contrast objects into a compact visual representation. It
-    optimizes visual real estate by presenting a clear impression of the
-    whole dataset at a glance while retaining nuanced distributional
-    information for further scrutiny. Whorlmaps are a space-efficient
-    alternative to stacked forest plots when working with
-    multi-dimensional DABEST objects from large scale experiments.
+1.  **Whorlmap 🌀: Compact visualization for multi-dimensional effects**
 
-2.  **Slopegraphs have a new look 📈**: Slopegraphs for paired
-    continuous data now show summary statistics for each group. By
-    default, a thick trend line connects group means, with vertical bars
-    indicating standard deviation. Users can choose the summary type via
-    the `group_summaries` argument in .plot() — options include
-    `'mean_sd'`, `'median_quartiles'`, or `None`. Appearance can be
-    customized using `group_summaries_kwargs`. See the group summaries
-    section in the Plot Aesthetics tutorial for more details.
+    Introducing Whorlmap, a new way to visualize effect sizes from
+    multiple comparisons in a compact, grid-based format.
 
-3.  **Fixed Mini-meta Weighted Delta Calculation 🧮**: The weighted
-    delta in mini-meta plots has been updated to ensure accurate
-    calculation and reporting of the weighted delta.
+    Whorlmaps condense information from the full bootstrap distributions
+    of many contrast objects into a 2D heatmap-style grid of “whorled”
+    cells. This provides an overview of the entire dataset while
+    preserving the underlying distributional detail.
 
-4.  **Expanded custom_palette functionality 🎨**:
+    They are especially useful for large-scale or multi-condition
+    experiments, serving as a space-efficient alternative to stacked
+    forest plots.
 
-    - **Barplots (unpaired, proportional)**: The custom_palette dict can
-      now take 0 and 1 as keys to color the filled and unfilled portions
-      of the plots. See the custom palette section in the Plot
-      Aesthetics tutorial for more details.
+    You can generate a Whorlmap directly from multi-dimensional DABEST
+    objects using the `.whorlmap()` method. See the [Whorlmap
+    tutorial](10-whorlmap.html) for more details.
 
-    - **Slopegraphs (paired, non proportional)**: The custom_palette can
-      now be used to color the contrast bars and effect-size curves. See
-      the custom palette section in the Plot Aesthetics tutorial for
-      more details.
+2.  **Slopegraphs 📈: Enhanced summaries for paired data**
+
+    Slopegraphs for paired continuous data now display group summary
+    statistics.
+
+    - By default, a thick trend line connects group means, with vertical
+      bars showing standard deviation.
+
+    - Choose the summary type via the group_summaries argument in
+      `.plot()` — options include `'mean_sd'`, `'median_quartiles'`, or
+      `None`.
+
+    - Customize appearance with `group_summaries_kwargs`.
+
+    See the Group Summaries section in the [Plot Aesthetics
+    tutorial](08-plot_aesthetics.html) for more details.
+
+3.  **Mini-meta Weighted Delta Fix 🧮**
+
+    The weighted delta calculation in mini-meta plots has been updated
+    for greater accuracy and consistency.
+
+4.  **Expanded custom_palette functionality 🎨**
+
+    - Barplots (unpaired, proportional): `custom_palette` can now take
+      `0` and `1` as dictionary keys to color the filled and unfilled
+      portions of the plot.
+
+    - Slopegraphs (paired, non-proportional): `custom_palette` can now
+      color contrast bars and effect-size curves.
+
+See the Custom Palette section in the [Plot Aesthetics
+tutorial](08-plot_aesthetics.html) for examples.
+
+Thank you for your continued support! *The DABEST Development Team*
 
 ## Contents
 
