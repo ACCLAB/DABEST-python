@@ -70,7 +70,7 @@ def error_bar(
     data: pd.DataFrame,  # This DataFrame should be in 'long' format.
     x: str,  # x column to be plotted.
     y: str,  # y column to be plotted.
-    type: str = "mean_sd",  # Choose from ['mean_sd', 'median_quartiles']. Plots the summary statistics for each group. If 'mean_sd', then the mean and standard deviation of each group is plotted as a gapped line. If 'median_quantiles', then the median and 25th and 75th percentiles of each group is plotted instead.
+    type: str = "mean_sd",  # Choose from ['mean_sd', 'median_quartiles']. Plots the summary statistics for each group. If 'mean_sd', then the mean and standard deviation of each group is plotted as a gapped line. For proportion and Sankey plots, the error shown is the binomial standard error (BSE), sqrt(p(1-p)/n), rather than the SD. If 'median_quantiles', then the median and 25th and 75th percentiles of each group is plotted instead.
     offset: float = 0.2,  # Give a single float (that will be used as the x-offset of all gapped lines), or an iterable containing the list of x-offsets.
     ax=None,  # If a matplotlib Axes object is specified, the gapped lines will be plotted in order on this axes. If None, the current axes (plt.gca()) is used.
     line_color="black",  # The color of the gapped lines.
@@ -85,10 +85,9 @@ def error_bar(
 ):
     """
     Function to plot the standard deviations as vertical errorbars.
+    For proportion and Sankey plots, the vertical bars instead show the
+    BSE of the proportion.
     The mean is a gap defined by negative space.
-
-    This function combines the functionality of gapped_lines(),
-    proportional_error_bar(), and sankey_error_bar().
 
     """
 

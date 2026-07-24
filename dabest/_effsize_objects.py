@@ -1304,7 +1304,7 @@ class EffectSizeDataFrame(object):
         group_summaries : ['mean_sd', 'median_quartiles', 'None'], default "mean_sd".
             Plots the summary statistics for each group. If 'mean_sd', then
             the mean and standard deviation of each group is plotted as a
-            notched line beside each group. If 'median_quantiles', then the
+            notched line beside each group. For proportion and Sankey plots, this error is the binomial standard error (BSE), sqrt(p(1-p)/n), not the SD. If 'median_quantiles', then the
             median and 25th and 75th percentiles of each group is plotted
             instead. If 'None', the summaries are not shown.
         fig_size : tuple, default None
