@@ -132,15 +132,15 @@ Please refer to the official [tutorial](https://acclab.github.io/DABEST-python/)
 
 ## How to cite
 
-**Getting over ANOVA: Estimation graphics for multi-group comparisons**
+**Getting over ANOVA: estimation graphics for multi-group comparisons**
 
-*Zinan Lu, Jonathan Anns, Yishan Mai, Rou Zhang, Kahseng Lian, Nicole MynYi Lee, Shan Hashir, Lucas Wang Zhuoyu, A. Rosa Castillo Gonzalez, Joses Ho, Hyungwon Choi, Sangyu Xu, Adam Claridge-Chang*
+*Zinan Lu, Jonathan Anns, Yishan Mai, Rou Zhang, Kahseng Lian, Nicole MynYi Lee, Shan Hashir, Lucas Zhuoyu Wang, Yixuan Li, A. Rosa Castillo Gonzalez, Joses Ho, Hyungwon Choi, Sangyu Xu, Adam Claridge-Chang*
 
-bioRxiv preprint 2026. [10.64898/2026.01.26.701654](http://dx.doi.org/10.64898/2026.01.26.701654)
+Nature Methods 2026, 1548-7105. [10.1038/s41592-026-03187-7](https://doi.org/10.1038/s41592-026-03187-7)
 
-[PDF](https://www.biorxiv.org/content/10.64898/2026.01.26.701654v1.full.pdf)
+[Paywalled publisher site](https://www.nature.com/articles/s41592-026-03187-7)
 
-**Moving beyond P values: Everyday data analysis with estimation plots**
+**Moving beyond P values: data analysis with estimation graphics**
 
 *Joses Ho, Tayfun Tumkaya, Sameer Aryal, Hyungwon Choi, Adam Claridge-Chang*
 
@@ -164,7 +164,7 @@ If you have any specific comments and ideas for new features that you would like
 
 ## Acknowledgements
 
-We would like to thank alpha testers from the [Claridge-Chang lab](https://www.claridgechang.net/): [Sangyu Xu](https://github.com/sangyu), [Xianyuan Zhang](https://github.com/XYZfar), [Farhan Mohammad](https://github.com/farhan8igib), Jurga Mituzaitė, and Stanislav Ott.
+We would like to thank alpha testers from the [Claridge-Chang lab](https://www.claridgechang.net/): [Sangyu Xu](https://github.com/sangyu), [Xianyuan Zhang](https://github.com/XYZfar), [Farhan Mohammad](https://github.com/farhan8igib), Jurga Mituzaitė, Stanislav Ott, [Tayfun Tumkaya](https://github.com/ttumkaya), [Jonathan Anns](https://github.com/JAnns98), [Nicole Lee](https://github.com/mnicolee) and [Yishan Mai](https://github.com/maiyishan).
 
 ## Testing
 
