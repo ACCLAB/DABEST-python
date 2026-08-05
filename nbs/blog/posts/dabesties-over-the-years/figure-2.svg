@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="395.550456pt" height="342.72pt" viewBox="0 0 395.550456 342.72" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-07-30T01:28:21.839982</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.6, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 342.72 
+L 395.550456 342.72 
+L 395.550456 0 
+L 0 0 
+L 0 342.72 
+z
+" style="fill: none"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 355.122528 161.169952 
+C 352.55763 128.213546 337.641969 97.410685 313.377913 74.961651 
+C 289.113856 52.512618 257.246518 40.032 224.190451 40.032 
+L 224.190454 112.2624 
+C 239.065684 112.2624 253.405986 117.878678 264.324812 127.980743 
+C 275.243637 138.082808 281.955684 151.944096 283.109889 166.774478 
+z
+" style="fill: #377eb8"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 247.511592 300.600736 
+C 279.526112 294.823803 308.279404 277.352425 328.155586 251.598982 
+C 348.031769 225.845538 357.64673 193.603438 355.122528 161.169952 
+L 283.109889 166.774478 
+C 284.245779 181.369547 279.919047 195.878492 270.974765 207.467542 
+C 262.030483 219.056591 249.091501 226.918711 234.684967 229.518331 
+z
+" style="fill: #ff7f00"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 127.482536 260.211685 
+C 142.461649 276.515247 161.323119 288.769212 182.306992 295.830155 
+C 203.290863 302.891099 225.723472 304.532345 247.511592 300.600736 
+L 234.684967 229.518331 
+C 224.880313 231.287555 214.785639 230.548995 205.342897 227.37157 
+C 195.900154 224.194145 187.412493 218.679861 180.671892 211.343258 
+z
+" style="fill: #48a545"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 95.871079 199.309606 
+C 98.33712 210.631447 102.290765 221.577276 107.628936 231.861703 
+C 112.967108 242.146125 119.642996 251.678973 127.482536 260.211685 
+L 180.671892 211.343258 
+C 177.144099 207.503538 174.139949 203.213756 171.737772 198.585766 
+C 169.335595 193.957774 167.556455 189.032151 166.446736 183.937323 
+z
+" style="fill: #b374ee"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 99.10327 131.357018 
+C 95.604786 142.296592 93.556458 153.647993 93.010769 165.12039 
+C 92.465072 176.592787 93.426728 188.087359 95.871079 199.309606 
+L 166.446736 183.937323 
+C 165.346779 178.887312 164.914033 173.714754 165.159597 168.552175 
+C 165.405157 163.389597 166.326905 158.281467 167.901222 153.358658 
+z
+" style="fill: #ffff33"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 111.957194 103.163681 
+C 109.268468 107.588619 106.843773 112.168703 104.695828 116.87993 
+C 102.547883 121.591157 100.680438 126.425295 99.10327 131.357018 
+L 167.901222 153.358658 
+C 168.610948 151.139383 169.451298 148.96402 170.417874 146.843968 
+C 171.384449 144.723916 172.475562 142.662879 173.685488 140.671656 
+z
+" style="fill: #f781bf"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 224.190458 40.032 
+C 201.637998 40.032 179.461218 45.841269 159.805078 56.897924 
+C 140.148937 67.954578 123.668288 83.890291 111.957194 103.163681 
+L 173.685488 140.671656 
+C 178.95548 131.998631 186.371773 124.82756 195.217036 119.852066 
+C 204.062299 114.876571 214.04185 112.2624 224.190457 112.2624 
+z
+" style="fill: #999999"/>
+   </g>
+   <g id="AnnotationBbox_1">
+    <g id="text_1">
+     <text style="font-weight: 600; font-size: 7px; font-family: 'Inter'; text-anchor: start" x="271.058158" y="100.95272" transform="rotate(-0 271.058158 100.95272)">Medicine</text>
+    </g>
+    <g id="text_2">
+     <text style="font-size: 7px; font-family: 'Inter'; text-anchor: start" x="265.747455" y="110.473658" transform="rotate(-0 265.747455 110.473658)">322 (23.8%)</text>
+    </g>
+   </g>
+   <g id="AnnotationBbox_2">
+    <g id="text_3">
+     <text style="font-weight: 600; font-size: 7px; font-family: 'Inter'; text-anchor: start" x="273.37878" y="224.598855" transform="rotate(-0 273.37878 224.598855)">Neuroscience</text>
+    </g>
+    <g id="text_4">
+     <text style="font-size: 7px; font-family: 'Inter'; text-anchor: start" x="276.860733" y="234.119793" transform="rotate(-0 276.860733 234.119793)">317 (23.4%)</text>
+    </g>
+   </g>
+   <g id="AnnotationBbox_3">
+    <g id="text_5">
+     <text style="font-weight: 600; font-size: 7px; font-family: 'Inter'" transform="translate(171.475087 242.620514)">Biochemistry,</text>
+     <text style="font-weight: 600; font-size: 7px; font-family: 'Inter'" transform="translate(172.639383 251.205795)">Genetics and</text>
+     <text style="font-weight: 600; font-size: 7px; font-family: 'Inter'" transform="translate(178.02993 259.763733)">Molecular</text>
+     <text style="font-weight: 600; font-size: 7px; font-family: 'Inter'" transform="translate(182.221727 268.661608)">Biology</text>
+    </g>
+    <g id="text_6">
+     <text style="font-size: 7px; font-family: 'Inter'; text-anchor: start" x="175.548758" y="278.264577" transform="rotate(-0 175.548758 278.264577)">217 (16.0%)</text>
+    </g>
+   </g>
+   <g id="AnnotationBbox_4">
+    <g id="text_7">
+     <text style="font-weight: 600; font-size: 7px; font-family: 'Inter'" transform="translate(118.180507 206.503767)">Environmental</text>
+     <text style="font-weight: 600; font-size: 7px; font-family: 'Inter'" transform="translate(129.046913 215.061704)">Science</text>
+    </g>
+    <g id="text_8">
+     <text style="font-size: 7px; font-family: 'Inter'; text-anchor: start" x="125.081523" y="224.582642" transform="rotate(-0 125.081523 224.582642)">114 (8.4%)</text>
+    </g>
+   </g>
+   <g id="AnnotationBbox_5">
+    <g id="text_9">
+     <text style="font-weight: 600; font-size: 7px; font-family: 'Inter'" transform="translate(110.186709 159.865279)">Agriculture &amp;</text>
+     <text style="font-weight: 600; font-size: 7px; font-family: 'Inter'" transform="translate(109.538662 168.505248)">Bio. Sciences</text>
+    </g>
+    <g id="text_10">
+     <text style="font-size: 7px; font-family: 'Inter'; text-anchor: start" x="115.046787" y="178.026186" transform="rotate(-0 115.046787 178.026186)">113 (8.3%)</text>
+    </g>
+   </g>
+   <g id="patch_9">
+    <path d="M 50.852573 105.145978 
+Q 76.796513 110.799902 102.740453 116.453827 
+" style="fill: none; stroke: #b0b0aa; stroke-width: 0.5; stroke-linecap: round"/>
+   </g>
+   <g id="text_11">
+    <text style="font-weight: 600; font-size: 7px; font-family: 'Inter'; text-anchor: end; fill: #3a3a38" x="46.897656" y="101.749478" transform="rotate(-0 46.897656 101.749478)">Psychology</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 7px; font-family: 'Inter'; text-anchor: end; fill: #3a3a38" x="46.897656" y="108.352447" transform="rotate(-0 46.897656 108.352447)">51 (3.8%)</text>
+   </g>
+   <g id="AnnotationBbox_6">
+    <g id="text_13">
+     <text style="font-weight: 600; font-size: 7px; font-family: 'Inter'" transform="translate(163.686199 84.029166)">Other (19</text>
+     <text style="font-weight: 600; font-size: 7px; font-family: 'Inter'" transform="translate(168.445652 92.587103)">fields)</text>
+    </g>
+    <g id="text_14">
+     <text style="font-size: 7px; font-family: 'Inter'; text-anchor: start" x="159.690183" y="102.108041" transform="rotate(-0 159.690183 102.108041)">221 (16.3%)</text>
+    </g>
+   </g>
+   <g id="text_15">
+    <text style="font-weight: 700; font-size: 20px; font-family: 'Inter'; text-anchor: middle; fill: #4a4a46" x="224.190456" y="167.401415" transform="rotate(-0 224.190456 167.401415)">1,355</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 14px; font-family: 'Inter'; text-anchor: middle; fill: #7a7a72" x="224.190456" y="194.808575" transform="rotate(-0 224.190456 194.808575)">citing works</text>
+   </g>
+  </g>
+ </g>
+</svg>
