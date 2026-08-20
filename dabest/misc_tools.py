@@ -546,6 +546,7 @@ def get_color_palette(
 
     # Create color palette that will be shared across subplots.
     color_col = plot_kwargs["color_col"]
+
     if color_col is None:
         color_groups = pd.unique(plot_data[xvar])
         bootstraps_color_by_group = True
@@ -555,10 +556,10 @@ def get_color_palette(
         color_groups = pd.unique(plot_data[color_col])
         bootstraps_color_by_group = False
     if show_pairs:
-        if sankey:
-            bootstraps_color_by_group = False
-        elif plot_kwargs["custom_palette"] is not None:
+        if plot_kwargs["custom_palette"] is not None:
             if delta2:
+                bootstraps_color_by_group = False
+            elif sankey:
                 bootstraps_color_by_group = False
             else:
                 if color_col is None:
@@ -568,7 +569,10 @@ def get_color_palette(
                     if color_col not in plot_data.columns:
                         raise KeyError("``{}`` is not a column in the data.".format(color_col))
                     color_groups = pd.unique(plot_data[color_col])
-                    bootstraps_color_by_group = False
+                    bootstraps_color_by_group = False    
+        else:
+            bootstraps_color_by_group = False
+        
 
     # Handle the color palette.
     filled = True
