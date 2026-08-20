@@ -28,7 +28,7 @@ dev = ['pytest~=8.3.4', 'pytest-mpl~=0.17.0']
 version = {attr = "dabest.__version__"}
 
 [tool.setuptools.packages.find]
-include = ["dabest"]
+include = ["dabest", "dabest.*"]
 
 [tool.nbdev]
 branch = 'master'

@@ -555,13 +555,20 @@ def get_color_palette(
         color_groups = pd.unique(plot_data[color_col])
         bootstraps_color_by_group = False
     if show_pairs:
-        if plot_kwargs["custom_palette"] is not None:
-            if delta2 or sankey:
+        if sankey:
+            bootstraps_color_by_group = False
+        elif plot_kwargs["custom_palette"] is not None:
+            if delta2:
                 bootstraps_color_by_group = False
             else:
-                bootstraps_color_by_group = True
-        else:
-            bootstraps_color_by_group = False
+                if color_col is None:
+                    color_groups = pd.unique(plot_data[xvar])
+                    bootstraps_color_by_group = True
+                else:
+                    if color_col not in plot_data.columns:
+                        raise KeyError("``{}`` is not a column in the data.".format(color_col))
+                    color_groups = pd.unique(plot_data[color_col])
+                    bootstraps_color_by_group = False
 
     # Handle the color palette.
     filled = True
