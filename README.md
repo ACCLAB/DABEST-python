@@ -11,7 +11,7 @@
 
 ## Recent Version Update
 
-**✨ DABEST "Bingka" v2025.10.20 for Python is now released! ✨**
+**✨ DABEST “Bingka” v2025.10.20 for Python is now released! ✨**
 
 Dear DABEST users,
 The latest version of the DABEST Python library brings new visualizations, refined plots, and improved accuracy.
@@ -20,7 +20,7 @@ The latest version of the DABEST Python library brings new visualizations, refin
 
     Introducing **Whorlmap**, a new way to visualize effect sizes from multiple comparisons in a compact, grid-based format.
 
-    Whorlmaps condense information from the full bootstrap distributions of many contrast objects into a **2D heatmap-style grid of "whorled" cells**. This provides an overview of the entire dataset while preserving the underlying distributional detail.
+    Whorlmaps condense information from the full bootstrap distributions of many contrast objects into a **2D heatmap-style grid of “whorled” cells**. This provides an overview of the entire dataset while preserving the underlying distributional detail.
 
     They are especially useful for large-scale or multi-condition experiments, serving as a **space-efficient alternative to stacked forest plots**.
 
