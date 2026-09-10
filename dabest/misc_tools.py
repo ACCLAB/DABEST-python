@@ -546,6 +546,7 @@ def get_color_palette(
 
     # Create color palette that will be shared across subplots.
     color_col = plot_kwargs["color_col"]
+
     if color_col is None:
         color_groups = pd.unique(plot_data[xvar])
         bootstraps_color_by_group = True
@@ -555,11 +556,10 @@ def get_color_palette(
         color_groups = pd.unique(plot_data[color_col])
         bootstraps_color_by_group = False
     if show_pairs:
-        if plot_kwargs["custom_palette"] is not None:
-            if delta2 or sankey:
-                bootstraps_color_by_group = False
-            else:
-                bootstraps_color_by_group = True
+        # When `color_col` is given, the palette is keyed by the `color_col`
+        # categories, so the bootstraps cannot be coloured by the x-axis group.
+        if plot_kwargs["custom_palette"] is not None and color_col is None:
+            bootstraps_color_by_group = not (delta2 or sankey)
         else:
             bootstraps_color_by_group = False
 
@@ -632,7 +632,14 @@ def get_color_palette(
                     k: custom_pal[k] for k in all_plot_groups if k in color_groups
                 }
             else:
-                raise ValueError("The `custom_palette` dictionary is not supported when `color_col` is not None.")
+                missing = [k for k in color_groups if k not in custom_pal]
+                if missing:
+                    err1 = "The `custom_palette` dictionary is missing colors for the "
+                    err2 = "following `{}` groups: {}.".format(color_col, missing)
+                    raise ValueError(err1 + err2)
+                groups_in_palette = {
+                    k: custom_pal[k] for k in color_groups
+                }
 
             names = groups_in_palette.keys()
             unsat_colors = groups_in_palette.values()
