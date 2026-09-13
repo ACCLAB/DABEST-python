@@ -110,7 +110,7 @@ def summary_ci_1group(
     boots = compute_1group_bootstraps(
         x, func, resamples=resamples, random_seed=random_seed, *args, **kwargs
     )
-    bias = compute_1group_bias_correction(x, boots, func)
+    bias = compute_1group_bias_correction(x, boots, func, *args, **kwargs)
 
     jk = compute_1group_jackknife(x, func, *args, **kwargs)
     accel = compute_1group_acceleration(jk)
@@ -131,7 +131,7 @@ def summary_ci_1group(
     del boots_sorted
 
     out = {
-        "summary": func(x),
+        "summary": func(x, *args, **kwargs),
         "func": func,
         "bca_ci_low": low,
         "bca_ci_high": high,
