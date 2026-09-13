@@ -116,7 +116,7 @@ def summary_ci_1group(
     accel = compute_1group_acceleration(jk)
     del jk
 
-    ci_idx = ci2g.compute_interval_limits(bias, accel, resamples, alpha)
+    ci_idx = ci2g.compute_interval_limits(bias, accel, resamples, 100 * (1 - alpha))
 
     boots_sorted = npsort(boots)
 
