@@ -227,10 +227,10 @@ def compute_delta2_bootstrapped_diff(
         delta_g = ((np.mean(x4) - np.mean(x3)) - (np.mean(x2) - np.mean(x1)))
     else:
         # Calculate pooled sample standard deviation for non-proportional data
-        stds = [np.std(x) for x in [x1, x2, x3, x4]]
         ns = [len(x) for x in [x1, x2, x3, x4]]
-        
-        sd_numerator = sum((n - 1) * s**2 for n, s in zip(ns, stds))
+        # Residual sums of squares also handle singleton groups: they contribute
+        # zero residual variation and zero degrees of freedom.
+        sd_numerator = sum(np.sum((x - np.mean(x)) ** 2) for x in [x1, x2, x3, x4])
         sd_denominator = sum(n - 1 for n in ns)
         
         if sd_denominator == 0:
