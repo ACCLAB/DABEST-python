@@ -1736,16 +1736,11 @@ class PermutationTest:
 
         for i in range(int(self.__permutation_count)):
             if is_paired:
-                # Select which control-test pairs to swap.
-                random_idx = rng.choice(CONTROL_LEN,
-                                rng.randint(0, CONTROL_LEN+1),
-                                replace=False)
-
-                # Perform swap.
-                for i in random_idx:
-                    _placeholder      = control_sample[i]
-                    control_sample[i] = test_sample[i]
-                    test_sample[i]    = _placeholder
+                # Independently swap each original pair with probability 1/2.
+                # Each permutation must start from the observed samples.
+                swap = rng.randint(0, 2, size=CONTROL_LEN).astype(bool)
+                control_sample = np.where(swap, test, control)
+                test_sample = np.where(swap, control, test)
                 
             else:
                 # Shuffle the bag and assign to control and test groups.
@@ -1755,8 +1750,8 @@ class PermutationTest:
                 test_sample    = shuffled[CONTROL_LEN:]
 
 
-            es = two_group_difference(control_sample, test_sample, 
-                                    False, effect_size)
+            es = two_group_difference(control_sample, test_sample,
+                                      is_paired, effect_size)
             
             group_var = calculate_group_var(var(control_sample, ddof=1), 
                                       CONTROL_LEN, 
@@ -1776,7 +1771,12 @@ class PermutationTest:
             # https://rdrr.io/cran/statmod/src/R/permp.R
             # (assumes two-sided test)
 
-            if CONTROL_LEN == TEST_LEN:
+            if is_paired:
+                # Keep the count in floating point, as in the unpaired path.
+                # Very large paired spaces use the limiting integral bounds.
+                with np.errstate(over="ignore"):
+                    totalPermutations = np.exp2(CONTROL_LEN - 1)
+            elif CONTROL_LEN == TEST_LEN:
                 totalPermutations = binomcoeff(CONTROL_LEN + TEST_LEN, TEST_LEN)/2
             else:
                 totalPermutations = binomcoeff(CONTROL_LEN + TEST_LEN, TEST_LEN)
