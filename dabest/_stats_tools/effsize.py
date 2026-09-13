@@ -280,14 +280,20 @@ def _mann_whitney_u(x, y):
     n1, n2 = len(x), len(y)
     combined = np.concatenate((x, y))
     
-    # Use numpy broadcasting for comparison
-    less_than = (combined.reshape(-1, 1) > combined).sum(axis=1)
-    equal_to = (combined.reshape(-1, 1) == combined).sum(axis=1)
-    
-    # Calculate ranks directly
-    ranks = less_than + (equal_to + 1) / 2
-    
-    R1 = np.sum(ranks[:n1])
+    # Rank a sorted index once rather than allocating pairwise comparison
+    # matrices. Tied observations receive their shared average rank.
+    order = np.argsort(combined)
+    R1 = 0.0
+    start = 0
+    while start < len(order):
+        end = start + 1
+        while end < len(order) and combined[order[end]] == combined[order[start]]:
+            end += 1
+        average_rank = (start + 1 + end) / 2
+        for index in range(start, end):
+            if order[index] < n1:
+                R1 += average_rank
+        start = end
     U1 = R1 - (n1 * (n1 + 1)) / 2
     return U1
 
