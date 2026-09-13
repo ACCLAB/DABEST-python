@@ -70,19 +70,14 @@ def _create_two_group_jackknife_indexes(x0, x1, is_paired):
             )
         )
     else:
-        jackknife_c = list(
-            zip(
-                [j for j in create_jackknife_indexes(x0)],
-                [i for i in create_repeated_indexes(x1)],
-            )
-        )
-
-        jackknife_t = list(
-            zip(
-                [i for i in create_repeated_indexes(x0)],
-                [j for j in create_jackknife_indexes(x1)],
-            )
-        )
+        # Leave out each observation from one group while retaining all of
+        # the other group. The two groups need not have the same length.
+        jackknife_c = [
+            (j, np.arange(len(x1))) for j in create_jackknife_indexes(x0)
+        ]
+        jackknife_t = [
+            (np.arange(len(x0)), j) for j in create_jackknife_indexes(x1)
+        ]
         out = jackknife_c + jackknife_t
         del jackknife_c
         del jackknife_t
