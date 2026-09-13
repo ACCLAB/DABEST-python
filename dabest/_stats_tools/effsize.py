@@ -139,6 +139,17 @@ def func_difference(control:list|tuple|np.ndarray, # NaNs are automatically disc
 
 # %% ../../nbs/API/effsize.ipynb #c6dd20e4
 @njit(cache=True)
+def _remove_missing_observations(control, test, is_paired=None):
+    """Remove incomplete pairs together, or missing unpaired observations separately."""
+    if is_paired:
+        if len(control) != len(test):
+            raise ValueError("`control` and `test` are not the same length.")
+        complete = ~np.isnan(control) & ~np.isnan(test)
+        return control[complete], test[complete]
+    return control[~np.isnan(control)], test[~np.isnan(test)]
+
+
+@njit(cache=True)
 def cohens_d(control:list|tuple|np.ndarray,
              test:list|tuple|np.ndarray,
              is_paired:str=None # If not None, the paired Cohen's d is returned.
@@ -183,8 +194,7 @@ def cohens_d(control:list|tuple|np.ndarray,
         - https://en.wikipedia.org/wiki/Standard_deviation#Corrected_sample_standard_deviation
     """
 
-    control = control[~np.isnan(control)]
-    test    = test[~np.isnan(test)]
+    control, test = _remove_missing_observations(control, test, is_paired)
 
     pooled_sd, average_sd = _compute_standardizers(control, test)
     # pooled SD is used for Cohen's d of two independant groups.
@@ -264,8 +274,7 @@ def hedges_g(control:list|tuple|np.ndarray,
 
     # Convert to numpy arrays for speed.
     # NaNs are automatically dropped.
-    control = control[~np.isnan(control)]
-    test    = test[~np.isnan(test)]
+    control, test = _remove_missing_observations(control, test, is_paired)
 
     d = cohens_d(control, test, is_paired)
     len_c = len(control)

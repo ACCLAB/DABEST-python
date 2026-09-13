@@ -118,14 +118,14 @@ class TwoGroupsEffectSize(object):
         self.__ci = ci
         self.__is_proportional = proportional
         self.__ps_adjust = ps_adjust
-        self._check_errors(control, test)
 
-        # Convert to numpy arrays for speed.
-        # NaNs are automatically dropped.
+        # Remove a missing paired observation together with its counterpart.
         control = array(control)
         test = array(test)
-        self.__control = control[~isnan(control)]
-        self.__test = test[~isnan(test)]
+        self.__control, self.__test = es._remove_missing_observations(
+            control, test, self.__is_paired
+        )
+        self._check_errors(self.__control, self.__test)
         self.__permutation_count = permutation_count
 
         self.__alpha = ci2g._compute_alpha_from_ci(self.__ci)
