@@ -666,6 +666,11 @@ class Dabest(object):
         # Added in v0.2.7.
         plot_data.dropna(axis=0, how="any", subset=[self.__yvar], inplace=True)
 
+        if self.__is_paired:
+            # Grouping retains row order, so align subjects before extracting
+            # the arrays used by bootstrapping and all paired statistical tests.
+            subject_order = pd.factorize(plot_data[self.__id_col], sort=True)[0]
+            plot_data = plot_data.iloc[np.argsort(subject_order, kind="stable")]
 
         if isinstance(plot_data[self.__xvar].dtype, pd.CategoricalDtype):
             plot_data[self.__xvar].cat.remove_unused_categories()
