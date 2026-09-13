@@ -157,7 +157,17 @@ def compute_bootstrapped_diff(
             x0_sample = x0[indices[i, :x0_len]]
             x1_sample = x1[indices[i, x0_len:x0_len+x1_len]]
 
-        out[i] = __es.two_group_difference(x0_sample, x1_sample, is_paired, effect_size)
+        if (effect_size in ("cohens_d", "hedges_g")
+                and np.all(x0_sample == x0_sample[0])
+                and np.all(x1_sample == x1_sample[0])):
+            # A resample can be constant even when the original samples vary.
+            # Keep its undefined value for the existing bootstrap diagnostics;
+            # the original observed effect still uses the strict public routine.
+            delta = np.mean(x1_sample) - np.mean(x0_sample)
+            with np.errstate(divide="ignore", invalid="ignore"):
+                out[i] = np.divide(delta, 0.0)
+        else:
+            out[i] = __es.two_group_difference(x0_sample, x1_sample, is_paired, effect_size)
 
     return out
 
