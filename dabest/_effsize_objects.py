@@ -341,6 +341,7 @@ class TwoGroupsEffectSize(object):
             self.__effect_size,
             self.__is_paired,
             self.__permutation_count,
+            random_seed=self.__random_seed,
             ps_adjust = self.__ps_adjust,
         )
 
