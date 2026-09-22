@@ -1043,3 +1043,31 @@ def test_429_multigroups_paired_baseline_change_palette():
     plt.rcdefaults()
     return multi_groups_paired_baseline.mean_diff.plot(horizontal=True, custom_palette="Dark2",
                                                        delta_text=True)
+
+# Test sinaplot
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_430_sinaplot_horizontal():
+    plt.rcdefaults()
+    rng = np.random.default_rng(12345)
+
+    df = pd.DataFrame(
+        {"group": np.repeat(["Control", "Test"], 300),
+        "value": np.r_[rng.normal(0, 1, 300), rng.normal(0.5, 1, 300),]}
+    )
+
+    sina_data = load(data=df, x="group", y="value", idx=("Control", "Test"),)
+
+    return sina_data.mean_diff.plot(raw_plot_type="sina", horizontal=True,)
+
+
+@pytest.mark.mpl_image_compare
+def test_431_sinaplot_horizontal_unequal_sample_sizes():
+    rng = np.random.default_rng(12345)
+
+    df = pd.DataFrame(
+        {"group": np.r_[np.repeat("Small", 100), np.repeat("Medium", 500), np.repeat("Large", 2000),],
+            "value": np.r_[rng.normal(0.0, 1.0, 100), rng.normal(0.3, 1.0, 500), rng.normal(0.6, 1.0, 2000),],})
+
+    dabest_data = load(data=df, x="group", y="value", idx=("Small", "Medium", "Large"),)
+
+    return dabest_data.mean_diff.plot(raw_plot_type="sina", horizontal=True, sinaplot_kwargs={"max_width": 0.35, "grid_points": 256,},)

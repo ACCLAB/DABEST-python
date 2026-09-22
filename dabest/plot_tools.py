@@ -11,7 +11,7 @@ from __future__ import annotations
 __all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'width_determine',
            'single_sankey', 'sankeydiag', 'add_bars_to_plot', 'delta_text_plotter', 'delta_dots_plotter',
            'slopegraph_plotter', 'plot_minimeta_or_deltadelta_violins', 'effect_size_curve_plotter', 'gridkey_plotter',
-           'barplotter', 'table_for_horizontal_plots', 'add_counts_to_prop_plots', 'swarmplot', 'SwarmPlot']
+           'barplotter', 'table_for_horizontal_plots', 'add_counts_to_prop_plots', 'swarmplot', 'SwarmPlot', 'sinaplot']
 
 # %% ../nbs/API/plot_tools.ipynb #b070950d
 import math
@@ -28,6 +28,7 @@ from collections import defaultdict
 from typing import List, Tuple, Dict, Iterable, Union
 from pandas.api.types import CategoricalDtype
 from matplotlib.colors import ListedColormap
+from scipy.stats import gaussian_kde
 
 # %% ../nbs/API/plot_tools.ipynb #98550688
 def halfviolin(v, half="right", fill_color="k", alpha=1, line_color="k", line_width=0):
@@ -2588,7 +2589,7 @@ class SwarmPlot:
                 points_data.drop(points_data[hit_gutter].index.to_list(), inplace=True)
                 err = (
                     "{0:.1%} of the points cannot be placed. "
-                    "You might want to decrease the size of the markers."
+                    "You should consider raw_plot_type='sina', or decrease the size of the markers."
                 ).format(num_of_points_hit_gutter / total_num_of_points)
                 warnings.warn(err)
             else:
@@ -2752,3 +2753,255 @@ class SwarmPlot:
             ax.get_xaxis().set_ticklabels(x_tick_tabels, fontsize = fontsize)
             
         return ax
+
+# %% ../nbs/API/plot_tools.ipynb #1bb5249d
+def sinaplot(
+    data,
+    x,
+    y,
+    ax,
+    order=None,
+    hue=None,
+    palette=None,
+    zorder=1,
+    horizontal=False,
+    max_width=0.35,
+    bw_method="scott",
+    grid_points=256,
+    marker_size=6,
+    alpha=0.35,
+    rasterized=True,
+    min_spread=0.0,
+    tie_round=10,
+):
+
+    if order is None:
+        order = list(dict.fromkeys(data[x].dropna()))
+
+    artists = []
+
+    # Determine hue levels globally so colours remain
+    # consistent across x-groups.
+    if hue is not None:
+        hue_order = list(dict.fromkeys(data[hue].dropna()))
+    else:
+        hue_order = None
+
+    for i, group in enumerate(order):
+
+        group_data = data.loc[
+            data[x] == group
+        ].copy()
+
+        values = group_data[y].to_numpy(dtype=float)
+
+        finite = np.isfinite(values)
+
+        group_data = group_data.loc[finite].copy()
+        values = values[finite]
+
+        if len(values) == 0:
+            continue
+
+        # -----------------------------------
+        # Calculate Sina geometry ONCE using
+        # the entire x-group.
+        # -----------------------------------
+        density_norm = _sina_density_on_grid(
+            values,
+            bw_method=bw_method,
+            grid_points=grid_points,
+        )
+
+        envelope = max_width * density_norm
+
+        if min_spread > 0:
+            envelope = np.maximum(
+                envelope,
+                max_width * min_spread,
+            )
+
+        offsets = _sina_deterministic_offsets(
+            values,
+            envelope,
+            tie_round=tie_round,
+        )
+
+        if not horizontal:
+            xpos = i + offsets
+            ypos = values
+        else:
+            xpos = values
+            ypos = i + offsets
+
+        # -----------------------------------
+        # No hue
+        # -----------------------------------
+        if hue is None:
+
+            if palette is None:
+                color = None
+
+            elif isinstance(palette, dict):
+                color = palette[group]
+
+            else:
+                color = palette[i]
+
+            artist = ax.scatter(
+                xpos,
+                ypos,
+                s=marker_size,
+                alpha=alpha,
+                color=color,
+                edgecolors="none",
+                zorder=zorder,
+                rasterized=rasterized,
+            )
+
+            artists.append(artist)
+
+        # -----------------------------------
+        # Hue
+        # -----------------------------------
+        else:
+
+            hue_values = group_data[hue].to_numpy()
+
+            for h_idx, hue_level in enumerate(hue_order):
+
+                mask = hue_values == hue_level
+
+                if not np.any(mask):
+                    continue
+
+                if palette is None:
+                    color = None
+
+                elif isinstance(palette, dict):
+                    color = palette[hue_level]
+
+                else:
+                    color = palette[h_idx]
+
+                artist = ax.scatter(
+                    xpos[mask],
+                    values[mask],
+                    s=marker_size,
+                    alpha=alpha,
+                    color=color,
+                    edgecolors="none",
+                    zorder=zorder,
+                    rasterized=rasterized,
+                    label=hue_level,
+                )
+
+                artists.append(artist)
+
+    # Explicitly establish categorical x-axis positions.
+    positions = np.arange(len(order))
+
+    if not horizontal:
+        ax.set_xticks(positions)
+        ax.set_xticklabels(order)
+        ax.set_xlim(-0.5, len(order) - 0.5)
+    else:
+        ax.set_yticks(positions)
+        ax.set_yticklabels(order)
+        ax.set_ylim(-0.5, len(order) - 0.5)
+
+    return artists
+
+def _sina_prepare_values(values):
+    y = np.asarray(values, dtype=float)
+    return y[np.isfinite(y)]
+
+
+def _sina_density_on_grid(
+    y,
+    bw_method="scott",
+    grid_points=256,
+):
+    y = _sina_prepare_values(y)
+
+    if len(y) == 0:
+        return np.array([])
+
+    if len(y) == 1 or np.allclose(y, y[0]):
+        return np.ones_like(y)
+
+    kde = gaussian_kde(y, bw_method=bw_method)
+
+    ymin, ymax = np.min(y), np.max(y)
+
+    spread = np.std(y, ddof=1)
+
+    if not np.isfinite(spread) or spread == 0:
+        spread = max(ymax - ymin, 1.0)
+
+    pad = 0.3 * spread
+
+    grid = np.linspace(
+        ymin - pad,
+        ymax + pad,
+        int(grid_points),
+    )
+
+    density_grid = kde(grid)
+
+    density = np.interp(
+        y,
+        grid,
+        density_grid,
+    )
+
+    dmax = np.max(density)
+
+    if dmax > 0:
+        return density / dmax
+
+    return np.ones_like(density)
+
+def _sina_deterministic_offsets(
+    y,
+    envelope,
+    tie_round=10,
+):
+    n = len(y)
+
+    if n == 0:
+        return np.array([])
+
+    order = np.argsort(y, kind="mergesort",)
+
+    phi = (1 + np.sqrt(5)) / 2
+
+    seq = (2 * ((np.arange(n) / phi) % 1) - 1)
+
+    unit_offsets = np.empty(n, dtype=float,)
+
+    unit_offsets[order] = seq
+
+    rounded = np.round(y, tie_round,)
+
+    _, inverse, counts = np.unique(
+        rounded,
+        return_inverse=True,
+        return_counts=True,
+    )
+
+    for tie_group, count in enumerate(counts):
+
+        if count <= 1:
+            continue
+
+        idx = np.flatnonzero(inverse == tie_group)
+
+        if count == 2:
+            tied_positions = np.array([-0.5, 0.5])
+        else:
+            tied_positions = np.linspace(-1, 1, count,)
+
+        unit_offsets[idx] = tied_positions
+
+    return unit_offsets * envelope

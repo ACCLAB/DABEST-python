@@ -132,14 +132,14 @@ def test_swarmplot_input_error_handling(param_name, param_value, error_msg, erro
 
 def test_swarmplot_warnings():
     warning_msg = (
-        "{0:.1f}% of the points cannot be placed. "
-        "You might want to decrease the size of the markers."
+            "{0:.1%} of the points cannot be placed. "
+            "You should consider raw_plot_type='sina', or decrease the size of the markers."
     )
     with pytest.warns(UserWarning) as warn_rec:
         my_data = swarmplot(size=100, **default_swarmplot_kwargs)
 
-    assert warning_msg.format(10) in str(warn_rec[0].message)
-    assert warning_msg.format(20) in str(warn_rec[1].message)
+    assert warning_msg.format(10 / 100) in str(warn_rec[0].message)
+    assert warning_msg.format(20 / 100) in str(warn_rec[1].message)
 
     warning_msg = (
         "unique values in '{0}' column in `data` "

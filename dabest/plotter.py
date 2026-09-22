@@ -81,6 +81,9 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
         contrast_paired_lines=True, contrast_paired_lines
 		show_baseline_ec=False,
 
+        raw_plot_type='swarm',
+        sinaplot_kwargs=None
+
     """
     from .misc_tools import (
         get_params,
@@ -103,6 +106,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
         error_bar,
         sankeydiag,
         swarmplot,
+        sinaplot,
         delta_text_plotter,
         delta_dots_plotter,
         slopegraph_plotter,
@@ -137,20 +141,20 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
      slopegraph_kwargs, reflines_kwargs, legend_kwargs, group_summaries_kwargs, 
      redraw_axes_kwargs, delta_dot_kwargs, delta_text_kwargs, reference_band_kwargs, 
      raw_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs, contrast_marker_kwargs, 
-     contrast_errorbar_kwargs, prop_sample_counts_kwargs, contrast_paired_lines_kwargs) = get_kwargs(
+     contrast_errorbar_kwargs, prop_sample_counts_kwargs, contrast_paired_lines_kwargs, sinaplot_kwargs) = get_kwargs(
                                                                                                 plot_kwargs = plot_kwargs, 
                                                                                                 ytick_color = ytick_color,
                                                                                                 is_paired = effectsize_df.is_paired
     )
 
-    (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, 
-     all_plot_groups, idx, show_delta2, show_mini_meta, float_contrast, 
-     show_pairs, group_summaries, horizontal, results, ci_type, x1_level, experiment_label, 
-     show_baseline_ec, one_sankey, two_col_sankey, asymmetric_side, show_sample_size) = get_params(
-                                                                                            effectsize_df = effectsize_df, 
-                                                                                            plot_kwargs = plot_kwargs,
-                                                                                            sankey_kwargs = sankey_kwargs,
-                                                                                            barplot_kwargs = barplot_kwargs
+    (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, 
+     idx, show_delta2, show_mini_meta, float_contrast, show_pairs, group_summaries, horizontal, 
+     results, ci_type, x1_level, experiment_label, show_baseline_ec, one_sankey, two_col_sankey, 
+     asymmetric_side, show_sample_size, raw_plot_type) = get_params(
+                                                                effectsize_df = effectsize_df, 
+                                                                plot_kwargs = plot_kwargs,
+                                                                sankey_kwargs = sankey_kwargs,
+                                                                barplot_kwargs = barplot_kwargs
     )
 
     # Extract Color palette
@@ -258,29 +262,45 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                 barplot_kwargs = barplot_kwargs,
                 horizontal = horizontal,
             )
-        else:   ## Plot the raw data as a swarmplot.
-            ## swarmplot() plots swarms based on current size of ax
-            ## Therefore, since the ax size for show_mini_meta and show_delta changes later on, there has to be increased jitter
-            rawdata_plot = swarmplot(
-                            data = plot_data,
-                            x = xvar,
-                            y = yvar,
-                            ax = rawdata_axes,
-                            order = all_plot_groups,
-                            hue = color_col,
-                            palette = plot_palette_raw,
-                            zorder = 1,
-                            side = asymmetric_side,
-                            jitter = 1.25 if show_mini_meta else 1.4 if show_delta2 else 1, # TODO: to make jitter value more accurate and not just a hardcoded eyeball value
-                            filled = filled,
-                            is_drop_gutter = True,
-                            gutter_limit = 0.45,
-                            horizontal = horizontal,
-                            **swarmplot_kwargs
-            )
-            if color_col is None:
+        else:   ## Plot the raw data as a swarmplot or sinaplot.
+
+
+            if raw_plot_type == 'sina':
+                rawdata_plot = sinaplot(
+                    data=plot_data,
+                    x=xvar,
+                    y=yvar,
+                    ax=rawdata_axes,
+                    order=all_plot_groups,
+                    hue=color_col,
+                    palette=plot_palette_raw,
+                    zorder=1,
+                    horizontal=horizontal,
+                    **sinaplot_kwargs,
+                )
+            else:
+                ## swarmplot() plots swarms based on current size of ax
+                ## Therefore, since the ax size for show_mini_meta and show_delta changes later on, there has to be increased jitter
+                rawdata_plot = swarmplot(
+                                data = plot_data,
+                                x = xvar,
+                                y = yvar,
+                                ax = rawdata_axes,
+                                order = all_plot_groups,
+                                hue = color_col,
+                                palette = plot_palette_raw,
+                                zorder = 1,
+                                side = asymmetric_side,
+                                jitter = 1.25 if show_mini_meta else 1.4 if show_delta2 else 1, # TODO: to make jitter value more accurate and not just a hardcoded eyeball value
+                                filled = filled,
+                                is_drop_gutter = True,
+                                gutter_limit = 0.45,
+                                horizontal = horizontal,
+                                **swarmplot_kwargs
+                )
+            if (raw_plot_type == "swarm" and color_col is None):
                 rawdata_plot.legend().set_visible(False)
-            
+
         ## Plot the error bars on unpaired plots.
         if group_summaries is not None:
             (group_summaries_method, 
@@ -607,6 +627,29 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
     handles, labels = rawdata_axes.get_legend_handles_labels()
     legend_labels = [l for l in labels]
     legend_handles = [h for h in handles]
+
+    if raw_plot_type == "sina" and color_col is not None:
+        sina_legend_handles = []
+
+        for handle in legend_handles:
+            facecolors = handle.get_facecolors()
+            color = facecolors[0] if len(facecolors) else "black"
+
+            sina_legend_handles.append(
+                Line2D(
+                    [0],
+                    [0],
+                    marker="o",
+                    linestyle="None",
+                    markerfacecolor=color,
+                    markeredgecolor="none",
+                    markersize=6,
+                    alpha=1,
+                )
+            )
+
+        legend_handles = sina_legend_handles
+
 
     if bootstraps_color_by_group is False and color_col is not None:
         rawdata_axes.legend().set_visible(False)

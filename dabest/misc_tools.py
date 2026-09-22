@@ -197,11 +197,17 @@ def get_params(
     )  
     # Whether to show sample sizes with ticklabels
     show_sample_size = plot_kwargs["show_sample_size"]
+
+    # Whether unpaired plot is swarm or sinaplot
+    
+    raw_plot_type = plot_kwargs["raw_plot_type"]
+    if raw_plot_type not in ["swarm", "sina"]:
+        raise ValueError("raw_plot_type must be 'swarm' or 'sina'.")
         
     return (dabest_obj, plot_data, xvar, yvar, is_paired, effect_size, proportional, all_plot_groups, 
             idx, show_delta2, show_mini_meta, float_contrast, show_pairs, group_summaries, 
             horizontal, results, ci_type, x1_level, experiment_label, show_baseline_ec, 
-            one_sankey, two_col_sankey, asymmetric_side, show_sample_size)
+            one_sankey, two_col_sankey, asymmetric_side, show_sample_size, raw_plot_type)
 
 def get_kwargs(
         plot_kwargs: dict, 
@@ -317,6 +323,7 @@ def get_kwargs(
     default_legend_kwargs = {
         "loc": "upper left", 
         "frameon": False,
+        # "marker_size": 6
     }
     if plot_kwargs["legend_kwargs"] is None:
         legend_kwargs = default_legend_kwargs
@@ -503,11 +510,28 @@ def get_kwargs(
     else:
         contrast_paired_lines_kwargs = merge_two_dicts(default_contrast_paired_lines_kwargs, plot_kwargs["contrast_paired_lines_kwargs"])
 
+    # Sinaplot kwargs
+    default_sinaplot_kwargs = {
+        "max_width": 0.35,
+        "bw_method": "scott",
+        "grid_points": 256,
+        "marker_size": 6,
+        "alpha": 0.35,
+        "rasterized": True,
+        "min_spread": 0.0,
+        "tie_round": 10,
+    }
+    if plot_kwargs["sinaplot_kwargs"] is None:
+        sinaplot_kwargs = default_sinaplot_kwargs
+    else:
+        sinaplot_kwargs = merge_two_dicts(default_sinaplot_kwargs, plot_kwargs["sinaplot_kwargs"])
+
+
     # Return the kwargs.
     return (swarmplot_kwargs, barplot_kwargs, sankey_kwargs, contrast_kwargs, slopegraph_kwargs, 
             reflines_kwargs, legend_kwargs, group_summaries_kwargs, redraw_axes_kwargs, delta_dot_kwargs,
             delta_text_kwargs, reference_band_kwargs, raw_bars_kwargs, contrast_bars_kwargs, table_kwargs, gridkey_kwargs,
-            contrast_marker_kwargs, contrast_errorbar_kwargs, prop_sample_counts_kwargs, contrast_paired_lines_kwargs)
+            contrast_marker_kwargs, contrast_errorbar_kwargs, prop_sample_counts_kwargs, contrast_paired_lines_kwargs, sinaplot_kwargs)
 
 
 def get_color_palette(

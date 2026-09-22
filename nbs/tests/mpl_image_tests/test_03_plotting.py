@@ -479,6 +479,156 @@ def test_33_multi_paired_different_sizes():
 
     return multi_paired_diff_sizes.mean_diff.plot()
 
+
+# -------------------------------------------------------------------------
+# Sina plot image comparison tests
+# -------------------------------------------------------------------------
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_sinaplot_basic_unpaired():
+    rng = np.random.default_rng(12345)
+
+    df = pd.DataFrame(
+        {
+            "group": np.repeat(["Control", "Test"], 300),
+            "value": np.r_[
+                rng.normal(0, 1, 300),
+                rng.normal(0.5, 1, 300),
+            ],
+        }
+    )
+
+    dabest_data = load(
+        data=df,
+        x="group",
+        y="value",
+        idx=("Control", "Test"),
+    )
+    return dabest_data.mean_diff.plot(raw_plot_type="sina")
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_sinaplot_unequal_sample_sizes():
+    rng = np.random.default_rng(12345)
+
+    df = pd.DataFrame(
+        {"group": np.r_[
+                np.repeat("Small", 100),
+                np.repeat("Medium", 500),
+                np.repeat("Large", 2000),
+            ],
+            "value": np.r_[
+                rng.normal(0.0, 1.0, 100),
+                rng.normal(0.3, 1.0, 500),
+                rng.normal(0.6, 1.0, 2000),
+            ],
+        }
+    )
+
+    dabest_data = load(
+        data=df,
+        x="group",
+        y="value",
+        idx=("Small", "Medium", "Large"),
+    )
+
+    return dabest_data.mean_diff.plot(raw_plot_type="sina", sinaplot_kwargs={"max_width": 0.35, "grid_points": 256,}, )
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_sinaplot_bimodal_distribution():
+    rng = np.random.default_rng(12345)
+    n = 600
+
+    control = np.r_[
+        rng.normal(-1.0, 0.35, int(n * 0.7)),
+        rng.normal(1.4, 0.25, int(n * 0.3)),
+    ]
+
+    test = np.r_[
+        rng.normal(-0.4, 0.45, int(n * 0.55)),
+        rng.normal(1.7, 0.30, int(n * 0.45)),
+    ]
+
+    df = pd.DataFrame(
+        {
+            "group": np.repeat(["Control", "Test"], n),
+            "value": np.r_[control, test],
+        }
+    )
+
+    dabest_data = load(
+        data=df,
+        x="group",
+        y="value",
+        idx=("Control", "Test"),
+    )
+
+    return dabest_data.mean_diff.plot(raw_plot_type="sina",)
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_sinaplot_with_hue():
+    rng = np.random.default_rng(12345)
+    n = 400
+
+    df = pd.DataFrame(
+        {
+            "group": np.repeat(["Control", "Test"], n),
+            "condition": np.tile(
+                np.repeat(["A", "B"], n // 2),
+                2,
+            ),
+            "value": np.r_[
+                rng.normal(0.0, 1.0, n),
+                rng.normal(0.5, 1.0, n),
+            ],
+        }
+    )
+
+    dabest_data = load(
+        data=df,
+        x="group",
+        y="value",
+        idx=("Control", "Test"),
+    )
+
+    return dabest_data.mean_diff.plot(raw_plot_type="sina", color_col="condition",)
+
+
+@pytest.mark.mpl_image_compare(tolerance=8)
+def test_sinaplot_skewed_with_outliers():
+    rng = np.random.default_rng(12345)
+    n = 500
+
+    control = rng.lognormal(
+        mean=0.0,
+        sigma=0.55,
+        size=n,
+    )
+
+    test = rng.lognormal(
+        mean=0.2,
+        sigma=0.70,
+        size=n,
+    )
+
+    control[:3] = [5.5, 6.5, 8.0]
+    test[:3] = [7.0, 8.5, 10.0]
+
+    df = pd.DataFrame(
+        {
+            "group": np.repeat(["Control", "Test"], n),
+            "value": np.r_[control, test],
+        }
+    )
+
+    dabest_data = load(
+        data=df,
+        x="group",
+        y="value",
+        idx=("Control", "Test"),
+    )
+
+    return dabest_data.mean_diff.plot(raw_plot_type="sina",)
+
 @pytest.mark.mpl_image_compare(tolerance=8)
 def test_99_style_sheets():
     # Perform this test last so we don't have to reset the plot style.

@@ -1218,6 +1218,9 @@ class EffectSizeDataFrame(object):
         
 		# Baseline Effect Size Curve
 		show_baseline_ec=False,
+
+        raw_plot_type='swarm',
+        sinaplot_kwargs=None
     ):
         """
         Creates an estimation plot for the effect size of interest.
@@ -1458,6 +1461,11 @@ class EffectSizeDataFrame(object):
             in the data. When True, this curve is plotted alongside the main effect size
             distribution, allowing for a visual comparison of the observed effect against
             the baseline variability.
+
+        raw_plot_type : str, default 'swarm'
+            For unpaired data, whether to plot swarmplot or a sinaplot. 'auto' to be implemented.
+        sinaplot_kwargs : dict
+            Kwargs for the sinaplot
 
         Returns
         -------
