@@ -6,9 +6,13 @@ Docs: https://acclab.github.io/DABEST-python/API/confint_2group_diff.html.md"""
 
 # %% auto #0
 __all__ = ['create_jackknife_indexes', 'create_repeated_indexes', 'compute_meandiff_jackknife', 'bootstrap_indices',
-           'compute_bootstrapped_diff', 'delta2_bootstrap_loop', 'compute_delta2_bootstrapped_diff',
-           'compute_meandiff_bias_correction', 'compute_interval_limits', 'calculate_group_var',
-           'calculate_bootstraps_var', 'calculate_weighted_delta']
+           'compute_bootstrapped_diff', 'cluster_codes', 'cluster_tables', 'cluster_strata', 'cluster_bootstrap_draws',
+           'expand_cluster_draw', 'compute_cluster_jackknife', 'cluster_jackknife_by_cluster',
+           'cluster_variance_components', 'smallest_cluster_group', 'expanded_ci_level', 'percentile_interval_idx',
+           'unexpanded_interval_limits', 'expanded_interval_limits', 'compute_cluster_bootstrapped_diff',
+           'delta2_cluster_bootstrap_loop', 'delta2_cluster_variance_components', 'delta2_bootstrap_loop',
+           'compute_delta2_bootstrapped_diff', 'compute_meandiff_bias_correction', 'compute_interval_limits',
+           'calculate_group_var', 'calculate_bootstraps_var', 'calculate_weighted_delta']
 
 # %% ../../nbs/API/confint_2group_diff.ipynb #fa733643
 import numpy as np
@@ -162,6 +166,436 @@ def compute_bootstrapped_diff(
     return out
 
 
+def cluster_codes(*cluster_labels):
+    """
+    Convert cluster labels from one or more groups into contiguous integer codes.
+
+    The labels of all groups are pooled, so that the same label appearing in
+    several groups (e.g. a participant measured under every condition) maps
+    to the same code. Codes are assigned in order of first appearance.
+
+    Returns
+    -------
+    codes : list of int64 numpy arrays, one per input group.
+    n_clusters : int
+        The number of distinct clusters across all groups.
+    """
+    import pandas as pd
+
+    arrays = [np.asarray(a) for a in cluster_labels]
+    joined = np.concatenate(arrays) if len(arrays) > 1 else arrays[0]
+    codes, uniques = pd.factorize(pd.Series(joined), sort=False)
+    codes = codes.astype(np.int64)
+    if (codes < 0).any():
+        raise ValueError("Cluster labels must not contain missing values.")
+
+    out, start = [], 0
+    for a in arrays:
+        out.append(codes[start : start + len(a)])
+        start += len(a)
+    return out, len(uniques)
+
+
+def cluster_tables(codes, n_clusters):
+    """
+    Build the membership tables used by `expand_cluster_draw`.
+
+    Returns `(offsets, members)` such that `members[offsets[g]:offsets[g+1]]`
+    holds the positions (in the original array) of the observations that
+    belong to cluster `g`. A cluster absent from the array has an empty slice.
+    """
+    codes = np.asarray(codes, dtype=np.int64)
+    members = np.argsort(codes, kind="stable").astype(np.int64)
+    counts = np.bincount(codes, minlength=n_clusters)
+    offsets = np.concatenate((np.zeros(1, dtype=np.int64), np.cumsum(counts))).astype(np.int64)
+    return offsets, members
+
+
+def cluster_strata(codes_per_group, n_clusters):
+    """
+    Partition the clusters into resampling strata.
+
+    Clusters are stratified by the pattern of groups in which they appear, so
+    that every bootstrap resample preserves the observed design. For a fully
+    within-cluster design (every cluster present in every group) there is a
+    single stratum and clusters are resampled jointly across the groups; for a
+    nested design (each cluster present in one group only) the clusters are
+    resampled separately within each group.
+
+    Returns `(strata_clusters, strata_offsets)`: the cluster codes concatenated
+    stratum by stratum, and the boundaries of each stratum in that array.
+    """
+    pattern = np.zeros(n_clusters, dtype=np.int64)
+    for k, codes in enumerate(codes_per_group):
+        present = np.zeros(n_clusters, dtype=bool)
+        present[np.asarray(codes, dtype=np.int64)] = True
+        pattern |= present.astype(np.int64) << k
+
+    strata_clusters = np.argsort(pattern, kind="stable").astype(np.int64)
+    _, counts = np.unique(pattern, return_counts=True)
+    strata_offsets = np.concatenate((np.zeros(1, dtype=np.int64), np.cumsum(counts))).astype(np.int64)
+    return strata_clusters, strata_offsets
+
+
+@njit(cache=True) # parallelization must be turned off for random number generation
+def cluster_bootstrap_draws(strata_clusters, strata_offsets, resamples, random_seed):
+    """
+    Draw clusters with replacement, separately within each stratum
+    (see `cluster_strata`).
+
+    Returns an array of shape `(resamples, n_clusters)` holding, for each
+    resample, the codes of the clusters drawn.
+    """
+    np.random.seed(random_seed)
+    n_clusters = len(strata_clusters)
+    n_strata = len(strata_offsets) - 1
+    draws = np.empty((resamples, n_clusters), dtype=np.int64)
+
+    for i in range(resamples):
+        for s in range(n_strata):
+            start = strata_offsets[s]
+            size = strata_offsets[s + 1] - start
+            picks = np.random.choice(size, size)
+            for k in range(size):
+                draws[i, start + k] = strata_clusters[start + picks[k]]
+    return draws
+
+
+@njit(cache=True)
+def expand_cluster_draw(draw, offsets, members):
+    """
+    Expand a draw of cluster codes into the positions of all the observations
+    that belong to those clusters (see `cluster_tables`).
+    """
+    total = 0
+    for j in range(len(draw)):
+        g = draw[j]
+        total += offsets[g + 1] - offsets[g]
+
+    out = np.empty(total, dtype=np.int64)
+    pos = 0
+    for j in range(len(draw)):
+        g = draw[j]
+        for k in range(offsets[g], offsets[g + 1]):
+            out[pos] = members[k]
+            pos += 1
+    return out
+
+
+def _check_paired_clusters(c0, c1):
+    """Paired observations must share a cluster."""
+    if len(c0) != len(c1) or not np.array_equal(c0, c1):
+        err1 = "In a paired analysis every control observation must belong to the same cluster "
+        err2 = "as the test observation it is paired with. Check that the data are sorted so "
+        err3 = "that paired rows are aligned, and that each pair has a single cluster label."
+        raise ValueError(err1 + err2 + err3)
+
+
+def compute_cluster_jackknife(x0, x1, c0, c1, is_paired, effect_size):
+    """
+    Delete-one-cluster jackknife of the effect size for 2 groups.
+
+    Used to compute the acceleration term of the BCa interval when the
+    observations are clustered. `c0` and `c1` hold the cluster label of each
+    observation in `x0` and `x1`.
+    """
+    values, _, _, _ = cluster_jackknife_by_cluster(x0, x1, c0, c1, is_paired, effect_size)
+    return values
+
+
+def cluster_jackknife_by_cluster(x0, x1, c0, c1, is_paired, effect_size):
+    """
+    Delete-one-cluster jackknife of the effect size for 2 groups, keeping track
+    of which cluster each jackknife value leaves out.
+
+    Returns `(values, deleted_codes, (codes0, codes1), n_clusters)`, where
+    `values[i]` is the effect size with cluster `deleted_codes[i]` removed, and
+    `codes0`/`codes1` are the integer cluster codes of the observations in
+    `x0`/`x1` (see `cluster_codes`). Clusters whose removal would empty a group
+    are skipped.
+    """
+    from . import effsize as __es
+
+    x0, x1 = np.asarray(x0), np.asarray(x1)
+    (c0, c1), n_clusters = cluster_codes(c0, c1)
+    if is_paired:
+        _check_paired_clusters(c0, c1)
+
+    values, deleted = [], []
+    for g in range(n_clusters):
+        keep0 = c0 != g
+        keep1 = c1 != g
+        if not keep0.any() or not keep1.any():
+            # Deleting this cluster would empty one of the groups.
+            continue
+        values.append(__es.two_group_difference(x0[keep0], x1[keep1], is_paired, effect_size))
+        deleted.append(g)
+    return values, deleted, (c0, c1), n_clusters
+
+
+def cluster_variance_components(jackknife_values, deleted_codes, codes_per_group, n_clusters):
+    """
+    Split the delete-one-cluster jackknife variance of an estimate into the
+    contributions of the resampling strata (see `cluster_strata`).
+
+    Returns a list of `(variance, n)` pairs, one per stratum of `n` clusters,
+    where `variance` is that stratum's term of the stratified jackknife
+    variance estimate. Strata with fewer than 2 clusters are left out: the
+    cluster bootstrap cannot vary them, and they carry no information about
+    the number of degrees of freedom. Non-finite jackknife values are ignored.
+    """
+    strata_clusters, strata_offsets = cluster_strata(codes_per_group, n_clusters)
+    value_of = {g: v for g, v in zip(deleted_codes, jackknife_values) if np.isfinite(v)}
+
+    components = []
+    for s in range(len(strata_offsets) - 1):
+        members = strata_clusters[strata_offsets[s] : strata_offsets[s + 1]]
+        n = len(members)
+        if n < 2:
+            continue
+        values = np.array([value_of[g] for g in members if g in value_of], dtype=float)
+        if len(values) < 2:
+            continue
+        variance = (n - 1) / n * np.sum((values - values.mean()) ** 2)
+        components.append((float(variance), int(n)))
+    return components
+
+
+# The smallest tail probability an expanded interval is read at. It keeps the
+# quantile functions finite; any value this small already selects the extreme
+# bootstrap resamples for any practical number of resamples.
+_MIN_EXPANDED_ALPHA = 1e-6
+
+# Strata carrying less than this share of the variance are not counted when
+# judging whether the smallest group of clusters is too small for a reliable
+# interval (see `smallest_cluster_group`), so that a stray handful of clusters
+# (say, two participants seen in only one condition) does not trigger a warning.
+_MIN_VARIANCE_SHARE = 0.1
+
+
+def _usable_components(components):
+    """Strata with at least 2 clusters, as arrays of variances and sizes."""
+    components = [(v, n) for v, n in components if n >= 2]
+    if not components:
+        return None, None
+    variances = np.array([v for v, _ in components], dtype=float)
+    n = np.array([n for _, n in components], dtype=float)
+    if not np.all(np.isfinite(variances)) or variances.sum() <= 0:
+        # No usable variance information: weight the strata equally.
+        variances = np.ones_like(n)
+    return variances, n
+
+
+def smallest_cluster_group(components):
+    """
+    The number of clusters in the smallest stratum that carries at least 10%
+    of the variance (see `cluster_variance_components`); None if no stratum
+    has at least 2 clusters.
+    """
+    variances, n = _usable_components(components)
+    if n is None:
+        return None
+    shares = variances / variances.sum()
+    # Never let the threshold exclude every stratum (e.g. many equal strata).
+    threshold = min(_MIN_VARIANCE_SHARE, shares.max())
+    return int(n[shares >= threshold].min())
+
+
+def expanded_ci_level(ci, components):
+    """
+    The confidence level at which to read a cluster-bootstrap distribution so
+    that the resulting interval has approximately `ci`% coverage when there
+    are few clusters.
+
+    Bootstrap intervals are too narrow when there are few independent units:
+    the bootstrap reproduces a variance with divisor `n` rather than `n - 1`,
+    and normal rather than t-distributed tails. This applies the expanded
+    percentile correction of Hesterberg (2015, The American Statistician,
+    69(4), 371-386) with the number of clusters as `n`: the interval is read
+    at the level whose normal quantile equals `sqrt(n/(n-1))` times the
+    t quantile with `n - 1` degrees of freedom.
+
+    When the bootstrap resamples several strata independently (for example
+    clusters nested within groups), `components` holds each stratum's
+    `(variance, n)` (see `cluster_variance_components`). The narrowness
+    correction is then applied stratum by stratum, weighted by each stratum's
+    share of the variance, and the degrees of freedom come from the
+    Welch-Satterthwaite approximation. Both reduce to the single-sample
+    correction above for one stratum. In simulations of unbalanced or mixed
+    designs whose smallest group held only 4 to 6 clusters, Welch-Satterthwaite
+    intervals covered 1 to 3 points below nominal; the more conservative
+    alternative of the smallest stratum's degrees of freedom over-covered by
+    similar amounts, with intervals about 10% wider.
+
+    Returns `(ci_expanded, df)`, or `(ci, None)` if no stratum has at least
+    2 clusters, in which case no expansion is possible.
+    """
+    from scipy.stats import t as student_t
+
+    variances, n = _usable_components(components)
+    if n is None:
+        return ci, None
+
+    total = variances.sum()
+    narrowness = np.sqrt(total / np.sum(variances * (n - 1) / n))
+    df = float(total ** 2 / np.sum(variances ** 2 / (n - 1)))
+
+    alpha = _compute_alpha_from_ci(ci)
+    z = narrowness * student_t.ppf(1 - alpha / 2, df)
+    alpha_expanded = max(2 * norm.sf(z), _MIN_EXPANDED_ALPHA)
+    return 100 * (1 - alpha_expanded), float(df)
+
+
+def percentile_interval_idx(ci, n_boots):
+    """
+    Indexes of the percentile interval limits in a sorted array of `n_boots`
+    bootstrap values, kept within the array.
+    """
+    alpha = _compute_alpha_from_ci(ci)
+    low = int((alpha / 2) * n_boots)
+    high = int((1 - alpha / 2) * n_boots)
+    return min(max(low, 0), n_boots - 1), min(max(high, 0), n_boots - 1)
+
+
+def unexpanded_interval_limits(sorted_bootstraps, bias, acceleration, ci):
+    """
+    The BCa and percentile limits at the nominal level `ci`, as
+    `(bca_low, bca_high, pct_low, pct_high)`, for an interval that has been
+    expanded for a small number of clusters. Plots show this unexpanded
+    interval, which the bootstrap distribution itself spans, as the thick part
+    of the interval, and the expansion beyond it as a thinner line. If the BCa
+    limits cannot be computed, the percentile limits are used for both.
+    """
+    n_boots = len(sorted_bootstraps)
+    pct_low, pct_high = percentile_interval_idx(ci, n_boots)
+    low, high = compute_interval_limits(bias, acceleration, n_boots, ci)
+    if isnan(low) or isnan(high):
+        low, high = pct_low, pct_high
+    else:
+        low, high = min(max(low, 0), n_boots - 1), min(max(high, 0), n_boots - 1)
+    return (sorted_bootstraps[low], sorted_bootstraps[high],
+            sorted_bootstraps[pct_low], sorted_bootstraps[pct_high])
+
+
+def expanded_interval_limits(bias, acceleration, n_boots, ci_expanded):
+    """
+    Indexes of the BCa interval limits at the expanded level `ci_expanded`
+    (see `expanded_ci_level`), kept within the array of bootstrap values.
+
+    Returns `(nan, nan)` if the BCa adjustment is undefined at this level,
+    which can happen when a large acceleration meets a very extreme level;
+    callers should then fall back to the expanded percentile interval.
+    """
+    alpha = _compute_alpha_from_ci(ci_expanded)
+    for z in (norm.ppf(alpha / 2), norm.ppf(1 - alpha / 2)):
+        if not np.isfinite(bias) or not np.isfinite(acceleration) or 1 - acceleration * (bias + z) <= 0:
+            return np.nan, np.nan
+
+    low, high = compute_interval_limits(bias, acceleration, n_boots, ci_expanded)
+    if isnan(low) or isnan(high):
+        return np.nan, np.nan
+    low, high = min(max(low, 0), n_boots - 1), min(max(high, 0), n_boots - 1)
+    if low > high:
+        return np.nan, np.nan
+    return low, high
+
+
+def compute_cluster_bootstrapped_diff(
+    x0, x1, c0, c1, is_paired, effect_size, resamples=5000, random_seed=12345
+):
+    """
+    Cluster bootstrap of the effect size for 2 groups.
+
+    Instead of resampling individual observations (or pairs), whole clusters
+    of observations (e.g. all the observations contributed by one participant)
+    are resampled with replacement, so that the correlation between
+    observations from the same cluster is preserved in every resample.
+
+    `c0` and `c1` hold the cluster label of each observation in `x0` and `x1`;
+    a label present in both groups denotes the same cluster. In a paired
+    analysis the two label arrays must be identical, as the observations are
+    paired by position.
+
+    When every observation is its own cluster this reduces exactly to
+    `compute_bootstrapped_diff`.
+    """
+    from . import effsize as __es
+
+    x0, x1 = np.asarray(x0), np.asarray(x1)
+    (c0, c1), n_clusters = cluster_codes(c0, c1)
+    if is_paired:
+        _check_paired_clusters(c0, c1)
+
+    tables0 = cluster_tables(c0, n_clusters)
+    tables1 = cluster_tables(c1, n_clusters)
+    strata_clusters, strata_offsets = cluster_strata((c0, c1), n_clusters)
+    draws = cluster_bootstrap_draws(strata_clusters, strata_offsets, resamples, random_seed)
+
+    out = np.empty(resamples, dtype=np.float64)
+    for i in range(resamples):
+        idx0 = expand_cluster_draw(draws[i], *tables0)
+        idx1 = idx0 if is_paired else expand_cluster_draw(draws[i], *tables1)
+        out[i] = __es.two_group_difference(x0[idx0], x1[idx1], is_paired, effect_size)
+
+    return out
+
+
+def delta2_cluster_bootstrap_loop(
+    x1, x2, x3, x4, c1, c2, c3, c4, resamples, pooled_sd, rng_seed, is_paired, proportional=False
+):
+    """
+    Cluster-bootstrap counterpart of `delta2_bootstrap_loop`: whole clusters
+    are resampled with replacement, jointly across the four groups.
+    """
+    xs = [np.asarray(x) for x in (x1, x2, x3, x4)]
+    (c1, c2, c3, c4), n_clusters = cluster_codes(c1, c2, c3, c4)
+    if is_paired:
+        _check_paired_clusters(c1, c2)
+        _check_paired_clusters(c3, c4)
+
+    tables = [cluster_tables(c, n_clusters) for c in (c1, c2, c3, c4)]
+    strata_clusters, strata_offsets = cluster_strata((c1, c2, c3, c4), n_clusters)
+    draws = cluster_bootstrap_draws(strata_clusters, strata_offsets, resamples, rng_seed)
+
+    deltadelta = np.empty(resamples)
+    out_delta_g = np.empty(resamples)
+
+    for i in range(resamples):
+        means = [np.mean(x[expand_cluster_draw(draws[i], *t)]) for x, t in zip(xs, tables)]
+        delta_delta = (means[3] - means[2]) - (means[1] - means[0])
+
+        deltadelta[i] = delta_delta
+        out_delta_g[i] = delta_delta if proportional else delta_delta / pooled_sd
+
+    return out_delta_g, deltadelta
+
+
+def delta2_cluster_variance_components(x1, x2, x3, x4, c1, c2, c3, c4, is_paired):
+    """
+    Stratum-by-stratum jackknife variance components of the delta-delta
+    `(mean(x4) - mean(x3)) - (mean(x2) - mean(x1))`, for use with
+    `expanded_ci_level`. Delta g divides the delta-delta by a constant, which
+    leaves the relative size of the components, and so the expansion,
+    unchanged.
+    """
+    xs = [np.asarray(x) for x in (x1, x2, x3, x4)]
+    codes, n_clusters = cluster_codes(c1, c2, c3, c4)
+    if is_paired:
+        _check_paired_clusters(codes[0], codes[1])
+        _check_paired_clusters(codes[2], codes[3])
+
+    values, deleted = [], []
+    for g in range(n_clusters):
+        keeps = [c != g for c in codes]
+        if not all(k.any() for k in keeps):
+            # Deleting this cluster would empty one of the groups.
+            continue
+        means = [x[k].mean() for x, k in zip(xs, keeps)]
+        values.append((means[3] - means[2]) - (means[1] - means[0]))
+        deleted.append(g)
+    return cluster_variance_components(values, deleted, codes, n_clusters)
+
+
 @njit(cache=True)
 def delta2_bootstrap_loop(x1, x2, x3, x4, resamples, pooled_sd, rng_seed, is_paired, proportional=False):
     """
@@ -211,18 +645,29 @@ def compute_delta2_bootstrapped_diff(
     is_paired: str = None,
     resamples: int = 5000,
     random_seed: int = 12345,
-    proportional: bool = False
+    proportional: bool = False,
+    clusters=None,  # Optional: four array-likes with the cluster label of every observation in x1, x2, x3 and x4.
 ) -> tuple:
     """
-    Bootstraps the effect size deltas' g or proportional delta-delta
+    Bootstraps the effect size deltas' g or proportional delta-delta.
+
+    If `clusters` is supplied, whole clusters are resampled with replacement
+    (see `compute_cluster_bootstrapped_diff`) instead of individual observations.
     """
     x1, x2, x3, x4 = map(np.asarray, [x1, x2, x3, x4])
+
+    def _bootstrap_loop(pooled_sd, is_proportional):
+        if clusters is None:
+            return delta2_bootstrap_loop(
+                x1, x2, x3, x4, resamples, pooled_sd, random_seed, is_paired, proportional=is_proportional
+            )
+        return delta2_cluster_bootstrap_loop(
+            x1, x2, x3, x4, *clusters, resamples, pooled_sd, random_seed, is_paired, proportional=is_proportional
+        )
     
     if proportional:
         # For proportional data, pass 1.0 as dummy pooled_sd (won't be used)
-        out_delta_g, deltadelta = delta2_bootstrap_loop(
-            x1, x2, x3, x4, resamples, 1.0, random_seed, is_paired, proportional=True
-        )
+        out_delta_g, deltadelta = _bootstrap_loop(1.0, True)
         # For proportional data, delta_g is the empirical delta-delta
         delta_g = ((np.mean(x4) - np.mean(x3)) - (np.mean(x2) - np.mean(x1)))
     else:
@@ -241,9 +686,7 @@ def compute_delta2_bootstrapped_diff(
         if np.isnan(pooled_sample_sd) or pooled_sample_sd == 0:
             raise ValueError("Pooled sample standard deviation is NaN or zero.")
             
-        out_delta_g, deltadelta = delta2_bootstrap_loop(
-            x1, x2, x3, x4, resamples, pooled_sample_sd, random_seed, is_paired, proportional=False
-        )
+        out_delta_g, deltadelta = _bootstrap_loop(pooled_sample_sd, False)
         delta_g = ((np.mean(x4) - np.mean(x3)) - (np.mean(x2) - np.mean(x1))) / pooled_sample_sd
 
     return out_delta_g, delta_g, deltadelta

@@ -59,6 +59,21 @@ class TwoGroupsEffectSize(object):
         ps_adjust : boolean, default False.
             If True, adjust calculated p-value according to Phipson & Smyth (2010)
             # https://doi.org/10.2202/1544-6115.1585
+        control_clusters : array-like, default None
+        test_clusters : array-like, default None
+            The cluster (e.g. participant) that each observation in `control`
+            and `test` belongs to. When supplied, the bootstrap resamples whole
+            clusters with replacement and the permutation test reshuffles
+            labels at the cluster level, so that the confidence interval and
+            permutation p-value account for the correlation between
+            observations from the same cluster. A label present in both
+            arrays denotes the same cluster. For paired data the two arrays
+            must be identical, since observations are paired by position.
+        cluster_ci_expansion : boolean, default True
+            Only used when clusters are supplied. If True, the confidence
+            intervals are expanded for a small number of clusters (see
+            `dabest.load`); if False, the unexpanded cluster-bootstrap
+            intervals are reported.
             
 
         Returns
@@ -84,6 +99,10 @@ class TwoGroupsEffectSize(object):
                 The bias-corrected and accelerated confidence interval lower limit and upper limits, respectively.
             `pct_low, pct_high` : float
                 The percentile confidence interval lower limit and upper limits, respectively.
+            `ci_expanded` : float or None
+                For clustered data, the confidence level at which the bootstrap
+                distribution was read so that the reported `ci`% intervals allow for
+                a small number of clusters; None if the intervals were not expanded.
     """
 
     def __init__(
@@ -98,6 +117,9 @@ class TwoGroupsEffectSize(object):
         permutation_count=5000,
         random_seed=12345,
         ps_adjust=False,
+        control_clusters=None,
+        test_clusters=None,
+        cluster_ci_expansion=True,
     ):
         from ._stats_tools import confint_2group_diff as ci2g
         from ._stats_tools import effsize as es
@@ -118,7 +140,11 @@ class TwoGroupsEffectSize(object):
         self.__ci = ci
         self.__is_proportional = proportional
         self.__ps_adjust = ps_adjust
-        self._check_errors(control, test)
+        self.__is_clustered = control_clusters is not None or test_clusters is not None
+        if not isinstance(cluster_ci_expansion, (bool, np.bool_)):
+            raise TypeError("`cluster_ci_expansion` must be True or False.")
+        self.__cluster_ci_expansion = bool(cluster_ci_expansion)
+        self._check_errors(control, test, control_clusters, test_clusters)
 
         # Convert to numpy arrays for speed.
         # NaNs are automatically dropped.
@@ -128,26 +154,77 @@ class TwoGroupsEffectSize(object):
         self.__test = test[~isnan(test)]
         self.__permutation_count = permutation_count
 
+        if self.__is_clustered:
+            # Keep the cluster labels aligned with the NaN-filtered observations.
+            self.__control_clusters = array(control_clusters)[~isnan(control)]
+            self.__test_clusters = array(test_clusters)[~isnan(test)]
+            (control_codes, test_codes), self.__n_clusters = ci2g.cluster_codes(
+                self.__control_clusters, self.__test_clusters
+            )
+            if self.__is_paired and not np.array_equal(control_codes, test_codes):
+                err1 = "In a paired analysis every control observation must belong to the same "
+                err2 = "cluster as the test observation it is paired with. Check that the data "
+                err3 = "are sorted so that paired rows are aligned, and that each pair has a single cluster label."
+                raise ValueError(err1 + err2 + err3)
+        else:
+            self.__control_clusters = None
+            self.__test_clusters = None
+            self.__n_clusters = None
+
         self.__alpha = ci2g._compute_alpha_from_ci(self.__ci)
 
         self.__difference = es.two_group_difference(
             self.__control, self.__test, self.__is_paired, self.__effect_size
         )
 
-        self.__jackknives = ci2g.compute_meandiff_jackknife(
-            self.__control, self.__test, self.__is_paired, self.__effect_size
-        )
+        if self.__is_clustered:
+            jackknives, deleted, codes, n_codes = ci2g.cluster_jackknife_by_cluster(
+                self.__control,
+                self.__test,
+                self.__control_clusters,
+                self.__test_clusters,
+                self.__is_paired,
+                self.__effect_size,
+            )
+            self.__jackknives = jackknives
+            # How the jackknife variance splits across the resampling strata,
+            # used to expand the interval for small numbers of clusters.
+            self.__expansion_components = ci2g.cluster_variance_components(
+                jackknives, deleted, codes, n_codes
+            )
+        else:
+            self.__jackknives = ci2g.compute_meandiff_jackknife(
+                self.__control, self.__test, self.__is_paired, self.__effect_size
+            )
+            self.__expansion_components = None
 
         self.__acceleration_value = ci2g._calc_accel(self.__jackknives)
 
-        bootstraps = ci2g.compute_bootstrapped_diff(
-            self.__control,
-            self.__test,
-            self.__is_paired,
-            self.__effect_size,
-            self.__resamples,
-            self.__random_seed,
+        # Small-sample expansion of the interval for clustered data.
+        self.__ci_expanded, self.__expansion_df = self._expanded_level(
+            self.__expansion_components
         )
+
+        if self.__is_clustered:
+            bootstraps = ci2g.compute_cluster_bootstrapped_diff(
+                self.__control,
+                self.__test,
+                self.__control_clusters,
+                self.__test_clusters,
+                self.__is_paired,
+                self.__effect_size,
+                self.__resamples,
+                self.__random_seed,
+            )
+        else:
+            bootstraps = ci2g.compute_bootstrapped_diff(
+                self.__control,
+                self.__test,
+                self.__is_paired,
+                self.__effect_size,
+                self.__resamples,
+                self.__random_seed,
+            )
         self.__bootstraps = bootstraps
 
         sorted_bootstraps = npsort(self.__bootstraps)
@@ -173,13 +250,25 @@ class TwoGroupsEffectSize(object):
         self._compute_bca_intervals(sorted_bootstraps)
 
         # Compute percentile intervals.
-        pct_idx_low = int((self.__alpha / 2) * self.__resamples)
-        pct_idx_high = int((1 - (self.__alpha / 2)) * self.__resamples)
+        pct_idx_low, pct_idx_high = ci2g.percentile_interval_idx(
+            self._interval_level(), self.__resamples
+        )
 
         self.__pct_interval_idx = (pct_idx_low, pct_idx_high)
         self.__pct_low = sorted_bootstraps[pct_idx_low]
         self.__pct_high = sorted_bootstraps[pct_idx_high]
-        
+
+        # For an expanded interval, keep the unexpanded limits too: plots draw
+        # them as the thick part of the interval.
+        if self.__ci_expanded is not None:
+            (self.__bca_low_unexpanded, self.__bca_high_unexpanded,
+             self.__pct_low_unexpanded, self.__pct_high_unexpanded) = ci2g.unexpanded_interval_limits(
+                sorted_bootstraps, self.__bias_correction, self.__acceleration_value, self.__ci
+            )
+        else:
+            self.__bca_low_unexpanded = self.__bca_high_unexpanded = None
+            self.__pct_low_unexpanded = self.__pct_high_unexpanded = None
+
         self._get_bootstrap_baseline_ec()
 
         self._perform_statistical_test()
@@ -223,25 +312,44 @@ class TwoGroupsEffectSize(object):
 
         pval_rounded = base_string_fmt.format(self.pvalue_permutation)
 
-        p1 = "The p-value of the two-sided permutation t-test is {}, ".format(
-            pval_rounded
-        )
+        if self.__is_clustered:
+            p1 = "The p-value of the two-sided cluster-level permutation test is {}, ".format(
+                pval_rounded
+            )
+            bs1 = "{} cluster bootstrap samples were taken, resampling {} clusters with replacement; ".format(
+                self.__resamples, self.__n_clusters
+            )
+        else:
+            p1 = "The p-value of the two-sided permutation t-test is {}, ".format(
+                pval_rounded
+            )
+            bs1 = "{} bootstrap samples were taken; ".format(self.__resamples)
         p2 = "calculated for legacy purposes only. "
         pvalue = p1 + p2
 
-        bs1 = "{} bootstrap samples were taken; ".format(self.__resamples)
-        bs2 = "the confidence interval is bias-corrected and accelerated."
-        bs = bs1 + bs2
+        bs2 = "the confidence interval is bias-corrected and accelerated"
+        if self.__ci_expanded is not None:
+            bs2 += (
+                ", and expanded for the small number of clusters\n(the {}% interval is "
+                "read at the {:.2f}% level of the bootstrap distribution)".format(ci_width, self.__ci_expanded)
+            )
+        bs = bs1 + bs2 + "."
 
         pval_def1 = (
             "Any p-value reported is the probability of observing the"
             + "effect size (or greater),\nassuming the null hypothesis of "
             + "zero difference is true."
         )
-        pval_def2 = (
-            "\nFor each p-value, 5000 reshuffles of the "
-            + "control and test labels were performed."
-        )
+        if self.__is_clustered:
+            pval_def2 = (
+                "\nFor each p-value, 5000 reshuffles of the control and test labels "
+                + "were performed at the level of whole clusters."
+            )
+        else:
+            pval_def2 = (
+                "\nFor each p-value, 5000 reshuffles of the "
+                + "control and test labels were performed."
+            )
         pval_def = pval_def1 + pval_def2
 
         if show_resample_count and define_pval:
@@ -253,10 +361,20 @@ class TwoGroupsEffectSize(object):
         else:
             return "{}\n{}".format(out, pvalue)
 
-    def _check_errors(self, control, test):
+    def _check_errors(self, control, test, control_clusters=None, test_clusters=None):
         '''
         Function to check configuration errors for the given control and test data.
         '''
+        if self.__is_clustered:
+            if control_clusters is None or test_clusters is None:
+                err1 = "Both `control_clusters` and `test_clusters` must be supplied "
+                err2 = "for a cluster-aware analysis."
+                raise ValueError(err1 + err2)
+            if len(control_clusters) != len(control) or len(test_clusters) != len(test):
+                err1 = "`control_clusters` and `test_clusters` must have the same lengths "
+                err2 = "as `control` and `test` respectively."
+                raise ValueError(err1 + err2)
+
         kosher_es = [a for a in self.__EFFECT_SIZE_DICT.keys()]
         if self.__effect_size not in kosher_es:
             err1 = "The effect size '{}'".format(self.__effect_size)
@@ -279,18 +397,77 @@ class TwoGroupsEffectSize(object):
             )
             raise ValueError(err1)
 
+    def _expanded_level(self, components):
+        '''
+        The level at which to read the cluster-bootstrap distribution, expanded
+        for small numbers of clusters, and its degrees of freedom. Returns
+        `(None, None)` when the interval is not expanded.
+        '''
+        from ._stats_tools import confint_2group_diff as ci2g
+
+        if not (self.__is_clustered and self.__cluster_ci_expansion):
+            return None, None
+
+        ci_expanded, df = ci2g.expanded_ci_level(self.__ci, components)
+        if df is None:
+            warnings.warn(
+                "There are too few clusters (fewer than 2 in every resampling stratum) "
+                "to expand the confidence interval for a small number of clusters; "
+                "the unexpanded interval is reported, and it will be too narrow."
+            )
+            return None, None
+        # In simulations, expanded intervals came close to nominal coverage once
+        # there were at least 6 clusters in all, and at least 4 in the smallest
+        # independently resampled group of clusters.
+        n_total = sum(n for _, n in components if n >= 2)
+        n_smallest = ci2g.smallest_cluster_group(components)
+        if n_total < 6 or n_smallest < 4:
+            warnings.warn(
+                "Only {} clusters are available to resample ({} in the smallest group of "
+                "clusters); even after expansion for the small number of clusters, the "
+                "confidence interval is unreliable and likely too narrow. At least 6 "
+                "clusters, and at least 4 in every group of clusters, are "
+                "recommended.".format(int(n_total), int(n_smallest))
+            )
+        return ci_expanded, df
+
+    def _interval_level(self):
+        '''
+        The confidence level at which the bootstrap distribution is read:
+        the expanded level when the interval is expanded, otherwise `ci`.
+        '''
+        return self.__ci_expanded if self.__ci_expanded is not None else self.__ci
+
+    def _bca_interval_idx(self, bias, acceleration, ci_expanded):
+        '''
+        Indexes of the BCa interval limits. When `ci_expanded` is given, the
+        interval is read at that expanded level; if the BCa adjustment is
+        undefined there, the expanded percentile limits are used instead.
+        '''
+        from ._stats_tools import confint_2group_diff as ci2g
+
+        if ci_expanded is None:
+            return ci2g.compute_interval_limits(bias, acceleration, self.__resamples, self.__ci)
+
+        low, high = ci2g.expanded_interval_limits(bias, acceleration, self.__resamples, ci_expanded)
+        if (isnan(low) or isnan(high)) and np.isfinite(bias):
+            warnings.warn(
+                "The bias-corrected and accelerated adjustment is undefined at the "
+                "expanded confidence level; the expanded percentile interval is "
+                "reported in its place."
+            )
+            low, high = ci2g.percentile_interval_idx(ci_expanded, self.__resamples)
+        return low, high
+
     def _compute_bca_intervals(self, sorted_bootstraps):
         '''
         Function to compute the bca intervals given the sorted bootstraps.
         '''
-        from ._stats_tools import confint_2group_diff as ci2g
-
         # Compute BCa intervals.
-        bca_idx_low, bca_idx_high = ci2g.compute_interval_limits(
+        bca_idx_low, bca_idx_high = self._bca_interval_idx(
             self.__bias_correction,
             self.__acceleration_value,
-            self.__resamples,
-            self.__ci,
+            self.__ci_expanded,
         )
 
         self.__bca_interval_idx = (bca_idx_low, bca_idx_high)
@@ -342,6 +519,8 @@ class TwoGroupsEffectSize(object):
             self.__is_paired,
             self.__permutation_count,
             ps_adjust = self.__ps_adjust,
+            control_clusters=self.__control_clusters,
+            test_clusters=self.__test_clusters,
         )
 
         if self.__is_paired and not self.__is_proportional:
@@ -462,20 +641,53 @@ class TwoGroupsEffectSize(object):
         )
         self.__bec_difference = difference
 
-        jackknives = ci2g.compute_meandiff_jackknife(
-            self.__control, self.__control, is_paired, self.__effect_size
-        )
+        if self.__is_clustered:
+            # The two copies of the control group are resampled independently,
+            # so the clusters of the second copy are given distinct labels.
+            (codes,), n_clusters = ci2g.cluster_codes(self.__control_clusters)
+            codes_copy = codes + n_clusters
+            jackknives, deleted, jack_codes, n_codes = ci2g.cluster_jackknife_by_cluster(
+                self.__control, self.__control, codes, codes_copy, is_paired, self.__effect_size
+            )
+            bec_components = ci2g.cluster_variance_components(jackknives, deleted, jack_codes, n_codes)
+        else:
+            jackknives = ci2g.compute_meandiff_jackknife(
+                self.__control, self.__control, is_paired, self.__effect_size
+            )
+            bec_components = None
 
         acceleration_value = ci2g._calc_accel(jackknives)
 
-        bootstraps = ci2g.compute_bootstrapped_diff(
-            self.__control,
-            self.__control,
-            is_paired,
-            self.__effect_size,
-            self.__resamples,
-            self.__random_seed,
-        )
+        # The baseline curve is expanded for small numbers of clusters in the same
+        # way as the effect size itself; the warning for too few clusters, if any,
+        # has already been given for the effect size.
+        bec_ci_expanded = None
+        if self.__ci_expanded is not None:
+            level, df = ci2g.expanded_ci_level(self.__ci, bec_components)
+            if df is not None:
+                bec_ci_expanded = level
+        self.__bec_ci_expanded = bec_ci_expanded
+
+        if self.__is_clustered:
+            bootstraps = ci2g.compute_cluster_bootstrapped_diff(
+                self.__control,
+                self.__control,
+                codes,
+                codes_copy,
+                is_paired,
+                self.__effect_size,
+                self.__resamples,
+                self.__random_seed,
+            )
+        else:
+            bootstraps = ci2g.compute_bootstrapped_diff(
+                self.__control,
+                self.__control,
+                is_paired,
+                self.__effect_size,
+                self.__resamples,
+                self.__random_seed,
+            )
         self.__bootstraps_baseline_ec = bootstraps
 
         sorted_bootstraps = npsort(self.__bootstraps_baseline_ec)
@@ -486,11 +698,10 @@ class TwoGroupsEffectSize(object):
         )
 
         # Compute BCa intervals.
-        bca_idx_low, bca_idx_high = ci2g.compute_interval_limits(
+        bca_idx_low, bca_idx_high = self._bca_interval_idx(
             bias_correction,
             acceleration_value,
-            self.__resamples,
-            self.__ci,
+            bec_ci_expanded,
         )
 
         self.__bec_bca_interval_idx = (bca_idx_low, bca_idx_high)
@@ -529,12 +740,22 @@ class TwoGroupsEffectSize(object):
                 warnings.warn(err_temp.substitute(lim_type="upper"), stacklevel=0)
 
         # Compute percentile intervals.
-        pct_idx_low = int((self.__alpha / 2) * self.__resamples)
-        pct_idx_high = int((1 - (self.__alpha / 2)) * self.__resamples)
+        pct_idx_low, pct_idx_high = ci2g.percentile_interval_idx(
+            bec_ci_expanded if bec_ci_expanded is not None else self.__ci, self.__resamples
+        )
 
         self.__bec_pct_interval_idx = (pct_idx_low, pct_idx_high)
         self.__bec_pct_low = sorted_bootstraps[pct_idx_low]
         self.__bec_pct_high = sorted_bootstraps[pct_idx_high]
+
+        if bec_ci_expanded is not None:
+            (self.__bec_bca_low_unexpanded, self.__bec_bca_high_unexpanded,
+             self.__bec_pct_low_unexpanded, self.__bec_pct_high_unexpanded) = ci2g.unexpanded_interval_limits(
+                sorted_bootstraps, bias_correction, acceleration_value, self.__ci
+            )
+        else:
+            self.__bec_bca_low_unexpanded = self.__bec_bca_high_unexpanded = None
+            self.__bec_pct_low_unexpanded = self.__bec_pct_high_unexpanded = None
 
     @property
     def difference(self):
@@ -557,6 +778,56 @@ class TwoGroupsEffectSize(object):
     @property
     def is_proportional(self):
         return self.__is_proportional
+
+    @property
+    def is_clustered(self):
+        """
+        Whether whole clusters of observations, rather than individual
+        observations, were resampled by the bootstrap and permutation test.
+        """
+        return self.__is_clustered
+
+    @property
+    def n_clusters(self):
+        """
+        The number of distinct clusters resampled by the cluster bootstrap;
+        None if the observations are not clustered.
+        """
+        return self.__n_clusters
+
+    @property
+    def cluster_ci_expansion(self):
+        """
+        Whether the confidence interval of clustered data is expanded for a
+        small number of clusters.
+        """
+        return self.__cluster_ci_expansion
+
+    @property
+    def ci_expanded(self):
+        """
+        The confidence level, in percent, at which the cluster-bootstrap
+        distribution was read so that the reported `ci`% interval allows for a
+        small number of clusters (see `dabest.load`'s `cluster_ci_expansion`).
+        None if the interval was not expanded.
+        """
+        return self.__ci_expanded
+
+    @property
+    def expansion_df(self):
+        """
+        The degrees of freedom used to expand the confidence interval for a
+        small number of clusters; None if the interval was not expanded.
+        """
+        return self.__expansion_df
+
+    @property
+    def _expansion_components(self):
+        """
+        The stratum-by-stratum `(variance, n_clusters)` components of the
+        cluster jackknife variance; None if the observations are not clustered.
+        """
+        return self.__expansion_components
 
     @property
     def ci(self):
@@ -630,6 +901,38 @@ class TwoGroupsEffectSize(object):
         The percentile confidence interval lower limit.
         """
         return self.__pct_high
+
+    @property
+    def bca_low_unexpanded(self):
+        """
+        For an interval expanded for a small number of clusters, the BCa lower
+        limit before expansion; None if the interval was not expanded.
+        """
+        return self.__bca_low_unexpanded
+
+    @property
+    def bca_high_unexpanded(self):
+        """
+        For an interval expanded for a small number of clusters, the BCa upper
+        limit before expansion; None if the interval was not expanded.
+        """
+        return self.__bca_high_unexpanded
+
+    @property
+    def pct_low_unexpanded(self):
+        """
+        For an interval expanded for a small number of clusters, the percentile
+        lower limit before expansion; None if the interval was not expanded.
+        """
+        return self.__pct_low_unexpanded
+
+    @property
+    def pct_high_unexpanded(self):
+        """
+        For an interval expanded for a small number of clusters, the percentile
+        upper limit before expansion; None if the interval was not expanded.
+        """
+        return self.__pct_high_unexpanded
 
     @property
     def pvalue_brunner_munzel(self):
@@ -818,6 +1121,38 @@ class TwoGroupsEffectSize(object):
         The percentile confidence interval lower limit for baseline error.
         """
         return self.__bec_pct_high
+
+    @property
+    def bec_bca_low_unexpanded(self):
+        """
+        The baseline error curve's BCa lower limit before expansion for a
+        small number of clusters; None if it was not expanded.
+        """
+        return self.__bec_bca_low_unexpanded
+
+    @property
+    def bec_bca_high_unexpanded(self):
+        """
+        The baseline error curve's BCa upper limit before expansion for a
+        small number of clusters; None if it was not expanded.
+        """
+        return self.__bec_bca_high_unexpanded
+
+    @property
+    def bec_pct_low_unexpanded(self):
+        """
+        The baseline error curve's percentile lower limit before expansion for
+        a small number of clusters; None if it was not expanded.
+        """
+        return self.__bec_pct_low_unexpanded
+
+    @property
+    def bec_pct_high_unexpanded(self):
+        """
+        The baseline error curve's percentile upper limit before expansion for
+        a small number of clusters; None if it was not expanded.
+        """
+        return self.__bec_pct_high_unexpanded
         
 
 # %% ../nbs/API/effsize_objects.ipynb #024b1d00
@@ -841,6 +1176,7 @@ class EffectSizeDataFrame(object):
         experiment_label=None,
         mini_meta=False,
         ps_adjust=False,
+        cluster_ci_expansion=True,
     ):
         """
         Parses the data from a Dabest object, enabling plotting and printing
@@ -861,6 +1197,9 @@ class EffectSizeDataFrame(object):
         self.__delta2 = delta2
         self.__is_mini_meta = mini_meta
         self.__ps_adjust = ps_adjust
+        self.__cluster_ci_expansion = cluster_ci_expansion
+        self.__expansion_components = []
+        self.__delta2_ci_expanded = None
 
     def __pre_calc(self):
         from .misc_tools import print_greeting, get_varname
@@ -874,10 +1213,21 @@ class EffectSizeDataFrame(object):
 
         out = []
         reprs = []
+        self.__expansion_components = []
+        self.__delta2_ci_expanded = None
 
         grouped_data = {name: group[yvar].copy() for name, group in dat.groupby(xvar, observed=False)}
+
+        # The cluster label of every observation, for a cluster-aware analysis.
+        cluster_col = getattr(self.__dabest_obj, "cluster_col", None)
+        if cluster_col is not None:
+            grouped_clusters = {name: group[cluster_col].to_numpy() for name, group in dat.groupby(xvar, observed=False)}
+        else:
+            grouped_clusters = {name: None for name in grouped_data}
+
         if self.__delta2:
             mixed_data = []
+            mixed_clusters = []
             for j, current_tuple in enumerate(idx):
                 if self.__is_paired != "sequential":
                     cname = current_tuple[0]
@@ -890,6 +1240,8 @@ class EffectSizeDataFrame(object):
                     test = grouped_data[tname]
                     mixed_data.append(control)
                     mixed_data.append(test)
+                    mixed_clusters.append(grouped_clusters[cname])
+                    mixed_clusters.append(grouped_clusters[tname])
             bootstraps_delta_delta = ci2g.compute_delta2_bootstrapped_diff(
                 mixed_data[0],
                 mixed_data[1],
@@ -899,7 +1251,17 @@ class EffectSizeDataFrame(object):
                 self.__resamples,
                 self.__random_seed,
                 self.__is_proportional,
+                clusters=mixed_clusters if cluster_col is not None else None,
             )
+            if cluster_col is not None and self.__cluster_ci_expansion:
+                # Expand the delta-delta interval for a small number of clusters.
+                components = ci2g.delta2_cluster_variance_components(
+                    *[np.asarray(x) for x in mixed_data[:4]],
+                    *mixed_clusters[:4],
+                    self.__is_paired,
+                )
+                level, df = ci2g.expanded_ci_level(self.__ci, components)
+                self.__delta2_ci_expanded = level if df is not None else None
 
         for j, current_tuple in enumerate(idx):
             if self.__is_paired != "sequential":
@@ -921,8 +1283,12 @@ class EffectSizeDataFrame(object):
                     self.__resamples,
                     self.__permutation_count,
                     self.__random_seed,
-                    self.__ps_adjust
+                    self.__ps_adjust,
+                    control_clusters=grouped_clusters[cname],
+                    test_clusters=grouped_clusters[tname],
+                    cluster_ci_expansion=self.__cluster_ci_expansion,
                 )
+                self.__expansion_components.append(result._expansion_components)
                 r_dict = result.to_dict()
                 r_dict["control"] = cname
                 r_dict["test"] = tname
@@ -961,16 +1327,22 @@ class EffectSizeDataFrame(object):
             "test",
             "control_N",
             "test_N",
+            "n_clusters",
             "effect_size",
             "is_paired",
             "difference",
             "ci",
+            "ci_expanded",
             "bca_low",
             "bca_high",
             "bca_interval_idx",
             "pct_low",
             "pct_high",
             "pct_interval_idx",
+            "bca_low_unexpanded",
+            "bca_high_unexpanded",
+            "pct_low_unexpanded",
+            "pct_high_unexpanded",
             "bootstraps",
             "resamples",
             "random_seed",
@@ -1003,6 +1375,10 @@ class EffectSizeDataFrame(object):
             "bec_pct_interval_idx",
             "bec_pct_low",
             "bec_pct_high",
+            "bec_bca_low_unexpanded",
+            "bec_bca_high_unexpanded",
+            "bec_pct_low_unexpanded",
+            "bec_pct_high_unexpanded",
         ]
         self.__results = out_.reindex(columns=columns_in_order)
         self.__results.dropna(axis="columns", how="all", inplace=True)
@@ -1020,7 +1396,8 @@ class EffectSizeDataFrame(object):
             )
         elif self.__delta2:
             self.__delta_delta = DeltaDelta(
-                self, self.__permutation_count, bootstraps_delta_delta, self.__ci
+                self, self.__permutation_count, bootstraps_delta_delta, self.__ci,
+                ci_expanded=self.__delta2_ci_expanded,
             )
             reprs.append(self.__delta_delta.__repr__(header=False))
 
@@ -1209,6 +1586,7 @@ class EffectSizeDataFrame(object):
 
         contrast_marker_kwargs=None, # es_marker_kwargs=None, OLD
         contrast_errorbar_kwargs=None, # es_errorbar_kwargs=None, OLD
+        contrast_expanded_errorbar_kwargs=None,
 
         prop_sample_counts=False,
         prop_sample_counts_kwargs=None,
@@ -1300,6 +1678,13 @@ class EffectSizeDataFrame(object):
             observations.
         show_sample_size : boolean, default True
             Whether or not to display the sample size of each group in the axis label.
+            When `cluster_col` was set in `dabest.load()`, the label also reports the
+            number of distinct clusters in that group, on its own line, since that is
+            the count the cluster-aware bootstrap actually resamples: `(N=<observations>,
+            n=<clusters>)` instead of the usual `(N=<observations>)`. For vertical
+            Cumming plots, including two-column Sankey plots, the gap between the
+            raw-data and contrast axes is then sized to the labels, so they clear the
+            contrast axes.
         show_delta2, show_mini_meta : boolean, default True
             If delta-delta or mini-meta delta is calculated, whether or not to
             show the delta-delta plot or mini-meta plot.
@@ -1438,6 +1823,16 @@ class EffectSizeDataFrame(object):
         contrast_errorbar_kwargs: dict, default None
             Pass relevant keyword arguments to the effectsize errorbar plotting. If none, the following keywords are passed:
             {'color': 'black', 'lw': 2, 'linestyle': '-', 'alpha': 1,'zorder': 1,}
+        contrast_expanded_errorbar_kwargs: dict, default None
+            When `cluster_col` is set, intervals are expanded for the number of
+            clusters (see `dabest.load`'s `cluster_ci_expansion`). The plotted
+            bootstrap distribution does not change, so the expanded interval
+            reaches further into its tails than its nominal `ci`% interval. To
+            show this, the unexpanded interval (the nominal `ci`% interval of
+            the plotted distribution) is drawn as the usual errorbar, and the
+            expansion beyond it as a thinner line. Pass keyword arguments here
+            to style the thinner line; by default it takes the errorbar's
+            keywords at 40% of its line width.
 
         prop_sample_counts: bool, default False
             Show the sample counts for each group in proportional plots
@@ -1452,10 +1847,22 @@ class EffectSizeDataFrame(object):
             {"linestyle": "-", "linewidth": 2, "zorder": -2, "color": 'dimgray', "alpha": 1}
         
 		show_baseline_ec : boolean, default False
-            Whether or not to display the baseline error curve. The baseline error curve
-            represents the distribution of the effect size when comparing the control
-            group to itself, providing a reference for the inherent variability or noise
-            in the data. When True, this curve is plotted alongside the main effect size
+            Whether or not to display the baseline error curve (bec). The bec is the
+            bootstrap distribution obtained by comparing the leftmost ("control") group
+            of each `idx` tuple to a resample of itself, so that its own difference is
+            0 and its spread shows the sampling noise inherent to that group alone. It
+            is always computed as an *unpaired* comparison, even when `paired` is set
+            for the main analysis, because it stands in for "no relationship between
+            the two sides of the comparison" rather than for the design actually used.
+            For a paired analysis this means the bec is not directly comparable in
+            scale to the real (paired) effect-size curves: pairing removes shared
+            between-subject variation from the real curves but not from the bec, and
+            when `cluster_col` is set this asymmetry is amplified, since the bec then
+            resamples whole clusters against an independent resample of themselves,
+            while the real paired curves largely cancel the between-cluster variation.
+            The bec can be much wider than the real curves in that case, and may need
+            its own `contrast_ylim`; see the Plot Aesthetics tutorial for an example.
+            When True, this curve is plotted alongside the main effect size
             distribution, allowing for a visual comparison of the observed effect against
             the baseline variability.
 
@@ -1535,6 +1942,11 @@ class EffectSizeDataFrame(object):
             "bca_high",
         ]
 
+        if "n_clusters" in results_df.columns:
+            default_cols.insert(default_cols.index("effect_size"), "n_clusters")
+        if "ci_expanded" in results_df.columns:
+            default_cols.insert(default_cols.index("ci") + 1, "ci_expanded")
+
         cols_of_interest = default_cols + stats_columns
 
         return results_df[cols_of_interest]
@@ -1542,6 +1954,27 @@ class EffectSizeDataFrame(object):
     @property
     def _for_print(self):
         return self.__for_print
+
+    @property
+    def cluster_ci_expansion(self):
+        """
+        Whether confidence intervals of clustered data are expanded for a small
+        number of clusters.
+        """
+        return self.__cluster_ci_expansion
+
+    @property
+    def _expansion_components(self):
+        """
+        For each comparison, in the order of `results`, the stratum-by-stratum
+        `(variance, n_clusters)` components of its cluster jackknife variance,
+        or None if the observations are not clustered.
+        """
+        try:
+            self.__results
+        except AttributeError:
+            self.__pre_calc()
+        return self.__expansion_components
 
     @property
     def _plot_data(self):
@@ -1661,6 +2094,14 @@ class EffectSizeDataFrame(object):
         return self.__delta2
 
 # %% ../nbs/API/effsize_objects.ipynb #5d49f77f
+def _count_sign_patterns(n):
+    """The number of ways to swap or not swap each of `n` clusters, as a float."""
+    try:
+        return float(2 ** int(n))
+    except OverflowError:
+        return float("inf")
+
+
 class PermutationTest:
     """
     A class to compute and report permutation tests.
@@ -1683,6 +2124,17 @@ class PermutationTest:
     ps_adjust : bool, default False
         If True, the p-value is adjusted according to Phipson & Smyth (2010).
         # https://doi.org/10.2202/1544-6115.1585
+    control_clusters : array-like, default None
+    test_clusters : array-like, default None
+        The cluster (e.g. participant) that each observation in `control` and
+        `test` belongs to. When supplied, labels are reshuffled at the cluster
+        level: for paired data, control and test are swapped for whole clusters
+        at a time; for unpaired data with clusters nested within groups, whole
+        clusters are reassigned between the groups; and for unpaired data with
+        clusters spanning both groups, each cluster's control and test
+        observations are swapped as whole sets. In every case the observations
+        within a cluster are kept together, so that heterogeneity of the effect
+        between clusters is reflected in the null distribution.
 
         
     Returns
@@ -1703,9 +2155,16 @@ class PermutationTest:
                  permutation_count:int=5000, # The number of permutations (reshuffles) to perform.
                  random_seed:int=12345,#`random_seed` is used to seed the random number generator during bootstrap resampling. This ensures that the generated permutations are replicable.
                  ps_adjust:bool=False,
+                 control_clusters=None, # Cluster label of each observation in `control`; see the class docstring.
+                 test_clusters=None, # Cluster label of each observation in `test`.
                  **kwargs):
         from ._stats_tools.effsize import two_group_difference
-        from ._stats_tools.confint_2group_diff import calculate_group_var
+        from ._stats_tools.confint_2group_diff import (
+            calculate_group_var,
+            cluster_codes,
+            cluster_tables,
+            expand_cluster_draw,
+        )
         
 
         self.__permutation_count = permutation_count
@@ -1713,6 +2172,12 @@ class PermutationTest:
         # Run Sanity Check.
         if is_paired and len(control) != len(test):
             raise ValueError("The two arrays do not have the same length.")
+
+        is_clustered = control_clusters is not None or test_clusters is not None
+        if is_clustered and (control_clusters is None or test_clusters is None):
+            err1 = "Both `control_clusters` and `test_clusters` must be supplied "
+            err2 = "for a cluster-aware permutation test."
+            raise ValueError(err1 + err2)
 
         # Initialise random number generator.
         # rng = random.default_rng(seed=random_seed)
@@ -1734,8 +2199,79 @@ class PermutationTest:
         self.__permutations = []
         self.__permutations_var = []
 
-        for i in range(int(self.__permutation_count)):
+        # The number of distinct (two-sided) permutations, used by the
+        # Phipson & Smyth (2010) adjustment.
+        if is_clustered:
+            (control_codes, test_codes), n_clusters = cluster_codes(control_clusters, test_clusters)
+            if len(control_codes) != CONTROL_LEN or len(test_codes) != TEST_LEN:
+                err1 = "`control_clusters` and `test_clusters` must have the same lengths "
+                err2 = "as `control` and `test` respectively."
+                raise ValueError(err1 + err2)
+
             if is_paired:
+                if not np.array_equal(control_codes, test_codes):
+                    err1 = "In a paired analysis every control observation must belong to the "
+                    err2 = "same cluster as the test observation it is paired with."
+                    raise ValueError(err1 + err2)
+                # Control and test are swapped for whole clusters at a time; each
+                # pattern of swaps and its mirror image give the same |effect size|.
+                totalPermutations = _count_sign_patterns(n_clusters) / 2
+            else:
+                bag_codes = array([*control_codes, *test_codes])
+                offsets, members = cluster_tables(bag_codes, n_clusters)
+                cluster_sizes = offsets[1:] - offsets[:-1]
+                control_per_cluster = np.bincount(control_codes, minlength=n_clusters)
+                clusters_shared = bool(
+                    ((control_per_cluster > 0) & (control_per_cluster < cluster_sizes)).any()
+                )
+
+                if clusters_shared:
+                    # Clusters contribute to both groups: a cluster's control and
+                    # test observations are swapped as whole sets (the analogue of
+                    # the paired sign flip). Clusters present in one group only
+                    # are left where they are.
+                    shared_cluster = (control_per_cluster > 0) & (control_per_cluster < cluster_sizes)
+                    n_shared = int(shared_cluster.sum())
+                    is_control = arange(len(BAG)) < CONTROL_LEN
+                    if n_shared == n_clusters:
+                        # Swapping every cluster mirrors the effect size exactly.
+                        totalPermutations = _count_sign_patterns(n_shared) / 2
+                    else:
+                        totalPermutations = _count_sign_patterns(n_shared)
+                else:
+                    # Clusters are nested within groups: whole clusters are
+                    # reassigned between the control and test groups.
+                    n_control_clusters = int((control_per_cluster > 0).sum())
+                    if 2 * n_control_clusters == n_clusters:
+                        totalPermutations = binomcoeff(n_clusters, n_control_clusters) / 2
+                    else:
+                        totalPermutations = binomcoeff(n_clusters, n_control_clusters)
+        elif CONTROL_LEN == TEST_LEN:
+            totalPermutations = binomcoeff(CONTROL_LEN + TEST_LEN, TEST_LEN) / 2
+        else:
+            totalPermutations = binomcoeff(CONTROL_LEN + TEST_LEN, TEST_LEN)
+
+        for i in range(int(self.__permutation_count)):
+            if is_clustered and is_paired:
+                # Swap control and test for whole clusters at a time.
+                flip = rng.randint(0, 2, n_clusters).astype(bool)[control_codes]
+                control_sample = np.where(flip, test, control)
+                test_sample = np.where(flip, control, test)
+
+            elif is_clustered and clusters_shared:
+                # Swap the control and test sets of randomly chosen shared clusters.
+                swap = rng.randint(0, 2, n_clusters).astype(bool) & shared_cluster
+                new_is_control = is_control ^ swap[bag_codes]
+                control_sample = BAG[new_is_control]
+                test_sample = BAG[~new_is_control]
+
+            elif is_clustered:
+                # Reassign whole clusters between the control and test groups.
+                perm = rng.permutation(n_clusters).astype(np.int64)
+                control_sample = BAG[expand_cluster_draw(perm[:n_control_clusters], offsets, members)]
+                test_sample = BAG[expand_cluster_draw(perm[n_control_clusters:], offsets, members)]
+
+            elif is_paired:
                 # Select which control-test pairs to swap.
                 random_idx = rng.choice(CONTROL_LEN,
                                 rng.randint(0, CONTROL_LEN+1),
@@ -1759,7 +2295,7 @@ class PermutationTest:
                                     False, effect_size)
             
             group_var = calculate_group_var(var(control_sample, ddof=1), 
-                                      CONTROL_LEN, 
+                                      len(control_sample), 
                                       var(test_sample, ddof=1), 
                                       len(test_sample))
             self.__permutations.append(es)
@@ -1775,11 +2311,6 @@ class PermutationTest:
             # as per R code in statmod::permp
             # https://rdrr.io/cran/statmod/src/R/permp.R
             # (assumes two-sided test)
-
-            if CONTROL_LEN == TEST_LEN:
-                totalPermutations = binomcoeff(CONTROL_LEN + TEST_LEN, TEST_LEN)/2
-            else:
-                totalPermutations = binomcoeff(CONTROL_LEN + TEST_LEN, TEST_LEN)
 
             if totalPermutations <= 10e3:
                 # use exact calculation

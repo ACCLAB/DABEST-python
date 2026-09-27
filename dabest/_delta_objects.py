@@ -18,6 +18,29 @@ import warnings
 import datetime as dt
 
 # %% ../nbs/API/delta_objects.ipynb #1bb53e06
+def _bca_interval_idx(bias, acceleration, resamples, ci, ci_expanded=None):
+    """
+    Indexes of the BCa interval limits. When `ci_expanded` is given (the
+    interval is expanded for a small number of clusters), the interval is read
+    at that level; if the BCa adjustment is undefined there, the expanded
+    percentile limits are used instead.
+    """
+    from ._stats_tools import confint_2group_diff as ci2g
+
+    if ci_expanded is None:
+        return ci2g.compute_interval_limits(bias, acceleration, resamples, ci)
+
+    low, high = ci2g.expanded_interval_limits(bias, acceleration, resamples, ci_expanded)
+    if (isnan(low) or isnan(high)) and np.isfinite(bias):
+        warnings.warn(
+            "The bias-corrected and accelerated adjustment is undefined at the "
+            "expanded confidence level; the expanded percentile interval is "
+            "reported in its place."
+        )
+        low, high = ci2g.percentile_interval_idx(ci_expanded, resamples)
+    return low, high
+
+
 class DeltaDelta(object):
     r"""
     A class to compute and store the delta-delta statistics for experiments with a 2-by-2 arrangement where two independent variables, A and B, each have two categorical values, 1 and 2. The data is divided into two pairs of two groups, and a primary delta is first calculated as the mean difference between each of the pairs:
@@ -48,7 +71,8 @@ class DeltaDelta(object):
     """
 
     def __init__(
-        self, effectsizedataframe, permutation_count, bootstraps_delta_delta, ci=95
+        self, effectsizedataframe, permutation_count, bootstraps_delta_delta, ci=95,
+        ci_expanded=None,
     ):
         from ._stats_tools import effsize as es
         from ._stats_tools import confint_1group as ci1g
@@ -57,6 +81,9 @@ class DeltaDelta(object):
         self.__effsizedf = effectsizedataframe.results
         self.__dabest_obj = effectsizedataframe.dabest_obj
         self.__ci = ci
+        # The level at which the bootstrap distribution is read when the interval
+        # is expanded for a small number of clusters (see `expanded_ci_level`).
+        self.__ci_expanded = ci_expanded
         self.__resamples = effectsizedataframe.resamples
         self.__effect_size = effectsizedataframe.effect_size
         self.__alpha = ci2g._compute_alpha_from_ci(ci)
@@ -88,8 +115,9 @@ class DeltaDelta(object):
         self.__acceleration_value = ci2g._calc_accel(self.__jackknives)
 
         # Compute BCa intervals.
-        bca_idx_low, bca_idx_high = ci2g.compute_interval_limits(
-            self.__bias_correction, self.__acceleration_value, self.__resamples, ci
+        bca_idx_low, bca_idx_high = _bca_interval_idx(
+            self.__bias_correction, self.__acceleration_value, self.__resamples, ci,
+            self.__ci_expanded,
         )
 
         self.__bca_interval_idx = (bca_idx_low, bca_idx_high)
@@ -128,12 +156,21 @@ class DeltaDelta(object):
                 warnings.warn(err_temp.substitute(lim_type="upper"), stacklevel=0)
 
         # Compute percentile intervals.
-        pct_idx_low = int((self.__alpha / 2) * self.__resamples)
-        pct_idx_high = int((1 - (self.__alpha / 2)) * self.__resamples)
+        pct_idx_low, pct_idx_high = ci2g.percentile_interval_idx(
+            self.__ci_expanded if self.__ci_expanded is not None else ci, self.__resamples
+        )
 
         self.__pct_interval_idx = (pct_idx_low, pct_idx_high)
         self.__pct_low = sorted_delta_delta[pct_idx_low]
         self.__pct_high = sorted_delta_delta[pct_idx_high]
+
+        # For an expanded interval, keep the unexpanded limits too: plots draw
+        # them as the thick part of the interval.
+        self.__unexpanded = (None, None, None, None)
+        if self.__ci_expanded is not None:
+            self.__unexpanded = ci2g.unexpanded_interval_limits(
+                sorted_delta_delta, self.__bias_correction, self.__acceleration_value, ci
+            )
 
     def __permutation_test(self):
         """
@@ -189,8 +226,14 @@ class DeltaDelta(object):
         pvalue = p1 + p2
 
         bs1 = "{} bootstrap samples were taken; ".format(self.__resamples)
-        bs2 = "the confidence interval is bias-corrected and accelerated."
-        bs = bs1 + bs2
+        bs2 = "the confidence interval is bias-corrected and accelerated"
+        if self.__ci_expanded is not None:
+            bs1 = "{} cluster bootstrap samples were taken; ".format(self.__resamples)
+            bs2 += (
+                ", and expanded for the small number of clusters\n(the {}% interval is "
+                "read at the {:.2f}% level of the bootstrap distribution)".format(ci_width, self.__ci_expanded)
+            )
+        bs = bs1 + bs2 + "."
 
         pval_def1 = (
             "Any p-value reported is the probability of observing the "
@@ -221,11 +264,16 @@ class DeltaDelta(object):
         # With some inspiration from @jungyangliao
         delta_delta_results_df = pd.Series(self.to_dict()).to_frame().T
 
-        column_index = ['control', 'test', 'difference', 'ci', 'bca_low', 'bca_high', 'bca_interval_idx', 
-                        'pct_low', 'pct_high', 'pct_interval_idx', 'bootstraps_control', 'bootstraps_test', 
+        column_index = ['control', 'test', 'difference', 'ci', 'bca_low', 'bca_high', 'bca_interval_idx',
+                        'pct_low', 'pct_high', 'pct_interval_idx', 'bootstraps_control', 'bootstraps_test',
                         'bootstraps_delta_delta', 'permutations_control', 'permutations_test', 'permutations_delta_delta',
                         'pvalue_permutation', 'permutation_count', 'bias_correction', 'jackknives'
                         ]
+        if self.__ci_expanded is not None:
+            column_index.insert(column_index.index('ci') + 1, 'ci_expanded')
+            position = column_index.index('pct_interval_idx') + 1
+            column_index[position:position] = ['bca_low_unexpanded', 'bca_high_unexpanded',
+                                               'pct_low_unexpanded', 'pct_high_unexpanded']
         delta_delta_results_df['bootstraps_control'] = [delta_delta_results_df['bootstraps'][0][0]]
         delta_delta_results_df['bootstraps_test'] = [delta_delta_results_df['bootstraps'][0][1]]
         delta_delta_results_df['permutations_control'] = [delta_delta_results_df['permutations'][0][0]]
@@ -241,6 +289,47 @@ class DeltaDelta(object):
         Returns the width of the confidence interval, in percent.
         """
         return self.__ci
+
+    @property
+    def ci_expanded(self):
+        """
+        The confidence level, in percent, at which the cluster-bootstrap
+        distribution was read so that the reported `ci`% interval allows for a
+        small number of clusters. None if the interval was not expanded.
+        """
+        return self.__ci_expanded
+
+    @property
+    def bca_low_unexpanded(self):
+        """
+        For an interval expanded for a small number of clusters, the BCa lower
+        limit before expansion; None if the interval was not expanded.
+        """
+        return self.__unexpanded[0]
+
+    @property
+    def bca_high_unexpanded(self):
+        """
+        For an interval expanded for a small number of clusters, the BCa upper
+        limit before expansion; None if the interval was not expanded.
+        """
+        return self.__unexpanded[1]
+
+    @property
+    def pct_low_unexpanded(self):
+        """
+        For an interval expanded for a small number of clusters, the percentile
+        lower limit before expansion; None if the interval was not expanded.
+        """
+        return self.__unexpanded[2]
+
+    @property
+    def pct_high_unexpanded(self):
+        """
+        For an interval expanded for a small number of clusters, the percentile
+        upper limit before expansion; None if the interval was not expanded.
+        """
+        return self.__unexpanded[3]
 
     @property
     def alpha(self):
@@ -440,6 +529,24 @@ class MiniMetaDelta(object):
         
         self.__bootstraps_variance = ci2g.calculate_bootstraps_var(self.__bootstraps)
 
+        # Expand the interval for a small number of clusters. The weighted delta
+        # averages the experiments' deltas with weights w_j, so experiment j
+        # contributes (w_j / sum(w))^2 of its own variance; its stratum
+        # components are scaled accordingly and combined across experiments.
+        self.__ci_expanded = None
+        if (getattr(self.__dabest_obj, "cluster_col", None) is not None
+                and getattr(effectsizedataframe, "cluster_ci_expansion", False)):
+            per_experiment = effectsizedataframe._expansion_components
+            if all(c is not None for c in per_experiment):
+                weights = 1 / self.__bootstraps_variance
+                shares = weights / weights.sum()
+                combined = [(v * share ** 2, n)
+                            for components, share in zip(per_experiment, shares)
+                            for v, n in components]
+                level, df = ci2g.expanded_ci_level(ci, combined)
+                if df is not None:
+                    self.__ci_expanded = level
+
         # Compute the weighted average mean differences of the bootstrap data
         # using the pooled group variances of the raw data as the inverse of 
         # weights
@@ -464,9 +571,9 @@ class MiniMetaDelta(object):
         self.__acceleration_value = ci2g._calc_accel(self.__jackknives)
 
         # Compute BCa intervals.
-        bca_idx_low, bca_idx_high = ci2g.compute_interval_limits(
+        bca_idx_low, bca_idx_high = _bca_interval_idx(
             self.__bias_correction, self.__acceleration_value,
-            self.__resamples, ci)
+            self.__resamples, ci, self.__ci_expanded)
         
         self.__bca_interval_idx = (bca_idx_low, bca_idx_high)
 
@@ -506,12 +613,20 @@ class MiniMetaDelta(object):
                               stacklevel=0)
 
         # Compute percentile intervals.
-        pct_idx_low  = int((self.__alpha/2)     * self.__resamples)
-        pct_idx_high = int((1-(self.__alpha/2)) * self.__resamples)
+        pct_idx_low, pct_idx_high = ci2g.percentile_interval_idx(
+            self.__ci_expanded if self.__ci_expanded is not None else ci, self.__resamples)
 
         self.__pct_interval_idx = (pct_idx_low, pct_idx_high)
         self.__pct_low          = sorted_weighted_deltas[pct_idx_low]
         self.__pct_high         = sorted_weighted_deltas[pct_idx_high]
+
+        # For an expanded interval, keep the unexpanded limits too: plots draw
+        # them as the thick part of the interval.
+        self.__unexpanded = (None, None, None, None)
+        if self.__ci_expanded is not None:
+            self.__unexpanded = ci2g.unexpanded_interval_limits(
+                sorted_weighted_deltas, self.__bias_correction, self.__acceleration_value, ci
+            )
         
     
 
@@ -587,8 +702,14 @@ class MiniMetaDelta(object):
 
 
         bs1 = "{} bootstrap samples were taken; ".format(self.__resamples)
-        bs2 = "the confidence interval is bias-corrected and accelerated."
-        bs = bs1 + bs2
+        bs2 = "the confidence interval is bias-corrected and accelerated"
+        if self.__ci_expanded is not None:
+            bs1 = "{} cluster bootstrap samples were taken; ".format(self.__resamples)
+            bs2 += (
+                ", and expanded for the small number of clusters\n(the {}% interval is "
+                "read at the {:.2f}% level of the bootstrap distribution)".format(ci_width, self.__ci_expanded)
+            )
+        bs = bs1 + bs2 + "."
 
         pval_def1 = "Any p-value reported is the probability of observing the" + \
                     "effect size (or greater),\nassuming the null hypothesis of " + \
@@ -627,6 +748,11 @@ class MiniMetaDelta(object):
                         'pct_low', 'pct_high', 'pct_interval_idx', 'bootstraps', 'bootstraps_weighted_delta', 
                         'permutations', 'permutations_var', 'permutations_weighted_delta', 'pvalue_permutation', 
                         'permutation_count', 'bias_correction', 'jackknives']
+        if self.__ci_expanded is not None:
+            column_index.insert(column_index.index('ci') + 1, 'ci_expanded')
+            position = column_index.index('pct_interval_idx') + 1
+            column_index[position:position] = ['bca_low_unexpanded', 'bca_high_unexpanded',
+                                               'pct_low_unexpanded', 'pct_high_unexpanded']
         mini_meta_delta_results_df = mini_meta_delta_results_df.reindex(columns=column_index)
         mini_meta_delta_results_df.rename(columns={'bootstraps': 'bootstraps_deltas'}, inplace=True)
 
@@ -640,6 +766,47 @@ class MiniMetaDelta(object):
         Returns the width of the confidence interval, in percent.
         """
         return self.__ci
+
+    @property
+    def ci_expanded(self):
+        """
+        The confidence level, in percent, at which the cluster-bootstrap
+        distribution was read so that the reported `ci`% interval allows for a
+        small number of clusters. None if the interval was not expanded.
+        """
+        return self.__ci_expanded
+
+    @property
+    def bca_low_unexpanded(self):
+        """
+        For an interval expanded for a small number of clusters, the BCa lower
+        limit before expansion; None if the interval was not expanded.
+        """
+        return self.__unexpanded[0]
+
+    @property
+    def bca_high_unexpanded(self):
+        """
+        For an interval expanded for a small number of clusters, the BCa upper
+        limit before expansion; None if the interval was not expanded.
+        """
+        return self.__unexpanded[1]
+
+    @property
+    def pct_low_unexpanded(self):
+        """
+        For an interval expanded for a small number of clusters, the percentile
+        lower limit before expansion; None if the interval was not expanded.
+        """
+        return self.__unexpanded[2]
+
+    @property
+    def pct_high_unexpanded(self):
+        """
+        For an interval expanded for a small number of clusters, the percentile
+        upper limit before expansion; None if the interval was not expanded.
+        """
+        return self.__unexpanded[3]
 
 
     @property

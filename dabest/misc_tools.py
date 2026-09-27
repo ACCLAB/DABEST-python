@@ -700,20 +700,52 @@ def get_color_palette(
     return (color_col, bootstraps_color_by_group, n_groups, filled, raw_colors,
             plot_palette_raw, plot_palette_contrast, plot_palette_sankey)
 
+def _tick_label_gap_inches(n_lines: int, fontsize) -> float:
+    """
+    Vertical gap, in inches, that keeps `n_lines` of tick labels at `fontsize`
+    on the upper (raw data) axes clear of the lower (contrast) axes: the text,
+    plus room for the tick marks and a small margin.
+    """
+    from matplotlib.font_manager import FontProperties
+
+    size_pt = FontProperties(size=fontsize).get_size_in_points()
+    return (n_lines * 1.2 * size_pt + 14) / 72
+
+
+def _hspace_for_tick_labels(
+        n_lines: int,
+        fontsize,
+        available_height: float,
+        minimum: float,
+    ) -> float:
+    """
+    Vertical gap, as a fraction of each axes' height, that keeps multi-line
+    tick labels on the upper (raw data) axes clear of the lower (contrast) axes.
+
+    `available_height` is the height in inches shared by both axes and the gap
+    between them (see `_tick_label_gap_inches`). Never returns less than `minimum`.
+    """
+    needed = _tick_label_gap_inches(n_lines, fontsize)
+    # Axes heights h and gap g satisfy 2h + g = available_height and g = hspace * h.
+    remaining = max(available_height - needed, 0.25 * available_height)
+    return max(minimum, 2 * needed / remaining)
+
+
 def initialize_fig(
-        plot_kwargs: dict, 
-        dabest_obj: object, 
-        show_delta2: bool, 
-        show_mini_meta: bool, 
-        is_paired: bool, 
-        show_pairs: bool, 
+        plot_kwargs: dict,
+        dabest_obj: object,
+        show_delta2: bool,
+        show_mini_meta: bool,
+        is_paired: bool,
+        show_pairs: bool,
         proportional: bool,
         float_contrast: bool,
-        effect_size_type: str, 
-        yvar: str, 
-        horizontal: bool, 
+        effect_size_type: str,
+        yvar: str,
+        horizontal: bool,
         show_table: bool,
         color_col: str,
+        two_col_sankey: bool = False,
     ):
     """
     Initialize the figure and axes for the plotter function.
@@ -746,6 +778,9 @@ def initialize_fig(
         A boolean flag to determine if the table will be shown in horizontal plot.
     color_col : str
         The column name for coloring the data points.
+    two_col_sankey : bool, default False
+        Whether the plot is a two-column (non-flow) Sankey diagram, whose raw
+        data tick labels span several lines.
     """
     # Params
     fig_size = plot_kwargs["fig_size"]
@@ -786,6 +821,18 @@ def initialize_fig(
     width_ratios_ga = [2.5, 1]
     h_space_cummings = (0.1 if plot_kwargs["gridkey"] is not None
                         else 0.3)
+    # Cluster-aware sample-size labels add a line to each raw-data tick label
+    # (see `add_counts_to_ticks`), on top of the two lines of an ordinary label
+    # or the four of a two-column Sankey label. In that case the gap between the
+    # raw data and contrast axes is sized to the labels, so they clear the
+    # contrast axes below.
+    size_gap_to_labels = (
+        plot_kwargs["gridkey"] is None
+        and plot_kwargs["show_sample_size"]
+        and getattr(dabest_obj, "cluster_col", None) is not None
+    )
+    n_label_lines = (4 if two_col_sankey else 2) + 1
+    fontsize_rawxlabel = plot_kwargs.get("fontsize_rawxlabel")
 
     if plot_kwargs["ax"] is not None:
         # New in v0.2.6.
@@ -835,6 +882,30 @@ def initialize_fig(
                 )
 
                 contrast_axes = axins
+            elif size_gap_to_labels:
+                # The contrast axes hangs a fixed distance below the raw data
+                # axes, sized to the tick labels, rather than a fraction of the
+                # axes' height: a layout engine that later resizes the raw data
+                # axes (e.g. with `figure.autolayout`) would otherwise stretch
+                # the gap along with it.
+                fig_height = fig.get_figheight()
+                available = (ax_position.y1 - ax_position.y0) * fig_height  # inches
+                gap = max(min(_tick_label_gap_inches(n_label_lines, fontsize_rawxlabel), 0.75 * available),
+                          h_space_cummings * available / (2 + h_space_cummings))
+                plot_height = (available - gap) / 2
+                axins = rawdata_axes.inset_axes(
+                    [0, -1, 1, 1],
+                    transform=rawdata_axes.transAxes
+                    + matplotlib.transforms.ScaledTranslation(0, -gap, fig.dpi_scale_trans),
+                )
+                rawdata_axes.set_position(
+                    [
+                        ax_position.x0,
+                        ax_position.y0 + (plot_height + gap) / fig_height,
+                        (ax_position.x1 - ax_position.x0),
+                        plot_height / fig_height,
+                    ]
+                )
             else:
                 axins = rawdata_axes.inset_axes([0, -1 - h_space_cummings, 1, 1])
                 plot_height = (ax_position.y1 - ax_position.y0) / (2 + h_space_cummings)
@@ -871,6 +942,15 @@ def initialize_fig(
                     **init_fig_kwargs
                 )
             else:
+                if size_gap_to_labels:
+                    subplot_height = (plt.rcParams["figure.subplot.top"]
+                                      - plt.rcParams["figure.subplot.bottom"])
+                    h_space_cummings = _hspace_for_tick_labels(
+                        n_label_lines,
+                        fontsize_rawxlabel,
+                        fig_size[1] * subplot_height,
+                        h_space_cummings,
+                    )
                 fig, axx = plt.subplots(
                     nrows=2, gridspec_kw={"hspace": h_space_cummings}, **init_fig_kwargs
                 )
@@ -1027,13 +1107,14 @@ def get_plot_groups(
 
 
 def add_counts_to_ticks(
-        plot_data: pd.DataFrame, 
-        xvar: str, 
-        yvar: str, 
-        rawdata_axes: axes.Axes, 
-        plot_kwargs: dict, 
-        flow: bool, 
-        horizontal: bool
+        plot_data: pd.DataFrame,
+        xvar: str,
+        yvar: str,
+        rawdata_axes: axes.Axes,
+        plot_kwargs: dict,
+        flow: bool,
+        horizontal: bool,
+        cluster_col: str = None
     ):
     """
 
@@ -1055,24 +1136,33 @@ def add_counts_to_ticks(
         Whether sankey flow is enabled or not.
     horizontal : bool
         A boolean flag to determine if the plot is for horizontal plotting.
+    cluster_col : str, default None
+        Name of the column identifying the cluster (e.g. participant) each
+        observation belongs to, as declared to `dabest.load()`. When supplied,
+        each group's label also reports the number of distinct clusters
+        contributing to that group, on its own line below the observation
+        count, since that is the count the cluster-aware bootstrap actually
+        resamples.
     """
 
     # Add the counts to the rawdata axes xticks.
     counts = plot_data.groupby(xvar, observed=False).count()[yvar]
-    
-    def lookup_value(text):
+    if cluster_col is not None:
+        cluster_counts = plot_data.groupby(xvar, observed=False)[cluster_col].nunique()
+
+    def lookup_value(series, text):
         try:
-            return str(counts.loc[text])
+            return str(series.loc[text])
         except KeyError:
             try:
                 numeric_key = pd.to_numeric(text, errors='coerce')
                 if pd.notnull(numeric_key):
-                    return str(counts.loc[numeric_key])
+                    return str(series.loc[numeric_key])
             except (ValueError, KeyError):
                 pass
         print(f"Key '{text}' not found in counts.")
         return "N/A"
-    
+
     ticks_with_counts = []
     if horizontal:
         get_label, get_ticks = rawdata_axes.get_yticklabels, rawdata_axes.get_yticks
@@ -1080,7 +1170,7 @@ def add_counts_to_ticks(
     else:
         get_label, get_ticks = rawdata_axes.get_xticklabels, rawdata_axes.get_xticks
         set_label, set_major_loc_method = rawdata_axes.set_xticklabels, rawdata_axes.xaxis.set_major_locator
-    
+
     for ticklab in get_label():
         t = ticklab.get_text()
 
@@ -1089,11 +1179,17 @@ def add_counts_to_ticks(
         else:
             te = t.split('\n')[-1]  # Get the last line of the label
 
-        value = lookup_value(te)
-        if horizontal:
-            ticks_with_counts.append(f"{t} (N={value})")
+        value = lookup_value(counts, te)
+        if cluster_col is not None:
+            n_clusters = lookup_value(cluster_counts, te)
+            count_text = "(N={},\n n={})".format(value, n_clusters)
         else:
-            ticks_with_counts.append(f"{t}\n(N={value})")
+            count_text = "(N={})".format(value)
+
+        if horizontal:
+            ticks_with_counts.append(f"{t} {count_text}")
+        else:
+            ticks_with_counts.append(f"{t}\n{count_text}")
 
     set_major_loc_method(plt.FixedLocator(get_ticks()))
 

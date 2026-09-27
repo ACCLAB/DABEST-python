@@ -22,7 +22,8 @@ def load_plot_data(
             effect_size: str = "mean_diff", 
             contrast_type: str = None,
             ci_type: str = "bca",
-            idx: Optional[List[int]] = None
+            idx: Optional[List[int]] = None,
+            include_unexpanded: bool = False,
 ) -> List:
     """
     Loads plot data based on specified effect size and contrast type.
@@ -40,11 +41,17 @@ def load_plot_data(
     idx: Optional[List[int]], default=None
         List of indices to select from the contrast objects if delta-delta experiment. 
         If None, only the delta-delta objects are plotted.
+    include_unexpanded: bool, default False
+        If True, also return, for each curve, the `(low, high)` limits of its
+        interval before expansion for a small number of clusters, or
+        `(None, None)` if the interval was not expanded.
 
     Returns
     -------
     List: Contrast plot data based on specified parameters.
     """
+    from .plot_tools import unexpanded_limits
+
     # Effect size and contrast types
     effect_attr = "hedges_g" if effect_size == 'delta_g' else effect_size
     contrast_attr = {"delta2": "delta_delta", "mini_meta": "mini_meta"}.get(contrast_type)
@@ -52,6 +59,7 @@ def load_plot_data(
     # Testing
     if idx is not None:
         bootstraps, differences, bcalows, bcahighs = [], [], [], []
+        unexpanded = []
         for current_idx, index_group in enumerate(idx):
             current_contrast = data[current_idx]
             if len(index_group)>0:
@@ -83,6 +91,7 @@ def load_plot_data(
                     differences.append(current_plot_data.results.difference[index_val])
                     bcalows.append(current_plot_data.results.get(ci_type+'_low')[index_val])
                     bcahighs.append(current_plot_data.results.get(ci_type+'_high')[index_val])    
+                    unexpanded.append(unexpanded_limits(current_plot_data.results, ci_type, index_val))
     else:
         if contrast_type == 'delta':
             contrast_plot_data = [getattr(contrast, effect_attr)  for contrast in data]
@@ -95,6 +104,8 @@ def load_plot_data(
             differences = [element for innerList in differences_nested for element in innerList]
             bcalows = [element for innerList in bcalows_nested for element in innerList]
             bcahighs = [element for innerList in bcahighs_nested for element in innerList]
+            unexpanded = [unexpanded_limits(result.results, ci_type, i)
+                          for result in contrast_plot_data for i in range(len(result.results))]
 
         else: # contrast_type == 'delta2' or 'mini_meta'
             contrast_plot_data = [getattr(getattr(contrast, effect_attr), contrast_attr) for contrast in data]
@@ -104,7 +115,10 @@ def load_plot_data(
             differences = [result.difference for result in contrast_plot_data]
             bcalows = [result.results.get(ci_type+'_low')[0] for result in contrast_plot_data]
             bcahighs = [result.results.get(ci_type+'_high')[0] for result in contrast_plot_data]
+            unexpanded = [unexpanded_limits(result.results, ci_type, 0) for result in contrast_plot_data]
 
+    if include_unexpanded:
+        return bootstraps, differences, bcalows, bcahighs, unexpanded
     return bootstraps, differences, bcalows, bcahighs
 
 def check_for_errors(**kwargs):
@@ -457,6 +471,7 @@ def forest_plot(
     zeroline_kwargs: Optional[dict] = None,
     marker_kwargs: Optional[dict] = None,
     errorbar_kwargs: Optional[dict] = None,
+    expanded_errorbar_kwargs: Optional[dict] = None,
 )-> plt.Figure:
     """  
     Custom function that generates a forest plot from given contrast objects, suitable for a range of data analysis types, including those from packages like DABEST-python.
@@ -530,25 +545,33 @@ def forest_plot(
         Additional arguments for the effect size marker customization.
     errorbar_kwargs : Optional[dict], default=None
         Additional arguments for the effect size error bar customization.
+    expanded_errorbar_kwargs : Optional[dict], default=None
+        For intervals expanded for a small number of clusters (see
+        `dabest.load`'s `cluster_ci_expansion`), the unexpanded interval (the
+        nominal interval of the plotted bootstrap distribution) is drawn as the
+        usual error bar, and the expansion beyond it as a thinner line. Additional
+        arguments here style the thinner line; by default it takes the error
+        bar's arguments at 40% of its line width.
 
     Returns
     -------
     plt.Figure
         The matplotlib figure object with the generated forest plot.
     """
-    from .plot_tools import halfviolin
+    from .plot_tools import halfviolin, plot_ci_whisker, expanded_errorbar_kwargs_from
 
     # Check for errors in the input arguments
     all_kwargs = locals()
     contrast_type = check_for_errors(**all_kwargs)
 
     # Load plot data and extract info
-    bootstraps, differences, bcalows, bcahighs = load_plot_data(
+    bootstraps, differences, bcalows, bcahighs, unexpanded = load_plot_data(
                                                         data = data, 
                                                         effect_size = effect_size, 
                                                         contrast_type = contrast_type,
                                                         ci_type = ci_type,
-                                                        idx = idx
+                                                        idx = idx,
+                                                        include_unexpanded = True,
     )
     # Adjust figure size based on orientation
     number_of_curves_to_plot = len(bootstraps)
@@ -585,13 +608,14 @@ def forest_plot(
         )
     
     ## Plotting the effect sizes and confidence intervals
+    expanded_errorbar_kwargs = expanded_errorbar_kwargs_from(errorbar_kwargs, expanded_errorbar_kwargs)
     for k in range(1, number_of_curves_to_plot + 1):
         if horizontal:
             ax.plot(differences[k - 1], k, **marker_kwargs)  
-            ax.plot([bcalows[k - 1], bcahighs[k - 1]], [k, k], **errorbar_kwargs) 
         else:
             ax.plot(k, differences[k - 1], **marker_kwargs)
-            ax.plot([k, k], [bcalows[k - 1], bcahighs[k - 1]], **errorbar_kwargs)
+        plot_ci_whisker(ax, k, bcalows[k - 1], bcahighs[k - 1], horizontal, errorbar_kwargs,
+                        unexpanded[k - 1][0], unexpanded[k - 1][1], expanded_errorbar_kwargs)
     
     # Aesthetic Adjustments
     ## Handle the custom color palette

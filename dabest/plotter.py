@@ -77,6 +77,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
         gridkey_delimiters=[';', '>', '_'],
         gridkey_kwargs=None,
         contrast_marker_kwargs=None, contrast_errorbar_kwargs=None,
+        contrast_expanded_errorbar_kwargs=None,
         prop_sample_counts=False, prop_sample_counts_kwargs=None, 
         contrast_paired_lines=True, contrast_paired_lines
 		show_baseline_ec=False,
@@ -112,7 +113,8 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
         barplotter,
         table_for_horizontal_plots,
         add_counts_to_prop_plots,
-        add_bars_to_plot
+        add_bars_to_plot,
+        expanded_errorbar_kwargs_from,
     )
 
     warnings.filterwarnings(
@@ -180,7 +182,8 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                                                             yvar = yvar,
                                                             horizontal = horizontal,
                                                             show_table = table_kwargs['show'],
-                                                            color_col = color_col
+                                                            color_col = color_col,
+                                                            two_col_sankey = two_col_sankey,
     )
     
     # Plotting the rawdata.
@@ -314,13 +317,14 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
     # Add the counts to the rawdata axes xticks.
     if show_sample_size:
         add_counts_to_ticks(
-                plot_data = plot_data, 
-                xvar = xvar, 
-                yvar = yvar, 
-                rawdata_axes = rawdata_axes, 
+                plot_data = plot_data,
+                xvar = xvar,
+                yvar = yvar,
+                rawdata_axes = rawdata_axes,
                 plot_kwargs = plot_kwargs,
                 flow = sankey_kwargs["flow"],
                 horizontal = horizontal,
+                cluster_col = dabest_obj.cluster_col,
         )
 
     # Add counts to prop plots (embedded in the plot bars)
@@ -378,6 +382,11 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
         ticks_to_plot = [x+0.25 for x in ticks_to_plot]
 
     ## Plot the bootstraps, then the effect sizes and CIs.
+    # Intervals expanded for a small number of clusters are drawn as a thick bar
+    # over the unexpanded interval and a thinner line over the expansion.
+    contrast_expanded_errorbar_kwargs = expanded_errorbar_kwargs_from(
+        contrast_errorbar_kwargs, plot_kwargs.get("contrast_expanded_errorbar_kwargs")
+    )
     contrast_paired_lines = False if float_contrast or not sankey_kwargs["flow"] else plot_kwargs["contrast_paired_lines"]
     (current_group, current_control,
      current_effsize, contrast_xtick_labels) = effect_size_curve_plotter(
@@ -397,6 +406,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                                                                 contrast_paired_lines = contrast_paired_lines,
 																contrast_paired_lines_kwargs = contrast_paired_lines_kwargs,
 																show_baseline_ec = show_baseline_ec,
+                                                                contrast_expanded_errorbar_kwargs = contrast_expanded_errorbar_kwargs,
     )
 
     ## Plot mini-meta or delta-delta violin
@@ -416,6 +426,7 @@ def effectsize_df_plotter(effectsize_df: object, **plot_kwargs) -> matplotlib.fi
                                                                 show_pairs = show_pairs,
                                                                 contrast_marker_kwargs = contrast_marker_kwargs,
                                                                 contrast_errorbar_kwargs = contrast_errorbar_kwargs,
+                                                                contrast_expanded_errorbar_kwargs = contrast_expanded_errorbar_kwargs,
         )
     ## Contrast bars
     contrast_bars = plot_kwargs["contrast_bars"]

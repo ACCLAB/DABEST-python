@@ -44,7 +44,12 @@ def precompile_all():
         (confint_2group_diff.delta2_bootstrap_loop, 
             (dummy_control, dummy_test, dummy_control, dummy_test, 10, 1.0, 12345, False)),
         (confint_2group_diff._compute_quantile, (0.5, 0.1, 0.1)),
-        (confint_2group_diff.calculate_group_var, (1.0, 3, 1.0, 3))
+        (confint_2group_diff.calculate_group_var, (1.0, 3, 1.0, 3)),
+        (confint_2group_diff.cluster_bootstrap_draws,
+            (np.array([0, 1, 2], dtype=np.int64), np.array([0, 3], dtype=np.int64), 10, 12345)),
+        (confint_2group_diff.expand_cluster_draw,
+            (np.array([0, 1], dtype=np.int64), np.array([0, 1, 3], dtype=np.int64),
+             np.array([0, 1, 2], dtype=np.int64))),
     ]
     
     for func, args in tqdm(funcs, desc="Compiling numba functions"):

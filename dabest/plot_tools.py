@@ -10,8 +10,9 @@ from __future__ import annotations
 # %% auto #0
 __all__ = ['halfviolin', 'get_swarm_spans', 'error_bar', 'check_data_matches_labels', 'normalize_dict', 'width_determine',
            'single_sankey', 'sankeydiag', 'add_bars_to_plot', 'delta_text_plotter', 'delta_dots_plotter',
-           'slopegraph_plotter', 'plot_minimeta_or_deltadelta_violins', 'effect_size_curve_plotter', 'gridkey_plotter',
-           'barplotter', 'table_for_horizontal_plots', 'add_counts_to_prop_plots', 'swarmplot', 'SwarmPlot']
+           'slopegraph_plotter', 'plot_minimeta_or_deltadelta_violins', 'unexpanded_limits', 'plot_ci_whisker',
+           'expanded_errorbar_kwargs_from', 'effect_size_curve_plotter', 'gridkey_plotter', 'barplotter',
+           'table_for_horizontal_plots', 'add_counts_to_prop_plots', 'swarmplot', 'SwarmPlot']
 
 # %% ../nbs/API/plot_tools.ipynb #b070950d
 import math
@@ -1248,8 +1249,9 @@ def plot_minimeta_or_deltadelta_violins(
         plot_kwargs: dict, 
         horizontal: bool, 
         show_pairs: bool,
-        contrast_marker_kwargs: dict, 
+        contrast_marker_kwargs: dict,
         contrast_errorbar_kwargs: dict,
+        contrast_expanded_errorbar_kwargs: dict = None,
     ):
     """
     Add mini meta-analysis or delta-delta violin plots to the contrast plot.
@@ -1282,6 +1284,9 @@ def plot_minimeta_or_deltadelta_violins(
         Keyword arguments for the effectsize marker.
     contrast_errorbar_kwargs: dict
         Keyword arguments for the effectsize errorbar.
+    contrast_expanded_errorbar_kwargs : dict, default None
+        Keyword arguments for the thin line showing how far the interval was
+        expanded for a small number of clusters (see `plot_ci_whisker`).
     """
 
     # Plot the curve
@@ -1304,12 +1309,10 @@ def plot_minimeta_or_deltadelta_violins(
         position = max(rawdata_axes.get_yticks()) + 1
         half = "bottom"
         effsize_x, effsize_y = difference, [position]
-        ci_x, ci_y = [ci_low, ci_high], [position, position]
     else:
         position = max(rawdata_axes.get_xticks()) + 1
         half = "right"
         effsize_x, effsize_y = [position], difference
-        ci_x, ci_y = [position, position], [ci_low, ci_high]
 
     v = contrast_axes.violinplot(
         data[~np.isinf(data)], positions=[position], **contrast_kwargs
@@ -1324,11 +1327,9 @@ def plot_minimeta_or_deltadelta_violins(
         **contrast_marker_kwargs
     )
     # Plot the confidence interval.
-    contrast_axes.plot(
-        ci_x,
-        ci_y,
-        **contrast_errorbar_kwargs
-    )
+    unexpanded_low, unexpanded_high = unexpanded_limits(dabest_obj.results, ci_type, 0)
+    plot_ci_whisker(contrast_axes, position, ci_low, ci_high, horizontal, contrast_errorbar_kwargs,
+                    unexpanded_low, unexpanded_high, contrast_expanded_errorbar_kwargs)
 
     # Add labels and ticks
     if horizontal:
@@ -1373,23 +1374,109 @@ def plot_minimeta_or_deltadelta_violins(
     return delta2_axes, contrast_xtick_labels
 
 
+def unexpanded_limits(results: pd.DataFrame, prefix: str, index: int):
+    """
+    The unexpanded interval limits stored in `results` for row `index`, e.g.
+    `bca_low_unexpanded` and `bca_high_unexpanded` for `prefix="bca"`, or
+    `(None, None)` if the interval was not expanded for a small number of clusters.
+    """
+    low = results.get(prefix + "_low_unexpanded")
+    high = results.get(prefix + "_high_unexpanded")
+    if low is None or high is None:
+        return None, None
+    low, high = low[index], high[index]
+    if pd.isna(low) or pd.isna(high):
+        return None, None
+    return low, high
+
+
+def plot_ci_whisker(
+        ax: axes.Axes,
+        position: float,
+        ci_low: float,
+        ci_high: float,
+        horizontal: bool,
+        errorbar_kwargs: dict,
+        unexpanded_low: float = None,
+        unexpanded_high: float = None,
+        expanded_errorbar_kwargs: dict = None,
+    ):
+    """
+    Draw a confidence interval at `position` on `ax`.
+
+    When the interval has been expanded for a small number of clusters, the
+    unexpanded limits are given too. The unexpanded interval, which the plotted
+    bootstrap distribution itself spans, is then drawn as the usual thick bar,
+    and the expansion beyond it as a thinner line (styled by
+    `expanded_errorbar_kwargs`), so that the plot shows which part of the
+    interval comes from resampling and which is the small-sample allowance.
+
+    Parameters
+    ----------
+    ax : axes.Axes
+        Matplotlib axis object to plot on.
+    position : float
+        The tick at which to draw the interval.
+    ci_low, ci_high : float
+        The limits of the reported interval.
+    horizontal : bool
+        If the plot is horizontal.
+    errorbar_kwargs : dict
+        Keyword arguments for the interval line.
+    unexpanded_low, unexpanded_high : float, default None
+        The limits before expansion, if the interval was expanded.
+    expanded_errorbar_kwargs : dict, default None
+        Keyword arguments for the thinner line showing the expansion.
+    """
+    def segment(low, high, kwargs):
+        if horizontal:
+            ax.plot([low, high], [position, position], **kwargs)
+        else:
+            ax.plot([position, position], [low, high], **kwargs)
+
+    if unexpanded_low is None or unexpanded_high is None:
+        segment(ci_low, ci_high, errorbar_kwargs)
+        return
+    if expanded_errorbar_kwargs is None:
+        expanded_errorbar_kwargs = expanded_errorbar_kwargs_from(errorbar_kwargs)
+    segment(ci_low, ci_high, expanded_errorbar_kwargs)
+    segment(unexpanded_low, unexpanded_high, errorbar_kwargs)
+
+
+def expanded_errorbar_kwargs_from(errorbar_kwargs: dict, custom_kwargs: dict = None) -> dict:
+    """
+    Keyword arguments for the thin line that shows the expansion of an
+    interval for a small number of clusters: those of the interval line, at
+    40% of its width (at least 0.75 points), updated with `custom_kwargs`.
+    """
+    kwargs = dict(errorbar_kwargs)
+    width = kwargs.pop("linewidth", kwargs.pop("lw", 2))
+    kwargs["lw"] = max(0.75, 0.4 * width)
+    if custom_kwargs:
+        if "linewidth" in custom_kwargs:
+            kwargs.pop("lw")
+        kwargs.update(custom_kwargs)
+    return kwargs
+
+
 def effect_size_curve_plotter(
-        ticks_to_plot: list, 
-        ticks_for_baseline_ec: list, 
-        results: pd.DataFrame, 
-        ci_type: str, 
-        contrast_axes: axes.Axes, 
-        contrast_kwargs: dict, 
-        bootstraps_color_by_group: bool, 
+        ticks_to_plot: list,
+        ticks_for_baseline_ec: list,
+        results: pd.DataFrame,
+        ci_type: str,
+        contrast_axes: axes.Axes,
+        contrast_kwargs: dict,
+        bootstraps_color_by_group: bool,
         plot_palette_contrast: dict,
-        horizontal: bool, 
-        contrast_marker_kwargs: dict, 
+        horizontal: bool,
+        contrast_marker_kwargs: dict,
         contrast_errorbar_kwargs: dict,
-        idx: list, 
-        is_paired: bool, 
-        contrast_paired_lines: bool, 
+        idx: list,
+        is_paired: bool,
+        contrast_paired_lines: bool,
         contrast_paired_lines_kwargs: dict,
-        show_baseline_ec: bool = False
+        show_baseline_ec: bool = False,
+        contrast_expanded_errorbar_kwargs: dict = None,
     ):
     """
     Add effect size curves to the contrast plot.
@@ -1428,9 +1515,13 @@ def effect_size_curve_plotter(
         Keyword arguments for the repeated measures lines.
     show_baseline_ec : bool
         Whether to show the baseline effect curve.
+    contrast_expanded_errorbar_kwargs : dict, default None
+        Keyword arguments for the thin line showing how far an interval was
+        expanded for a small number of clusters (see `plot_ci_whisker`).
     """
 
-    def plot_effect_size(tick, group, control, bootstrap, effsize, ci_low, ci_high):
+    def plot_effect_size(tick, group, control, bootstrap, effsize, ci_low, ci_high,
+                         unexpanded=(None, None)):
         # Create the violinplot
         if horizontal:  
             contrast_kwargs.update({'orientation': 'horizontal', 'widths': 1})
@@ -1447,13 +1538,9 @@ def effect_size_curve_plotter(
         halfviolin(v, fill_color=fc, alpha=contrast_alpha, half=half)
 
         # Plot the confidence interval
-        if horizontal:
-            ci_x, ci_y = [ci_low, ci_high], [tick, tick]
-        else:
-            ci_x, ci_y = [tick, tick], [ci_low, ci_high]
-            
-        contrast_axes.plot(ci_x, ci_y, **contrast_errorbar_kwargs)
-        
+        plot_ci_whisker(contrast_axes, tick, ci_low, ci_high, horizontal, contrast_errorbar_kwargs,
+                        unexpanded[0], unexpanded[1], contrast_expanded_errorbar_kwargs)
+
         return "{}\nminus\n{}".format(group, control)
     
     if contrast_kwargs.get('alpha') is not None:
@@ -1482,7 +1569,8 @@ def effect_size_curve_plotter(
         )
 
         label = plot_effect_size(tick, current_group, current_control, current_bootstrap,
-                               current_effsize, current_ci_low, current_ci_high)
+                               current_effsize, current_ci_low, current_ci_high,
+                               unexpanded_limits(results, ci_type, int(j)))
         contrast_xtick_labels.append(label)
 
     # Add baseline effect curve plotting
@@ -1504,8 +1592,9 @@ def effect_size_curve_plotter(
         contrast_axes.plot(effsize_x, effsize_y, **contrast_marker_kwargs)
         
         if show_baseline_ec:
-            _ = plot_effect_size(tick, bec_group, bec_control, bec_bootstrap, 
-                               bec_effsize, bec_ci_low, bec_ci_high)
+            _ = plot_effect_size(tick, bec_group, bec_control, bec_bootstrap,
+                               bec_effsize, bec_ci_low, bec_ci_high,
+                               unexpanded_limits(bec_results, 'bec_' + ci_type, j))
             # Baseline Curve doesn't need tick text
 
     # Add lines for repeated measures data
